@@ -1,0 +1,36 @@
+# SConstruct
+*.dblite
+__pycache__
+*.pyc
+
+# Visual Studio Cache
+.vs/
+
+# VSCode Cache
+.vscode/
+
+# Binaries
+.DS_Store
+*.obj
+*.iobj
+#*.so
+#*.dll
+*.o
+#*.dylib
+*.pdb
+*.ipdb
+*.ilk
+*.exe
+*.264
+*.exp
+#*.lib
+*.vcxproj.filters
+*.vcxproj.user
+*.os
+*.out
+
+.import/
+.mono/
+obj/
+bin/
+/libs/

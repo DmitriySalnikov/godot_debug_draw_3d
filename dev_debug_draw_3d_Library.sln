@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{247ea989-12b0-4eda-88d6-988842eb8684}") = "debug_draw_3d_Library", "dev_debug_draw_3d_Library.vcxproj", "{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug|x64 = debug|x64
+		release|x64 = release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}.debug|x64.ActiveCfg = debug|x64
+		{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}.debug|x64.Build.0 = debug|x64
+		{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}.release|x64.ActiveCfg = release|x64
+		{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}.release|x64.Build.0 = release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5715e9c2-91a1-42e3-9857-8ee079381f44}
+	EndGlobalSection
+EndGlobal

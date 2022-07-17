@@ -1,0 +1,74 @@
+name: Build GDNative
+description: Build GDNative library
+inputs:
+  platform:
+    description: Target platform
+    required: true
+  target:
+    description: The scons target (debug/release_debug/release).
+    default: "release"
+  bits:
+    description: Bits or arch (bits=64, bits=32, arch=arm64 or empty)
+    default: ""
+  artifact:
+    description: Artifact name
+    default: "bin"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+        architecture: "x64"
+
+    - name: Configuring Python packages
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "Windows" ]; then
+          python -m pip install pywin32
+        fi
+        python -m pip install scons
+        python --version
+        scons --version
+      
+    - name: Linux dependencies
+      shell: bash
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        if [[ "${{ inputs.bits }}" == *"32" ]];then
+          sudo apt-get install gcc-multilib g++-multilib
+        fi
+
+    - name: Compilation
+      shell: bash
+      run: |
+        cd godot-cpp
+        git apply ../godot_cpp_trim_unused_classes.patch
+        scons platform=${{ inputs.platform }} ${{ inputs.bits }} target=${{ inputs.target }} generate_bindings=yes -j4
+        cd ..
+        scons platform=${{ inputs.platform }} ${{ inputs.bits }} target=${{ inputs.target }} -j4
+
+    - name: Prepare artifact Unix
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          strip -u bin/*
+        else
+          strip bin/*
+        fi
+
+    - name: Prepare artifact Windows
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact }}
+        retention-days: 7
+        path: bin/*

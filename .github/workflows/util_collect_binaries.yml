@@ -1,0 +1,41 @@
+name: 1. 📦 Collect binaries from artifacts
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Windows Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: windows_builds.yml
+          path: extracted_files
+      
+      - name: Download Linux Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: linux_builds.yml
+          path: extracted_files
+      
+      - name: Download Android Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: android_builds.yml
+          path: extracted_files
+      
+      - name: Download MacOS Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: macos_builds.yml
+          path: extracted_files
+      
+      - name: Upload GDNative
+        uses: actions/upload-artifact@v3
+        with:
+          name: gdnative_libs
+          retention-days: 7
+          path: extracted_files/*

@@ -1,0 +1,39 @@
+name: 2. ↗️ Update GDNative binaries from collected artifacts
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+
+jobs:
+  update:
+    name: Update GDNative binaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+      
+      - name: Download GDNative Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: util_collect_binaries.yml
+          branch: ${{ github.ref_name }}
+          name: gdnative_libs
+          path: extracted_files/
+
+      - name: Replace with new files
+        run: |
+          ls extracted_files/*
+          rm -rf addons/qoi/libs/
+          mv -f extracted_files addons/qoi/libs
+
+      - name: Commit report
+        run: |
+          git config --global user.name 'Auto Updater'
+          git config --global user.email 'auto-updater@users.noreply.github.com'
+          git diff
+          git add -A
+          git commit -am "[CI] ↗️ Updated Binaries"
+          git push

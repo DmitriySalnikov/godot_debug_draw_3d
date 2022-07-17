@@ -1,0 +1,59 @@
+name: 🤖 Android
+on:
+  push:
+    paths: [godot_qoi/**, .github/**, '!.github/**/util_*', '**.patch', SConstruct, Android.mk, jni/Application.mk]
+  repository_dispatch:
+
+# Stop the same workflow actions
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  android-gdnative:
+    name: GDNative
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          architecture: "x64"
+
+      - name: Configuring Python packages
+        shell: bash
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
+        
+      - name: Compile godot-cpp
+        run: |
+          cd godot-cpp
+          git apply --ignore-space-change --ignore-whitespace ../godot_cpp_trim_unused_classes.patch
+          scons platform=android android_arch=armv7 target=release generate_bindings=yes -j3
+          scons platform=android android_arch=arm64v8 target=release -j3
+          scons platform=android android_arch=x86 target=release -j3
+          scons platform=android android_arch=x86_64 target=release -j3
+
+      - name: Compile GDNative
+        run: |
+          $ANDROID_NDK_ROOT/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk  APP_PLATFORM=android-21 -j2
+
+      - name: Prepare Libs
+        run: |
+          rm -rf libs/*/gdb*
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: android
+          retention-days: 7
+          path: libs/*

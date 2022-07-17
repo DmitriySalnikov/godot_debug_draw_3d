@@ -1,0 +1,126 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+[ext_resource path="res://testsuite/TestScene.gd" type="Script" id=3]
+
+[sub_resource type="CanvasItemMaterial" id=1]
+blend_mode = 4
+
+[sub_resource type="Animation" id=2]
+resource_name = "Noise"
+length = 5.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("TextureRect:material:shader_param/offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ), Vector2( 1, 0 ) ]
+}
+
+[sub_resource type="Animation" id=7]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("TextureRect:material:shader_param/offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ) ]
+}
+
+[sub_resource type="Shader" id=3]
+code = "shader_type canvas_item;
+
+uniform sampler2D noise;
+uniform vec2 offset = vec2(0,0);
+
+void fragment(){
+	COLOR.a = 1.0f;
+	COLOR.rgb = texture(noise, UV.rg + offset).rgb;
+}"
+
+[sub_resource type="OpenSimplexNoise" id=5]
+
+[sub_resource type="NoiseTexture" id=6]
+width = 1024
+height = 1024
+seamless = true
+noise = SubResource( 5 )
+
+[sub_resource type="ShaderMaterial" id=4]
+shader = SubResource( 3 )
+shader_param/offset = Vector2( 0, 0 )
+shader_param/noise = SubResource( 6 )
+
+[node name="TestQOI" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Label" type="Label" parent="."]
+margin_left = 146.0
+margin_top = 131.0
+margin_right = 1086.0
+margin_bottom = 424.0
+text = "Before starting this scene, please make sure that you have generated images by clicking \"Render Test Images\" in the parameters of the \"TestQOI\" node,
+after which these images should be imported (just switch to another window and back to Godot).
+To import .png as WebP or PNG, change the 'rendering/misc/lossless_compression/force_png' parameter in the project settings.
+To import PNG as VRAM compressed or lossy WebP, change the default preset for importing textures in the Import tab."
+autowrap = true
+
+[node name="ViewportContainer" type="ViewportContainer" parent="."]
+material = SubResource( 1 )
+margin_right = 128.0
+margin_bottom = 128.0
+stretch = true
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Viewport" type="Viewport" parent="ViewportContainer"]
+size = Vector2( 128, 128 )
+transparent_bg = true
+handle_input_locally = false
+hdr = false
+disable_3d = true
+usage = 0
+render_target_update_mode = 3
+gui_disable_input = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="ViewportContainer/Viewport"]
+anims/Noise = SubResource( 2 )
+anims/RESET = SubResource( 7 )
+
+[node name="TextureRect" type="TextureRect" parent="ViewportContainer/Viewport"]
+material = SubResource( 4 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 1 )
+expand = true
+
+[node name="GridContainer" type="GridContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_left = 37.4178
+margin_top = 463.267
+margin_right = 367.418
+margin_bottom = 793.267
+expand = true

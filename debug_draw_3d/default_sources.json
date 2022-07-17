@@ -1,0 +1,7 @@
+[
+	"qoi_import.cpp",
+	"qoi_plugin.cpp",
+	"qoi_utils.cpp",
+	"qoi_wrapper.cpp",
+	"register_types.cpp"
+]

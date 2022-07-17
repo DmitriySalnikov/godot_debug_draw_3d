@@ -1,0 +1,40 @@
+name: 🐧 Linux
+on:
+  push:
+    paths: [godot_qoi/**, .github/**, '!.github/**/util_*', '**.patch', lib_utils.py, SConstruct]
+  repository_dispatch:
+
+# Stop the same workflow actions
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  linux-gdnative:
+    name: Linux GDNative ${{ matrix.name }}
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: x64
+            bits: 64
+
+          - name: x86
+            bits: 32
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Compile GDNative 
+        uses: ./.github/actions/compile_gdnative
+        with:
+          platform: linux
+          target: release
+          bits: bits=${{ matrix.bits }}
+          artifact: linux
