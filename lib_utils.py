@@ -4,7 +4,7 @@ from shutil import copyfile
 import os
 import json
 
-lib_name = 'godot_qoi'
+lib_name = 'debug_draw_3d'
 src_folder = lib_name
 
 # 'headers_dir' option in SConstruct must be correct: 'godot-cpp/godot-headers'

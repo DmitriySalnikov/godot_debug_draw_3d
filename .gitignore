@@ -34,3 +34,4 @@ __pycache__
 obj/
 bin/
 /libs/
+addons/debug_draw_3d/libs/win/*.lib

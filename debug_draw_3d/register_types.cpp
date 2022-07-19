@@ -1,6 +1,5 @@
 /* register_types.cpp */
 
-#include "register_types.h"
 #include <ConfigFile.hpp>
 #include <Directory.hpp>
 #include <EditorImportPlugin.hpp>
@@ -15,11 +14,9 @@
 #include <Texture.hpp>
 
 #ifndef NO_EDITOR
-#include "qoi_import.h"
-#include "qoi_plugin.h"
+#include "editor_plugin.h"
+#include "debug_draw.h"
 #endif
-#include "qoi_utils.h"
-#include "qoi_wrapper.h"
 
 using namespace godot;
 
@@ -29,6 +26,7 @@ extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *o) {
 
 	// Custom register and init for only needed classes
 	// Works only with my patches
+	/*
 	godot::_TagDB::register_global_type("Image", typeid(Image).hash_code(), typeid(Resource).hash_code());
 	godot::_TagDB::register_global_type("Object", typeid(Object).hash_code(), 0);
 	godot::_TagDB::register_global_type("Resource", typeid(Resource).hash_code(), typeid(Reference).hash_code());
@@ -56,6 +54,7 @@ extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *o) {
 	ImageTexture::___init_method_bindings();
 	Directory::___init_method_bindings();
 	File::___init_method_bindings();
+	*/
 }
 
 /** GDNative Terminate **/
@@ -71,11 +70,9 @@ extern "C" void GDN_EXPORT godot_gdnative_singleton() {
 extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
 	Godot::nativescript_init(handle);
 
-	register_tool_class<QOI>();
-	register_tool_class<QOIUtils>();
+	register_tool_class<DebugDraw3D>();
+	register_tool_class<DebugDraw3DEditorPlugin>();
 
 #ifndef NO_EDITOR
-	register_tool_class<QOIPlugin>();
-	register_tool_class<QOIImport>();
 #endif
 }
