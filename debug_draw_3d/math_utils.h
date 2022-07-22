@@ -20,5 +20,5 @@ public:
 class SphereBounds {
 public:
 	Vector3 Position;
-	float Radius;
+	float Radius = 1;
 };

@@ -1,13 +1,22 @@
 #pragma once
 
+#include "data_graphs.h"
+#include "geometry_generators.h"
+#include "grouped_text.h"
+#include "render_instances.h"
 #include "utils.h"
 
 #include <CanvasItem.hpp>
+#include <CanvasLayer.hpp>
+#include <Font.hpp>
 #include <GlobalConstants.hpp>
 #include <Godot.hpp>
+#include <ImmediateGeometry.hpp>
 #include <Node.hpp>
 #include <Reference.hpp>
 #include <Viewport.hpp>
+
+#include <unordered_set>
 
 using namespace godot;
 
@@ -19,10 +28,10 @@ class DebugDraw3D : public Node {
 
 public:
 	enum BlockPosition : int {
-		LeftTop,
-		RightTop,
-		LeftBottom,
-		RightBottom,
+		LeftTop = 0,
+		RightTop = 1,
+		LeftBottom = 2,
+		RightBottom = 3,
 	};
 
 	enum FPSGraphTextFlags : int {
@@ -34,6 +43,7 @@ public:
 		All = Current | Avarage | Max | Min
 	};
 
+private:
 	// HACK for constants
 #define CONST_GET(_enum, _const) \
 	int64_t get_##_enum##_##_const() { return _enum::_const; }
@@ -53,8 +63,34 @@ public:
 
 #undef CONST_GET
 
+	// 2d
+
+	CanvasLayer *_canvasLayer = nullptr;
+	bool _canvasNeedUpdate = true;
+	Ref<Font> _font;
+
+	Viewport *DefaultViewport = nullptr;
+	CanvasItem *DefaultCanvas = nullptr;
+
+	// Text
+	std::unique_ptr<GroupedText> grouped_text;
+
+	// Graphs
+	std::unique_ptr<DataGraphManager> data_graphs;
+
+	ImmediateGeometry *_immediateGeometry = nullptr;
+	//    MultiMeshContainer _mmc = null;
+	std::unordered_set<DelayedRendererLine *> _wireMeshes;
+	ObjectPool<DelayedRendererLine> _poolWiredRenderers{ [] { return new DelayedRendererLine(); } };
+	ObjectPool<DelayedRendererInstance> _poolInstanceRenderers{ [] { return new DelayedRendererInstance(); } };
 	int64_t rendered_wireframes = 0;
 	int64_t rendered_instances = 0;
+
+	std::mutex datalock;
+	bool isReady = false;
+
+	DebugDraw3D *get_singleton_gdscript() { return singleton; };
+	void OnCanvaItemDraw(CanvasItem *ci);
 
 #pragma region Exposed Parameter Values
 
@@ -85,31 +121,8 @@ public:
 	Color TextForegroundColor = Color(1, 1, 1);
 	/// Background color of the text drawn as HUD
 	Color TextBackgroundColor = Color(0.3f, 0.3f, 0.3f, 0.8f);
-
-	// FPS GRAPH
-
-	/// Is FPSGraph enabled
-	bool FPSGraphEnabled = false;
-	/// Switch between frame time and FPS modes
-	bool FPSGraphFrameTimeMode = true;
-	/// Draw a graph line aligned vertically in the center
-	bool FPSGraphCenteredGraphLine = true;
-	/// Sets the text visibility
-	FPSGraphTextFlags FPSGraphShowTextFlags = FPSGraphTextFlags::All;
-	/// Size of the FPS Graph. The width is equal to the number of stored frames.
-	Vector2 FPSGraphSize = Vector2(256, 64);
-	/// Offset from the corner selected in <see cref="FPSGraphPosition"/>
-	Vector2 FPSGraphOffset = Vector2(8, 8);
-	/// FPS Graph position
-	BlockPosition FPSGraphPosition = BlockPosition::RightTop;
-	/// Graph line color
-	Color FPSGraphLineColor = Color(1, 0.27f, 0, 1) /* OrangeRed */;
-	/// Color of the info text
-	Color FPSGraphTextColor = Color(0.96f, 0.96f, 0.96f, 1) /* WhiteSmoke */;
-	/// Background color
-	Color FPSGraphBackgroundColor = Color(0.2f, 0.2f, 0.2f, 0.6f);
-	/// Border color
-	Color FPSGraphBorderColor = Color(0, 0, 0, 1) /* Black */;
+	/// Custom Font
+	Ref<Font> TextCustomFont = nullptr;
 
 	// GEOMETRY
 
@@ -126,29 +139,36 @@ public:
 	CanvasItem *CustomCanvas = nullptr;
 #pragma endregion
 
-	DebugDraw3D *get_singleton_gdscript() { return singleton; };
-
 public:
 	static void _register_methods();
 	void _init();
 
 	static DebugDraw3D *get_singleton() { return singleton; };
+	void mark_canvas_needs_update();
 
 	void _enter_tree();
 	void _exit_tree();
-	void _process();
+	void _ready();
+	void _process(real_t delta);
+
+	Dictionary get_rendered_primitives_count();
 
 #pragma region Exposed Parameters
 	void set_recall_to_singleton(bool state);
 	bool is_recall_to_singleton();
+	
 	void set_debug_enabled(bool state);
 	bool is_debug_enabled();
+	
 	void set_freeze_3d_render(bool state);
 	bool is_freeze_3d_render();
+	
 	void set_use_frustum_culling(bool state);
 	bool is_use_frustum_culling();
+	
 	void set_force_use_camera_from_scene(bool state);
 	bool is_force_use_camera_from_scene();
+	
 	void set_text_block_position(int /*BlockPosition*/ position);
 	int /*BlockPosition*/ get_text_block_position();
 	void set_text_block_offset(Vector2 offset);
@@ -161,43 +181,21 @@ public:
 	Color get_text_foreground_color();
 	void set_text_background_color(Color new_color);
 	Color get_text_background_color();
-	void set_fps_graph_enabled(bool state);
-	bool is_fps_graph_enabled();
-	void set_fps_graph_frame_time_mode(bool state);
-	bool is_fps_graph_frame_time_mode();
-	void set_fps_graph_centered_graph_line(bool state);
-	bool is_fps_graph_centered_graph_line();
-	void set_fps_graph_show_text_flags(int /*FPSGraphTextFlags*/ flags);
-	int /*FPSGraphTextFlags*/ get_fps_graph_show_text_flags();
-	void set_fps_graph_size(Vector2 size);
-	Vector2 get_fps_graph_size();
-	void set_fps_graph_offset(Vector2 offset);
-	Vector2 get_fps_graph_offset();
-	void set_fps_graph_position(int /*BlockPosition*/ position);
-	int /*BlockPosition*/ get_fps_graph_position();
-	void set_fps_graph_line_color(Color new_color);
-	Color get_fps_graph_line_color();
-	void set_fps_graph_text_color(Color new_color);
-	Color get_fps_graph_text_color();
-	void set_fps_graph_background_color(Color new_color);
-	Color get_fps_graph_background_color();
-	void set_fps_graph_border_color(Color new_color);
-	Color get_fps_graph_border_color();
+	void set_text_custom_font(Ref<Font> custom_font);
+	Ref<Font> get_text_custom_font();
+	
 	void set_line_hit_color(Color new_color);
 	Color get_line_hit_color();
 	void set_line_after_hit_color(Color new_color);
 	Color get_line_after_hit_color();
+	
 	void set_custom_viewport(Viewport *viewport);
 	Viewport *get_custom_viewport();
 	void set_custom_canvas(CanvasItem *canvas);
 	CanvasItem *get_custom_canvas();
-#pragma endregion
+#pragma endregion // Exposed Parametes
 
-	Dictionary get_rendered_primitives_count();
-
-	void OnCanvaItemDraw(CanvasItem ci);
-
-#pragma region Draw Functions
+#pragma region Exposed Draw Functions
 
 	/// Clear all 3D objects
 	void clear_3d_objects();
@@ -410,6 +408,7 @@ public:
 #pragma endregion // 3D
 
 #pragma region 2D
+#pragma region Text
 
 	/// Begin text group
 	/// <param name="groupTitle">Group title and ID</param>
@@ -432,7 +431,38 @@ public:
 	/// <param name="duration">Expiration time</param>
 	void set_text(String key, Variant value = Variant(), int priority = 0, Color colorOfValue = Utils::empty_color, float duration = -1);
 
+#pragma endregion // Text
+#pragma region Graphs
+
+	/// Create new graph with custom data
+	/// <param name="title">Title of the graph</param>
+	Ref<GraphParameters> create_graph(String title);
+
+	/// Create new graph with custom data
+	/// <param name="title">Title of the graph</param>
+	Ref<GraphParameters> create_fps_graph(String title);
+
+	/// Update custom graph data
+	/// <param name="title">Title of the graph</param>
+	/// <param name="data">New data</param>
+	void graph_update_data(String title, real_t data);
+
+	/// Remove graph
+	/// <param name="title">Title of the graph</param>
+	void remove_graph(String title);
+
+	/// Remove all graphs
+	void clear_graphs();
+
+	/// Get config for graph
+	/// <param name="title">Title of the graph</param>
+	Ref<GraphParameters> get_graph_config(String title);
+	
+	/// Get all graph names
+	PoolStringArray get_graph_names();
+
+#pragma endregion // Graphs
 #pragma endregion // 2D
 
-#pragma endregion // Draw Functions
+#pragma endregion // Exposed Draw Functions
 };

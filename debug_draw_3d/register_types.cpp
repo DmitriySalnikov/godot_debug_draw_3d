@@ -15,8 +15,9 @@
 
 #ifndef NO_EDITOR
 #include "editor_plugin.h"
-#include "debug_draw.h"
 #endif
+#include "debug_draw.h"
+#include "data_graphs.h"
 
 using namespace godot;
 
@@ -71,6 +72,7 @@ extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
 	Godot::nativescript_init(handle);
 
 	register_tool_class<DebugDraw3D>();
+	register_tool_class<GraphParameters>();
 	register_tool_class<DebugDraw3DEditorPlugin>();
 
 #ifndef NO_EDITOR

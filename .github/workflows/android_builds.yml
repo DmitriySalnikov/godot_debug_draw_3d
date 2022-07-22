@@ -37,7 +37,7 @@ jobs:
       - name: Compile godot-cpp
         run: |
           cd godot-cpp
-          git apply --ignore-space-change --ignore-whitespace ../godot_cpp_trim_unused_classes.patch
+          git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_trim_unused_classes.patch
           scons platform=android android_arch=armv7 target=release generate_bindings=yes -j3
           scons platform=android android_arch=arm64v8 target=release -j3
           scons platform=android android_arch=x86 target=release -j3

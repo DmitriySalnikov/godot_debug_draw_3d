@@ -45,7 +45,7 @@ runs:
       shell: bash
       run: |
         cd godot-cpp
-        git apply ../godot_cpp_trim_unused_classes.patch
+        git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_trim_unused_classes.patch
         scons platform=${{ inputs.platform }} ${{ inputs.bits }} target=${{ inputs.target }} generate_bindings=yes -j4
         cd ..
         scons platform=${{ inputs.platform }} ${{ inputs.bits }} target=${{ inputs.target }} -j4

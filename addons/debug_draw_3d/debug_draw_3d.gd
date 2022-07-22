@@ -1,6 +1,22 @@
+tool
 extends Node
 
-var debug_draw_3d = preload("res://addons/debug_draw_3d/debug_draw_3d.gdns").new()
+const empty_color = Color(0,0,0,0)
+var debug_draw_3d : Node = preload("res://addons/debug_draw_3d/debug_draw_3d.gdns").new()
+
+# Constants
+
+var FPSGraphTextFlags_All = debug_draw_3d.FPSGraphTextFlags_All
+var FPSGraphTextFlags_Avarage = debug_draw_3d.FPSGraphTextFlags_Avarage
+var FPSGraphTextFlags_Current = debug_draw_3d.FPSGraphTextFlags_Current
+var FPSGraphTextFlags_Max = debug_draw_3d.FPSGraphTextFlags_Max
+var FPSGraphTextFlags_Min = debug_draw_3d.FPSGraphTextFlags_Min
+var FPSGraphTextFlags_None = debug_draw_3d.FPSGraphTextFlags_None
+
+var BlockPosition_LeftBottom = debug_draw_3d.BlockPosition_LeftBottom
+var BlockPosition_LeftTop = debug_draw_3d.BlockPosition_LeftTop
+var BlockPosition_RightBottom = debug_draw_3d.BlockPosition_RightBottom
+var BlockPosition_RightTop = debug_draw_3d.BlockPosition_RightTop
 
 # General
 
@@ -27,31 +43,8 @@ var text_default_duration = 500 setget _set_text_default_duration, _get_text_def
 var text_foreground_color : Color setget _set_text_foreground_color, _get_text_foreground_color
 ## Background color of the text drawn as HUD
 var text_background_color : Color setget _set_text_background_color, _get_text_background_color
-
-# FPS Graph
-
-## Is FPSGraph enabled
-var fps_graph_enabled : bool setget _set_fps_graph_enabled, _is_fps_graph_enabled
-## Switch between frame time and FPS modes
-var fps_graph_frame_time_mode : bool setget _set_fps_graph_frame_time_mode, _is_fps_graph_frame_time_mode
-## Draw a graph line aligned vertically in the center
-var fps_graph_centered_graph_line : bool setget _set_fps_graph_centered_graph_line, _is_fps_graph_centered_graph_line
-## Sets the text visibility. Uses FPSGraphTextFlags* constants.
-var fps_graph_show_text_flags : int setget _set_fps_graph_show_text_flags, _get_fps_graph_show_text_flags
-## Size of the FPS Graph. The width is equal to the number of stored frames.
-var fps_graph_size : Vector2 setget _set_fps_graph_size, _get_fps_graph_size
-## Offset from the corner selected in fps_graph_position
-var fps_graph_offset : Vector2 setget _set_fps_graph_offset, _get_fps_graph_offset
-## FPS Graph position. Uses BlockPosition_* constants.
-var fps_graph_position : int setget _set_fps_graph_position, _get_fps_graph_position
-## Graph line color
-var fps_graph_line_color : Color setget _set_fps_graph_line_color, _get_fps_graph_line_color
-## Color of the info text
-var fps_graph_text_color : Color setget _set_fps_graph_text_color, _get_fps_graph_text_color
-## Background color
-var fps_graph_background_color : Color setget _set_fps_graph_background_color, _get_fps_graph_background_color
-## Border color
-var fps_graph_border_color : Color setget _set_fps_graph_border_color, _get_fps_graph_border_color
+## Custom font of the text drawn as HUD
+var text_custom_font : Font setget _set_text_custom_font, _get_text_custom_font
 
 # Geometry
 
@@ -67,9 +60,68 @@ var custom_viewport : Viewport setget _set_custom_viewport, _get_custom_viewport
 ## Custom CanvasItem to draw on it. Set to null to disable.
 var custom_canvas : CanvasItem setget _set_custom_canvas, _get_custom_canvas
 
-func get_singleton():
+func _enter_tree() -> void:
+	if !Engine.editor_hint:
+		add_child(debug_draw_3d)
+		
+		print(get_singleton() == debug_draw_3d)
+
+func _exit_tree() -> void:
+	debug_draw_3d.queue_free()
+
+func get_singleton() -> Node:
 	return debug_draw_3d.get_singleton()
 
+func get_rendered_primitives_count() -> Dictionary:
+	return debug_draw_3d.get_rendered_primitives_count()
+
+
+###################################
+## Draw Functions
+
+## Begin text group
+## groupTitle: Group title and ID
+## groupPriority: Group priority
+## showTitle: Whether to show the title
+func begin_text_group(groupTitle : String, groupPriority : int = 0, groupColor : Color = empty_color, showTitle : bool = true):
+	debug_draw_3d.begin_text_group(groupTitle, groupPriority, groupColor, showTitle)
+
+## End text group. Should be called after "BeginTextGroup" if you don't need more than one group.
+## If you need to create 2+ groups just call again "BeginTextGroup" and this function in the end.
+## groupTitle: Group title and ID
+## groupPriority: Group priority
+## showTitle: Whether to show the title
+func end_text_group():
+	debug_draw_3d.end_text_group()
+
+## Add or update text in overlay
+## key: Name of field if "value" exists, otherwise whole line will equal "key".
+## value: Value of field
+## priority: Priority of this line. Lower value is higher position.
+## duration: Expiration time
+func set_text(key : String, value = "", priority : int = 0, colorOfValue : Color = empty_color, duration : float = -1):
+	debug_draw_3d.set_text(key, value, priority, colorOfValue, duration)
+
+func create_graph(title : String) -> Resource:
+	return debug_draw_3d.create_graph(title)
+
+func create_fps_graph(title : String) -> Resource:
+	return debug_draw_3d.create_fps_graph(title)
+
+func graph_update_data(title : String, data : float):
+	debug_draw_3d.graph_update_data(title, data)
+
+func remove_graph(title : String):
+	debug_draw_3d.remove_graph(title)
+
+func clear_graphs():
+	debug_draw_3d.clear_graphs()
+
+func get_graph_config(title : String) -> Resource:
+	return debug_draw_3d.get_graph_config(title)
+
+func get_graph_names() -> PoolStringArray:
+	return debug_draw_3d.get_graph_names()
 
 ###################################
 ## Parameters
@@ -134,71 +186,11 @@ func _set_text_background_color(val):
 func _get_text_background_color() -> Color:
 	return debug_draw_3d.get_singleton().text_background_color
 
-func _set_fps_graph_enabled(val):
-	debug_draw_3d.get_singleton().fps_graph_enabled = val
+func _set_text_custom_font(val):
+	debug_draw_3d.get_singleton().text_custom_font = val
 
-func _is_fps_graph_enabled() -> bool:
-	return debug_draw_3d.get_singleton().fps_graph_enabled
-
-func _set_fps_graph_frame_time_mode(val):
-	debug_draw_3d.get_singleton().fps_graph_frame_time_mode = val
-
-func _is_fps_graph_frame_time_mode() -> bool:
-	return debug_draw_3d.get_singleton().fps_graph_frame_time_mode
-
-func _set_fps_graph_centered_graph_line(val):
-	debug_draw_3d.get_singleton().fps_graph_centered_graph_line = val
-
-func _is_fps_graph_centered_graph_line() -> bool:
-	return debug_draw_3d.get_singleton().fps_graph_centered_graph_line
-
-func _set_fps_graph_show_text_flags(val):
-	debug_draw_3d.get_singleton().fps_graph_show_text_flags = val
-
-func _get_fps_graph_show_text_flags() -> int:
-	return debug_draw_3d.get_singleton().fps_graph_show_text_flags
-
-func _set_fps_graph_size(val):
-	debug_draw_3d.get_singleton().fps_graph_size = val
-
-func _get_fps_graph_size() -> Vector2:
-	return debug_draw_3d.get_singleton().fps_graph_size
-
-func _set_fps_graph_offset(val):
-	debug_draw_3d.get_singleton().fps_graph_offset = val
-
-func _get_fps_graph_offset() -> Vector2:
-	return debug_draw_3d.get_singleton().fps_graph_offset
-
-func _set_fps_graph_position(val):
-	debug_draw_3d.get_singleton().fps_graph_position = val
-
-func _get_fps_graph_position() -> int:
-	return debug_draw_3d.get_singleton().fps_graph_position
-
-func _set_fps_graph_line_color(val):
-	debug_draw_3d.get_singleton().fps_graph_line_color = val
-
-func _get_fps_graph_line_color() -> Color:
-	return debug_draw_3d.get_singleton().fps_graph_line_color
-
-func _set_fps_graph_text_color(val):
-	debug_draw_3d.get_singleton().fps_graph_text_color = val
-
-func _get_fps_graph_text_color() -> Color:
-	return debug_draw_3d.get_singleton().fps_graph_text_color
-
-func _set_fps_graph_background_color(val):
-	debug_draw_3d.get_singleton().fps_graph_background_color = val
-
-func _get_fps_graph_background_color() -> Color:
-	return debug_draw_3d.get_singleton().fps_graph_background_color
-
-func _set_fps_graph_border_color(val):
-	debug_draw_3d.get_singleton().fps_graph_border_color = val
-
-func _get_fps_graph_border_color() -> Color:
-	return debug_draw_3d.get_singleton().fps_graph_border_color
+func _get_text_custom_font() -> Font:
+	return debug_draw_3d.get_singleton().text_custom_font
 
 func _set_line_hit_color(val):
 	debug_draw_3d.get_singleton().line_hit_color = val

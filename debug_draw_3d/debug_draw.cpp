@@ -1,16 +1,21 @@
 #include "debug_draw.h"
 
+#include <Camera.hpp>
 #include <ConfigFile.hpp>
 #include <Directory.hpp>
 #include <Engine.hpp>
 #include <File.hpp>
 #include <GlobalConstants.hpp>
 #include <Label.hpp>
+#include <Node2D.hpp>
 #include <ProjectSettings.hpp>
 #include <SceneTree.hpp>
+#include <SpatialMaterial.hpp>
 #include <Viewport.hpp>
 
+#include <algorithm>
 #include <chrono>
+#include <functional>
 
 #define RECALL_TO_SINGLETON(func, ...)                  \
 	if (RecallToSingleton && this != get_singleton()) { \
@@ -18,10 +23,20 @@
 		return;                                         \
 	}
 
+#define RECALL_TO_SINGLETON_RET(func, ...)              \
+	if (RecallToSingleton && this != get_singleton()) { \
+		return get_singleton()->func(__VA_ARGS__);      \
+	}
+
 #define RECALL_TO_SINGLETON_NA(func)                    \
 	if (RecallToSingleton && this != get_singleton()) { \
 		get_singleton()->func();                        \
 		return;                                         \
+	}
+
+#define RECALL_TO_SINGLETON_NA_RET(func)                \
+	if (RecallToSingleton && this != get_singleton()) { \
+		return get_singleton()->func();                 \
 	}
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
@@ -34,7 +49,10 @@ void DebugDraw3D::_register_methods() {
 
 	REG_METHOD(_enter_tree);
 	REG_METHOD(_exit_tree);
+	REG_METHOD(_ready);
 	REG_METHOD(_process);
+
+	REG_METHOD(OnCanvaItemDraw);
 
 #pragma region Constants
 #define CONST_REG(_enum, _const) \
@@ -71,17 +89,7 @@ void DebugDraw3D::_register_methods() {
 	REG_PROP(text_default_duration, (int64_t)500);
 	REG_PROP(text_foreground_color, Color(1, 1, 1));
 	REG_PROP(text_background_color, Color(0.3f, 0.3f, 0.3f, 0.8f));
-	REG_PROP_BOOL(fps_graph_enabled, false);
-	REG_PROP_BOOL(fps_graph_frame_time_mode, true);
-	REG_PROP_BOOL(fps_graph_centered_graph_line, true);
-	REG_PROP(fps_graph_show_text_flags, (int)FPSGraphTextFlags::All);
-	REG_PROP(fps_graph_size, Vector2(256, 64));
-	REG_PROP(fps_graph_offset, Vector2(8, 8));
-	REG_PROP(fps_graph_position, (int)BlockPosition::RightTop);
-	REG_PROP(fps_graph_line_color, Color(1, 0.27f, 0, 1));
-	REG_PROP(fps_graph_text_color, Color(0.96f, 0.96f, 0.96f, 1));
-	REG_PROP(fps_graph_background_color, Color(0.2f, 0.2f, 0.2f, 0.6f));
-	REG_PROP(fps_graph_border_color, Color(0, 0, 0, 1));
+	REG_PROP(text_custom_font, Ref<Font>());
 	REG_PROP(line_hit_color, Color(1, 0, 0, 1));
 	REG_PROP(line_after_hit_color, Color(0, 1, 0, 1));
 	REG_PROP(custom_viewport, (Viewport *)nullptr);
@@ -91,6 +99,56 @@ void DebugDraw3D::_register_methods() {
 #undef REG_PROP_BOOL
 
 #pragma endregion
+
+#pragma region Draw Functions
+	REG_METHOD(clear_3d_objects);
+	REG_METHOD(clear_2d_objects);
+
+	REG_METHOD(clear_all);
+
+	REG_METHOD(draw_sphere);
+	REG_METHOD(draw_sphere_xf);
+
+	REG_METHOD(draw_cylinder);
+	REG_METHOD(draw_cylinder_xf);
+
+	REG_METHOD(draw_box);
+	REG_METHOD(draw_box_xf);
+	REG_METHOD(draw_aabb);
+	REG_METHOD(draw_aabb_ab);
+
+	REG_METHOD(draw_line_3d_hit);
+	REG_METHOD(draw_line_3d);
+	REG_METHOD(draw_ray_3d);
+	REG_METHOD(draw_line_path_3d);
+	REG_METHOD(draw_line_path_3d_arr);
+
+	REG_METHOD(draw_arrow_line_3d);
+	REG_METHOD(draw_arrow_ray_3d);
+	REG_METHOD(draw_arrow_path_3d);
+	REG_METHOD(draw_arrow_path_3d_arr);
+
+	REG_METHOD(draw_billboard_square);
+
+	REG_METHOD(draw_camera_frustum);
+	REG_METHOD(draw_camera_frustum_planes);
+
+	REG_METHOD(draw_position_3d);
+	REG_METHOD(draw_position_3d_xf);
+
+	REG_METHOD(begin_text_group);
+	REG_METHOD(end_text_group);
+	REG_METHOD(set_text);
+
+	REG_METHOD(create_graph);
+	REG_METHOD(create_fps_graph);
+	REG_METHOD(graph_update_data);
+	REG_METHOD(remove_graph);
+	REG_METHOD(clear_graphs);
+	REG_METHOD(get_graph_config);
+	REG_METHOD(get_graph_names);
+
+#pragma endregion // Draw Functions
 
 	REG_METHOD(get_rendered_primitives_count);
 
@@ -120,11 +178,12 @@ void DebugDraw3D::_enter_tree() {
 
 	if (IS_EDITOR_HINT()) {
 		TextBlockPosition = BlockPosition::LeftBottom;
-		FPSGraphOffset = Vector2(12, 72);
-		FPSGraphPosition = BlockPosition::LeftTop;
 	}
 
 	set_process_priority(INT64_MAX);
+
+	grouped_text = std::make_unique<GroupedText>(this);
+	data_graphs = std::make_unique<DataGraphManager>();
 }
 
 void DebugDraw3D::_exit_tree() {
@@ -139,8 +198,115 @@ void DebugDraw3D::_exit_tree() {
 	}
 }
 
-void DebugDraw3D::_process() {
-	// TODO
+void DebugDraw3D::_ready() {
+	if (!isReady)
+		isReady = true;
+
+	// Funny hack to get default font
+	{
+		Control *c = Control::_new();
+		add_child(c);
+		_font = c->get_font("font");
+		c->queue_free();
+	}
+
+	// Setup default text group
+	end_text_group();
+
+	// Create wireframe mesh drawer
+	_immediateGeometry = ImmediateGeometry::_new();
+	{
+		_immediateGeometry->set_name(TEXT(_immediateGeometry));
+		_immediateGeometry->set_cast_shadows_setting(GeometryInstance::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+		_immediateGeometry->set_flag(GeometryInstance::Flags::FLAG_USE_BAKED_LIGHT, false);
+
+		Ref<SpatialMaterial> mat;
+		mat.instance();
+		mat->set_flag(SpatialMaterial::Flags::FLAG_UNSHADED, true);
+		mat->set_flag(SpatialMaterial::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+		_immediateGeometry->set_material_override(mat);
+	}
+
+	add_child(_immediateGeometry);
+	// Create MultiMeshInstance instances.. TODO
+	//     _mmc = new MultiMeshContainer(debugDraw, (i) = > renderInstances += i);
+
+	// Create canvas item and canvas layer
+	_canvasLayer = CanvasLayer::_new();
+	_canvasLayer->set_layer(64);
+	DefaultCanvas = Node2D::_new();
+
+	if (!CustomCanvas)
+		DefaultCanvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(DefaultCanvas));
+
+	add_child(_canvasLayer);
+	_canvasLayer->add_child(DefaultCanvas);
+}
+
+void DebugDraw3D::_process(real_t delta) {
+	{
+		LOCK_GUARD(datalock);
+
+		// Clean texts
+
+		grouped_text->cleanup_text();
+
+		// Clean lines
+		static std::function<bool(DelayedRendererLine *)> remove_wire_meshes([this](DelayedRendererLine *o) {
+			if (!o || o->IsExpired()) {
+				_poolWiredRenderers.Return(o);
+				return true;
+			}
+			return false;
+		});
+		Utils::remove_where(_wireMeshes, remove_wire_meshes);
+
+		// Clean instances
+		//   _mmc.RemoveExpired((o) = > _poolInstanceRenderers.Return(o));
+	}
+
+	// FPS Graph
+	data_graphs->_update_fps(delta);
+
+	// Update overlay
+	if (_canvasNeedUpdate) {
+		if (!CustomCanvas)
+			DefaultCanvas->update();
+		else
+			CustomCanvas->update();
+
+		// reset some values
+		_canvasNeedUpdate = false;
+		end_text_group();
+	}
+
+	// Update 3D debug
+	//   UpdateDebugGeometry();
+}
+
+Dictionary DebugDraw3D::get_rendered_primitives_count() {
+	return Dictionary::make(
+			"instances", rendered_instances,
+			"wireframes", rendered_wireframes,
+			"total", rendered_instances + rendered_wireframes);
+}
+
+void DebugDraw3D::OnCanvaItemDraw(CanvasItem *ci) {
+	RECALL_TO_SINGLETON(OnCanvaItemDraw, ci);
+
+	if (!DebugEnabled)
+		return;
+
+	auto time = TIME_NOW();
+	Vector2 vp_size = ci->has_meta("UseParentSize") ? cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
+
+	grouped_text->draw(ci, _font, vp_size);
+	data_graphs->draw(ci, _font, vp_size);
+}
+
+void DebugDraw3D::mark_canvas_needs_update() {
+	_canvasNeedUpdate = true;
 }
 
 #pragma region Exposed Parameters
@@ -237,92 +403,12 @@ Color DebugDraw3D::get_text_background_color() {
 	return TextBackgroundColor;
 }
 
-void DebugDraw3D::set_fps_graph_enabled(bool state) {
-	FPSGraphEnabled = state;
+void DebugDraw3D::set_text_custom_font(Ref<Font> custom_font) {
+	TextCustomFont = custom_font;
 }
 
-bool DebugDraw3D::is_fps_graph_enabled() {
-	return FPSGraphEnabled;
-}
-
-void DebugDraw3D::set_fps_graph_frame_time_mode(bool state) {
-	FPSGraphFrameTimeMode = state;
-}
-
-bool DebugDraw3D::is_fps_graph_frame_time_mode() {
-	return FPSGraphFrameTimeMode;
-}
-
-void DebugDraw3D::set_fps_graph_centered_graph_line(bool state) {
-	FPSGraphCenteredGraphLine = state;
-}
-
-bool DebugDraw3D::is_fps_graph_centered_graph_line() {
-	return FPSGraphCenteredGraphLine;
-}
-
-void DebugDraw3D::set_fps_graph_show_text_flags(int flags) {
-	FPSGraphShowTextFlags = (FPSGraphTextFlags)flags;
-}
-
-int DebugDraw3D::get_fps_graph_show_text_flags() {
-	return FPSGraphShowTextFlags;
-}
-
-void DebugDraw3D::set_fps_graph_size(Vector2 size) {
-	FPSGraphSize = size;
-}
-
-Vector2 DebugDraw3D::get_fps_graph_size() {
-	return FPSGraphSize;
-}
-
-void DebugDraw3D::set_fps_graph_offset(Vector2 offset) {
-	FPSGraphOffset = offset;
-}
-
-Vector2 DebugDraw3D::get_fps_graph_offset() {
-	return FPSGraphOffset;
-}
-
-void DebugDraw3D::set_fps_graph_position(int position) {
-	FPSGraphPosition = (BlockPosition)position;
-}
-
-int DebugDraw3D::get_fps_graph_position() {
-	return FPSGraphPosition;
-}
-
-void DebugDraw3D::set_fps_graph_line_color(Color new_color) {
-	FPSGraphLineColor = new_color;
-}
-
-Color DebugDraw3D::get_fps_graph_line_color() {
-	return FPSGraphLineColor;
-}
-
-void DebugDraw3D::set_fps_graph_text_color(Color new_color) {
-	FPSGraphTextColor = new_color;
-}
-
-Color DebugDraw3D::get_fps_graph_text_color() {
-	return FPSGraphTextColor;
-}
-
-void DebugDraw3D::set_fps_graph_background_color(Color new_color) {
-	FPSGraphBackgroundColor = new_color;
-}
-
-Color DebugDraw3D::get_fps_graph_background_color() {
-	return FPSGraphBackgroundColor;
-}
-
-void DebugDraw3D::set_fps_graph_border_color(Color new_color) {
-	FPSGraphBorderColor = new_color;
-}
-
-Color DebugDraw3D::get_fps_graph_border_color() {
-	return FPSGraphBorderColor;
+Ref<Font> DebugDraw3D::get_text_custom_font() {
+	return TextCustomFont;
 }
 
 void DebugDraw3D::set_line_hit_color(Color new_color) {
@@ -351,8 +437,23 @@ Viewport *DebugDraw3D::get_custom_viewport() {
 }
 
 void DebugDraw3D::set_custom_canvas(CanvasItem *canvas) {
+
+	bool connected_internal = DefaultCanvas && DefaultCanvas->is_connected("draw", this, TEXT(OnCanvaItemDraw));
+	bool connected_custom = CustomCanvas && CustomCanvas->is_connected("draw", this, TEXT(OnCanvaItemDraw));
+
+	if (!canvas) {
+		if (!connected_internal)
+			DefaultCanvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(DefaultCanvas));
+		if (connected_custom)
+			CustomCanvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
+	} else {
+		if (connected_internal)
+			DefaultCanvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
+		if (!connected_custom)
+			canvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(canvas));
+	}
+
 	CustomCanvas = canvas;
-	// TODO
 }
 
 CanvasItem *DebugDraw3D::get_custom_canvas() {
@@ -360,17 +461,6 @@ CanvasItem *DebugDraw3D::get_custom_canvas() {
 }
 
 #pragma endregion
-
-Dictionary DebugDraw3D::get_rendered_primitives_count() {
-	return Dictionary::make(
-			"instances", rendered_instances,
-			"wireframes", rendered_wireframes,
-			"total", rendered_instances + rendered_wireframes);
-}
-
-void DebugDraw3D::OnCanvaItemDraw(CanvasItem ci) {
-	RECALL_TO_SINGLETON(OnCanvaItemDraw, ci);
-}
 
 #pragma region Draw Functions
 
@@ -513,22 +603,75 @@ void DebugDraw3D::draw_position_3d_xf(Transform transform, Color color, float du
 #pragma endregion // 3D
 
 #pragma region 2D
+#pragma region Text
 
 void DebugDraw3D::begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle) {
 	RECALL_TO_SINGLETON(begin_text_group, groupTitle, groupPriority, groupColor, showTitle);
+
+	grouped_text->begin_text_group(groupTitle, groupPriority, groupColor, showTitle);
 }
 
 void DebugDraw3D::end_text_group() {
 	RECALL_TO_SINGLETON_NA(end_text_group);
+
+	grouped_text->end_text_group();
 }
 
 void DebugDraw3D::set_text(String key, Variant value, int priority, Color colorOfValue, float duration) {
 	RECALL_TO_SINGLETON(set_text, key, value, priority, colorOfValue, duration);
+
+	if (!DebugEnabled) return;
+
+	if (grouped_text->set_text(key, value, priority, colorOfValue, duration))
+		mark_canvas_needs_update();
 }
 
+#pragma endregion // Text
+#pragma region Graphs
+
+Ref<GraphParameters> DebugDraw3D::create_graph(String title) {
+	RECALL_TO_SINGLETON_RET(create_graph, title);
+
+	return data_graphs->create_graph(title);
+}
+
+Ref<GraphParameters> DebugDraw3D::create_fps_graph(String title) {
+	RECALL_TO_SINGLETON_RET(create_fps_graph, title);
+
+	return data_graphs->create_fps_graph(title);
+}
+
+void DebugDraw3D::graph_update_data(String title, real_t data) {
+	RECALL_TO_SINGLETON(graph_update_data, title, data);
+
+	data_graphs->update(title, data);
+}
+
+void DebugDraw3D::remove_graph(String title) {
+	RECALL_TO_SINGLETON(remove_graph, title);
+
+	data_graphs->remove_graph(title);
+}
+
+void DebugDraw3D::clear_graphs() {
+	RECALL_TO_SINGLETON_NA(clear_graphs);
+
+	data_graphs->clear_graphs();
+}
+
+Ref<GraphParameters> DebugDraw3D::get_graph_config(String title) {
+	RECALL_TO_SINGLETON_RET(get_graph_config, title);
+
+	return data_graphs->get_graph_config(title);
+}
+
+PoolStringArray DebugDraw3D::get_graph_names() {
+	RECALL_TO_SINGLETON_NA_RET(get_graph_names);
+
+	return data_graphs->get_graph_names();
+}
+
+#pragma endregion // Graphs
 #pragma endregion // 2D
 
 #pragma endregion // Draw Functions
-
-#undef RECALL_TO_SINGLETON
-#undef RECALL_TO_SINGLETON_NA

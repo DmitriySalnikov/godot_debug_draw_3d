@@ -117,19 +117,27 @@
   <ItemGroup>
     <ClCompile Include="debug_draw_3d\debug_draw.cpp" />
     <ClCompile Include="debug_draw_3d\editor_plugin.cpp" />
+    <ClCompile Include="debug_draw_3d\data_graphs.cpp" />
     <ClCompile Include="debug_draw_3d\geometry_generators.cpp" />
+    <ClCompile Include="debug_draw_3d\grouped_text.cpp" />
     <ClCompile Include="debug_draw_3d\math_utils.cpp" />
     <ClCompile Include="debug_draw_3d\register_types.cpp" />
     <ClCompile Include="debug_draw_3d\render_instances.cpp" />
     <ClCompile Include="debug_draw_3d\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="debug_draw_3d\circular_buffer.h" />
     <ClInclude Include="debug_draw_3d\debug_draw.h" />
     <ClInclude Include="debug_draw_3d\editor_plugin.h" />
+    <ClInclude Include="debug_draw_3d\data_graphs.h" />
     <ClInclude Include="debug_draw_3d\geometry_generators.h" />
+    <ClInclude Include="debug_draw_3d\grouped_text.h" />
     <ClInclude Include="debug_draw_3d\math_utils.h" />
     <ClInclude Include="debug_draw_3d\render_instances.h" />
     <ClInclude Include="debug_draw_3d\utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="patches\GDNative.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
