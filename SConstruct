@@ -287,7 +287,11 @@ elif env["platform"] == "windows":
     # Native or cross-compilation using MinGW
     if host_platform == "linux" or host_platform == "freebsd" or host_platform == "osx" or env["use_mingw"]:
         # These options are for a release build even using target=debug
-        env.Append(CCFLAGS=["-O3", "-std=c++14", "-Wwrite-strings"])
+
+        if env["target"] == "debug":
+            env.Append(CCFLAGS=["-Og", "-g"])
+        elif env["target"] == "release":
+            env.Append(CCFLAGS=["-O3", "-std=c++14", "-Wwrite-strings"])
         env.Append(
             LINKFLAGS=[
                 "--static",

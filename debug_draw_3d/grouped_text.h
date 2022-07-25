@@ -17,7 +17,7 @@ public:
 	int ms_expiration = 0;
 	std::chrono::steady_clock::time_point updated_time;
 
-	Color ValueColor = Utils::empty_color;
+	Color ValueColor = Colors::empty_color;
 
 	// Just to show the text once and not delete it until the next frame ends.
 	// It is necessary to avoid the endless re - creation of these objects.
@@ -25,7 +25,7 @@ public:
 
 	TextGroupItem(int expirationTime, String key, String text, int priority, Color color);
 
-	void Update(int &expirationTime, String &key, String &text, int &priority, Color &color);
+	void update(int &expirationTime, String &key, String &text, int &priority, Color &color);
 	bool IsExpired();
 };
 
@@ -59,13 +59,16 @@ class GroupedText {
 	std::unordered_set<TextGroup_ptr> _textGroups;
 	TextGroup_ptr _currentTextGroup;
 	class DebugDraw3D *owner;
-	std::mutex datalock;
+	std::recursive_mutex datalock;
+
+	void _create_new_default_groupd_if_needed();
 
 public:
 	GroupedText(class DebugDraw3D *p_owner);
+	void clear_text();
 	void cleanup_text();
 	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle);
 	void end_text_group();
-	bool set_text(String &key, Variant &value, int &priority, Color &colorOfValue, float &duration);
+	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration);
 	void draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size);
 };

@@ -161,7 +161,7 @@ Ref<Font> GraphParameters::get_custom_font() {
 
 DataGraph::DataGraph(Ref<GraphParameters> _owner) :
 		config(_owner),
-		data(CircularBuffer<real_t>((int)_owner->get_size().x)),
+		data(std::make_shared<CircularBuffer<real_t> >(_owner->get_buffer_size())),
 		type(Type::Custom) {
 }
 
@@ -174,28 +174,29 @@ Ref<GraphParameters> DataGraph::get_config() {
 }
 
 void DataGraph::update(real_t value) {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
-	if (config->get_buffer_size() != data.buffer_size())
-		data = CircularBuffer<real_t>(config->get_buffer_size());
+	if (config->get_buffer_size() != data->buffer_size())
+		// data = CircularBuffer<real_t>(config->get_buffer_size());
+		data = std::make_shared<CircularBuffer<real_t> >(config->get_buffer_size());
 
 	_update_added(value);
 }
 
 void DataGraph::_update_added(real_t value) {
-	data.add(value);
+	data->add(value);
 }
 
 real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, real_t y_offset) {
-	if (data.size() < 2 || !config->is_enabled())
+	if (!config->is_enabled())
 		return y_offset;
 
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
 	Ref<Font> draw_font = config->get_custom_font().is_null() ? font : config->get_custom_font();
 
 	real_t min, max, avg;
-	Utils::get_min_max_avg(data, &min, &max, &avg);
+	Utils::get_min_max_avg(&data, &min, &max, &avg);
 
 	// Truncate for pixel perfect render
 	Vector2 graphSize(Vector2((real_t)(int)config->get_size().x, (real_t)(int)config->get_size().y));
@@ -208,13 +209,13 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 			pos.y += y_offset;
 			break;
 		case DebugDraw3D::BlockPosition::RightTop:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x +1, graphOffset.y + y_offset);
+			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + y_offset);
 			break;
 		case DebugDraw3D::BlockPosition::LeftBottom:
-			pos = Vector2(graphOffset.x, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y -3 : 0));
+			pos = Vector2(graphOffset.x, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			break;
 		case DebugDraw3D::BlockPosition::RightBottom:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x+1, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y -3 : 0));
+			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			break;
 	}
 
@@ -240,18 +241,25 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 	real_t height_multiplier = graphSize.y / max;
 	real_t center_offset = config->is_centered_graph_line() ? (graphSize.y - height_multiplier * (max - min)) * 0.5f : 0;
 
-	Vector2 prev = Vector2(0, graphSize.y - data[0] * height_multiplier + center_offset) + pos;
 	Rect2 border_size(pos + Vector2::UP, graphSize + Vector2::DOWN);
 
 	// Draw background
 	ci->draw_rect(border_size, config->get_background_color(), true);
 
 	// Draw graph line
-	double points_interval = (double)config->get_size().x / ((int64_t)config->get_buffer_size() - 2);
-	for (size_t i = 1; i < data.size() - 1; i++) {
-		Vector2 v = pos + Vector2((real_t)(i * points_interval), graphSize.y - data[i] * height_multiplier + center_offset);
-		ci->draw_line(v, prev, config->get_line_color());
-		prev = v;
+	if (data->is_filled() || data->size() > 2) {
+		PoolVector2Array line_points;
+		const int offset = (int)data->is_filled();
+		double points_interval = (double)config->get_size().x / ((int64_t)config->get_buffer_size() - 1 - offset);
+
+		line_points.resize((int)data->size() - offset);
+		{
+			auto w = line_points.write();
+			for (size_t i = 0; i < data->size() - offset; i++) {
+				w[(int)i] = pos + Vector2((real_t)(i * points_interval), graphSize.y - data->get(i) * height_multiplier + center_offset);
+			}
+		}
+		ci->draw_polyline(line_points, config->get_line_color());
 	}
 
 	// Draw border
@@ -279,7 +287,7 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 
 	if ((config->get_show_text_flags() & DebugDraw3D::FPSGraphTextFlags::Current) == DebugDraw3D::FPSGraphTextFlags::Current) {
 		// `space` at the end of line for offset from border
-		String cur_text = Utils::string_format(L"%.2f %s ", data[data.size() - 2], suffix);
+		String cur_text = Utils::string_format(L"%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
 		Vector2 cur_size = draw_font->get_string_size(cur_text);
 		ci->draw_string(draw_font, pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2), cur_text, config->get_text_color());
 	}
@@ -301,12 +309,12 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 
 void FPSGraph::_update_added(real_t value) {
 	if (is_ms != config->is_frame_time_mode()) {
-		data.reset();
+		data->reset();
 		is_ms = config->is_frame_time_mode();
 		config->set_text_suffix(is_ms ? "ms" : "fps");
 	}
 
-	data.add(is_ms ? value * 1000.f : 1.f / value);
+	data->add(is_ms ? value * 1000.f : 1.f / value);
 }
 
 ////////////////////////////////////
@@ -316,7 +324,7 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instance();
 
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 	graphs[title] = std::make_shared<DataGraph>(config);
 	return config;
 }
@@ -325,7 +333,7 @@ Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instance();
 
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 	graphs[title] = std::make_shared<FPSGraph>(config);
 	return config;
 }
@@ -359,13 +367,14 @@ void DataGraphManager::update(String title, real_t data) {
 }
 
 void DataGraphManager::remove_graph(String title) {
+	LOCK_GUARD_REC(datalock);
 	if (graphs.count(title)) {
 		graphs.erase(title);
 	}
 }
 
 void DataGraphManager::clear_graphs() {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 	graphs.clear();
 }
 
@@ -377,7 +386,7 @@ Ref<GraphParameters> DataGraphManager::get_graph_config(String title) {
 }
 
 PoolStringArray DataGraphManager::get_graph_names() {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
 	PoolStringArray res;
 	for (auto i : graphs) {

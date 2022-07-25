@@ -4,7 +4,7 @@
 using namespace godot;
 
 TextGroupItem::TextGroupItem(int expirationTime, String key, String text, int priority, Color color) {
-	DEBUG_PRINT("New TextGroupItem created: " + key + " : " + text);
+	DEBUG_PRINT("New " TEXT(TextGroupItem) " created: " + key + " : " + text);
 
 	updated_time = TIME_NOW();
 	ms_expiration = expirationTime;
@@ -15,7 +15,7 @@ TextGroupItem::TextGroupItem(int expirationTime, String key, String text, int pr
 	second_chance = true;
 }
 
-void TextGroupItem::Update(int &expirationTime, String &key, String &text, int &priority, Color &color) {
+void TextGroupItem::update(int &expirationTime, String &key, String &text, int &priority, Color &color) {
 	updated_time = TIME_NOW();
 	ms_expiration = expirationTime;
 	Key = key;
@@ -34,7 +34,7 @@ bool TextGroupItem::IsExpired() {
 }
 
 TextGroup::TextGroup(String title, int priority, bool showTitle, Color groupColor) {
-	DEBUG_PRINT("New TextGroup created: " + title);
+	DEBUG_PRINT("New " TEXT(TextGroup) " created: " + title);
 
 	Title = title;
 	GroupPriority = priority;
@@ -60,15 +60,29 @@ void TextGroup::CleanupTexts(std::function<void()> update) {
 		update();
 }
 
+void GroupedText::_create_new_default_groupd_if_needed() {
+	LOCK_GUARD_REC(datalock);
+	if (!_currentTextGroup) {
+		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
+		_textGroups.insert(_currentTextGroup);
+	}
+}
+
 GroupedText::GroupedText(class DebugDraw3D *p_owner) :
 		owner(p_owner),
 		_currentTextGroup(nullptr),
-		item_for_title_of_groups(std::make_shared<TextGroupItem>(0, "", "", 0, Utils::empty_color)) {
+		item_for_title_of_groups(std::make_shared<TextGroupItem>(0, "", "", 0, Colors::empty_color)) {
+}
+
+void GroupedText::clear_text() {
+	LOCK_GUARD_REC(datalock);
+	_textGroups.clear();
 }
 
 void GroupedText::cleanup_text() {
+	LOCK_GUARD_REC(datalock);
 	// Clean texts
-	Utils::remove_where(_textGroups, [](auto g) { return g->Texts.size() == 0; });
+	Utils::remove_where(&_textGroups, [](auto g) { return g->Texts.size() == 0; });
 
 	for (const TextGroup_ptr &g : _textGroups) {
 		std::function<void()> upd_txt([this] { owner->mark_canvas_needs_update(); });
@@ -77,7 +91,7 @@ void GroupedText::cleanup_text() {
 }
 
 void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle) {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
 	TextGroup_ptr newGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
@@ -100,7 +114,7 @@ void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color g
 }
 
 void GroupedText::end_text_group() {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
 	_currentTextGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
@@ -112,39 +126,39 @@ void GroupedText::end_text_group() {
 			break;
 		}
 	}
-
-	if (!_currentTextGroup) {
-		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
-		_textGroups.insert(_currentTextGroup);
-	}
 }
 
-bool GroupedText::set_text(String &key, Variant &value, int &priority, Color &colorOfValue, float &duration) {
+void GroupedText::set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration) {
+	if (duration < 0) {
+		duration = owner->get_text_default_duration();
+	}
+
 	int exp_time = (int)(duration * 1000);
 	String _strVal = value.operator godot::String();
 	bool need_update_canvas = false;
 
 	{
-		LOCK_GUARD(datalock);
+		LOCK_GUARD_REC(datalock);
 
-		TextGroupItem_ptr item = Utils::find(_currentTextGroup->Texts, [key](TextGroupItem_ptr a) { return a->Key == key; });
+		_create_new_default_groupd_if_needed();
+
+		TextGroupItem_ptr item = Utils::find(&_currentTextGroup->Texts, [key](TextGroupItem_ptr a) { return a->Key == key; });
 		if (item.get()) {
 			if (_strVal != item->Text)
-				need_update_canvas = true;
+				owner->mark_canvas_needs_update();
 
-			item->Update(exp_time, key, _strVal, priority, colorOfValue);
+			item->update(exp_time, key, _strVal, priority, colorOfValue);
 		} else {
 			_currentTextGroup->Texts.insert(std::make_shared<TextGroupItem>(exp_time, key, _strVal, priority, colorOfValue));
-			need_update_canvas = true;
+			owner->mark_canvas_needs_update();
 		}
 	}
-	return need_update_canvas;
 }
 
 void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
-	LOCK_GUARD(datalock);
+	LOCK_GUARD_REC(datalock);
 
-	int count = Utils::sum(_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->ShowTitle ? 1 : 0); });
+	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->ShowTitle ? 1 : 0); });
 
 	static const String separator = " : ";
 
@@ -183,11 +197,11 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 			break;
 	}
 
-	std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(_textGroups,
+	std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_textGroups,
 			[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->GroupPriority < b->GroupPriority; });
 
 	for (const TextGroup_ptr &g : ordered_groups) {
-		auto group_items = Utils::order_by(g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
+		auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
 			return a->Priority < b->Priority || (a->Priority == b->Priority && a->Key.naturalnocasecmp_to(b->Key) < 0);
 		});
 
@@ -209,7 +223,7 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 					owner->get_text_background_color());
 
 			// Draw colored string
-			if ((t.get() && t->ValueColor == Utils::empty_color) || is_title_only) {
+			if ((t.get() && t->ValueColor == Colors::empty_color) || is_title_only) {
 				// Both parts with same color
 				ci->draw_string(draw_font, Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y), text, g->GroupColor);
 			} else {

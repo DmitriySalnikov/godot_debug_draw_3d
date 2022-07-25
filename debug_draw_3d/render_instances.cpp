@@ -1,7 +1,14 @@
 #include "render_instances.h"
 
+void DelayedRenderer::_update(int exp_time, bool is_vis) {
+	ms_expiration = exp_time;
+	updated_time = TIME_NOW();
+	IsUsedOneTime = false;
+	IsVisible = is_vis;
+}
+
 bool DelayedRenderer::IsExpired() {
-	return TIME_TO_MS(TIME_NOW() - updated_time).count() > ms_expiration && IsUsedOneTime;
+	return TIME_TO_MS(TIME_NOW() - updated_time).count() > ms_expiration || IsUsedOneTime;
 }
 
 void DelayedRenderer::Returned() {
@@ -9,9 +16,37 @@ void DelayedRenderer::Returned() {
 	IsVisible = true;
 }
 
+DelayedRendererInstance::DelayedRendererInstance() :
+		type(InstanceType::CUBES),
+		transform(),
+		color(),
+		bounds() {
+	DEBUG_PRINT("New " TEXT(DelayedRendererInstance) " created");
+}
+
+void DelayedRendererInstance::update(int _exp_time, bool _is_visible, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds) {
+	_update(_exp_time, _is_visible);
+
+	type = _type;
+	transform = _transform;
+	color = _col;
+	bounds = _bounds;
+}
+
+DelayedRendererLine::DelayedRendererLine() {
+	DEBUG_PRINT("New " TEXT(DelayedRendererLine) " created");
+}
+
+void DelayedRendererLine::update(int exp_time, bool is_visible, const std::vector<Vector3> &lines, Color col) {
+	_update(exp_time, is_visible);
+
+	set_lines(lines);
+	LinesColor = col;
+}
+
 void DelayedRendererLine::set_lines(std::vector<Vector3> lines) {
 	_lines = lines;
-	Bounds = CalculateBoundsBasedOnLines(_lines);
+	bounds = CalculateBoundsBasedOnLines(_lines);
 }
 
 std::vector<Vector3> DelayedRendererLine::get_lines() {

@@ -19,7 +19,7 @@ class GraphParameters : public Reference {
 	/// Is FPSGraph enabled
 	bool FPSGraphEnabled = true;
 	/// Draw Graph title
-	bool FPSGraphShowTitle = true;
+	bool FPSGraphShowTitle = false;
 	/// Switch between frame time and FPS modes
 	bool FPSGraphFrameTimeMode = true;
 	/// Draw a graph line aligned vertically in the center
@@ -35,13 +35,13 @@ class GraphParameters : public Reference {
 	/// FPS Graph position *BlockPosition*
 	int FPSGraphPosition = 1 /*BlockPosition::RightTop*/;
 	/// Graph line color
-	Color FPSGraphLineColor = Color(1, 0.27f, 0, 1) /* OrangeRed */;
+	Color FPSGraphLineColor = Colors::orange_red;
 	/// Color of the info text
-	Color FPSGraphTextColor = Color(0.96f, 0.96f, 0.96f, 1) /* WhiteSmoke */;
+	Color FPSGraphTextColor = Colors::white_smoke;
 	/// Background color
-	Color FPSGraphBackgroundColor = Color(0.2f, 0.2f, 0.2f, 0.6f);
+	Color FPSGraphBackgroundColor = Colors::gray_graph_bg;
 	/// Border color
-	Color FPSGraphBorderColor = Color(0, 0, 0, 1) /* Black */;
+	Color FPSGraphBorderColor = Colors::black;
 	/// Border color
 	String FPSGraphTextSuffix = "";
 	/// Custom Font
@@ -92,8 +92,8 @@ public:
 
 protected:
 	Ref<GraphParameters> config;
-	CircularBuffer<real_t> data;
-	std::mutex datalock;
+	std::shared_ptr<CircularBuffer<real_t>> data;
+	std::recursive_mutex datalock;
 	Type type;
 
 	virtual void _update_added(real_t value);
@@ -128,7 +128,7 @@ class DataGraphManager {
 		}
 	};
 	std::map<String, std::shared_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
-	std::mutex datalock;
+	std::recursive_mutex datalock;
 
 public:
 	Ref<GraphParameters> create_graph(String title);

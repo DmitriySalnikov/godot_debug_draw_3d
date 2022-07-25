@@ -7,6 +7,7 @@
 using namespace godot;
 
 class GeometryGenerator {
+public:
 
 #pragma region Predefined Geometry Parts
 
@@ -24,10 +25,9 @@ class GeometryGenerator {
 
 #pragma endregion
 
-public:
-	static std::vector<Vector3> CreateCameraFrustumLines(Plane frustum[6]);
-	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quat rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
-	static std::vector<Vector3> CreateSphereLines(int lats, int lons, float radius, Vector3 position);
-	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);
-	static std::vector<Vector3> CreateLinesFromPath(PoolVector3Array path);
+	static PoolVector3Array CreateCameraFrustumLines(Plane frustum[6]);
+	static PoolVector3Array CreateCubeLines(Vector3 position, Quat rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
+	static PoolVector3Array CreateSphereLines(int lats, int lons, float radius, Vector3 position);
+	static PoolVector3Array CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);
+	static PoolVector3Array CreateLinesFromPath(PoolVector3Array path);
 };

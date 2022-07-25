@@ -1,7 +1,12 @@
 [
-	"qoi_import.cpp",
-	"qoi_plugin.cpp",
-	"qoi_utils.cpp",
-	"qoi_wrapper.cpp",
-	"register_types.cpp"
+	"data_graphs.cpp",
+	"debug_draw.cpp",
+	"debug_geometry_container.cpp",
+	"editor_plugin.cpp",
+	"geometry_generators.cpp",
+	"grouped_text.cpp",
+	"math_utils.cpp",
+	"register_types.cpp",
+	"render_instances.cpp",
+	"utils.cpp"
 ]

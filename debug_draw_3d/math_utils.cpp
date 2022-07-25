@@ -1,7 +1,7 @@
 #include "math_utils.h"
 #include "utils.h"
 
-void MathUtils::GetDiagonalVectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag) {
+void MathUtils::get_diagonal_vectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag) {
 	bottom = Vector3::ZERO;
 	top = Vector3::ZERO;
 
@@ -32,7 +32,7 @@ void MathUtils::GetDiagonalVectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector
 	diag = top - bottom;
 }
 
-bool MathUtils::BoundsPartiallyInsideConvexShape(AABB bounds, std::vector<Plane> &planes) {
+bool MathUtils::is_bounds_partially_inside_convex_shape(AABB bounds, std::vector<Plane> &planes) {
 	Vector3 extent = bounds.size * 0.5f;
 	Vector3 center = bounds.position + extent;
 
@@ -46,7 +46,7 @@ bool MathUtils::BoundsPartiallyInsideConvexShape(AABB bounds, std::vector<Plane>
 	return true;
 }
 
-bool MathUtils::BoundsPartiallyInsideConvexShape(AABB bounds, Array &planes) {
+bool MathUtils::is_bounds_partially_inside_convex_shape(AABB bounds, Array &planes) {
 	Vector3 extent = bounds.size * 0.5f;
 	Vector3 center = bounds.position + extent;
 
@@ -62,7 +62,7 @@ bool MathUtils::BoundsPartiallyInsideConvexShape(AABB bounds, Array &planes) {
 	return true;
 }
 
-bool MathUtils::BoundsPartiallyInsideConvexShape(SphereBounds sphere, std::vector<Plane> planes) {
+bool MathUtils::is_bounds_partially_inside_convex_shape(SphereBounds sphere, std::vector<Plane> planes) {
 	for (Plane p : planes)
 		if (p.distance_to(sphere.Position) >= sphere.Radius)
 			return false;
@@ -70,7 +70,7 @@ bool MathUtils::BoundsPartiallyInsideConvexShape(SphereBounds sphere, std::vecto
 	return true;
 }
 
-bool MathUtils::BoundsPartiallyInsideConvexShape(SphereBounds sphere, Array planes) {
+bool MathUtils::is_bounds_partially_inside_convex_shape(SphereBounds sphere, Array planes) {
 	for (int i = 0; i < planes.size(); i++) {
 		Plane p = planes[i];
 		if (p.distance_to(sphere.Position) >= sphere.Radius)
@@ -80,6 +80,6 @@ bool MathUtils::BoundsPartiallyInsideConvexShape(SphereBounds sphere, Array plan
 	return true;
 }
 
-float MathUtils::GetMaxValue(Vector3 &value) {
+float MathUtils::get_max_value(Vector3 &value) {
 	return Math::max(abs(value.x), Math::max(abs(value.y), abs(value.z)));
 }

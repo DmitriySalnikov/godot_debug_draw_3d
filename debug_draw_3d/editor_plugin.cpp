@@ -6,11 +6,11 @@
 #include <ConfigFile.hpp>
 #include <Control.hpp>
 #include <Directory.hpp>
+#include <Engine.hpp>
 #include <File.hpp>
 #include <GlobalConstants.hpp>
-#include <SceneTree.hpp>
-#include <Engine.hpp>
 #include <ProjectSettings.hpp>
+#include <SceneTree.hpp>
 #include <functional>
 
 void DebugDraw3DEditorPlugin::_register_methods() {
@@ -41,11 +41,13 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 	if (!DebugDraw3D::get_singleton()) {
 		find_viewport_control();
 
-		DebugDraw3D* d = DebugDraw3D::_new();
+		DebugDraw3D *d = DebugDraw3D::_new();
 		parent->add_child(d);
-		
-		// TODO DebugDraw.CustomViewport = spatial_viewport.GetChild<Viewport>(0);
-		// TODO DebugDraw.CustomCanvas = spatial_viewport;
+
+		if (spatial_viewport) {
+			d->set_custom_viewport(cast_to<Viewport>(spatial_viewport->get_child(0)));
+			d->set_custom_canvas(cast_to<CanvasItem>(spatial_viewport));
+		}
 	}
 }
 
@@ -57,15 +59,26 @@ void DebugDraw3DEditorPlugin::create_auto_find() {
 	}
 }
 
+// TODO find all viewports and use frustums from all of them
+
 // HACK for finding canvas and drawing on it
-// Hardcoded for 3.2.4
 void DebugDraw3DEditorPlugin::find_viewport_control() {
 	// Create temp control to get spatial viewport
 	Control *ctrl = Control::_new();
+	ctrl->set_name("MY_BEST_CONTROL_NODE!");
+
 	add_control_to_container(CustomControlContainer::CONTAINER_SPATIAL_EDITOR_MENU, ctrl);
 
-	// Try to get main viewport node. Must be `SpatialEditor`
-	Control *spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent());
+	Control *spatial_editor = nullptr;
+
+	int64_t hex_version = (int64_t)(Engine::get_singleton()->get_version_info()["hex"]);
+	if (hex_version >= 0x030400) {
+		// For Godot 3.4.x
+		spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent()->get_parent()->get_parent());
+	} else {
+		// For Godot 3.3.x and lower
+		spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent());
+	}
 
 	// Remove and destroy temp control
 	remove_control_from_container(CustomControlContainer::CONTAINER_SPATIAL_EDITOR_MENU, ctrl);
@@ -76,7 +89,7 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 		// Try to recursively find `SpatialEditorViewport`
 
 		std::function<Control *(Control *, int)> get;
-		get = [&](Control *control, int level) -> Control * {
+		get = [this, &get](Control *control, int level) -> Control * {
 			if (control->get_class() == "SpatialEditorViewport")
 				return control;
 
@@ -96,9 +109,9 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 			return nullptr;
 		};
 
-		Control *spat_editor = get(spatial_editor, 0);
-		if (spatial_editor) {
-			spatial_viewport = cast_to<ViewportContainer>(spatial_editor->get_child(0));
+		Control *node = get(spatial_editor, 0);
+		if (node) {
+			spatial_viewport = cast_to<ViewportContainer>(node->get_child(0));
 		}
 	}
 
@@ -114,7 +127,7 @@ void DebugDraw3DEditorPlugin::_enter_tree() {
 
 void DebugDraw3DEditorPlugin::_exit_tree() {
 	disconnect("scene_changed", this, TEXT(on_scene_changed));
-	
+
 	remove_prev_node();
 }
 

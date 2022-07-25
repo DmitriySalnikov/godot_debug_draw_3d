@@ -9,16 +9,24 @@ using namespace godot;
 class MathUtils {
 
 public:
-	static void GetDiagonalVectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag);
-	static bool BoundsPartiallyInsideConvexShape(AABB bounds, std::vector<Plane> &planes);
-	static bool BoundsPartiallyInsideConvexShape(AABB bounds, Array &planes);
-	static bool BoundsPartiallyInsideConvexShape(class SphereBounds sphere, std::vector<Plane> planes);
-	static bool BoundsPartiallyInsideConvexShape(class SphereBounds sphere, Array planes);
-	static float GetMaxValue(Vector3 &value);
+	static void get_diagonal_vectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag);
+	static bool is_bounds_partially_inside_convex_shape(AABB bounds, std::vector<Plane> &planes);
+	static bool is_bounds_partially_inside_convex_shape(AABB bounds, Array &planes);
+	static bool is_bounds_partially_inside_convex_shape(class SphereBounds sphere, std::vector<Plane> planes);
+	static bool is_bounds_partially_inside_convex_shape(class SphereBounds sphere, Array planes);
+	static float get_max_value(Vector3 &value);
 };
 
 class SphereBounds {
 public:
 	Vector3 Position;
 	float Radius = 1;
+
+	SphereBounds() :
+			Position(),
+			Radius() {}
+
+	SphereBounds(Vector3 pos, float radius) :
+			Position(pos),
+			Radius(radius) {}
 };
