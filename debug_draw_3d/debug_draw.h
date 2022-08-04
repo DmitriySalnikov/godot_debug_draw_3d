@@ -63,6 +63,9 @@ private:
 
 #undef CONST_GET
 
+	// Logs
+	real_t log_flush_time = 0;
+
 	// 2d
 
 	CanvasLayer *_canvasLayer = nullptr;
@@ -97,6 +100,8 @@ private:
 	bool debug_enabled = true;
 	/// Debug for debug...
 	bool freeze_3d_render = false;
+	/// Debug for debug...
+	bool draw_instance_bounds = false;
 	/// Geometry culling based on camera frustum. Change to false to disable it
 	bool use_frustum_culling = true;
 	/// Force use camera placed on edited scene. Usable for editor.
@@ -155,6 +160,9 @@ public:
 
 	void set_freeze_3d_render(bool state);
 	bool is_freeze_3d_render();
+	
+	void set_draw_instance_bounds(bool state);
+	bool is_draw_instance_bounds();
 
 	void set_use_frustum_culling(bool state);
 	bool is_use_frustum_culling();
@@ -209,7 +217,7 @@ public:
 	/// radius: Sphere radius
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere(Vector3 position, float radius, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere(Vector3 position, float radius = 0.5f, Color color = Colors::empty_color, float duration = 0);
 
 	/// Draw sphere
 	/// transform: Transform of the sphere
@@ -226,7 +234,7 @@ public:
 	/// height: Cylinder height
 	/// color: Cylinder color
 	/// duration: Duration of existence in seconds
-	void draw_cylinder(Vector3 position, Quat rotation, float radius, float height, Color color = Colors::empty_color, float duration = 0);
+	void draw_cylinder(Vector3 position, Quat rotation, float radius = 1, float height = 1, Color color = Colors::empty_color, float duration = 0);
 
 	/// Draw vertical cylinder
 	/// transform: Cylinder transform
@@ -277,7 +285,17 @@ public:
 	/// duration: Duration of existence in seconds
 	/// hitColor: Color of the hit point and line before hit
 	/// afterHitColor: Color of line after hit position
-	void draw_line_3d_hit(Vector3 a, Vector3 b, bool is_hit, float unitOffsetOfHit = 0.5f, float hitSize = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
+	void draw_line_3d_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
+	
+	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
+	/// a: Start point
+	/// b: End point
+	/// is_hit: Is hit
+	/// unitOffsetOfHit: Unit offset on the line where the hit occurs
+	/// duration: Duration of existence in seconds
+	/// hitColor: Color of the hit point and line before hit
+	/// afterHitColor: Color of line after hit position
+	void draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit = 0.5f, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
 
 #pragma region Normal
 
@@ -302,12 +320,6 @@ public:
 	/// duration: Duration of existence in seconds
 	void draw_line_path_3d(PoolVector3Array path, Color color = Colors::empty_color, float duration = 0);
 
-	/// Draw a sequence of points connected by lines
-	/// path: Sequence of points
-	/// color: Color
-	/// duration: Duration of existence in seconds
-	void draw_line_path_3d_arr(Array path, Color color = Colors::empty_color, float duration = 0);
-
 #pragma endregion // Normal
 #pragma region Arrows
 
@@ -318,7 +330,7 @@ public:
 	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float arrow_size = 0.15f, bool absolute_size = false, float duration = 0);
+	void draw_arrow_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0);
 
 	/// Draw ray with arrow
 	/// origin: Origin
@@ -328,7 +340,7 @@ public:
 	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_ray_3d(Vector3 origin, Vector3 direction, float length, Color color = Colors::empty_color, float arrow_size = 0.15f, bool absolute_size = false, float duration = 0);
+	void draw_arrow_ray_3d(Vector3 origin, Vector3 direction, float length, Color color = Colors::empty_color, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0);
 
 	/// Draw a sequence of points connected by lines with arrows
 	/// path: Sequence of points
@@ -337,14 +349,6 @@ public:
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
 	void draw_arrow_path_3d(PoolVector3Array path, Color color = Colors::empty_color, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0);
-
-	/// Draw a sequence of points connected by lines with arrows
-	/// path: Sequence of points
-	/// color: Color
-	/// duration: Duration of existence in seconds
-	/// arrowSize: Size of the arrow
-	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_path_3d_arr(Array path, Color color = Colors::empty_color, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0);
 
 #pragma endregion // Arrows
 #pragma endregion // Lines
@@ -370,12 +374,6 @@ public:
 	/// color: Color
 	/// duration: Duration of existence in seconds
 	void draw_camera_frustum_planes(Array camera_frustum, Color color = Colors::empty_color, float duration = 0);
-
-	/// Draw camera frustum area
-	/// planes: Array of frustum planes
-	/// color: Color
-	/// duration: Duration of existence in seconds
-	void draw_camera_frustum_planes_c(Plane planes[], Color color = Colors::empty_color, float duration = 0);
 
 #pragma endregion // Camera Frustum
 

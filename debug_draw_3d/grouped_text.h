@@ -14,8 +14,7 @@ public:
 	String Key;
 	String Text;
 	int Priority;
-	int ms_expiration = 0;
-	std::chrono::steady_clock::time_point updated_time;
+	real_t expiration_time = 0;
 
 	Color ValueColor = Colors::empty_color;
 
@@ -23,9 +22,9 @@ public:
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(int expirationTime, String key, String text, int priority, Color color);
+	TextGroupItem(real_t expirationTime, String key, String text, int priority, Color color);
 
-	void update(int &expirationTime, String &key, String &text, int &priority, Color &color);
+	void update(real_t &expirationTime, String &key, String &text, int &priority, Color &color);
 	bool IsExpired();
 };
 
@@ -48,7 +47,7 @@ public:
 
 			};
 	TextGroup(String title, int priority, bool showTitle, Color groupColor);
-	void CleanupTexts(std::function<void()> update);
+	void CleanupTexts(std::function<void()> update, real_t delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
@@ -66,7 +65,7 @@ class GroupedText {
 public:
 	GroupedText(class DebugDraw3D *p_owner);
 	void clear_text();
-	void cleanup_text();
+	void cleanup_text(real_t delta);
 	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle);
 	void end_text_group();
 	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration);

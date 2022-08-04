@@ -23,7 +23,8 @@ __pycache__
 *.exe
 *.264
 *.exp
-#*.lib
+*.lib
+*.a
 *.vcxproj.filters
 *.vcxproj.user
 *.os

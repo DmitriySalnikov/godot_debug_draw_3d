@@ -119,6 +119,7 @@ void DebugDraw3D::_register_methods() {
 	REG_PROP_BOOL(recall_to_singleton, true);
 	REG_PROP_BOOL(debug_enabled, true);
 	REG_PROP_BOOL(freeze_3d_render, false);
+	REG_PROP_BOOL(draw_instance_bounds, false);
 	REG_PROP_BOOL(use_frustum_culling, true);
 	REG_PROP_BOOL(force_use_camera_from_scene, false);
 	REG_PROP(text_block_position, (int)BlockPosition::LeftTop);
@@ -156,15 +157,15 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_aabb_ab);
 
 	REG_METHOD(draw_line_3d_hit);
+	REG_METHOD(draw_line_3d_hit_offset);
+
 	REG_METHOD(draw_line_3d);
 	REG_METHOD(draw_ray_3d);
 	REG_METHOD(draw_line_path_3d);
-	REG_METHOD(draw_line_path_3d_arr);
 
 	REG_METHOD(draw_arrow_line_3d);
 	REG_METHOD(draw_arrow_ray_3d);
 	REG_METHOD(draw_arrow_path_3d);
-	REG_METHOD(draw_arrow_path_3d_arr);
 
 	REG_METHOD(draw_billboard_square);
 
@@ -217,9 +218,10 @@ void DebugDraw3D::_enter_tree() {
 
 	if (IS_EDITOR_HINT()) {
 		text_block_position = BlockPosition::LeftBottom;
+		text_block_offset = Vector2(24, 24);
 	}
 
-	set_process_priority(INT64_MAX);
+	set_process_priority(INT32_MAX);
 
 	grouped_text = std::make_unique<GroupedText>(this);
 	data_graphs = std::make_unique<DataGraphManager>();
@@ -277,7 +279,7 @@ void DebugDraw3D::_ready() {
 
 void DebugDraw3D::_process(real_t delta) {
 	// Clean texts
-	grouped_text->cleanup_text();
+	grouped_text->cleanup_text(delta);
 
 	// FPS Graph
 	data_graphs->_update_fps(delta);
@@ -295,13 +297,19 @@ void DebugDraw3D::_process(real_t delta) {
 	}
 
 	// Update 3D debug
-	_dgc->UpdateGeometry();
+	_dgc->UpdateGeometry(delta);
+
+	// Print logs if needed
+	log_flush_time += delta;
+	if (log_flush_time > 0.25f) {
+		log_flush_time -= 0.25f;
+		Utils::print_logs();
+	}
 }
 
 void DebugDraw3D::OnCanvaItemDraw(CanvasItem *ci) {
 	RECALL_TO_SINGLETON(OnCanvaItemDraw, ci);
 
-	auto time = TIME_NOW();
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
@@ -344,6 +352,15 @@ void DebugDraw3D::set_freeze_3d_render(bool state) {
 
 bool DebugDraw3D::is_freeze_3d_render() {
 	RECALL_TO_SINGLETON_GETTER(freeze_3d_render, false);
+}
+
+void DebugDraw3D::set_draw_instance_bounds(bool state) {
+	RECALL_TO_SINGLETON_SETTER(draw_instance_bounds = state);
+	draw_instance_bounds = state;
+}
+
+bool DebugDraw3D::is_draw_instance_bounds() {
+	RECALL_TO_SINGLETON_GETTER(draw_instance_bounds, false);
 }
 
 void DebugDraw3D::set_use_frustum_culling(bool state) {
@@ -548,8 +565,12 @@ void DebugDraw3D::draw_aabb_ab(Vector3 a, Vector3 b, Color color, float duration
 #pragma endregion // Boxes
 #pragma region Lines
 
-void DebugDraw3D::draw_line_3d_hit(Vector3 a, Vector3 b, bool is_hit, float unitOffsetOfHit, float hitSize, Color hit_color, Color after_hit_color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d_hit, a, b, is_hit, unitOffsetOfHit, hitSize, hit_color, after_hit_color, duration);
+void DebugDraw3D::draw_line_3d_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size, Color hit_color, Color after_hit_color, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d_hit, start, end, hit, is_hit, hit_size, hit_color, after_hit_color, duration);
+}
+
+void DebugDraw3D::draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit, float hit_size, Color hit_color, Color after_hit_color, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d_hit_offset, start, end, is_hit, unit_offset_of_hit, hit_size, hit_color, after_hit_color, duration);
 }
 
 #pragma region Normal
@@ -566,10 +587,6 @@ void DebugDraw3D::draw_line_path_3d(PoolVector3Array path, Color color, float du
 	RECALL_TO_SINGLETON_CALL_DGC(draw_line_path_3d, path, color, duration);
 }
 
-void DebugDraw3D::draw_line_path_3d_arr(Array path, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_path_3d_arr, path, color, duration);
-}
-
 #pragma endregion // Normal
 #pragma region Arrows
 
@@ -583,10 +600,6 @@ void DebugDraw3D::draw_arrow_ray_3d(Vector3 origin, Vector3 direction, float len
 
 void DebugDraw3D::draw_arrow_path_3d(PoolVector3Array path, Color color, float arrow_size, bool absolute_size, float duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_path_3d, path, color, arrow_size, absolute_size, duration);
-}
-
-void DebugDraw3D::draw_arrow_path_3d_arr(Array path, Color color, float arrow_size, bool absolute_size, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_path_3d_arr, path, color, arrow_size, absolute_size, duration);
 }
 
 #pragma endregion // Arrows
@@ -605,10 +618,6 @@ void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, float d
 
 void DebugDraw3D::draw_camera_frustum_planes(Array cameraFrustum, Color color, float duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum_planes, cameraFrustum, color, duration);
-}
-
-void DebugDraw3D::draw_camera_frustum_planes_c(Plane planes[], Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum_planes_c, planes, color, duration);
 }
 
 #pragma endregion // Camera Frustum

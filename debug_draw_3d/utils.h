@@ -5,15 +5,16 @@
 #include <Godot.hpp>
 
 #include <algorithm>
-#include <chrono>
 #include <functional>
 #include <map>
+#include <queue>
 #include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 #define TEXT(s) #s
+#define TEXTL(s) L#s
 
 #if _DEBUG && _MSC_VER
 #ifndef _CRT_STRINGIZE
@@ -32,8 +33,12 @@
 
 #if _DEBUG
 #define DEBUG_PRINT(text) Godot::print(Variant(text))
+#define DEBUG_PRINT_STD(format, ...) Utils::logv(format, false, false, __VA_ARGS__)
+#define DEBUG_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, __VA_ARGS__)
 #else
 #define DEBUG_PRINT(text)
+#define DEBUG_PRINT_STD(format, ...)
+#define DEBUG_PRINT_STD_ERR(format, ...)
 #endif
 
 #define PRINT(text) Godot::print(Variant(text))
@@ -55,15 +60,27 @@ static String get_file_name_in_repository(String name) {
 
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define DEBUG_DRAW() DebugDraw3D::get_singleton()
-#define TIME_NOW() std::chrono::steady_clock::now()
-#define TIME_TO_MS(time) std::chrono::duration_cast<std::chrono::milliseconds>(time)
 
 #define C_ARR_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 #define LOCK_GUARD(_mutex) std::lock_guard<std::mutex> __guard(_mutex)
 #define LOCK_GUARD_REC(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
 
 class Utils {
+#if _DEBUG
+	struct LogData {
+		size_t hash;
+		std::wstring text;
+		bool is_error;
+		int repeat = 1;
+	};
+
+	static std::queue<LogData> log_buffer;
+#endif
+
 public:
+	static void logv(const wchar_t *p_format, bool p_err, bool p_force_print, ...);
+	static void print_logs();
+
 	// https://stackoverflow.com/a/26221725/8980874
 	template <typename... Args>
 	static godot::String string_format(const wchar_t *format, Args... args) {
@@ -75,6 +92,26 @@ public:
 		std::unique_ptr<wchar_t[]> buf(new wchar_t[size]);
 		std::swprintf(buf.get(), size, format, args...);
 		return godot::String(buf.get());
+	}
+
+	template <class TPool, class TContainer>
+	static TPool convert_to_pool_array(TContainer arr) {
+		TPool p;
+		if (arr.size() > 0) {
+			p.resize((int)arr.size());
+			memcpy(p.write().ptr(), arr.data(), sizeof(arr[0]) * arr.size());
+		}
+		return p;
+	}
+
+	template <class TPool, class TVal>
+	static TPool convert_to_pool_array(const TVal *arr, size_t size) {
+		TPool p;
+		if (size > 0) {
+			p.resize((int)size);
+			memcpy(p.write().ptr(), arr, sizeof(TVal) * size);
+		}
+		return p;
 	}
 
 	template <class TVal, class TFun>
@@ -170,6 +207,7 @@ public:
 	const static godot::Color crimson;
 	const static godot::Color dark_orange;
 	const static godot::Color dark_salmon;
+	const static godot::Color debug_bounds;
 	const static godot::Color forest_green;
 	const static godot::Color gray_bg;
 	const static godot::Color gray_graph_bg;

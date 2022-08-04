@@ -204,6 +204,9 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 	Vector2 pos = graphOffset;
 	Vector2 title_size = draw_font->get_string_size(title);
 
+	// TODO rework offsets
+	// currently one offset control offset from corners and between graphs
+
 	switch (config->get_position()) {
 		case DebugDraw3D::BlockPosition::LeftTop:
 			pos.y += y_offset;

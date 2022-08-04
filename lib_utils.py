@@ -13,7 +13,7 @@ src_folder = lib_name
 def setup_options(env, opts, gen_help):
     from SCons.Variables import BoolVariable, EnumVariable
 
-    #opts.Add(BoolVariable("godot_qoi_livepp", "Live++ support... Windows only", False))
+    opts.Add(BoolVariable("use_lto", "Use link-time optimization", False))
     opts.Update(env)
 
     gen_help(env)
@@ -83,6 +83,10 @@ def gdnative_get_library_object(env):
     if env['target'] == 'debug':
         env.Append(CPPDEFINES=['DEBUG_ENABLED'])
     
+    if env["use_lto"]:
+        env.Append(CCFLAGS=["-flto"])
+        env.Append(LINKFLAGS=["-flto"])
+
     env.Append(LIBPATH=['#godot-cpp/bin/'])
     env.Append(LIBS=[
             'libgodot-cpp.{}.{}.{}{}'.format( # godot-cpp lib
