@@ -35,6 +35,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 	MultiMeshInstance *mmi_billboard_squares = CreateMMI(root, InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares));
 	MultiMeshInstance *mmi_positions = CreateMMI(root, InstanceType::POSITIONS, TEXT(mmi_positions));
 	MultiMeshInstance *mmi_spheres = CreateMMI(root, InstanceType::SPHERES, TEXT(mmi_spheres));
+	MultiMeshInstance *mmi_spheres_hd = CreateMMI(root, InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd));
 	MultiMeshInstance *mmi_cylinders = CreateMMI(root, InstanceType::CYLINDERS, TEXT(mmi_cylinders));
 
 	// Customize parameters
@@ -63,7 +64,10 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 			GeometryGenerator::PositionVertices, C_ARR_SIZE(GeometryGenerator::PositionVertices), GeometryGenerator::PositionIndices, C_ARR_SIZE(GeometryGenerator::PositionIndices)));
 
 	mmi_spheres->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
-			GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3::ZERO))); // TODO add one more type - high quality spheres
+			GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3::ZERO)));
+
+	mmi_spheres_hd->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
+			GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3::ZERO)));
 
 	mmi_cylinders->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
 			GeometryGenerator::CreateCylinderLines(52, 0.5f, 1, Vector3::ZERO, 4)));
@@ -135,7 +139,7 @@ Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, cons
 	return mesh;
 }
 
-void DebugGeometryContainer::UpdateGeometry(real_t delta) {
+void DebugGeometryContainer::update_geometry(real_t delta) {
 	LOCK_GUARD_REC(datalock);
 
 	// Don't clear geometry if freezed
@@ -157,23 +161,41 @@ void DebugGeometryContainer::UpdateGeometry(real_t delta) {
 	// Get camera frustum
 	Camera *vp_cam = owner->get_viewport()->get_camera();
 
-	Array frustum_array = !owner->get_custom_viewport() || owner->is_force_use_camera_from_scene() ?
-								  vp_cam->get_frustum() :
-									(owner->get_custom_viewport() ? owner->get_custom_viewport()->get_camera()->get_frustum() : Array());
+	std::vector<std::vector<Plane> > f;
+	if (owner->is_use_frustum_culling()) {
+		std::vector<Viewport *> editor_viewports = owner->get_custom_editor_viewport();
+		std::vector<Array> frustum_arrays;
 
-	// Convert frustum to vector
-	std::vector<Plane> f(6);
-	if (frustum_array.size() == 6) {
-		for (int i = 0; i < frustum_array.size(); i++)
-			f[i] = ((Plane)frustum_array[i]);
-	} else {
-		f.resize(0);
+		frustum_arrays.reserve(1);
+		if (owner->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) {
+			frustum_arrays.push_back(vp_cam->get_frustum());
+		} else if (owner->get_custom_viewport()) {
+			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera()->get_frustum());
+		} else if (editor_viewports.size() > 0) {
+			for (auto vp : editor_viewports) {
+				if (vp->get_update_mode() == Viewport::UpdateMode::UPDATE_ALWAYS) {
+					frustum_arrays.push_back(vp->get_camera()->get_frustum());
+				}
+			}
+		} else {
+			PRINT_WARNING("No camera found to perform frustum culling for DebugDraw");
+		}
+
+		// Convert frustum to vector
+		f.reserve(1);
+
+		for (auto &arr : frustum_arrays) {
+			if (arr.size() == 6) {
+				std::vector<Plane> a(6);
+				for (int i = 0; i < arr.size(); i++)
+					a[i] = (Plane)arr[i];
+				f.push_back(a);
+			}
+		}
 	}
 
 	// Update visibility
-	if (owner->is_use_frustum_culling() && f.size()) {
-		geometry_pool.update_visibility(f, delta);
-	}
+	geometry_pool.update_visibility(f);
 
 	// Debug bounds of instances and lines
 	if (owner->is_draw_instance_bounds()) {
@@ -181,7 +203,7 @@ void DebugGeometryContainer::UpdateGeometry(real_t delta) {
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
 		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
-			if (!o->IsVisible || o->IsExpired())
+			if (!o->is_visible || o->is_expired())
 				return;
 			new_instances.push_back({ o->bounds.Position, o->bounds.Radius });
 		};
@@ -191,17 +213,17 @@ void DebugGeometryContainer::UpdateGeometry(real_t delta) {
 		// Draw custom sphere for 1 frame
 		for (auto &i : new_instances) {
 			geometry_pool.add_or_update_instance(
-					InstanceType::SPHERES,
+					InstanceType::SPHERES_HD,
 					0,
 					true,
 					Transform(Basis().scaled(Vector3::ONE * i.second * 2), i.first),
 					Colors::debug_bounds,
 					SphereBounds(i.first, i.second),
-					[](auto d) { d->IsUsedOneTime = true; });
+					[](auto d) { d->is_used_one_time = true; });
 		}
 
 		geometry_pool.for_each_line([this](DelayedRendererLine *o) {
-			if (!o->IsVisible || o->IsExpired())
+			if (!o->is_visible || o->is_expired())
 				return;
 
 			Vector3 bottom, top, diag;
@@ -214,10 +236,9 @@ void DebugGeometryContainer::UpdateGeometry(real_t delta) {
 					Transform(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
 					SphereBounds(bottom + diag * 0.5f, abs(diag.length() * 0.5f)),
-					[](auto d) { d->IsUsedOneTime = true; });
+					[](auto d) { d->is_used_one_time = true; });
 		});
 
-		geometry_pool.rescan_visible_instances();
 	}
 
 	// Draw immediate lines
@@ -236,6 +257,8 @@ void DebugGeometryContainer::UpdateGeometry(real_t delta) {
 		}
 	}
 
+	geometry_pool.scan_visible_instances();
+	geometry_pool.update_expiration(delta);
 	geometry_pool.reset_counter(delta);
 }
 
@@ -256,8 +279,9 @@ void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, rea
 	real_t size = (absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
 	Vector3 pos = b - dir.normalized() * size;
 
+	const Vector3 UP = Vector3(0.0000000001f, 1.00000001f, 0);
 	Transform t = Transform();
-	t.set_look_at(pos, b, Vector3::UP);
+	t.set_look_at(pos, b, UP);
 	t.scale(Vector3::ONE * (size));
 	t.origin = pos;
 
@@ -282,22 +306,30 @@ void DebugGeometryContainer::clear_3d_objects() {
 #pragma region 3D
 #pragma region Spheres
 
-void DebugGeometryContainer::draw_sphere(Vector3 position, float radius, Color color, float duration) {
+void DebugGeometryContainer::draw_sphere(Vector3 position, float radius, Color color, float duration, bool hd) {
 	Transform t(Basis(), position);
 	t.basis.scale(Vector3::ONE * (radius * 2));
 
-	draw_sphere_xf(t, color, duration);
+	draw_sphere_xf(t, color, duration, hd);
 }
 
-void DebugGeometryContainer::draw_sphere_xf(Transform transform, Color color, float duration) {
+void DebugGeometryContainer::draw_sphere_xf(Transform transform, Color color, float duration, bool hd) {
 	LOCK_GUARD_REC(datalock);
 	geometry_pool.add_or_update_instance(
-			InstanceType::SPHERES,
+			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
 			duration,
 			true,
 			transform,
 			color == Colors::empty_color ? Colors::chartreuse : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.51f));
+}
+
+void DebugGeometryContainer::draw_sphere_hd(Vector3 position, float radius, Color color, float duration) {
+	draw_sphere(position, radius, color, duration, true);
+}
+
+void DebugGeometryContainer::draw_sphere_hd_xf(Transform transform, Color color, float duration) {
+	draw_sphere_xf(transform, color, duration, true);
 }
 
 #pragma endregion // Spheres
@@ -398,6 +430,23 @@ void DebugGeometryContainer::draw_line_3d(Vector3 a, Vector3 b, Color color, flo
 	geometry_pool.add_or_update_line(duration, true, { a, b }, color == Colors::empty_color ? Colors::red : color);
 }
 
+void DebugGeometryContainer::draw_lines_3d(PoolVector3Array lines, Color color, float duration) {
+	LOCK_GUARD_REC(datalock);
+
+	if (lines.size() % 2 != 0) {
+		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
+		return;
+	}
+
+	std::vector<Vector3> l(lines.size());
+	{
+		auto r = lines.read();
+		memcpy(l.data(), r.ptr(), (size_t)lines.size() * sizeof(Vector3));
+	}
+
+	geometry_pool.add_or_update_line(duration, true, l, color == Colors::empty_color ? Colors::red : color);
+}
+
 void DebugGeometryContainer::draw_ray_3d(Vector3 origin, Vector3 direction, float length, Color color, float duration) {
 	LOCK_GUARD_REC(datalock);
 	geometry_pool.add_or_update_line(duration, true, { origin, origin + direction * length }, color == Colors::empty_color ? Colors::red : color);
@@ -405,7 +454,7 @@ void DebugGeometryContainer::draw_ray_3d(Vector3 origin, Vector3 direction, floa
 
 void DebugGeometryContainer::draw_line_path_3d(PoolVector3Array path, Color color, float duration) {
 	if (path.size() < 2) {
-		PRINT_WARNING("Line path must contains at least 2 points. " + String::num_int64(path.size()) + " is not enough.");
+		PRINT_ERROR("Line path must contains at least 2 points. " + String::num_int64(path.size()) + " is not enough.");
 		return;
 	}
 
@@ -469,7 +518,7 @@ void DebugGeometryContainer::draw_camera_frustum_planes(Array camera_frustum, Co
 			planes[i] = camera_frustum[i];
 		}
 	} else {
-		PRINT_WARNING("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
+		PRINT_ERROR("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
 	}
 
 	draw_camera_frustum_planes_c(planes, color, duration);
@@ -500,6 +549,27 @@ void DebugGeometryContainer::draw_position_3d_xf(Transform transform, Color colo
 			transform,
 			color == Colors::empty_color ? Colors::crimson : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
+}
+
+void DebugGeometryContainer::draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered, float duration) {
+	Transform t(rotation, position);
+	t.basis.scale(scale);
+
+	draw_gizmo_3d_xf(t, is_centered, duration);
+}
+
+void DebugGeometryContainer::draw_gizmo_3d_xf(Transform transform, bool is_centered, float duration) {
+	LOCK_GUARD_REC(datalock);
+
+	if (is_centered) {
+		draw_arrow_line_3d(transform.origin - transform.basis.x /** 0.5f*/, transform.origin + transform.basis.x /** 0.5f*/, Colors::axis_x, 0.1f, true, duration);
+		draw_arrow_line_3d(transform.origin - transform.basis.y /** 0.5f*/, transform.origin + transform.basis.y /** 0.5f*/, Colors::axis_y, 0.1f, true, duration);
+		draw_arrow_line_3d(transform.origin - transform.basis.z /** 0.5f*/, transform.origin + transform.basis.z /** 0.5f*/, Colors::axis_z, 0.1f, true, duration);
+	} else {
+		draw_arrow_line_3d(transform.origin, transform.origin + transform.basis.x, Colors::axis_x, 0.15f, true, duration);
+		draw_arrow_line_3d(transform.origin, transform.origin + transform.basis.y, Colors::axis_y, 0.15f, true, duration);
+		draw_arrow_line_3d(transform.origin, transform.origin + transform.basis.z, Colors::axis_z, 0.15f, true, duration);
+	}
 }
 
 #pragma endregion // Misc

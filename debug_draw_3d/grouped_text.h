@@ -25,7 +25,7 @@ public:
 	TextGroupItem(real_t expirationTime, String key, String text, int priority, Color color);
 
 	void update(real_t &expirationTime, String &key, String &text, int &priority, Color &color);
-	bool IsExpired();
+	bool is_expired();
 };
 
 typedef std::shared_ptr<TextGroupItem> TextGroupItem_ptr;
@@ -36,7 +36,6 @@ public:
 	int GroupPriority;
 	bool ShowTitle;
 	Color GroupColor;
-	// TODO replace by unordered_map
 	std::unordered_set<TextGroupItem_ptr> Texts;
 
 	TextGroup() :
@@ -47,7 +46,7 @@ public:
 
 			};
 	TextGroup(String title, int priority, bool showTitle, Color groupColor);
-	void CleanupTexts(std::function<void()> update, real_t delta);
+	void cleanup_texts(std::function<void()> update, real_t delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;

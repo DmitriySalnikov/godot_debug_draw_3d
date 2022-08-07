@@ -13,10 +13,10 @@ void GraphParameters::_register_methods() {
 	REG_PROP_BOOL(show_title, false);
 	REG_PROP_BOOL(frame_time_mode, true);
 	REG_PROP_BOOL(centered_graph_line, true);
-	REG_PROP(show_text_flags, (int)DebugDraw3D::FPSGraphTextFlags::All);
+	REG_PROP(show_text_flags, (int)DebugDraw3D::GraphTextFlags::All);
 	REG_PROP(size, Vector2(256, 64));
 	REG_PROP(buffer_size, 256);
-	REG_PROP(offset, Vector2(8, 8));
+	REG_PROP(offset, Vector2(0, 8));
 	REG_PROP(position, (int)DebugDraw3D::BlockPosition::RightTop);
 	REG_PROP(line_color, Color(1, 0.27f, 0, 1));
 	REG_PROP(text_color, Color(0.96f, 0.96f, 0.96f, 1));
@@ -31,129 +31,128 @@ void GraphParameters::_register_methods() {
 
 void GraphParameters::_init() {
 	if (IS_EDITOR_HINT()) {
-		FPSGraphOffset = Vector2(12, 72);
-		FPSGraphPosition = DebugDraw3D::BlockPosition::LeftTop;
+		position = DebugDraw3D::BlockPosition::LeftTop;
 	}
 }
 
-void GraphParameters::set_enabled(bool state) {
-	FPSGraphEnabled = state;
+void GraphParameters::set_enabled(bool _state) {
+	enabled = _state;
 }
 
 bool GraphParameters::is_enabled() {
-	return FPSGraphEnabled;
+	return enabled;
 }
 
-void GraphParameters::set_show_title(bool state) {
-	FPSGraphShowTitle = state;
+void GraphParameters::set_show_title(bool _state) {
+	show_title = _state;
 }
 
 bool GraphParameters::is_show_title() {
-	return FPSGraphShowTitle;
+	return show_title;
 }
 
-void GraphParameters::set_frame_time_mode(bool state) {
-	FPSGraphFrameTimeMode = state;
+void GraphParameters::set_frame_time_mode(bool _state) {
+	frametime_mode = _state;
 }
 
 bool GraphParameters::is_frame_time_mode() {
-	return FPSGraphFrameTimeMode;
+	return frametime_mode;
 }
 
-void GraphParameters::set_centered_graph_line(bool state) {
-	FPSGraphCenteredGraphLine = state;
+void GraphParameters::set_centered_graph_line(bool _state) {
+	centered_graph_line = _state;
 }
 
 bool GraphParameters::is_centered_graph_line() {
-	return FPSGraphCenteredGraphLine;
+	return centered_graph_line;
 }
 
-void GraphParameters::set_show_text_flags(int flags) {
-	FPSGraphShowTextFlags = (DebugDraw3D::FPSGraphTextFlags)flags;
+void GraphParameters::set_show_text_flags(int _flags) {
+	show_text_flags = (DebugDraw3D::GraphTextFlags)_flags;
 }
 
 int GraphParameters::get_show_text_flags() {
-	return FPSGraphShowTextFlags;
+	return show_text_flags;
 }
 
-void GraphParameters::set_size(Vector2 size) {
-	FPSGraphSize = size;
+void GraphParameters::set_size(Vector2 _size) {
+	size = _size;
 }
 
 Vector2 GraphParameters::get_size() {
-	return FPSGraphSize;
+	return size;
 }
 
-void GraphParameters::set_buffer_size(int buf_size) {
-	FPSBufferSize = Math::clamp(buf_size, 1, INT_MAX);
+void GraphParameters::set_buffer_size(int _buf_size) {
+	buffer_size = Math::clamp(_buf_size, 1, INT32_MAX);
 }
 
 int GraphParameters::get_buffer_size() {
-	return FPSBufferSize;
+	return buffer_size;
 }
 
-void GraphParameters::set_offset(Vector2 offset) {
-	FPSGraphOffset = offset;
+void GraphParameters::set_offset(Vector2 _offset) {
+	offset = _offset;
 }
 
 Vector2 GraphParameters::get_offset() {
-	return FPSGraphOffset;
+	return offset;
 }
 
-void GraphParameters::set_position(int position) {
-	FPSGraphPosition = (DebugDraw3D::BlockPosition)position;
+void GraphParameters::set_position(int _position) {
+	position = (DebugDraw3D::BlockPosition)_position;
 }
 
 int GraphParameters::get_position() {
-	return FPSGraphPosition;
+	return position;
 }
 
-void GraphParameters::set_line_color(Color new_color) {
-	FPSGraphLineColor = new_color;
+void GraphParameters::set_line_color(Color _new_color) {
+	line_color = _new_color;
 }
 
 Color GraphParameters::get_line_color() {
-	return FPSGraphLineColor;
+	return line_color;
 }
 
-void GraphParameters::set_text_color(Color new_color) {
-	FPSGraphTextColor = new_color;
+void GraphParameters::set_text_color(Color _new_color) {
+	text_color = _new_color;
 }
 
 Color GraphParameters::get_text_color() {
-	return FPSGraphTextColor;
+	return text_color;
 }
 
-void GraphParameters::set_background_color(Color new_color) {
-	FPSGraphBackgroundColor = new_color;
+void GraphParameters::set_background_color(Color _new_color) {
+	background_color = _new_color;
 }
 
 Color GraphParameters::get_background_color() {
-	return FPSGraphBackgroundColor;
+	return background_color;
 }
 
-void GraphParameters::set_border_color(Color new_color) {
-	FPSGraphBorderColor = new_color;
+void GraphParameters::set_border_color(Color _new_color) {
+	border_color = _new_color;
 }
 
 Color GraphParameters::get_border_color() {
-	return FPSGraphBorderColor;
+	return border_color;
 }
 
-void GraphParameters::set_text_suffix(String suffix) {
-	FPSGraphTextSuffix = suffix;
+void GraphParameters::set_text_suffix(String _suffix) {
+	text_suffix = _suffix;
 }
 
 String GraphParameters::get_text_suffix() {
-	return FPSGraphTextSuffix;
+	return text_suffix;
 }
 
-void GraphParameters::set_custom_font(Ref<Font> custom_font) {
-	FPSGraphCustomFont = custom_font;
+void GraphParameters::set_custom_font(Ref<Font> _custom_font) {
+	custom_font = _custom_font;
 }
 
 Ref<Font> GraphParameters::get_custom_font() {
-	return FPSGraphCustomFont;
+	return custom_font;
 }
 
 ////////////////////////////////////
@@ -187,9 +186,9 @@ void DataGraph::_update_added(real_t value) {
 	data->add(value);
 }
 
-real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, real_t y_offset) {
+Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) {
 	if (!config->is_enabled())
-		return y_offset;
+		return base_offset;
 
 	LOCK_GUARD_REC(datalock);
 
@@ -204,21 +203,22 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 	Vector2 pos = graphOffset;
 	Vector2 title_size = draw_font->get_string_size(title);
 
-	// TODO rework offsets
-	// currently one offset control offset from corners and between graphs
-
 	switch (config->get_position()) {
 		case DebugDraw3D::BlockPosition::LeftTop:
-			pos.y += y_offset;
+			pos.y += base_offset.y;
+			pos.x += base_offset.x;
 			break;
 		case DebugDraw3D::BlockPosition::RightTop:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + y_offset);
+			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + base_offset.y);
+			pos.x -= base_offset.x;
 			break;
 		case DebugDraw3D::BlockPosition::LeftBottom:
-			pos = Vector2(graphOffset.x, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos = Vector2(graphOffset.x, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos.x += base_offset.x;
 			break;
 		case DebugDraw3D::BlockPosition::RightBottom:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, y_offset - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos.x -= base_offset.x;
 			break;
 	}
 
@@ -236,7 +236,7 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 		Rect2 border_size(title_pos + Vector2(0, -4), title_size + Vector2(8, 0));
 		// Draw background
 		ci->draw_rect(border_size, config->get_background_color(), true);
-		ci->draw_string(draw_font, title_pos + Vector2(4, max_height - 3), title, config->get_text_color());
+		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height - 3)).floor(), title, config->get_text_color());
 
 		pos += Vector2(0, max_height);
 	}
@@ -269,42 +269,46 @@ real_t DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String t
 	ci->draw_rect(border_size, config->get_border_color(), false);
 
 	// Draw text
-	const wchar_t *suffix = config->get_text_suffix().unicode_str();
+	auto suffix = config->get_text_suffix().empty() ? "" : config->get_text_suffix().utf8().get_data();
 
-	if ((config->get_show_text_flags() & DebugDraw3D::FPSGraphTextFlags::Max) == DebugDraw3D::FPSGraphTextFlags::Max) {
-		String max_text = Utils::string_format(L"max: %.2f %s", max, suffix);
+	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Max) == DebugDraw3D::GraphTextFlags::Max) {
+		String max_text = Utils::string_format("max: %.2f %s", max, suffix);
 		real_t max_height = draw_font->get_height();
-		ci->draw_string(draw_font, pos + Vector2(4, max_height - 1), max_text, config->get_text_color());
+		Vector2 text_pos = pos + Vector2(4, max_height - 1);
+		ci->draw_string(draw_font, text_pos.floor(), max_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::FPSGraphTextFlags::Avarage) == DebugDraw3D::FPSGraphTextFlags::Avarage) {
-		String avg_text = Utils::string_format(L"avg: %.2f %s", avg, suffix);
+	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Avarage) == DebugDraw3D::GraphTextFlags::Avarage) {
+		String avg_text = Utils::string_format("avg: %.2f %s", avg, suffix);
 		real_t avg_height = draw_font->get_height();
-		ci->draw_string(draw_font, pos + Vector2(4, graphSize.y * 0.5f + avg_height * 0.5f - 2), avg_text, config->get_text_color());
+		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
+		ci->draw_string(draw_font, text_pos.floor(), avg_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::FPSGraphTextFlags::Min) == DebugDraw3D::FPSGraphTextFlags::Min) {
-		String min_text = Utils::string_format(L"min: %.2f %s", min, suffix);
-		ci->draw_string(draw_font, pos + Vector2(4, graphSize.y - 3), min_text, config->get_text_color());
+	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Min) == DebugDraw3D::GraphTextFlags::Min) {
+		String min_text = Utils::string_format("min: %.2f %s", min, suffix);
+		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
+		ci->draw_string(draw_font, text_pos.floor(), min_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::FPSGraphTextFlags::Current) == DebugDraw3D::FPSGraphTextFlags::Current) {
+	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Current) == DebugDraw3D::GraphTextFlags::Current) {
 		// `space` at the end of line for offset from border
-		String cur_text = Utils::string_format(L"%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
+		String cur_text = Utils::string_format("%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
 		Vector2 cur_size = draw_font->get_string_size(cur_text);
-		ci->draw_string(draw_font, pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2), cur_text, config->get_text_color());
+		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2);
+		ci->draw_string(draw_font, text_pos.floor(), cur_text, config->get_text_color());
 	}
 
 	switch (config->get_position()) {
 		case DebugDraw3D::BlockPosition::LeftTop:
 		case DebugDraw3D::BlockPosition::RightTop:
-			return border_size.position.y + border_size.size.y + 0;
+			return Vector2(base_offset.x, border_size.position.y + border_size.size.y + 0);
 		case DebugDraw3D::BlockPosition::LeftBottom:
 		case DebugDraw3D::BlockPosition::RightBottom:
-			return border_size.position.y - (config->is_show_title() ? title_size.y : -1);
+			return Vector2(base_offset.x, border_size.position.y - (config->is_show_title() ? title_size.y : -1));
 	}
 
-	return y_offset;
+	return base_offset;
 }
 
 ////////////////////////////////////
@@ -322,6 +326,13 @@ void FPSGraph::_update_added(real_t value) {
 
 ////////////////////////////////////
 // DataGraphManager
+
+DataGraphManager::DataGraphManager(DebugDraw3D *root) {
+	owner = root;
+}
+
+DataGraphManager::~DataGraphManager() {
+}
 
 Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	Ref<GraphParameters> config;
@@ -345,12 +356,14 @@ void DataGraphManager::_update_fps(real_t delta) {
 	for (auto i : graphs) {
 		if (i.second->get_type() == DataGraph::Type::FPS) {
 			i.second->update(delta);
+			owner->mark_canvas_needs_update();
 		}
 	}
 }
 
 void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) {
-	real_t prev_offset[] = { 0, 0, vp_size.y, vp_size.y };
+	Vector2 base_offset = owner->get_graphs_base_offset();
+	Vector2 prev_offset[] = { base_offset, Vector2(base_offset.x, base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y) };
 	for (auto i : graphs) {
 		int pos = i.second->get_config()->get_position();
 		prev_offset[pos] = i.second->draw(ci, font, vp_size, i.first, prev_offset[pos]);
@@ -361,6 +374,7 @@ void DataGraphManager::update(String title, real_t data) {
 	if (graphs.count(title)) {
 		if (graphs[title]->get_type() != DataGraph::Type::FPS) {
 			graphs[title]->update(data);
+			owner->mark_canvas_needs_update();
 		} else {
 			PRINT_WARNING("Trying to manually update the FPS graph");
 		}

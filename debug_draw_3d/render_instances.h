@@ -18,48 +18,85 @@ enum InstanceType : char {
 	BILLBOARD_SQUARES,
 	POSITIONS,
 	SPHERES,
+	SPHERES_HD,
 	CYLINDERS,
 	ALL,
 };
 
+template<class TBounds>
 class DelayedRenderer {
 protected:
-	void _update(real_t exp_time, bool is_vis);
+	void _update(real_t exp_time, bool is_vis) {
+		expiration_time = exp_time;
+		is_used_one_time = false;
+		is_visible = is_vis;
+	}
 
 public:
 	real_t expiration_time = 0;
-	bool IsUsedOneTime = false;
-	bool IsDelayedForOneFrame = false;
-	bool IsVisible = true;
+	bool is_used_one_time = false;
+	bool is_visible = true;
+	TBounds bounds;
+	Color color;
 
-	DelayedRenderer();
-	bool IsExpired() const;
+	DelayedRenderer() :
+			bounds(),
+			expiration_time(0),
+			is_used_one_time(true),
+			is_visible(false){}
+
+	bool is_expired() const {
+		if (expiration_time > 0) {
+			return false;
+		}
+
+		return is_used_one_time;
+	}
+
+	bool update_visibility(std::vector<std::vector<Plane> >& frustums, bool skip_expiration_check) {
+		if (skip_expiration_check || !is_expired()) {
+			if (frustums.size()) {
+				is_visible = false;
+				for (auto &frustum : frustums) {
+					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
+						return is_visible = true;
+					} else {
+						is_visible = false;
+					}
+				}
+			} else {
+				return is_visible = true;
+			}
+		}
+		return false;
+	}
+
+	void update_expiration(real_t delta) {
+		if (!is_expired()) {
+			expiration_time -= delta;
+		}
+	}
 };
 
-class DelayedRendererInstance : public DelayedRenderer {
+class DelayedRendererInstance : public DelayedRenderer<SphereBounds> {
 public:
 	Transform transform;
-	Color color;
-	InstanceType type;
-	SphereBounds bounds;
+	InstanceType type = InstanceType::CUBES;
 
 	DelayedRendererInstance();
 	void update(real_t _exp_time, bool _is_visible, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds);
 };
 
-class DelayedRendererLine : public DelayedRenderer {
+class DelayedRendererLine : public DelayedRenderer<AABB> {
 	std::vector<Vector3> _lines;
 
 public:
-	AABB bounds;
-	Color LinesColor;
-
 	DelayedRendererLine();
-	void update(real_t exp_time, bool is_visible, const std::vector<Vector3> &lines, Color col);
+	void update(real_t _exp_time, bool _is_visible, const std::vector<Vector3> &lines, Color col);
 
 	void set_lines(std::vector<Vector3> lines);
 	std::vector<Vector3> get_lines();
-	AABB CalculateBoundsBasedOnLines(std::vector<Vector3> &lines);
+	AABB calculate_bounds_based_on_lines(std::vector<Vector3> &lines);
 };
 
 class GeometryPool {
@@ -89,7 +126,7 @@ private:
 
 			if (is_delayed) {
 				while (objs->size() != (*used)) {
-					if (((*objs)[*used]).IsExpired()) {
+					if (((*objs)[*used]).is_expired()) {
 						return &(*objs)[(*used)++];
 					}
 					(*used)++;
@@ -110,11 +147,8 @@ private:
 				if (time_used_less_then_half_of_instant_pool <= 0) {
 					time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
 
-#ifdef _DEBUG
-					std::wstring w = std::wstring(L"Shrinking instant buffer for ") + String(typeid(TInst).name()).unicode_str() + L". From %d, to %d. Buffer type: %d\n";
-					DEBUG_PRINT_STD(w.c_str(), instant.size(), used_instant, custom_type_of_buffer);
-#endif
-					// instant.resize((size_t)(instant.size() * 0.5));
+					DEBUG_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
+
 					instant.resize(used_instant);
 				}
 			} else {
@@ -129,12 +163,9 @@ private:
 				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
 					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
-#ifdef _DEBUG
-					std::wstring w = std::wstring(L"Shrinking _delayed_ buffer for ") + String(typeid(TInst).name()).unicode_str() + L". From %d, to %d. Buffer type: %d\n";
-					DEBUG_PRINT_STD(w.c_str(), delayed.size(), used_delayed, custom_type_of_buffer);
-#endif
-					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.IsExpired() < (int)b.IsExpired(); });
-					// delayed.resize((size_t)(delayed.size() * 0.25));
+					DEBUG_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
+
+					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });
 					delayed.resize(used_delayed);
 				}
 			} else {
@@ -182,8 +213,9 @@ public:
 	void clear_pool();
 	void for_each_instance(std::function<void(DelayedRendererInstance *)> func);
 	void for_each_line(std::function<void(DelayedRendererLine *)> func);
-	void update_visibility(std::vector<Plane> frustum, real_t delta);
-	void rescan_visible_instances();
+	void update_visibility(std::vector<std::vector<Plane> > frustums);
+	void update_expiration(real_t delta);
+	void scan_visible_instances();
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, bool _is_visible, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, bool _is_visible, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
 };

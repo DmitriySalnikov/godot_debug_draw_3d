@@ -14,7 +14,6 @@
 #include <vector>
 
 #define TEXT(s) #s
-#define TEXTL(s) L#s
 
 #if _DEBUG && _MSC_VER
 #ifndef _CRT_STRINGIZE
@@ -32,7 +31,7 @@
 #pragma region PRINTING
 
 #if _DEBUG
-#define DEBUG_PRINT(text) Godot::print(Variant(text))
+#define DEBUG_PRINT(text) godot::Godot::print(godot::Variant(text))
 #define DEBUG_PRINT_STD(format, ...) Utils::logv(format, false, false, __VA_ARGS__)
 #define DEBUG_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, __VA_ARGS__)
 #else
@@ -41,9 +40,9 @@
 #define DEBUG_PRINT_STD_ERR(format, ...)
 #endif
 
-#define PRINT(text) Godot::print(Variant(text))
-#define PRINT_ERROR(text) Godot::print_error(Variant(text), __FUNCTION__, get_file_name_in_repository(__FILE__), __LINE__)
-#define PRINT_WARNING(text) Godot::print_warning(Variant(text), __FUNCTION__, get_file_name_in_repository(__FILE__), __LINE__)
+#define PRINT(text) godot::Godot::print(godot::Variant(text))
+#define PRINT_ERROR(text) godot::Godot::print_error(godot::Variant(text), __FUNCTION__, godot::get_file_name_in_repository(__FILE__), __LINE__)
+#define PRINT_WARNING(text) godot::Godot::print_warning(godot::Variant(text), __FUNCTION__, godot::get_file_name_in_repository(__FILE__), __LINE__)
 
 namespace godot {
 static String get_file_name_in_repository(String name) {
@@ -69,7 +68,7 @@ class Utils {
 #if _DEBUG
 	struct LogData {
 		size_t hash;
-		std::wstring text;
+		std::string text;
 		bool is_error;
 		int repeat = 1;
 	};
@@ -78,19 +77,19 @@ class Utils {
 #endif
 
 public:
-	static void logv(const wchar_t *p_format, bool p_err, bool p_force_print, ...);
+	static void logv(const char *p_format, bool p_err, bool p_force_print, ...);
 	static void print_logs();
 
 	// https://stackoverflow.com/a/26221725/8980874
 	template <typename... Args>
-	static godot::String string_format(const wchar_t *format, Args... args) {
-		int size_s = std::swprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
+	static godot::String string_format(const char *format, Args... args) {
+		int size_s = std::snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
 		if (size_s <= 0) {
-			throw std::runtime_error("Error during formatting.");
+			PRINT_ERROR("Error during formatting.");
+			return "{FORMAT FAILED}";
 		}
-		auto size = static_cast<size_t>(size_s);
-		std::unique_ptr<wchar_t[]> buf(new wchar_t[size]);
-		std::swprintf(buf.get(), size, format, args...);
+		std::unique_ptr<char[]> buf(new char[(size_t)size_s]);
+		std::snprintf(buf.get(), (size_t)size_s, format, args...);
 		return godot::String(buf.get());
 	}
 
@@ -202,12 +201,16 @@ public:
 class Colors {
 public:
 	const static godot::Color empty_color;
+	const static godot::Color axis_x;
+	const static godot::Color axis_y;
+	const static godot::Color axis_z;
 	const static godot::Color black;
 	const static godot::Color chartreuse;
 	const static godot::Color crimson;
 	const static godot::Color dark_orange;
 	const static godot::Color dark_salmon;
 	const static godot::Color debug_bounds;
+	const static godot::Color dodgerblue;
 	const static godot::Color forest_green;
 	const static godot::Color gray_bg;
 	const static godot::Color gray_graph_bg;

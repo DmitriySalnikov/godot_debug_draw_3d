@@ -4,32 +4,9 @@
 #include <MultiMesh.hpp>
 #include <Texture.hpp>
 
-DelayedRenderer::DelayedRenderer() :
-		expiration_time(0),
-		IsUsedOneTime(true),
-		IsDelayedForOneFrame(false),
-		IsVisible(false) {
-}
-
-void DelayedRenderer::_update(real_t exp_time, bool is_vis) {
-	expiration_time = exp_time;
-	IsUsedOneTime = false;
-	IsDelayedForOneFrame = true;
-	IsVisible = is_vis;
-}
-
-bool DelayedRenderer::IsExpired() const {
-	if (expiration_time > 0) {
-		return false;
-	} else
-		return IsUsedOneTime;
-}
-
 DelayedRendererInstance::DelayedRendererInstance() :
-		type(InstanceType::CUBES),
-		bounds(),
 		DelayedRenderer() {
-	DEBUG_PRINT_STD(L"New " TEXT(DelayedRendererInstance) " created\n");
+	DEBUG_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
 }
 
 void DelayedRendererInstance::update(real_t _exp_time, bool _is_visible, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds) {
@@ -41,27 +18,28 @@ void DelayedRendererInstance::update(real_t _exp_time, bool _is_visible, Instanc
 	color = _col;
 }
 
-DelayedRendererLine::DelayedRendererLine() {
-	DEBUG_PRINT_STD(L"New %s created\n", TEXTL(DelayedRendererLine));
+DelayedRendererLine::DelayedRendererLine() :
+		DelayedRenderer() {
+	DEBUG_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(real_t exp_time, bool is_visible, const std::vector<Vector3> &lines, Color col) {
-	_update(exp_time, is_visible);
+void DelayedRendererLine::update(real_t _exp_time, bool _is_visible, const std::vector<Vector3> &lines, Color col) {
+	_update(_exp_time, _is_visible);
 
 	set_lines(lines);
-	LinesColor = col;
+	color = col;
 }
 
 void DelayedRendererLine::set_lines(std::vector<Vector3> lines) {
 	_lines = lines;
-	bounds = CalculateBoundsBasedOnLines(_lines);
+	bounds = calculate_bounds_based_on_lines(_lines);
 }
 
 std::vector<Vector3> DelayedRendererLine::get_lines() {
 	return _lines;
 }
 
-AABB DelayedRendererLine::CalculateBoundsBasedOnLines(std::vector<Vector3> &lines) {
+AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &lines) {
 	if (lines.size() > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
 		Vector3 begin = lines[0];
@@ -106,8 +84,8 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 		auto write_data = [&last_added, &w](DelayedRendererInstance &o) {
 			int id = (int)(last_added * INSTANCE_DATA_FLOAT_COUNT);
 
-			o.IsUsedOneTime = true;
-			if (o.IsVisible) {
+			o.is_used_one_time = true;
+			if (o.is_visible) {
 				last_added++;
 				w[id + 0] = o.transform.basis[0][0];
 				w[id + 1] = o.transform.basis[1][0];
@@ -135,15 +113,9 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 		instances[type].used_delayed = 0;
 		for (size_t i = 0; i < instances[type].delayed.size(); i++) {
 			auto &o = instances[type].delayed[i];
-			if (!o.IsExpired()) {
+			if (!o.is_expired()) {
 				instances[type].used_delayed++;
 				write_data(o);
-			} else {
-				if (o.IsDelayedForOneFrame) {
-					o.IsDelayedForOneFrame = false;
-					instances[type].used_delayed++;
-					write_data(o);
-				}
 			}
 		}
 	}
@@ -157,38 +129,28 @@ void GeometryPool::fill_lines_data(ImmediateGeometry *ig) {
 
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		auto &o = lines.instant[i];
-		if (o.IsVisible) {
-			ig->set_color(o.LinesColor);
+		if (o.is_visible) {
+			ig->set_color(o.color);
 			for (auto &l : o.get_lines()) {
 				ig->add_vertex(l);
 			};
 		}
-		o.IsUsedOneTime = true;
+		o.is_used_one_time = true;
 	}
 
 	lines.used_delayed = 0;
 	for (size_t i = 0; i < lines.delayed.size(); i++) {
 		auto &o = lines.delayed[i];
-		ig->set_color(o.LinesColor);
-		if (!o.IsExpired()) {
+		if (!o.is_expired()) {
 			lines.used_delayed++;
-			if (o.IsVisible) {
+			if (o.is_visible) {
+				ig->set_color(o.color);
 				for (auto &l : o.get_lines()) {
 					ig->add_vertex(l);
 				};
 			}
-		} else {
-			if (o.IsDelayedForOneFrame) {
-				o.IsDelayedForOneFrame = false;
-				lines.used_delayed++;
-				if (o.IsVisible) {
-					for (auto &l : o.get_lines()) {
-						ig->add_vertex(l);
-					};
-				}
-			}
 		}
-		o.IsUsedOneTime = true;
+		o.is_used_one_time = true;
 	}
 
 	ig->end();
@@ -263,7 +225,7 @@ void GeometryPool::for_each_instance(std::function<void(DelayedRendererInstance 
 			func(&inst.instant[i]);
 		}
 		for (size_t i = 0; i < inst.delayed.size(); i++) {
-			if (!inst.delayed[i].IsExpired())
+			if (!inst.delayed[i].is_expired())
 				func(&inst.delayed[i]);
 		}
 	}
@@ -274,69 +236,59 @@ void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> func
 		func(&lines.instant[i]);
 	}
 	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		if (!lines.delayed[i].IsExpired())
+		if (!lines.delayed[i].is_expired())
 			func(&lines.delayed[i]);
 	}
 }
 
-void GeometryPool::update_visibility(std::vector<Plane> frustum, real_t delta) {
+void GeometryPool::update_visibility(std::vector<std::vector<Plane> > frustums) {
 	reset_visible_objects();
 
 	for (auto &t : instances) {
-		for (size_t i = 0; i < t.used_instant; i++) {
-			auto &o = t.instant[i];
-			if (o.IsVisible = MathUtils::is_bounds_partially_inside_convex_shape(o.bounds, frustum))
-				t.visible_objects++;
-		}
-		for (size_t i = 0; i < t.delayed.size(); i++) {
-			auto &o = t.delayed[i];
-			if (!o.IsExpired()) {
-				o.expiration_time -= delta;
-				if (o.IsVisible = MathUtils::is_bounds_partially_inside_convex_shape(o.bounds, frustum))
-					t.visible_objects++;
-			}
-		}
+		for (size_t i = 0; i < t.used_instant; i++)
+			t.instant[i].update_visibility(frustums, true);
+
+		for (size_t i = 0; i < t.delayed.size(); i++)
+			t.delayed[i].update_visibility(frustums, false);
 	}
 
-	for (size_t i = 0; i < lines.used_instant; i++) {
-		auto &o = lines.instant[i];
-		if (o.IsVisible = MathUtils::is_bounds_partially_inside_convex_shape(o.bounds, frustum))
-			lines.visible_objects++;
-	}
-	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		auto &o = lines.delayed[i];
-		if (!o.IsExpired()) {
-			o.expiration_time -= delta;
-			if (o.IsVisible = MathUtils::is_bounds_partially_inside_convex_shape(o.bounds, frustum))
-				lines.visible_objects++;
-		}
-	}
+	for (size_t i = 0; i < lines.used_instant; i++)
+		lines.instant[i].update_visibility(frustums, true);
+
+	for (size_t i = 0; i < lines.delayed.size(); i++)
+		lines.delayed[i].update_visibility(frustums, false);
 }
 
-void GeometryPool::rescan_visible_instances() {
+void GeometryPool::update_expiration(real_t delta) {
+	for (auto &t : instances)
+		for (size_t i = 0; i < t.delayed.size(); i++)
+			t.delayed[i].update_expiration(delta);
+
+	for (size_t i = 0; i < lines.delayed.size(); i++)
+		lines.delayed[i].update_expiration(delta);
+}
+
+void GeometryPool::scan_visible_instances() {
 	reset_visible_objects();
 
 	for (auto &t : instances) {
-		for (size_t i = 0; i < t.used_instant; i++) {
-			auto &o = t.instant[i];
-			if (o.IsVisible)
+		for (size_t i = 0; i < t.used_instant; i++)
+			if (t.instant[i].is_visible)
 				t.visible_objects++;
-		}
 		for (size_t i = 0; i < t.delayed.size(); i++) {
 			auto &o = t.delayed[i];
-			if (o.IsVisible && !o.IsExpired())
+			if (o.is_visible && !o.is_expired())
 				t.visible_objects++;
 		}
 	}
 
-	for (size_t i = 0; i < lines.used_instant; i++) {
-		auto &o = lines.instant[i];
-		if (o.IsVisible)
+	for (size_t i = 0; i < lines.used_instant; i++)
+		if (lines.instant[i].is_visible)
 			lines.visible_objects++;
-	}
+
 	for (size_t i = 0; i < lines.delayed.size(); i++) {
 		auto &o = lines.delayed[i];
-		if (o.IsVisible && !o.IsExpired())
+		if (o.is_visible && !o.is_expired())
 			lines.visible_objects++;
 	}
 }

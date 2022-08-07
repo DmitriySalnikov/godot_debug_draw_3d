@@ -40,7 +40,7 @@ public:
 	DebugGeometryContainer(class DebugDraw3D *root);
 	~DebugGeometryContainer();
 
-	void UpdateGeometry(real_t delta);
+	void update_geometry(real_t delta);
 
 	Dictionary get_rendered_primitives_count();
 	void create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, float duration = 0);
@@ -50,8 +50,12 @@ public:
 #pragma region 3D
 
 #pragma region Spheres
-	void draw_sphere(Vector3 position, real_t radius = 1, Color color = Colors::empty_color, float duration = 0);
-	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere(Vector3 position, real_t radius = 1, Color color = Colors::empty_color, float duration = 0, bool hd = false);
+	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, float duration = 0, bool hd = false);
+	
+	void draw_sphere_hd(Vector3 position, float radius = 0.5f, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere_hd_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+
 #pragma endregion // Spheres
 
 #pragma region Cylinders
@@ -71,6 +75,7 @@ public:
 	void draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit = 0.5f, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
 #pragma region Normal
 	void draw_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float duration = 0);
+	void draw_lines_3d(PoolVector3Array lines, Color color = Colors::empty_color, float duration = 0);
 	void draw_ray_3d(Vector3 origin, Vector3 direction, float length, Color color = Colors::empty_color, float duration = 0);
 	void draw_line_path_3d(PoolVector3Array path, Color color = Colors::empty_color, float duration = 0);
 #pragma endregion // Normal
@@ -92,6 +97,10 @@ public:
 #pragma endregion // Camera Frustum
 	void draw_position_3d(Vector3 position, Quat rotation = Quat(), Vector3 scale = Vector3::ONE, Color color = Colors::empty_color, float duration = 0);
 	void draw_position_3d_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+
+	void draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered = false, float duration = 0);
+	void draw_gizmo_3d_xf(Transform transform, bool is_centered = false, float duration = 0);
+
 #pragma endregion // Misc
 #pragma endregion // 3D
 #pragma endregion // Exposed Draw Functions

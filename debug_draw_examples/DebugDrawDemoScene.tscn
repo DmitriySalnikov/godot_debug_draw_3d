@@ -1,0 +1,369 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://debug_draw_examples/DebugDrawDemoScene.gd" type="Script" id=1]
+[ext_resource path="res://debug_draw_examples/Roboto_Bold_16.tres" type="DynamicFont" id=2]
+
+[sub_resource type="SphereShape" id=4]
+
+[sub_resource type="SpatialMaterial" id=5]
+flags_transparent = true
+albedo_color = Color( 0.54902, 0.54902, 0.729412, 0.403922 )
+emission_enabled = true
+emission = Color( 0.752941, 0.741176, 0.862745, 1 )
+emission_energy = 1.0
+emission_operator = 0
+emission_on_uv2 = false
+
+[sub_resource type="Animation" id=6]
+resource_name = "New Anim"
+length = 3.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("RayEmitter:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5, 1.3, 2.3 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( -1.03574, 2.47907, -0.819963 ), Vector3( 0.914907, 1.78507, -0.103575 ), Vector3( 0.00863314, 2.47907, -0.595551 ), Vector3( 1.00051, 1.4046, 1.02585 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RayEmitter:rotation_degrees")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 1.3, 2.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, 0 ), Vector3( 0, 0, 0 ), Vector3( 22.0178, -16.0314, -37.4685 ) ]
+}
+
+[sub_resource type="Animation" id=7]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("RayEmitter:translation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 0, 2.44568, 0 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("RayEmitter:rotation_degrees")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, 0 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("RayEmitter:scale")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 1, 1, 1 ) ]
+}
+
+[sub_resource type="SpatialMaterial" id=1]
+flags_unshaded = true
+albedo_color = Color( 0.533333, 0.105882, 0.105882, 1 )
+
+[sub_resource type="Animation" id=8]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:transform")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473 ) ]
+}
+
+[sub_resource type="Theme" id=3]
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends Control
+
+func _ready() -> void:
+	yield(get_tree(), \"idle_frame\")
+	yield(get_tree(), \"idle_frame\")
+	var test = DebugDraw.get_graph_config(\"FPS\")
+	if test:
+		$VB/FPSEnabled.pressed = test.enabled
+		$VB/FPSMS.pressed = test.frame_time_mode
+		$VB/HSlider.value = test.size.x
+		$VB/HSlider2.value = test.buffer_size
+
+
+func _on_CheckBox_toggled(button_pressed: bool) -> void:
+	DebugDraw.get_graph_config(\"FPS\").enabled = button_pressed
+
+func _on_FPSMS_toggled(button_pressed: bool) -> void:
+	DebugDraw.get_graph_config(\"FPS\").frame_time_mode = button_pressed
+
+func _on_HSlider_value_changed(value: float) -> void:
+	var c = DebugDraw.get_graph_config(\"FPS\")
+	c.size = Vector2(value, c.size.y)
+
+func _on_HSlider2_value_changed(value: float) -> void:
+	var c = DebugDraw.get_graph_config(\"FPS\")
+	c.buffer_size = value
+"
+
+[node name="DebugDrawDemoScene" type="Spatial"]
+process_priority = 1
+script = ExtResource( 1 )
+custom_font = ExtResource( 2 )
+more_test_cases = true
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.953032, 0.302869, 0, -0.302869, 0.953032, -3.98764, 13.5247, 37.2096 )
+current = true
+fov = 38.8
+near = 2.63
+far = 52.5
+
+[node name="Zones" type="Spatial" parent="."]
+
+[node name="Spheres" type="Spatial" parent="Zones"]
+transform = Transform( 8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -12.4687, 0.645876, -7.74484 )
+
+[node name="Path" type="Spatial" parent="Zones"]
+transform = Transform( 5.95153, 0, 0, 0, 4.59268, 0, 0, 0, 6.31617, 0.184938, 0.774476, -7.18731 )
+
+[node name="Boxes" type="Spatial" parent="Zones"]
+transform = Transform( 10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0.206735, 6.43672 )
+
+[node name="Misc" type="Spatial" parent="Zones"]
+transform = Transform( 4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -3.37336, -0.206735, 4.28992 )
+
+[node name="Cylinders" type="Spatial" parent="Zones"]
+transform = Transform( 9.78549, 0, 0, 0, 3.23309, 0, 0, 0, 5.62455, -23.6827, 0.117228, -6.19233 )
+
+[node name="Lines" type="Spatial" parent="Zones"]
+transform = Transform( 10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416 )
+
+[node name="LinePath" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -8 )
+
+[node name="Spatial" type="Spatial" parent="LinePath"]
+
+[node name="Spatial2" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 1 )
+
+[node name="Spatial3" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3 )
+
+[node name="Spatial4" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767 )
+
+[node name="Spatial5" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1, 1 )
+
+[node name="Spatial6" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -1 )
+
+[node name="Spatial7" type="Spatial" parent="LinePath"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0 )
+
+[node name="Cylinder1" type="Spatial" parent="."]
+transform = Transform( 1.5392, 0.388841, 3.73947e-07, 0.706247, -0.74277, 0.929685, 0.265123, -0.278834, -2.47654, -25.6488, 0, -6.39029 )
+
+[node name="Cylinder2" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -22.134, -9.53674e-07, -6.39029 )
+
+[node name="SphereTransform" type="Spatial" parent="."]
+transform = Transform( 3.018, 0, 0, 0, 0.945452, -0.636291, 0, 1.04515, 4.40664, -14.547, 0.166728, -5.65327 )
+
+[node name="SphereHDTransform" type="Spatial" parent="."]
+transform = Transform( 1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, -2.65493, 0.587941, -1.00109, -14.5341, 0.166728, -10.3981 )
+
+[node name="SpherePosition" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6349, 0.625214, -5.81358 )
+
+[node name="Box1" type="Spatial" parent="."]
+transform = Transform( 2.902, 0, -5.359, 0, 3.928, 0, 0.576, 0, 1.88, -14.007, 0, 2.794 )
+
+[node name="Box2" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 6.91676 )
+
+[node name="Box3" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 10.5182 )
+
+[node name="AABB" type="Spatial" parent="."]
+transform = Transform( -0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.0121951, -0.0566928, -0.0370723, -0.997703, -11.4765, -4.76837e-07, 7.18889 )
+
+[node name="a" type="Spatial" parent="AABB"]
+transform = Transform( -0.574779, -0.656578, 0.488398, -0.669272, 0.720607, 0.181105, -0.470854, -0.222776, -0.85362, -0.5468, -2.45083, -0.991707 )
+
+[node name="b" type="Spatial" parent="AABB"]
+transform = Transform( 0.999999, 4.33065e-08, 2.98023e-08, 1.5134e-08, 0.999999, 4.09782e-08, -2.6077e-08, 1.49012e-08, 1, 0.821057, 1.16918, 2.89658 )
+
+[node name="AABB_fixed" type="Spatial" parent="."]
+transform = Transform( -0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.012195, -0.0566929, -0.0370724, -0.997703, -18.195, -1.788, 6.289 )
+
+[node name="Misc" type="Spatial" parent="."]
+
+[node name="Billboard" type="Spatial" parent="Misc"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.18606, -0.331599, 6.66091 )
+
+[node name="Position" type="Spatial" parent="Misc"]
+transform = Transform( 1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, -3.18606, -0.331599, 2.57602 )
+
+[node name="Gizmo" type="Spatial" parent="Misc"]
+transform = Transform( 2.00505, 0, -0.497231, 0, 0.999999, 0, 0.307496, 0, 3.24223, -2.69921, -0.331599, 4.79165 )
+
+[node name="GizmoTransform" type="Spatial" parent="Misc"]
+transform = Transform( 0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189412, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259 )
+
+[node name="Lines" type="Spatial" parent="."]
+transform = Transform( 1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326 )
+
+[node name="1" type="Spatial" parent="Lines"]
+transform = Transform( 1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, -0.960337, -1.53755, -0.24448 )
+
+[node name="2" type="Spatial" parent="Lines"]
+transform = Transform( 1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, -0.21726, -0.347845, -0.0553098 )
+
+[node name="3" type="Spatial" parent="Lines"]
+transform = Transform( 1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 0.538932, 0.862856, 0.1372 )
+
+[node name="4" type="Spatial" parent="Lines"]
+transform = Transform( 1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906 )
+
+[node name="5" type="Spatial" parent="Lines"]
+transform = Transform( -0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -2.68836, 0.0136011, -0.249864, 0.572532, 1.43126, 0.26242, 1.92347 )
+
+[node name="6" type="Spatial" parent="Lines"]
+transform = Transform( -0.998872, -0.0207882, -0.0355643, 0.0855371, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028 )
+
+[node name="Target" type="Spatial" parent="Lines"]
+transform = Transform( 1, -2.7352e-06, 2.60722e-07, 3.30799e-06, 1, 0, -3.51517e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597 )
+
+[node name="HitTest" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.48967, -1.03227, 9.524 )
+
+[node name="StaticBody" type="StaticBody" parent="HitTest"]
+
+[node name="CollisionShape" type="CollisionShape" parent="HitTest/StaticBody"]
+shape = SubResource( 4 )
+
+[node name="CSGSphere" type="CSGSphere" parent="HitTest/StaticBody"]
+radial_segments = 16
+rings = 10
+material = SubResource( 5 )
+
+[node name="RayEmitter" type="Spatial" parent="HitTest"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.44568, 0 )
+
+[node name="RayCast" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="RayCast2" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="RayCast3" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="RayCast4" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="RayCast5" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="RayCast6" type="RayCast" parent="HitTest/RayEmitter"]
+transform = Transform( 0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849 )
+enabled = true
+cast_to = Vector3( 0, -3.464, 0 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
+autoplay = "New Anim"
+playback_process_mode = 0
+playback_speed = 0.3
+"anims/New Anim" = SubResource( 6 )
+anims/RESET = SubResource( 7 )
+
+[node name="LagTest" type="CSGBox" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473 )
+material = SubResource( 1 )
+
+[node name="RESET" type="AnimationPlayer" parent="LagTest"]
+anims/RESET = SubResource( 8 )
+
+[node name="Settings" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 319.0
+margin_right = -319.0
+mouse_filter = 2
+theme = SubResource( 3 )
+script = SubResource( 2 )
+
+[node name="VB" type="VBoxContainer" parent="Settings"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="FPSEnabled" type="CheckBox" parent="Settings/VB"]
+margin_right = 386.0
+margin_bottom = 24.0
+text = "FPS Graph enabled"
+
+[node name="FPSMS" type="CheckBox" parent="Settings/VB"]
+margin_top = 28.0
+margin_right = 386.0
+margin_bottom = 52.0
+text = "FPS Graph ms or FPS"
+
+[node name="HSlider" type="HSlider" parent="Settings/VB"]
+margin_top = 56.0
+margin_right = 386.0
+margin_bottom = 72.0
+min_value = 50.0
+max_value = 1000.0
+value = 50.0
+
+[node name="HSlider2" type="HSlider" parent="Settings/VB"]
+margin_top = 76.0
+margin_right = 386.0
+margin_bottom = 92.0
+min_value = 50.0
+max_value = 1000.0
+value = 50.0
+
+[connection signal="toggled" from="Settings/VB/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
+[connection signal="toggled" from="Settings/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
+[connection signal="value_changed" from="Settings/VB/HSlider" to="Settings" method="_on_HSlider_value_changed"]
+[connection signal="value_changed" from="Settings/VB/HSlider2" to="Settings" method="_on_HSlider2_value_changed"]

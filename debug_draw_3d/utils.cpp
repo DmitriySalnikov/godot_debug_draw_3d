@@ -2,7 +2,6 @@
 
 #include "render_instances.h"
 #include <stdarg.h>
-#include <wchar.h>
 
 using namespace godot;
 
@@ -10,34 +9,34 @@ using namespace godot;
 std::queue<Utils::LogData> Utils::log_buffer;
 #endif
 
-void Utils::logv(const wchar_t *p_format, bool p_err, bool p_force_print, ...) {
+void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 #if _DEBUG
 
 	const int static_buf_size = 512;
-	wchar_t static_buf[static_buf_size];
-	wchar_t *buf = static_buf;
-
+	char static_buf[static_buf_size];
+	char *buf = static_buf;
+	
 	va_list list_copy;
 	va_start(list_copy, (const char *)p_force_print);
 
 	va_list p_list;
 	va_copy(p_list, list_copy);
-	int len = vswprintf(buf, static_buf_size, p_format, p_list);
+	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
 	va_end(p_list);
 
 	if (len >= static_buf_size) {
-		buf = (wchar_t *)malloc((size_t)len + 1);
-		vswprintf(buf, (size_t)len + 1, p_format, list_copy);
+		buf = (char*)malloc((size_t)len + 1);
+		vsnprintf(buf, (size_t)len + 1, p_format, list_copy);
 	}
 	va_end(list_copy);
 
-	std::wstring s = buf;
+	std::string s = buf;
 
 	if (len >= static_buf_size) {
 		free(buf);
 	}
 
-	size_t hsh = std::hash<std::wstring>()(s);
+	size_t hsh = std::hash<std::string>()(s);
 
 	if (log_buffer.size() && log_buffer.back().hash == hsh) {
 		log_buffer.back().repeat++;
@@ -57,16 +56,16 @@ void Utils::print_logs() {
 		auto &l = log_buffer.front();
 		if (l.repeat > 1) {
 			if (l.is_error) {
-				fwprintf(stderr, L"[x%d] %s", l.repeat, l.text.c_str());
+				fprintf(stderr, "[x%d] %s", l.repeat, l.text.c_str());
 			} else {
-				wprintf(L"[x%d] %s", l.repeat, l.text.c_str());
+				printf("[x%d] %s", l.repeat, l.text.c_str());
 				// fflush(stdout);
 			}
 		} else {
 			if (l.is_error) {
-				fwprintf(stderr, l.text.c_str());
+				fprintf(stderr, l.text.c_str());
 			} else {
-				wprintf(l.text.c_str());
+				printf(l.text.c_str());
 				// fflush(stdout);
 			}
 		}
@@ -76,12 +75,16 @@ void Utils::print_logs() {
 }
 
 const Color Colors::empty_color = Color(0, 0, 0, 0);
+const Color Colors::axis_x = Color(0.9f, 0.03f, 0.08f, 0);
+const Color Colors::axis_y = Color(0.24f, 0.67f, 0, 0);
+const Color Colors::axis_z = Color(0.02f, 0.26f, 0.9f, 0);
 const Color Colors::black = Color(0, 0, 0, 1);
 const Color Colors::chartreuse = Color(0.5f, 1, 0, 1);
 const Color Colors::crimson = Color(0.86f, 0.08f, 0.24f, 1);
 const Color Colors::dark_orange = Color(1, 0.55f, 0, 1);
 const Color Colors::dark_salmon = Color(0.91f, 0.59f, 0.48f, 1);
 const Color Colors::debug_bounds = Color(1, 0.55f, 0, 1);
+const Color Colors::dodgerblue = Color(0.12f, 0.56f, 1, 1);
 const Color Colors::forest_green = Color(0.13f, 0.55f, 0.13f, 1);
 const Color Colors::gray_bg = Color(0.3f, 0.3f, 0.3f, 0.8f);
 const Color Colors::gray_graph_bg = Color(0.2f, 0.2f, 0.2f, 0.6f);

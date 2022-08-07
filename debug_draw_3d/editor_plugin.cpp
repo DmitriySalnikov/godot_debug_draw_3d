@@ -16,6 +16,7 @@
 void DebugDraw3DEditorPlugin::_register_methods() {
 	register_method("on_scene_changed", &DebugDraw3DEditorPlugin::on_scene_changed);
 
+	register_method("disable_plugin", &DebugDraw3DEditorPlugin::disable_plugin);
 	register_method("_enter_tree", &DebugDraw3DEditorPlugin::_enter_tree);
 	register_method("_exit_tree", &DebugDraw3DEditorPlugin::_exit_tree);
 }
@@ -44,9 +45,16 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 		DebugDraw3D *d = DebugDraw3D::_new();
 		parent->add_child(d);
 
-		if (spatial_viewport) {
-			d->set_custom_viewport(cast_to<Viewport>(spatial_viewport->get_child(0)));
-			d->set_custom_canvas(cast_to<CanvasItem>(spatial_viewport));
+		if (spatial_viewport_container) {
+			d->set_custom_editor_viewport(get_custom_viewports());
+			
+			auto canvas = get_custom_canvas();
+			d->set_custom_canvas(canvas);
+
+			if (canvas) {
+				canvas->set_meta("UseParentSize", true);
+				canvas->update();
+			}
 		}
 	}
 }
@@ -58,8 +66,6 @@ void DebugDraw3DEditorPlugin::create_auto_find() {
 		create_new_node(node);
 	}
 }
-
-// TODO find all viewports and use frustums from all of them
 
 // HACK for finding canvas and drawing on it
 void DebugDraw3DEditorPlugin::find_viewport_control() {
@@ -84,7 +90,7 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 	remove_control_from_container(CustomControlContainer::CONTAINER_SPATIAL_EDITOR_MENU, ctrl);
 	ctrl->free();
 
-	spatial_viewport = nullptr;
+	spatial_viewport_container = nullptr;
 	if (spatial_editor->get_class() == "SpatialEditor") {
 		// Try to recursively find `SpatialEditorViewport`
 
@@ -111,14 +117,29 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 
 		Control *node = get(spatial_editor, 0);
 		if (node) {
-			spatial_viewport = cast_to<ViewportContainer>(node->get_child(0));
+			// SpatialEditorViewportContainer	<-SpatialEditorViewport
+			// spatial_viewport_container		<-node
+			spatial_viewport_container = cast_to<Control>(node->get_parent());
 		}
 	}
+}
 
-	if (spatial_viewport) {
-		spatial_viewport->set_meta("UseParentSize", true);
-		spatial_viewport->update();
+std::vector<Viewport *> DebugDraw3DEditorPlugin::get_custom_viewports() {
+	Array children = spatial_viewport_container->get_children();
+	std::vector<Viewport *> viewports(children.size());
+	for (int i = 0; i < children.size(); i++) {
+		// SpatialEditorViewportContainer	->SpatialEditorViewport	->ViewportContainer	->Viewport
+		// spatial_viewport_container		->one_of_children		->child(0)			->child(0)
+		viewports[i] = cast_to<Viewport>(cast_to<Control>(((Object *)children[i]))->get_child(0)->get_child(0));
 	}
+
+	return viewports;
+}
+
+CanvasItem *DebugDraw3DEditorPlugin::get_custom_canvas() {
+	// SpatialEditorViewportContainer	->SpatialEditorViewport	->ViewportContainer
+	// spatial_viewport_container		->one_of_children		->child(0)
+	return cast_to<CanvasItem>(spatial_viewport_container->get_child(0)->get_child(0));
 }
 
 void DebugDraw3DEditorPlugin::_enter_tree() {
@@ -132,5 +153,5 @@ void DebugDraw3DEditorPlugin::_exit_tree() {
 }
 
 void DebugDraw3DEditorPlugin::disable_plugin() {
-	PRINT_WARNING("hmm");
+	DEBUG_PRINT(TEXT(DebugDraw3DEditorPlugin) " disabled");
 }

@@ -34,7 +34,7 @@ public:
 		RightBottom = 3,
 	};
 
-	enum FPSGraphTextFlags : int {
+	enum GraphTextFlags : int {
 		None = 0,
 		Current = 1 << 0,
 		Avarage = 1 << 1,
@@ -44,7 +44,7 @@ public:
 	};
 
 private:
-	// HACK for constants
+
 #define CONST_GET(_enum, _const) \
 	int64_t get_##_enum##_##_const() { return _enum::_const; }
 
@@ -54,26 +54,26 @@ private:
 	CONST_GET(BlockPosition, LeftBottom);
 	CONST_GET(BlockPosition, RightBottom);
 
-	CONST_GET(FPSGraphTextFlags, None);
-	CONST_GET(FPSGraphTextFlags, Current);
-	CONST_GET(FPSGraphTextFlags, Avarage);
-	CONST_GET(FPSGraphTextFlags, Max);
-	CONST_GET(FPSGraphTextFlags, Min);
-	CONST_GET(FPSGraphTextFlags, All);
+	CONST_GET(GraphTextFlags, None);
+	CONST_GET(GraphTextFlags, Current);
+	CONST_GET(GraphTextFlags, Avarage);
+	CONST_GET(GraphTextFlags, Max);
+	CONST_GET(GraphTextFlags, Min);
+	CONST_GET(GraphTextFlags, All);
 
 #undef CONST_GET
+
+	std::vector<Viewport *> custom_editor_viewports;
 
 	// Logs
 	real_t log_flush_time = 0;
 
 	// 2d
-
 	CanvasLayer *_canvasLayer = nullptr;
 	bool _canvasNeedUpdate = true;
 	Ref<Font> _font;
 
-	Viewport *DefaultViewport = nullptr;
-	CanvasItem *DefaultCanvas = nullptr;
+	CanvasItem *default_canvas = nullptr;
 
 	// Text
 	std::unique_ptr<GroupedText> grouped_text;
@@ -82,13 +82,13 @@ private:
 	std::unique_ptr<DataGraphManager> data_graphs;
 
 	// Meshes
-	std::unique_ptr<DebugGeometryContainer> _dgc;
+	std::unique_ptr<DebugGeometryContainer> dgc;
 
 	std::recursive_mutex datalock;
-	bool isReady = false;
+	bool is_ready = false;
 
 	DebugDraw3D *get_singleton_gdscript() { return singleton; };
-	void OnCanvaItemDraw(CanvasItem *ci);
+	void on_canva_item_draw(CanvasItem *ci);
 
 #pragma region Exposed Parameter Values
 
@@ -106,6 +106,8 @@ private:
 	bool use_frustum_culling = true;
 	/// Force use camera placed on edited scene. Usable for editor.
 	bool force_use_camera_from_scene = false;
+	/// Base offset for all graphs
+	Vector2 graphs_base_offset = Vector2(8, 8);
 
 	// TEXT
 
@@ -133,7 +135,7 @@ private:
 
 	// Misc
 
-	/// Custom 'Viewport' to use for frustum culling. Usually used in editor.
+	/// Custom 'Viewport' to use for frustum culling.
 	Viewport *custom_viewport = nullptr;
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
 	CanvasItem *custom_canvas = nullptr;
@@ -145,6 +147,9 @@ public:
 
 	static DebugDraw3D *get_singleton() { return singleton; };
 	void mark_canvas_needs_update();
+
+	void set_custom_editor_viewport(std::vector<Viewport *> viewports);
+	std::vector<Viewport *> get_custom_editor_viewport();
 
 	void _enter_tree();
 	void _exit_tree();
@@ -160,7 +165,7 @@ public:
 
 	void set_freeze_3d_render(bool state);
 	bool is_freeze_3d_render();
-	
+
 	void set_draw_instance_bounds(bool state);
 	bool is_draw_instance_bounds();
 
@@ -170,6 +175,8 @@ public:
 	void set_force_use_camera_from_scene(bool state);
 	bool is_force_use_camera_from_scene();
 
+	void set_graphs_base_offset(Vector2 offset);
+	Vector2 get_graphs_base_offset();
 	void set_text_block_position(int /*BlockPosition*/ position);
 	int /*BlockPosition*/ get_text_block_position();
 	void set_text_block_offset(Vector2 offset);
@@ -224,6 +231,19 @@ public:
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
 	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+	
+	/// Draw sphere with higher lines count
+	/// position: Position of the sphere center
+	/// radius: Sphere radius
+	/// color: Sphere color
+	/// duration: Duration of existence in seconds
+	void draw_sphere_hd(Vector3 position, float radius = 0.5f, Color color = Colors::empty_color, float duration = 0);
+
+	/// Draw sphere with higher lines count
+	/// transform: Transform of the sphere
+	/// color: Sphere color
+	/// duration: Duration of existence in seconds
+	void draw_sphere_hd_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
 
 #pragma endregion // Spheres
 #pragma region Cylinders
@@ -286,7 +306,7 @@ public:
 	/// hitColor: Color of the hit point and line before hit
 	/// afterHitColor: Color of line after hit position
 	void draw_line_3d_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
-	
+
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
 	/// a: Start point
 	/// b: End point
@@ -305,6 +325,12 @@ public:
 	/// color: Line color
 	/// duration: Duration of existence in seconds
 	void draw_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float duration = 0);
+	
+	/// Draw many line
+	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
+	/// color: Line color
+	/// duration: Duration of existence in seconds
+	void draw_lines_3d(PoolVector3Array lines, Color color = Colors::empty_color, float duration = 0);
 
 	/// Draw ray
 	/// origin: Origin
@@ -390,6 +416,18 @@ public:
 	/// color: Color
 	/// duration: Duration of existence in seconds
 	void draw_position_3d_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+	
+	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// position: Center position
+	/// rotation: Rotation
+	/// scale: Scale
+	/// duration: Duration of existence in seconds
+	void draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered = false, float duration = 0);
+
+	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// transform: Transform
+	/// duration: Duration of existence in seconds
+	void draw_gizmo_3d_xf(Transform transform, bool is_centered = false, float duration = 0);
 
 #pragma endregion // Misc
 #pragma endregion // 3D

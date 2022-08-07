@@ -10,16 +10,16 @@ public class DebugDrawCS : Node
 
 	/// Constants
 
-	public static int BlockPosition_LeftTop { get; private set; }
-	public static int BlockPosition_RightTop { get; private set; }
-	public static int BlockPosition_LeftBottom { get; private set; }
-	public static int BlockPosition_RightBottom { get; private set; }
-	public static int FPSGraphTextFlags_None { get; private set; }
-	public static int FPSGraphTextFlags_Current { get; private set; }
-	public static int FPSGraphTextFlags_Avarage { get; private set; }
-	public static int FPSGraphTextFlags_Max { get; private set; }
-	public static int FPSGraphTextFlags_Min { get; private set; }
-	public static int FPSGraphTextFlags_All { get; private set; }
+	public static int BlockPosition_LeftTop { get; private set; } = 0;
+	public static int BlockPosition_RightTop { get; private set; } = 0;
+	public static int BlockPosition_LeftBottom { get; private set; } = 0;
+	public static int BlockPosition_RightBottom { get; private set; } = 0;
+	public static int GraphTextFlags_None { get; private set; } = 0;
+	public static int GraphTextFlags_Current { get; private set; } = 0;
+	public static int GraphTextFlags_Avarage { get; private set; } = 0;
+	public static int GraphTextFlags_Max { get; private set; } = 0;
+	public static int GraphTextFlags_Min { get; private set; } = 0;
+	public static int GraphTextFlags_All { get; private set; } = 0;
 
 
 	/// Parameters
@@ -41,6 +41,9 @@ public class DebugDrawCS : Node
 
 	/// Force use camera placed on edited scene. Usable for editor.
 	public static bool ForceUseCameraFromScene { get => (bool)debug_draw_3d?.Get("force_use_camera_from_scene"); set => debug_draw_3d?.Set("force_use_camera_from_scene", value); }
+
+	/// Base offset for all graphs
+	public static Vector2 GraphsBaseOffset { get => (Vector2)debug_draw_3d?.Get("graphs_base_offset"); set => debug_draw_3d?.Set("graphs_base_offset", value); }
 
 	/// Position of text block
 	public static int TextBlockPosition { get => (int)debug_draw_3d?.Get("text_block_position"); set => debug_draw_3d?.Set("text_block_position", value); }
@@ -69,7 +72,7 @@ public class DebugDrawCS : Node
 	/// Color of line after hit
 	public static Color LineAfterHitColor { get => (Color)debug_draw_3d?.Get("line_after_hit_color"); set => debug_draw_3d?.Set("line_after_hit_color", value); }
 
-	/// Custom 'Viewport' to use for frustum culling. Usually used in editor.
+	/// Custom 'Viewport' to use for frustum culling.
 	public static Viewport CustomViewport { get => (Viewport)debug_draw_3d?.Get("custom_viewport"); set => debug_draw_3d?.Set("custom_viewport", value); }
 
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
@@ -86,12 +89,12 @@ public class DebugDrawCS : Node
 			BlockPosition_RightTop = (int)debug_draw_3d.Get("BlockPosition_RightTop");
 			BlockPosition_LeftBottom = (int)debug_draw_3d.Get("BlockPosition_LeftBottom");
 			BlockPosition_RightBottom = (int)debug_draw_3d.Get("BlockPosition_RightBottom");
-			FPSGraphTextFlags_None = (int)debug_draw_3d.Get("FPSGraphTextFlags_None");
-			FPSGraphTextFlags_Current = (int)debug_draw_3d.Get("FPSGraphTextFlags_Current");
-			FPSGraphTextFlags_Avarage = (int)debug_draw_3d.Get("FPSGraphTextFlags_Avarage");
-			FPSGraphTextFlags_Max = (int)debug_draw_3d.Get("FPSGraphTextFlags_Max");
-			FPSGraphTextFlags_Min = (int)debug_draw_3d.Get("FPSGraphTextFlags_Min");
-			FPSGraphTextFlags_All = (int)debug_draw_3d.Get("FPSGraphTextFlags_All");
+			GraphTextFlags_None = (int)debug_draw_3d.Get("GraphTextFlags_None");
+			GraphTextFlags_Current = (int)debug_draw_3d.Get("GraphTextFlags_Current");
+			GraphTextFlags_Avarage = (int)debug_draw_3d.Get("GraphTextFlags_Avarage");
+			GraphTextFlags_Max = (int)debug_draw_3d.Get("GraphTextFlags_Max");
+			GraphTextFlags_Min = (int)debug_draw_3d.Get("GraphTextFlags_Min");
+			GraphTextFlags_All = (int)debug_draw_3d.Get("GraphTextFlags_All");
 		}
 	}
 
@@ -153,6 +156,23 @@ public class DebugDrawCS : Node
 	/// duration: Duration of existence in seconds
 	public static void DrawSphereXf(Transform transform, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_sphere_xf", transform, color == null? empty_color : color, duration);
+	}
+
+	/// Draw sphere with higher lines count
+	/// position: Position of the sphere center
+	/// radius: Sphere radius
+	/// color: Sphere color
+	/// duration: Duration of existence in seconds
+	public static void DrawSphereHd(Vector3 position, float radius = 0.5f, Color? color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_sphere_hd", position, radius, color == null? empty_color : color, duration);
+	}
+
+	/// Draw sphere with higher lines count
+	/// transform: Transform of the sphere
+	/// color: Sphere color
+	/// duration: Duration of existence in seconds
+	public static void DrawSphereHdXf(Transform transform, Color? color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_sphere_hd_xf", transform, color == null? empty_color : color, duration);
 	}
 
 	/// Draw vertical cylinder
@@ -243,6 +263,14 @@ public class DebugDrawCS : Node
 		debug_draw_3d?.Call("draw_line_3d", a, b, color == null? empty_color : color, duration);
 	}
 
+	/// Draw many line
+	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
+	/// color: Line color
+	/// duration: Duration of existence in seconds
+	public static void DrawLines3d(Vector3[] lines, Color? color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_lines_3d", lines, color == null? empty_color : color, duration);
+	}
+
 	/// Draw ray
 	/// origin: Origin
 	/// direction: Direction
@@ -268,7 +296,7 @@ public class DebugDrawCS : Node
 	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	public static void DrawArrowLine3d(Vector3 a, Vector3 b, Color? color = null, float arrow_size = 0.5f, bool absolute_size = true, float duration = 0f){
+	public static void DrawArrowLine3d(Vector3 a, Vector3 b, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow_line_3d", a, b, color == null? empty_color : color, arrow_size, absolute_size, duration);
 	}
 
@@ -280,7 +308,7 @@ public class DebugDrawCS : Node
 	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	public static void DrawArrowRay3d(Vector3 origin, Vector3 direction, float length, Color? color = null, float arrow_size = 0.5f, bool absolute_size = true, float duration = 0f){
+	public static void DrawArrowRay3d(Vector3 origin, Vector3 direction, float length, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow_ray_3d", origin, direction, length, color == null? empty_color : color, arrow_size, absolute_size, duration);
 	}
 
@@ -335,6 +363,22 @@ public class DebugDrawCS : Node
 	/// duration: Duration of existence in seconds
 	public static void DrawPosition3dXf(Transform transform, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_position_3d_xf", transform, color == null? empty_color : color, duration);
+	}
+
+	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// position: Center position
+	/// rotation: Rotation
+	/// scale: Scale
+	/// duration: Duration of existence in seconds
+	public static void DrawGizmo3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered = false, float duration = 0f){
+		debug_draw_3d?.Call("draw_gizmo_3d", position, rotation, scale, is_centered, duration);
+	}
+
+	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// transform: Transform
+	/// duration: Duration of existence in seconds
+	public static void DrawGizmo3dXf(Transform transform, bool is_centered = false, float duration = 0f){
+		debug_draw_3d?.Call("draw_gizmo_3d_xf", transform, is_centered, duration);
 	}
 
 	/// Begin text group

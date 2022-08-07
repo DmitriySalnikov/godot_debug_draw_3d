@@ -75,7 +75,7 @@
 	}                                                     \
 	return getter
 
-#define NEED_LEAVE (!debug_enabled || !isReady)
+#define NEED_LEAVE (!debug_enabled || !is_ready)
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
 int DebugDraw3D::instance_counter = 0;
@@ -90,7 +90,7 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(_ready);
 	REG_METHOD(_process);
 
-	REG_METHOD(OnCanvaItemDraw);
+	REG_METHOD(on_canva_item_draw);
 
 #pragma region Constants
 #define CONST_REG(_enum, _const) \
@@ -101,12 +101,12 @@ void DebugDraw3D::_register_methods() {
 	CONST_REG(BlockPosition, LeftBottom);
 	CONST_REG(BlockPosition, RightBottom);
 
-	CONST_REG(FPSGraphTextFlags, None);
-	CONST_REG(FPSGraphTextFlags, Current);
-	CONST_REG(FPSGraphTextFlags, Avarage);
-	CONST_REG(FPSGraphTextFlags, Max);
-	CONST_REG(FPSGraphTextFlags, Min);
-	CONST_REG(FPSGraphTextFlags, All);
+	CONST_REG(GraphTextFlags, None);
+	CONST_REG(GraphTextFlags, Current);
+	CONST_REG(GraphTextFlags, Avarage);
+	CONST_REG(GraphTextFlags, Max);
+	CONST_REG(GraphTextFlags, Min);
+	CONST_REG(GraphTextFlags, All);
 
 #undef CONST_REG
 #pragma endregion
@@ -122,6 +122,7 @@ void DebugDraw3D::_register_methods() {
 	REG_PROP_BOOL(draw_instance_bounds, false);
 	REG_PROP_BOOL(use_frustum_culling, true);
 	REG_PROP_BOOL(force_use_camera_from_scene, false);
+	REG_PROP(graphs_base_offset, Vector2(8, 8));
 	REG_PROP(text_block_position, (int)BlockPosition::LeftTop);
 	REG_PROP(text_block_offset, Vector2(8, 8));
 	REG_PROP(text_padding, Vector2(2, 1));
@@ -148,6 +149,9 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_sphere);
 	REG_METHOD(draw_sphere_xf);
 
+	REG_METHOD(draw_sphere_hd);
+	REG_METHOD(draw_sphere_hd_xf);
+
 	REG_METHOD(draw_cylinder);
 	REG_METHOD(draw_cylinder_xf);
 
@@ -160,6 +164,7 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_line_3d_hit_offset);
 
 	REG_METHOD(draw_line_3d);
+	REG_METHOD(draw_lines_3d);
 	REG_METHOD(draw_ray_3d);
 	REG_METHOD(draw_line_path_3d);
 
@@ -174,6 +179,9 @@ void DebugDraw3D::_register_methods() {
 
 	REG_METHOD(draw_position_3d);
 	REG_METHOD(draw_position_3d_xf);
+
+	REG_METHOD(draw_gizmo_3d);
+	REG_METHOD(draw_gizmo_3d_xf);
 
 	REG_METHOD(begin_text_group);
 	REG_METHOD(end_text_group);
@@ -219,13 +227,14 @@ void DebugDraw3D::_enter_tree() {
 	if (IS_EDITOR_HINT()) {
 		text_block_position = BlockPosition::LeftBottom;
 		text_block_offset = Vector2(24, 24);
+		graphs_base_offset = Vector2(12, 72);
 	}
 
 	set_process_priority(INT32_MAX);
 
 	grouped_text = std::make_unique<GroupedText>(this);
-	data_graphs = std::make_unique<DataGraphManager>();
-	_dgc = std::make_unique<DebugGeometryContainer>(this);
+	data_graphs = std::make_unique<DataGraphManager>(this);
+	dgc = std::make_unique<DebugGeometryContainer>(this);
 }
 
 void DebugDraw3D::_exit_tree() {
@@ -241,10 +250,10 @@ void DebugDraw3D::_exit_tree() {
 
 	_font.unref();
 
-	if (DefaultCanvas && DefaultCanvas->is_connected("draw", this, TEXT(OnCanvaItemDraw)))
-		DefaultCanvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
-	if (custom_canvas && custom_canvas->is_connected("draw", this, TEXT(OnCanvaItemDraw)))
-		custom_canvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
+	if (default_canvas && default_canvas->is_connected("draw", this, TEXT(on_canva_item_draw)))
+		default_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
+	if (custom_canvas && custom_canvas->is_connected("draw", this, TEXT(on_canva_item_draw)))
+		custom_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
 
 	// Clear editor canvas
 	if (custom_canvas)
@@ -252,7 +261,7 @@ void DebugDraw3D::_exit_tree() {
 }
 
 void DebugDraw3D::_ready() {
-	isReady = true;
+	is_ready = true;
 
 	// Funny hack to get default font
 	{
@@ -268,13 +277,13 @@ void DebugDraw3D::_ready() {
 	// Create canvas item and canvas layer
 	_canvasLayer = CanvasLayer::_new();
 	_canvasLayer->set_layer(64);
-	DefaultCanvas = Node2D::_new();
+	default_canvas = Node2D::_new();
 
 	if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
-		DefaultCanvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(DefaultCanvas));
+		default_canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(default_canvas));
 
 	add_child(_canvasLayer);
-	_canvasLayer->add_child(DefaultCanvas);
+	_canvasLayer->add_child(default_canvas);
 }
 
 void DebugDraw3D::_process(real_t delta) {
@@ -287,7 +296,7 @@ void DebugDraw3D::_process(real_t delta) {
 	// Update overlay
 	if (_canvasNeedUpdate) {
 		if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
-			DefaultCanvas->update();
+			default_canvas->update();
 		else
 			custom_canvas->update();
 
@@ -297,7 +306,7 @@ void DebugDraw3D::_process(real_t delta) {
 	}
 
 	// Update 3D debug
-	_dgc->UpdateGeometry(delta);
+	dgc->update_geometry(delta);
 
 	// Print logs if needed
 	log_flush_time += delta;
@@ -307,8 +316,8 @@ void DebugDraw3D::_process(real_t delta) {
 	}
 }
 
-void DebugDraw3D::OnCanvaItemDraw(CanvasItem *ci) {
-	RECALL_TO_SINGLETON(OnCanvaItemDraw, ci);
+void DebugDraw3D::on_canva_item_draw(CanvasItem *ci) {
+	RECALL_TO_SINGLETON(on_canva_item_draw, ci);
 
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
@@ -318,6 +327,14 @@ void DebugDraw3D::OnCanvaItemDraw(CanvasItem *ci) {
 
 void DebugDraw3D::mark_canvas_needs_update() {
 	_canvasNeedUpdate = true;
+}
+
+void DebugDraw3D::set_custom_editor_viewport(std::vector<Viewport *> viewports) {
+	custom_editor_viewports = viewports;
+}
+
+std::vector<Viewport *> DebugDraw3D::get_custom_editor_viewport() {
+	return custom_editor_viewports;
 }
 
 #pragma region Exposed Parameters
@@ -377,6 +394,14 @@ void DebugDraw3D::set_force_use_camera_from_scene(bool state) {
 
 bool DebugDraw3D::is_force_use_camera_from_scene() {
 	RECALL_TO_SINGLETON_GETTER(force_use_camera_from_scene, false);
+}
+
+void DebugDraw3D::set_graphs_base_offset(Vector2 offset) {
+	RECALL_TO_SINGLETON_SETTER(graphs_base_offset = offset);
+}
+
+Vector2 DebugDraw3D::get_graphs_base_offset() {
+	RECALL_TO_SINGLETON_GETTER(graphs_base_offset, Vector2());
 }
 
 void DebugDraw3D::set_text_block_position(int position) {
@@ -462,19 +487,19 @@ Viewport *DebugDraw3D::get_custom_viewport() {
 void DebugDraw3D::set_custom_canvas(CanvasItem *canvas) {
 	RECALL_TO_SINGLETON(set_custom_canvas, canvas);
 
-	bool connected_internal = DefaultCanvas && DefaultCanvas->is_connected("draw", this, TEXT(OnCanvaItemDraw));
-	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", this, TEXT(OnCanvaItemDraw));
+	bool connected_internal = default_canvas && default_canvas->is_connected("draw", this, TEXT(on_canva_item_draw));
+	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", this, TEXT(on_canva_item_draw));
 
 	if (!canvas) {
 		if (!connected_internal)
-			DefaultCanvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(DefaultCanvas));
+			default_canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(default_canvas));
 		if (connected_custom)
-			custom_canvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
+			custom_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
 	} else {
 		if (connected_internal)
-			DefaultCanvas->disconnect("draw", this, TEXT(OnCanvaItemDraw));
+			default_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
 		if (!connected_custom)
-			canvas->connect("draw", this, TEXT(OnCanvaItemDraw), Array::make(canvas));
+			canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(canvas));
 	}
 
 	custom_canvas = canvas;
@@ -490,19 +515,19 @@ CanvasItem *DebugDraw3D::get_custom_canvas() {
 
 Dictionary DebugDraw3D::get_rendered_primitives_count() {
 	RECALL_TO_SINGLETON_NA_RET(get_rendered_primitives_count, Dictionary());
-	if (!isReady) return Dictionary();
-	return _dgc->get_rendered_primitives_count();
+	if (!is_ready) return Dictionary();
+	return dgc->get_rendered_primitives_count();
 }
 
 void DebugDraw3D::clear_3d_objects() {
 	RECALL_TO_SINGLETON_NA(clear_3d_objects);
-	if (!isReady) return;
-	_dgc->clear_3d_objects();
+	if (!is_ready) return;
+	dgc->clear_3d_objects();
 }
 
 void DebugDraw3D::clear_2d_objects() {
 	RECALL_TO_SINGLETON_NA(clear_2d_objects);
-	if (!isReady) return;
+	if (!is_ready) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_needs_update();
@@ -510,7 +535,7 @@ void DebugDraw3D::clear_2d_objects() {
 
 void DebugDraw3D::clear_all() {
 	RECALL_TO_SINGLETON_NA(clear_all);
-	if (!isReady) return;
+	if (!is_ready) return;
 	clear_2d_objects();
 	clear_3d_objects();
 }
@@ -520,7 +545,7 @@ void DebugDraw3D::clear_all() {
 #define RECALL_TO_SINGLETON_CALL_DGC(func, ...) \
 	RECALL_TO_SINGLETON(func, __VA_ARGS__);     \
 	if (NEED_LEAVE || freeze_3d_render) return; \
-	_dgc->func(__VA_ARGS__)
+	dgc->func(__VA_ARGS__)
 
 #pragma region Spheres
 
@@ -530,6 +555,14 @@ void DebugDraw3D::draw_sphere(Vector3 position, float radius, Color color, float
 
 void DebugDraw3D::draw_sphere_xf(Transform transform, Color color, float duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_xf, transform, color, duration);
+}
+
+void DebugDraw3D::draw_sphere_hd(Vector3 position, float radius, Color color, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd, position, radius, color, duration);
+}
+
+void DebugDraw3D::draw_sphere_hd_xf(Transform transform, Color color, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd_xf, transform, color, duration);
 }
 
 #pragma endregion // Spheres
@@ -577,6 +610,10 @@ void DebugDraw3D::draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hi
 
 void DebugDraw3D::draw_line_3d(Vector3 a, Vector3 b, Color color, float duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d, a, b, color, duration);
+}
+
+void DebugDraw3D::draw_lines_3d(PoolVector3Array lines, Color color, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_lines_3d, lines, color, duration);
 }
 
 void DebugDraw3D::draw_ray_3d(Vector3 origin, Vector3 direction, float length, Color color, float duration) {
@@ -628,6 +665,14 @@ void DebugDraw3D::draw_position_3d(Vector3 position, Quat rotation, Vector3 scal
 
 void DebugDraw3D::draw_position_3d_xf(Transform transform, Color color, float duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_position_3d_xf, transform, color, duration);
+}
+
+void DebugDraw3D::draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo_3d, position, rotation, scale, is_centered, duration);
+}
+
+void DebugDraw3D::draw_gizmo_3d_xf(Transform transform, bool is_centered, float duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo_3d_xf, transform, is_centered, duration);
 }
 
 #pragma endregion // Misc

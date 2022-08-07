@@ -7,16 +7,16 @@ var debug_draw_3d: Node = null
 
 ### Constants
 
-var BlockPosition_LeftTop
-var BlockPosition_RightTop
-var BlockPosition_LeftBottom
-var BlockPosition_RightBottom
-var FPSGraphTextFlags_None
-var FPSGraphTextFlags_Current
-var FPSGraphTextFlags_Avarage
-var FPSGraphTextFlags_Max
-var FPSGraphTextFlags_Min
-var FPSGraphTextFlags_All
+var BlockPosition_LeftTop = 0
+var BlockPosition_RightTop = 0
+var BlockPosition_LeftBottom = 0
+var BlockPosition_RightBottom = 0
+var GraphTextFlags_None = 0
+var GraphTextFlags_Current = 0
+var GraphTextFlags_Avarage = 0
+var GraphTextFlags_Max = 0
+var GraphTextFlags_Min = 0
+var GraphTextFlags_All = 0
 
 
 ### Init
@@ -30,12 +30,12 @@ func _init() -> void:
 		BlockPosition_RightTop = debug_draw_3d.BlockPosition_RightTop
 		BlockPosition_LeftBottom = debug_draw_3d.BlockPosition_LeftBottom
 		BlockPosition_RightBottom = debug_draw_3d.BlockPosition_RightBottom
-		FPSGraphTextFlags_None = debug_draw_3d.FPSGraphTextFlags_None
-		FPSGraphTextFlags_Current = debug_draw_3d.FPSGraphTextFlags_Current
-		FPSGraphTextFlags_Avarage = debug_draw_3d.FPSGraphTextFlags_Avarage
-		FPSGraphTextFlags_Max = debug_draw_3d.FPSGraphTextFlags_Max
-		FPSGraphTextFlags_Min = debug_draw_3d.FPSGraphTextFlags_Min
-		FPSGraphTextFlags_All = debug_draw_3d.FPSGraphTextFlags_All
+		GraphTextFlags_None = debug_draw_3d.GraphTextFlags_None
+		GraphTextFlags_Current = debug_draw_3d.GraphTextFlags_Current
+		GraphTextFlags_Avarage = debug_draw_3d.GraphTextFlags_Avarage
+		GraphTextFlags_Max = debug_draw_3d.GraphTextFlags_Max
+		GraphTextFlags_Min = debug_draw_3d.GraphTextFlags_Min
+		GraphTextFlags_All = debug_draw_3d.GraphTextFlags_All
 
 func _enter_tree() -> void:
 	if !Engine.editor_hint and debug_draw_3d:
@@ -73,6 +73,9 @@ var use_frustum_culling: bool setget set_use_frustum_culling, is_use_frustum_cul
 ## Force use camera placed on edited scene. Usable for editor.
 var force_use_camera_from_scene: bool setget set_force_use_camera_from_scene, is_force_use_camera_from_scene
 
+## Base offset for all graphs
+var graphs_base_offset: Vector2 setget set_graphs_base_offset, get_graphs_base_offset
+
 ## Position of text block
 var text_block_position: int setget set_text_block_position, get_text_block_position
 
@@ -100,7 +103,7 @@ var line_hit_color: Color setget set_line_hit_color, get_line_hit_color
 ## Color of line after hit
 var line_after_hit_color: Color setget set_line_after_hit_color, get_line_after_hit_color
 
-## Custom 'Viewport' to use for frustum culling. Usually used in editor.
+## Custom 'Viewport' to use for frustum culling.
 var custom_viewport: Viewport setget set_custom_viewport, get_custom_viewport
 
 ## Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
@@ -139,6 +142,21 @@ func draw_sphere(position: Vector3, radius: float = 0.5, color: Color = empty_co
 ## duration: Duration of existence in seconds
 func draw_sphere_xf(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
 	if debug_draw_3d: debug_draw_3d.draw_sphere_xf(transform, color, duration)
+
+## Draw sphere with higher lines count
+## position: Position of the sphere center
+## radius: Sphere radius
+## color: Sphere color
+## duration: Duration of existence in seconds
+func draw_sphere_hd(position: Vector3, radius: float = 0.5, color: Color = empty_color, duration: float = 0) -> void:
+	if debug_draw_3d: debug_draw_3d.draw_sphere_hd(position, radius, color, duration)
+
+## Draw sphere with higher lines count
+## transform: Transform of the sphere
+## color: Sphere color
+## duration: Duration of existence in seconds
+func draw_sphere_hd_xf(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
+	if debug_draw_3d: debug_draw_3d.draw_sphere_hd_xf(transform, color, duration)
 
 ## Draw vertical cylinder
 ## position: Center position
@@ -219,6 +237,13 @@ func draw_line_3d_hit_offset(start: Vector3, end: Vector3, is_hit: bool, unit_of
 func draw_line_3d(a: Vector3, b: Vector3, color: Color = empty_color, duration: float = 0) -> void:
 	if debug_draw_3d: debug_draw_3d.draw_line_3d(a, b, color, duration)
 
+## Draw many line
+## lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
+## color: Line color
+## duration: Duration of existence in seconds
+func draw_lines_3d(lines: PoolVector3Array, color: Color = empty_color, duration: float = 0) -> void:
+	if debug_draw_3d: debug_draw_3d.draw_lines_3d(lines, color, duration)
+
 ## Draw ray
 ## origin: Origin
 ## direction: Direction
@@ -242,7 +267,7 @@ func draw_line_path_3d(path: PoolVector3Array, color: Color = empty_color, durat
 ## duration: Duration of existence in seconds
 ## arrowSize: Size of the arrow
 ## absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-func draw_arrow_line_3d(a: Vector3, b: Vector3, color: Color = empty_color, arrow_size: float = 0.5, absolute_size: bool = true, duration: float = 0) -> void:
+func draw_arrow_line_3d(a: Vector3, b: Vector3, color: Color = empty_color, arrow_size: float = 0.5, absolute_size: bool = false, duration: float = 0) -> void:
 	if debug_draw_3d: debug_draw_3d.draw_arrow_line_3d(a, b, color, arrow_size, absolute_size, duration)
 
 ## Draw ray with arrow
@@ -253,7 +278,7 @@ func draw_arrow_line_3d(a: Vector3, b: Vector3, color: Color = empty_color, arro
 ## duration: Duration of existence in seconds
 ## arrowSize: Size of the arrow
 ## absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-func draw_arrow_ray_3d(origin: Vector3, direction: Vector3, length: float, color: Color = empty_color, arrow_size: float = 0.5, absolute_size: bool = true, duration: float = 0) -> void:
+func draw_arrow_ray_3d(origin: Vector3, direction: Vector3, length: float, color: Color = empty_color, arrow_size: float = 0.5, absolute_size: bool = false, duration: float = 0) -> void:
 	if debug_draw_3d: debug_draw_3d.draw_arrow_ray_3d(origin, direction, length, color, arrow_size, absolute_size, duration)
 
 ## Draw a sequence of points connected by lines with arrows
@@ -302,6 +327,20 @@ func draw_position_3d(position: Vector3, rotation: Quat, scale: Vector3, color: 
 ## duration: Duration of existence in seconds
 func draw_position_3d_xf(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
 	if debug_draw_3d: debug_draw_3d.draw_position_3d_xf(transform, color, duration)
+
+## Draw 3 intersecting lines with the given transformations and arrows at the ends
+## position: Center position
+## rotation: Rotation
+## scale: Scale
+## duration: Duration of existence in seconds
+func draw_gizmo_3d(position: Vector3, rotation: Quat, scale: Vector3, is_centered: bool = false, duration: float = 0) -> void:
+	if debug_draw_3d: debug_draw_3d.draw_gizmo_3d(position, rotation, scale, is_centered, duration)
+
+## Draw 3 intersecting lines with the given transformations and arrows at the ends
+## transform: Transform
+## duration: Duration of existence in seconds
+func draw_gizmo_3d_xf(transform: Transform, is_centered: bool = false, duration: float = 0) -> void:
+	if debug_draw_3d: debug_draw_3d.draw_gizmo_3d_xf(transform, is_centered, duration)
 
 ## Begin text group
 ## groupTitle: Group title and ID
@@ -368,119 +407,126 @@ func get_graph_names() -> PoolStringArray:
 ### Parameters Setget's
 
 func set_recall_to_singleton(val):
-	debug_draw_3d.recall_to_singleton = val
+	if debug_draw_3d: debug_draw_3d.recall_to_singleton = val
 
 func is_recall_to_singleton() -> bool:
 	if debug_draw_3d: return debug_draw_3d.recall_to_singleton
 	else: return bool()
 
 func set_debug_enabled(val):
-	debug_draw_3d.debug_enabled = val
+	if debug_draw_3d: debug_draw_3d.debug_enabled = val
 
 func is_debug_enabled() -> bool:
 	if debug_draw_3d: return debug_draw_3d.debug_enabled
 	else: return bool()
 
 func set_freeze_3d_render(val):
-	debug_draw_3d.freeze_3d_render = val
+	if debug_draw_3d: debug_draw_3d.freeze_3d_render = val
 
 func is_freeze_3d_render() -> bool:
 	if debug_draw_3d: return debug_draw_3d.freeze_3d_render
 	else: return bool()
 
 func set_draw_instance_bounds(val):
-	debug_draw_3d.draw_instance_bounds = val
+	if debug_draw_3d: debug_draw_3d.draw_instance_bounds = val
 
 func is_draw_instance_bounds() -> bool:
 	if debug_draw_3d: return debug_draw_3d.draw_instance_bounds
 	else: return bool()
 
 func set_use_frustum_culling(val):
-	debug_draw_3d.use_frustum_culling = val
+	if debug_draw_3d: debug_draw_3d.use_frustum_culling = val
 
 func is_use_frustum_culling() -> bool:
 	if debug_draw_3d: return debug_draw_3d.use_frustum_culling
 	else: return bool()
 
 func set_force_use_camera_from_scene(val):
-	debug_draw_3d.force_use_camera_from_scene = val
+	if debug_draw_3d: debug_draw_3d.force_use_camera_from_scene = val
 
 func is_force_use_camera_from_scene() -> bool:
 	if debug_draw_3d: return debug_draw_3d.force_use_camera_from_scene
 	else: return bool()
 
+func set_graphs_base_offset(val):
+	if debug_draw_3d: debug_draw_3d.graphs_base_offset = val
+
+func get_graphs_base_offset() -> Vector2:
+	if debug_draw_3d: return debug_draw_3d.graphs_base_offset
+	else: return Vector2()
+
 func set_text_block_position(val):
-	debug_draw_3d.text_block_position = val
+	if debug_draw_3d: debug_draw_3d.text_block_position = val
 
 func get_text_block_position() -> int:
 	if debug_draw_3d: return debug_draw_3d.text_block_position
 	else: return int()
 
 func set_text_block_offset(val):
-	debug_draw_3d.text_block_offset = val
+	if debug_draw_3d: debug_draw_3d.text_block_offset = val
 
 func get_text_block_offset() -> Vector2:
 	if debug_draw_3d: return debug_draw_3d.text_block_offset
 	else: return Vector2()
 
 func set_text_padding(val):
-	debug_draw_3d.text_padding = val
+	if debug_draw_3d: debug_draw_3d.text_padding = val
 
 func get_text_padding() -> Vector2:
 	if debug_draw_3d: return debug_draw_3d.text_padding
 	else: return Vector2()
 
 func set_text_default_duration(val):
-	debug_draw_3d.text_default_duration = val
+	if debug_draw_3d: debug_draw_3d.text_default_duration = val
 
 func get_text_default_duration() -> float:
 	if debug_draw_3d: return debug_draw_3d.text_default_duration
 	else: return float()
 
 func set_text_foreground_color(val):
-	debug_draw_3d.text_foreground_color = val
+	if debug_draw_3d: debug_draw_3d.text_foreground_color = val
 
 func get_text_foreground_color() -> Color:
 	if debug_draw_3d: return debug_draw_3d.text_foreground_color
 	else: return Color()
 
 func set_text_background_color(val):
-	debug_draw_3d.text_background_color = val
+	if debug_draw_3d: debug_draw_3d.text_background_color = val
 
 func get_text_background_color() -> Color:
 	if debug_draw_3d: return debug_draw_3d.text_background_color
 	else: return Color()
 
 func set_text_custom_font(val):
-	debug_draw_3d.text_custom_font = val
+	if debug_draw_3d: debug_draw_3d.text_custom_font = val
 
 func get_text_custom_font() -> Font:
 	if debug_draw_3d: return debug_draw_3d.text_custom_font
 	else: return null
 
 func set_line_hit_color(val):
-	debug_draw_3d.line_hit_color = val
+	if debug_draw_3d: debug_draw_3d.line_hit_color = val
 
 func get_line_hit_color() -> Color:
 	if debug_draw_3d: return debug_draw_3d.line_hit_color
 	else: return Color()
 
 func set_line_after_hit_color(val):
-	debug_draw_3d.line_after_hit_color = val
+	if debug_draw_3d: debug_draw_3d.line_after_hit_color = val
 
 func get_line_after_hit_color() -> Color:
 	if debug_draw_3d: return debug_draw_3d.line_after_hit_color
 	else: return Color()
 
 func set_custom_viewport(val):
-	debug_draw_3d.custom_viewport = val
+	if debug_draw_3d: debug_draw_3d.custom_viewport = val
 
 func get_custom_viewport() -> Viewport:
 	if debug_draw_3d: return debug_draw_3d.custom_viewport
 	else: return null
 
 func set_custom_canvas(val):
-	debug_draw_3d.custom_canvas = val
+	if debug_draw_3d: debug_draw_3d.custom_canvas = val
 
 func get_custom_canvas() -> CanvasItem:
 	if debug_draw_3d: return debug_draw_3d.custom_canvas

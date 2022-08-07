@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "circular_buffer.h"
 #include "math_utils.h"
@@ -17,35 +17,35 @@ class GraphParameters : public Reference {
 	GODOT_CLASS(GraphParameters, Reference);
 
 	/// Is FPSGraph enabled
-	bool FPSGraphEnabled = true;
+	bool enabled = true;
 	/// Draw Graph title
-	bool FPSGraphShowTitle = false;
+	bool show_title = false;
 	/// Switch between frame time and FPS modes
-	bool FPSGraphFrameTimeMode = true;
+	bool frametime_mode = true;
 	/// Draw a graph line aligned vertically in the center
-	bool FPSGraphCenteredGraphLine = true;
-	/// Sets the text visibility *FPSGraphTextFlags*
-	int FPSGraphShowTextFlags = 15 /*FPSGraphTextFlags::All*/;
-	/// Size of the FPS Graph. The width is equal to the number of stored frames.
-	Vector2 FPSGraphSize = Vector2(256, 64);
-	/// Size of the FPS Graph. The width is equal to the number of stored frames.
-	int FPSBufferSize = 256;
-	/// Offset from the corner selected in <see cref="FPSGraphPosition"/>
-	Vector2 FPSGraphOffset = Vector2(8, 8);
+	bool centered_graph_line = true;
+	/// Sets the text visibility *GraphTextFlags*
+	int show_text_flags = 15 /*GraphTextFlags::All*/;
+	/// The size of the graph. The width is equal to the number of saved frames.
+	Vector2 size = Vector2(256, 64);
+	/// The size of the buffer where the values are stored.
+	int buffer_size = 256;
+	/// Offset from the corner selected in position
+	Vector2 offset = Vector2(0, 8);
 	/// FPS Graph position *BlockPosition*
-	int FPSGraphPosition = 1 /*BlockPosition::RightTop*/;
+	int position = 1 /*BlockPosition::RightTop*/;
 	/// Graph line color
-	Color FPSGraphLineColor = Colors::orange_red;
+	Color line_color = Colors::orange_red;
 	/// Color of the info text
-	Color FPSGraphTextColor = Colors::white_smoke;
+	Color text_color = Colors::white_smoke;
 	/// Background color
-	Color FPSGraphBackgroundColor = Colors::gray_graph_bg;
+	Color background_color = Colors::gray_graph_bg;
 	/// Border color
-	Color FPSGraphBorderColor = Colors::black;
+	Color border_color = Colors::black;
 	/// Border color
-	String FPSGraphTextSuffix = "";
+	String text_suffix = "";
 	/// Custom Font
-	Ref<Font> FPSGraphCustomFont = nullptr;
+	Ref<Font> custom_font = nullptr;
 
 public:
 	static void _register_methods();
@@ -59,8 +59,8 @@ public:
 	bool is_frame_time_mode();
 	void set_centered_graph_line(bool state);
 	bool is_centered_graph_line();
-	void set_show_text_flags(int /*FPSGraphTextFlags*/ flags);
-	int /*FPSGraphTextFlags*/ get_show_text_flags();
+	void set_show_text_flags(int /*GraphTextFlags*/ flags);
+	int /*GraphTextFlags*/ get_show_text_flags();
 	void set_size(Vector2 size);
 	Vector2 get_size();
 	void set_buffer_size(int buf_size);
@@ -79,7 +79,7 @@ public:
 	Color get_border_color();
 	void set_text_suffix(String suffix);
 	String get_text_suffix();
-	void set_custom_font(Ref<Font> custom_font);
+	void set_custom_font(Ref<Font> _custom_font);
 	Ref<Font> get_custom_font();
 };
 
@@ -106,7 +106,7 @@ public:
 	void update(real_t value);
 
 	// Must return edge Y to render next graph with this offset
-	real_t draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, real_t y_offset);
+	Vector2 draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset);
 };
 
 class FPSGraph : public DataGraph {
@@ -129,8 +129,12 @@ class DataGraphManager {
 	};
 	std::map<String, std::shared_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
 	std::recursive_mutex datalock;
+	class DebugDraw3D *owner;
 
 public:
+	DataGraphManager(class DebugDraw3D *root);
+	~DataGraphManager();
+
 	Ref<GraphParameters> create_graph(String title);
 	Ref<GraphParameters> create_fps_graph(String title);
 	void _update_fps(real_t delta);

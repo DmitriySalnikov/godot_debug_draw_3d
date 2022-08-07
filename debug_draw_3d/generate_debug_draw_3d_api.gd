@@ -106,7 +106,7 @@ func __get_default_value(type: String, str_val: String):
 		"int":
 			return int(str_val)
 		"bool":
-			return bool(str_val)
+			return str_val == "true"
 		"Variant":
 			return str2var(str_val)
 	
@@ -230,7 +230,7 @@ var debug_draw_3d: Node = null
 	res.append("\n### Constants\n")
 	
 	for c in data.int_constants:
-		res.append("var %s" % [c])
+		res.append("var %s = 0" % [c])
 	
 	res.append(
 """
@@ -293,7 +293,7 @@ func get_singleton() -> Node:
 	for p in data.params:
 		var setgets: PoolStringArray = __gdscript_setget_names(p.type, p.name)
 		res.append("""func %s(val):
-	debug_draw_3d.%s = val
+	if debug_draw_3d: debug_draw_3d.%s = val
 
 func %s() -> %s:
 	if debug_draw_3d: return debug_draw_3d.%s
@@ -352,7 +352,7 @@ public class DebugDrawCS : Node
 	res.append("\n	/// Constants\n")
 	
 	for c in data.int_constants:
-		res.append("	public static int %s { get; private set; }" % [c])
+		res.append("	public static int %s { get; private set; } = 0;" % [c])
 	
 	res.append("\n\n	/// Parameters\n")
 	
