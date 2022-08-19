@@ -4,6 +4,7 @@ extends EditorScript
 const input_header = "debug_draw.h"
 const out_gdscript = "res://addons/debug_draw_3d/debug_draw.gd"
 const out_csharp = "res://addons/debug_draw_3d/DebugDrawCS.cs"
+const out_gdscript_dummy = "res://addons/debug_draw_3d/debug_draw_dummy.gd"
 
 class DebugDrawHeader:
 	var int_constants: PoolStringArray
@@ -76,6 +77,10 @@ func _run() -> void:
 	
 	f.open(out_gdscript, File.WRITE)
 	f.store_string(_generate_gdscript(data).join("\n"))
+	f.close()
+	
+	f.open(out_gdscript_dummy, File.WRITE)
+	f.store_string(_generate_gdscript(data, true).join("\n"))
 	f.close()
 	
 	f.open(out_csharp, File.WRITE)
@@ -217,65 +222,79 @@ func __gdscript_get_default_return_val(type: String) -> String:
 		return type + "()"
 	return "WTF IS THIS??"
 
-func _generate_gdscript(data: DebugDrawHeader) -> PoolStringArray:
+func _generate_gdscript(data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
 	var res: PoolStringArray
 	res.append(
 """tool
 extends Node
 
 const empty_color = Color(0,0,0,0)
-var debug_draw_3d: Node = null
 """)
+	
+	if !is_dummy_imp:
+		res.append("var _debug_draw_3d: Node = null")
 	
 	res.append("\n### Constants\n")
 	
 	for c in data.int_constants:
 		res.append("var %s = 0" % [c])
 	
-	res.append(
+	if !is_dummy_imp:
+		res.append(
 """
 
 ### Init
 
 func _init() -> void:
 	var f = File.new()
-	if f.file_exists("res://addons/debug_draw_3d/debug_draw_3d.gdns"):
-		debug_draw_3d = load("res://addons/debug_draw_3d/debug_draw_3d.gdns").new()
+	if f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
+		_debug_draw_3d = load("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns").new()
 		""")
-	
-	for c in data.int_constants:
-		res.append("		%s = debug_draw_3d.%s" % [c, c])
-	
-	
-	res.append("""
+		
+		for c in data.int_constants:
+			res.append("		%s = _debug_draw_3d.%s" % [c, c])
+		
+		
+		res.append("""
 func _enter_tree() -> void:
-	if !Engine.editor_hint and debug_draw_3d:
-		if !debug_draw_3d.get_singleton():
-			add_child(debug_draw_3d)
+	if !Engine.editor_hint and _debug_draw_3d:
+		if !_debug_draw_3d.get_singleton():
+			add_child(_debug_draw_3d)
 
 func _exit_tree() -> void:
-	if debug_draw_3d:
-		debug_draw_3d.queue_free()
+	if _debug_draw_3d:
+		_debug_draw_3d.queue_free()
 
 func get_singleton() -> Node:
-	if debug_draw_3d:
-		return debug_draw_3d.get_singleton()
+	if _debug_draw_3d:
+		return _debug_draw_3d.get_singleton()
 	else:
 		return null""")
+		
+	else:
+		res.append("""
+func get_singleton() -> Node:
+	return null""")
 	
 	res.append("\n\n### Parameters\n")
-	for p in data.params:
-		for c in p.comments:
-			res.append("## %s" % c)
-		res.append("var %s: %s setget %s\n" % [p.name, p.type, __gdscript_setget_names(p.type, p.name).join(", ")])
+	if !is_dummy_imp:
+		for p in data.params:
+			for c in p.comments:
+				res.append("## %s" % c)
+			res.append("var %s: %s setget %s\n" % [p.name, p.type, __gdscript_setget_names(p.type, p.name).join(", ")])
+	else:
+		for p in data.params:
+			res.append("var %s: %s" % [p.name, p.type])
 	
 	res.append("\n### Draw Functions\n")
+	
 	for f in data.funcs:
 		if f.name.empty():
 			continue
 		
-		for c in f.comments:
-			res.append("## " + c)
+		if !is_dummy_imp:
+			for c in f.comments:
+				res.append("## " + c)
 		
 		var args: PoolStringArray
 		var args_to_call: PoolStringArray
@@ -287,16 +306,21 @@ func get_singleton() -> Node:
 			else:
 				args.append(a.name)
 			args_to_call.append(a.name)
-		res.append("func %s(%s) -> %s:\n\tif debug_draw_3d: %sdebug_draw_3d.%s(%s)\n%s" % [f.name, args.join(", "), f.ret_type, ("return " if f.ret_type != "void" else ""), f.name, args_to_call.join(", "), (("\telse: return %s\n" % [__gdscript_get_default_return_val(f.ret_type)]) if f.ret_type != "void" else "")])
+		
+		if !is_dummy_imp:
+			res.append("func %s(%s) -> %s:\n\tif _debug_draw_3d: %s_debug_draw_3d.%s(%s)\n%s" % [f.name, args.join(", "), f.ret_type, ("return " if f.ret_type != "void" else ""), f.name, args_to_call.join(", "), (("\telse: return %s\n" % [__gdscript_get_default_return_val(f.ret_type)]) if f.ret_type != "void" else "")])
+		else:
+			res.append("func %s(%s) -> %s:\n\t%s" % [f.name, args.join(", "), f.ret_type, (("return %s" % [__gdscript_get_default_return_val(f.ret_type)]) if f.ret_type != "void" else "pass")])
 	
-	res.append("\n### Parameters Setget's\n")
-	for p in data.params:
-		var setgets: PoolStringArray = __gdscript_setget_names(p.type, p.name)
-		res.append("""func %s(val):
-	if debug_draw_3d: debug_draw_3d.%s = val
+	if !is_dummy_imp:
+		res.append("\n### Parameters Setget's\n")
+		for p in data.params:
+			var setgets: PoolStringArray = __gdscript_setget_names(p.type, p.name)
+			res.append("""func %s(val):
+	if _debug_draw_3d: _debug_draw_3d.%s = val
 
 func %s() -> %s:
-	if debug_draw_3d: return debug_draw_3d.%s
+	if _debug_draw_3d: return _debug_draw_3d.%s
 	else: return %s
 """ % [setgets[0], p.name, setgets[1], p.type, p.name, __gdscript_get_default_return_val(p.type)]);
 	
@@ -325,7 +349,7 @@ func __csharp_default_value_to_str(type: String, value) -> String:
 	
 	return str(value)
 
-func _generate_csharp(data: DebugDrawHeader) -> PoolStringArray:
+func _generate_csharp(data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
 	var remap_types:= {
 		"PoolVector3Array": "Vector3[]",
 		"PoolVector2Array": "Vector2[]",
@@ -357,16 +381,18 @@ public class DebugDrawCS : Node
 	res.append("\n\n	/// Parameters\n")
 	
 	for p in data.params:
+		res.append("	/// <summary>")
 		for c in p.comments:
 			res.append("	/// %s" % c)
+		res.append("	/// </summary>")
 		res.append("	public static %s %s { get => (%s)debug_draw_3d?.Get(\"%s\"); set => debug_draw_3d?.Set(\"%s\", value); }\n" % [p.type, __get_pascal_case_name(p.name), p.type, p.name, p.name])
 	
 	res.append("\n	/// Init")
 	
 	res.append("""	public DebugDrawCS(){
 		var f = new File();
-		if (f.FileExists("res://addons/debug_draw_3d/debug_draw_3d.gdns")){
-			debug_draw_3d = ResourceLoader.Load<NativeScript>(\"res://addons/debug_draw_3d/debug_draw_3d.gdns\").New() as Node;
+		if (f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
+			debug_draw_3d = ResourceLoader.Load<NativeScript>(\"res://addons/debug_draw_3d/libs/debug_draw_3d.gdns\").New() as Node;
 """)
 	
 	for c in data.int_constants:
@@ -403,8 +429,19 @@ public class DebugDrawCS : Node
 		if f.name.empty():
 			continue
 		
+		res.append("	/// <summary>")
+		var end_printed = false
 		for c in f.comments:
-			res.append("	/// " + c)
+			var cs : PoolStringArray = c.split(":")
+			if cs.size() > 1:
+				if !end_printed:
+					end_printed = true
+					res.append("	/// </summary>")
+				res.append("	/// <param name=\"%s\">%s</param>" % [cs[0], cs[1].strip_edges()])
+			else:
+				res.append("	/// " + c)
+		if !end_printed:
+					res.append("	/// </summary>")
 		
 		var args: PoolStringArray
 		var args_to_call: PoolStringArray

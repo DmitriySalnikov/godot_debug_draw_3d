@@ -1,5 +1,7 @@
 #include "data_graphs.h"
 #include "debug_draw.h"
+#include "math_utils.h"
+#include "utils.h"
 
 #include <Engine.hpp>
 
@@ -30,6 +32,22 @@ void GraphParameters::_register_methods() {
 }
 
 void GraphParameters::_init() {
+	enabled = true;
+	show_title = false;
+	frametime_mode = true;
+	centered_graph_line = true;
+	show_text_flags = DebugDraw3D::GraphTextFlags::All;
+	size = Vector2(256, 64);
+	buffer_size = 256;
+	offset = Vector2(0, 8);
+	position = DebugDraw3D::BlockPosition::RightTop;
+	line_color = Colors::orange_red;
+	text_color = Colors::white_smoke;
+	background_color = Colors::gray_graph_bg;
+	border_color = Colors::black;
+	text_suffix = "";
+	custom_font = nullptr;
+
 	if (IS_EDITOR_HINT()) {
 		position = DebugDraw3D::BlockPosition::LeftTop;
 	}
@@ -173,7 +191,7 @@ Ref<GraphParameters> DataGraph::get_config() {
 }
 
 void DataGraph::update(real_t value) {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	if (config->get_buffer_size() != data->buffer_size())
 		// data = CircularBuffer<real_t>(config->get_buffer_size());
@@ -190,12 +208,12 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	if (!config->is_enabled())
 		return base_offset;
 
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	Ref<Font> draw_font = config->get_custom_font().is_null() ? font : config->get_custom_font();
 
 	real_t min, max, avg;
-	Utils::get_min_max_avg(&data, &min, &max, &avg);
+	data->get_min_max_avg(&min, &max, &avg);
 
 	// Truncate for pixel perfect render
 	Vector2 graphSize(Vector2((real_t)(int)config->get_size().x, (real_t)(int)config->get_size().y));
@@ -338,7 +356,7 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instance();
 
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	graphs[title] = std::make_shared<DataGraph>(config);
 	return config;
 }
@@ -347,7 +365,7 @@ Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instance();
 
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	graphs[title] = std::make_shared<FPSGraph>(config);
 	return config;
 }
@@ -384,14 +402,14 @@ void DataGraphManager::update(String title, real_t data) {
 }
 
 void DataGraphManager::remove_graph(String title) {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	if (graphs.count(title)) {
 		graphs.erase(title);
 	}
 }
 
 void DataGraphManager::clear_graphs() {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	graphs.clear();
 }
 
@@ -403,7 +421,7 @@ Ref<GraphParameters> DataGraphManager::get_graph_config(String title) {
 }
 
 PoolStringArray DataGraphManager::get_graph_names() {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	PoolStringArray res;
 	for (auto i : graphs) {

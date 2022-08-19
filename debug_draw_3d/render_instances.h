@@ -23,7 +23,7 @@ enum InstanceType : char {
 	ALL,
 };
 
-template<class TBounds>
+template <class TBounds>
 class DelayedRenderer {
 protected:
 	void _update(real_t exp_time, bool is_vis) {
@@ -43,7 +43,7 @@ public:
 			bounds(),
 			expiration_time(0),
 			is_used_one_time(true),
-			is_visible(false){}
+			is_visible(false) {}
 
 	bool is_expired() const {
 		if (expiration_time > 0) {
@@ -53,22 +53,19 @@ public:
 		return is_used_one_time;
 	}
 
-	bool update_visibility(std::vector<std::vector<Plane> >& frustums, bool skip_expiration_check) {
+	bool update_visibility(std::vector<std::vector<Plane> > &frustums, bool skip_expiration_check) {
 		if (skip_expiration_check || !is_expired()) {
 			if (frustums.size()) {
 				is_visible = false;
-				for (auto &frustum : frustums) {
-					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
+				for (auto &frustum : frustums)
+					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum))
 						return is_visible = true;
-					} else {
-						is_visible = false;
-					}
-				}
+				return false;
 			} else {
 				return is_visible = true;
 			}
 		}
-		return false;
+		return is_visible = false;
 	}
 
 	void update_expiration(real_t delta) {
@@ -84,7 +81,7 @@ public:
 	InstanceType type = InstanceType::CUBES;
 
 	DelayedRendererInstance();
-	void update(real_t _exp_time, bool _is_visible, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds);
+	void update(real_t _exp_time, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds);
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
@@ -92,7 +89,7 @@ class DelayedRendererLine : public DelayedRenderer<AABB> {
 
 public:
 	DelayedRendererLine();
-	void update(real_t _exp_time, bool _is_visible, const std::vector<Vector3> &lines, Color col);
+	void update(real_t _exp_time, const std::vector<Vector3> &lines, Color col);
 
 	void set_lines(std::vector<Vector3> lines);
 	std::vector<Vector3> get_lines();
@@ -109,8 +106,10 @@ private:
 		std::vector<TInst> instant = {};
 		std::vector<TInst> delayed = {};
 		int visible_objects = 0;
+
 		size_t used_instant = 0;
-		size_t prev_not_expired_delayed = 0;
+		size_t _prev_used_instant = 0;
+		size_t _prev_not_expired_delayed = 0;
 		size_t used_delayed = 0;
 		real_t time_used_less_then_half_of_instant_pool = 0;
 		real_t time_used_less_then_quarter_of_delayed_pool = 0;
@@ -122,7 +121,7 @@ private:
 
 		TInst *get(bool is_delayed) {
 			auto objs = is_delayed ? &delayed : &instant;
-			auto used = is_delayed ? &prev_not_expired_delayed : &used_instant;
+			auto used = is_delayed ? &_prev_not_expired_delayed : &used_instant;
 
 			if (is_delayed) {
 				while (objs->size() != (*used)) {
@@ -156,7 +155,7 @@ private:
 			}
 
 			used_instant = 0;
-			prev_not_expired_delayed = 0;
+			_prev_not_expired_delayed = 0;
 
 			if (delayed.size() && used_delayed < (delayed.size() * 0.25)) {
 				time_used_less_then_quarter_of_delayed_pool -= delta;
@@ -182,7 +181,8 @@ private:
 			delayed.clear();
 			used_instant = 0;
 			used_delayed = 0;
-			prev_not_expired_delayed = 0;
+			_prev_used_instant = 0;
+			_prev_not_expired_delayed = 0;
 			time_used_less_then_half_of_instant_pool = 0;
 
 			reset_visible_counter();
@@ -216,6 +216,6 @@ public:
 	void update_visibility(std::vector<std::vector<Plane> > frustums);
 	void update_expiration(real_t delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, bool _is_visible, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
-	void add_or_update_line(real_t _exp_time, bool _is_visible, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
+	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
 };

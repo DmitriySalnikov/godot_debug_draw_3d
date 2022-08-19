@@ -51,36 +51,10 @@ bool MathUtils::is_bounds_partially_inside_convex_shape(AABB bounds, std::vector
 	return true;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(AABB bounds, Array &planes) {
-	Vector3 extent = bounds.size * 0.5f;
-	Vector3 center = bounds.position + extent;
-
-	for (int i = 0; i < planes.size(); i++) {
-		Plane p = planes[i];
-		if (Vector3(center.x - extent.x * Math::sign(p.normal.x),
-					center.y - extent.y * Math::sign(p.normal.y),
-					center.z - extent.z * Math::sign(p.normal.z))
-						.dot(p.normal) > p.d)
-			return false;
-	}
-
-	return true;
-}
-
 bool MathUtils::is_bounds_partially_inside_convex_shape(SphereBounds sphere, std::vector<Plane> planes) {
 	for (Plane p : planes)
 		if (p.distance_to(sphere.Position) >= sphere.Radius)
 			return false;
-
-	return true;
-}
-
-bool MathUtils::is_bounds_partially_inside_convex_shape(SphereBounds sphere, Array planes) {
-	for (int i = 0; i < planes.size(); i++) {
-		Plane p = planes[i];
-		if (p.distance_to(sphere.Position) >= sphere.Radius)
-			return false;
-	}
 
 	return true;
 }

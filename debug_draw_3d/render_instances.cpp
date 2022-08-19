@@ -9,8 +9,8 @@ DelayedRendererInstance::DelayedRendererInstance() :
 	DEBUG_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
 }
 
-void DelayedRendererInstance::update(real_t _exp_time, bool _is_visible, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds) {
-	_update(_exp_time, _is_visible);
+void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds) {
+	_update(_exp_time, true);
 
 	type = _type;
 	bounds = _bounds;
@@ -23,8 +23,8 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEBUG_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(real_t _exp_time, bool _is_visible, const std::vector<Vector3> &lines, Color col) {
-	_update(_exp_time, _is_visible);
+void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &lines, Color col) {
+	_update(_exp_time, true);
 
 	set_lines(lines);
 	color = col;
@@ -87,17 +87,17 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 			o.is_used_one_time = true;
 			if (o.is_visible) {
 				last_added++;
-				w[id + 0] = o.transform.basis[0][0];
-				w[id + 1] = o.transform.basis[1][0];
-				w[id + 2] = o.transform.basis[2][0];
+				w[id + 0] = o.transform.basis.elements[0][0];
+				w[id + 1] = o.transform.basis.elements[0][1];
+				w[id + 2] = o.transform.basis.elements[0][2];
 				w[id + 3] = o.transform.origin.x;
-				w[id + 4] = o.transform.basis[0][1];
-				w[id + 5] = o.transform.basis[1][1];
-				w[id + 6] = o.transform.basis[2][1];
+				w[id + 4] = o.transform.basis.elements[1][0];
+				w[id + 5] = o.transform.basis.elements[1][1];
+				w[id + 6] = o.transform.basis.elements[1][2];
 				w[id + 7] = o.transform.origin.y;
-				w[id + 8] = o.transform.basis[0][2];
-				w[id + 9] = o.transform.basis[1][2];
-				w[id + 10] = o.transform.basis[2][2];
+				w[id + 8] = o.transform.basis.elements[2][0];
+				w[id + 9] = o.transform.basis.elements[2][1];
+				w[id + 10] = o.transform.basis.elements[2][2];
 				w[id + 11] = o.transform.origin.z;
 				w[id + 12] = o.color[0];
 				w[id + 13] = o.color[1];
@@ -109,6 +109,7 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 		for (size_t i = 0; i < instances[type].used_instant; i++) {
 			write_data(instances[type].instant[i]);
 		}
+		instances[type]._prev_used_instant = instances[type].used_instant;
 
 		instances[type].used_delayed = 0;
 		for (size_t i = 0; i < instances[type].delayed.size(); i++) {
@@ -137,6 +138,7 @@ void GeometryPool::fill_lines_data(ImmediateGeometry *ig) {
 		}
 		o.is_used_one_time = true;
 	}
+	lines._prev_used_instant = lines.used_instant;
 
 	lines.used_delayed = 0;
 	for (size_t i = 0; i < lines.delayed.size(); i++) {
@@ -184,7 +186,7 @@ void GeometryPool::reset_visible_objects() {
 }
 
 size_t GeometryPool::get_used_instances_instant(InstanceType type) {
-	return instances[type].used_instant;
+	return instances[type]._prev_used_instant;
 }
 
 size_t GeometryPool::get_used_instances_delayed(InstanceType type) {
@@ -194,18 +196,18 @@ size_t GeometryPool::get_used_instances_delayed(InstanceType type) {
 size_t GeometryPool::get_used_instances_total() {
 	size_t sum = 0;
 	for (auto &i : instances) {
-		sum += i.used_instant;
+		sum += i._prev_used_instant;
 		sum += i.used_delayed;
 	}
 	return sum;
 }
 
 size_t GeometryPool::get_used_lines_total() {
-	return lines.used_instant + lines.used_delayed;
+	return lines._prev_used_instant + lines.used_delayed;
 }
 
 size_t GeometryPool::get_used_lines_instant() {
-	return lines.used_instant;
+	return lines._prev_used_instant;
 }
 
 size_t GeometryPool::get_used_lines_delayed() {
@@ -242,8 +244,6 @@ void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> func
 }
 
 void GeometryPool::update_visibility(std::vector<std::vector<Plane> > frustums) {
-	reset_visible_objects();
-
 	for (auto &t : instances) {
 		for (size_t i = 0; i < t.used_instant; i++)
 			t.instant[i].update_visibility(frustums, true);
@@ -293,16 +293,16 @@ void GeometryPool::scan_visible_instances() {
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, bool _is_visible, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd) {
+void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd) {
 	DelayedRendererInstance *inst = instances[_type].get(_exp_time > 0);
-	inst->update(_exp_time, _is_visible, _type, _transform, _col, _bounds);
+	inst->update(_exp_time, _type, _transform, _col, _bounds);
 	if (custom_upd)
 		custom_upd(inst);
 }
 
-void GeometryPool::add_or_update_line(real_t _exp_time, bool _is_visible, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd) {
+void GeometryPool::add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd) {
 	DelayedRendererLine *inst = lines.get(_exp_time > 0);
-	inst->update(_exp_time, _is_visible, _lines, _col);
+	inst->update(_exp_time, _lines, _col);
 	if (custom_upd)
 		custom_upd(inst);
 }

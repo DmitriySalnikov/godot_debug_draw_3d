@@ -1,0 +1,7 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://addons/debug_draw_3d/libs/debug_draw_3d.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+class_name = "DebugDraw3DEditorPlugin"
+library = ExtResource( 1 )

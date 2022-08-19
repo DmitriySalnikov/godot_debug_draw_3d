@@ -8,7 +8,6 @@ using namespace godot;
 
 class GeometryGenerator {
 public:
-
 #pragma region Predefined Geometry Parts
 
 	const static Vector3 CenteredCubeVertices[8];

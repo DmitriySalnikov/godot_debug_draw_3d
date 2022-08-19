@@ -16,9 +16,7 @@ public:
 
 	static void get_diagonal_vectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag);
 	static bool is_bounds_partially_inside_convex_shape(AABB bounds, std::vector<Plane> &planes);
-	static bool is_bounds_partially_inside_convex_shape(AABB bounds, Array &planes);
 	static bool is_bounds_partially_inside_convex_shape(class SphereBounds sphere, std::vector<Plane> planes);
-	static bool is_bounds_partially_inside_convex_shape(class SphereBounds sphere, Array planes);
 	static real_t get_max_value(Vector3 &value);
 	static real_t get_max_vector_length(Vector3 &a, Vector3 &b, Vector3 &c);
 	static real_t get_max_basis_length(Basis &b);

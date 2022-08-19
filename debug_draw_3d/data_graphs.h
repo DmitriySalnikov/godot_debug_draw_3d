@@ -1,8 +1,6 @@
 ﻿#pragma once
 
 #include "circular_buffer.h"
-#include "math_utils.h"
-#include "utils.h"
 
 #include <CanvasItem.hpp>
 #include <Font.hpp>
@@ -17,35 +15,35 @@ class GraphParameters : public Reference {
 	GODOT_CLASS(GraphParameters, Reference);
 
 	/// Is FPSGraph enabled
-	bool enabled = true;
+	bool enabled;
 	/// Draw Graph title
-	bool show_title = false;
+	bool show_title;
 	/// Switch between frame time and FPS modes
-	bool frametime_mode = true;
+	bool frametime_mode;
 	/// Draw a graph line aligned vertically in the center
 	bool centered_graph_line = true;
 	/// Sets the text visibility *GraphTextFlags*
-	int show_text_flags = 15 /*GraphTextFlags::All*/;
+	int show_text_flags;
 	/// The size of the graph. The width is equal to the number of saved frames.
-	Vector2 size = Vector2(256, 64);
+	Vector2 size;
 	/// The size of the buffer where the values are stored.
-	int buffer_size = 256;
+	int buffer_size;
 	/// Offset from the corner selected in position
-	Vector2 offset = Vector2(0, 8);
+	Vector2 offset;
 	/// FPS Graph position *BlockPosition*
-	int position = 1 /*BlockPosition::RightTop*/;
+	int position;
 	/// Graph line color
-	Color line_color = Colors::orange_red;
+	Color line_color;
 	/// Color of the info text
-	Color text_color = Colors::white_smoke;
+	Color text_color;
 	/// Background color
-	Color background_color = Colors::gray_graph_bg;
+	Color background_color;
 	/// Border color
-	Color border_color = Colors::black;
+	Color border_color;
 	/// Border color
-	String text_suffix = "";
+	String text_suffix;
 	/// Custom Font
-	Ref<Font> custom_font = nullptr;
+	Ref<Font> custom_font;
 
 public:
 	static void _register_methods();
@@ -92,7 +90,7 @@ public:
 
 protected:
 	Ref<GraphParameters> config;
-	std::shared_ptr<CircularBuffer<real_t>> data;
+	std::shared_ptr<CircularBuffer<real_t> > data;
 	std::recursive_mutex datalock;
 	Type type;
 

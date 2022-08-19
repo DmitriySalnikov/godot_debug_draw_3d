@@ -1,5 +1,7 @@
 #include "grouped_text.h"
 #include "debug_draw.h"
+#include "utils.h"
+#include "math_utils.h"
 
 using namespace godot;
 
@@ -60,7 +62,7 @@ void TextGroup::cleanup_texts(std::function<void()> update, real_t delta) {
 }
 
 void GroupedText::_create_new_default_groupd_if_needed() {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	if (!_currentTextGroup) {
 		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
 		_textGroups.insert(_currentTextGroup);
@@ -74,12 +76,12 @@ GroupedText::GroupedText(class DebugDraw3D *p_owner) :
 }
 
 void GroupedText::clear_text() {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	_textGroups.clear();
 }
 
 void GroupedText::cleanup_text(real_t delta) {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 	// Clean texts
 	Utils::remove_where(&_textGroups, [](auto g) { return g->Texts.size() == 0; });
 
@@ -90,7 +92,7 @@ void GroupedText::cleanup_text(real_t delta) {
 }
 
 void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle) {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	TextGroup_ptr newGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
@@ -113,7 +115,7 @@ void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color g
 }
 
 void GroupedText::end_text_group() {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	_currentTextGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
@@ -139,11 +141,19 @@ void GroupedText::set_text(String &key, Variant &value, int &priority, Color &co
 	bool need_update_canvas = false;
 
 	{
-		LOCK_GUARD_REC(datalock);
+		LOCK_GUARD(datalock);
 
 		_create_new_default_groupd_if_needed();
 
-		TextGroupItem_ptr item = Utils::find(&_currentTextGroup->Texts, [key](TextGroupItem_ptr a) { return a->Key == key; });
+		TextGroupItem_ptr item;
+
+		for (const auto &d : _currentTextGroup->Texts) {
+			if (d->Key == key) {
+				item = d;
+				break;
+			}
+		}
+
 		if (item.get()) {
 			if (_strVal != item->Text)
 				owner->mark_canvas_needs_update();
@@ -157,7 +167,7 @@ void GroupedText::set_text(String &key, Variant &value, int &priority, Color &co
 }
 
 void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
-	LOCK_GUARD_REC(datalock);
+	LOCK_GUARD(datalock);
 
 	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->ShowTitle ? 1 : 0); });
 
@@ -226,9 +236,9 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 			// Draw colored string
 			if ((t.get() && t->ValueColor == Colors::empty_color) || is_title_only) {
 				// Both parts with same color
-				ci->draw_string(draw_font, 
-					Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-					text, g->GroupColor);
+				ci->draw_string(draw_font,
+						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
+						text, g->GroupColor);
 			} else {
 				// Both parts with different colors
 				String textSep = keyText + separator;

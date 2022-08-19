@@ -1,4 +1,5 @@
 [
+	"colors.cpp",
 	"data_graphs.cpp",
 	"debug_draw.cpp",
 	"debug_geometry_container.cpp",

@@ -5,6 +5,7 @@ export var custom_font : Font
 export var zylann_example = false
 export var test_graphs = false
 export var more_test_cases = false
+export var draw_array_of_boxes = false
 
 var time := 0.0
 var time2 := 0.0
@@ -13,11 +14,16 @@ var toogle_frustum_key = false
 
 func _ready() -> void:
 	yield(get_tree(), "idle_frame")
-	DebugDraw.draw_line_3d(Vector3.ZERO, Vector3.ONE, DebugDraw.empty_color, 10)
-	DebugDraw.draw_line_3d(Vector3.ZERO, Vector3.ONE * 1, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line_3d(Vector3.ZERO, Vector3.ONE * 2, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line_3d(Vector3.ZERO, Vector3.ONE * 3, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line_3d(Vector3.ZERO, Vector3.ONE * 4, DebugDraw.empty_color, 1)
+	# this check is required for inherited scenes, because an instance of this 
+	# script is created first, and then overridden by another
+	if !is_inside_tree():
+		return
+	
+	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE, DebugDraw.empty_color, 10)
+	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 1, DebugDraw.empty_color, 1)
+	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 2, DebugDraw.empty_color, 1)
+	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 3, DebugDraw.empty_color, 1)
+	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 4, DebugDraw.empty_color, 1)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
@@ -35,12 +41,15 @@ func _process(delta: float) -> void:
 		var line_end = Vector3(1, cos(_time * 4), 0)
 		
 		DebugDraw.draw_aabb_ab(box_pos, Vector3(1, 2, 1), Color(0, 1, 0), 0) # Box need to be NOT centered
-		DebugDraw.draw_line_3d(line_begin, line_end, Color(1, 1, 0))
+		DebugDraw.draw_line(line_begin, line_end, Color(1, 1, 0))
 		DebugDraw.set_text("Time", _time)
 		DebugDraw.set_text("Frames drawn", Engine.get_frames_drawn())
 		DebugDraw.set_text("FPS", Engine.get_frames_per_second())
 		DebugDraw.set_text("delta", delta)
 		return
+	
+	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
+	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
 	
 	DebugDraw.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
 	DebugDraw.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
@@ -59,7 +68,7 @@ func _process(delta: float) -> void:
 	# Zones
 	var col = Color.black
 	for z in $Zones.get_children():
-		DebugDraw.draw_box_xf(z.global_transform, col)
+		DebugDraw.draw_box(z.global_transform, col)
 	
 	# Spheres
 	DebugDraw.draw_sphere_xf($SphereTransform.global_transform, Color.crimson)
@@ -72,13 +81,13 @@ func _process(delta: float) -> void:
 	time -= delta
 	
 	# Cylinders
-	DebugDraw.draw_cylinder_xf($Cylinder1.global_transform, Color.crimson)
-	DebugDraw.draw_cylinder($Cylinder2.global_transform.origin, Quat(), 1, 1, Color.red)
+	DebugDraw.draw_cylinder($Cylinder1.global_transform, Color.crimson)
+	DebugDraw.draw_cylinder(Transform(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.red)
 	
 	# Boxes
-	DebugDraw.draw_box_xf($Box1.global_transform, Color.purple)
-	DebugDraw.draw_box($Box2.global_transform.origin, Quat(), Vector3.ONE, Color.rebeccapurple)
-	DebugDraw.draw_box($Box3.global_transform.origin, Quat(Vector3.UP, PI * 0.25), Vector3.ONE * 2, Color.rosybrown)
+	DebugDraw.draw_box($Box1.global_transform, Color.purple)
+	DebugDraw.draw_box(Transform(Basis.IDENTITY, $Box2.global_transform.origin), Color.rebeccapurple)
+	DebugDraw.draw_box(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.rosybrown)
 	
 	var r = $AABB
 	DebugDraw.draw_aabb_ab(r.get_child(0).global_transform.origin, r.get_child(1).global_transform.origin, Color.deeppink)
@@ -90,17 +99,17 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_billboard_square(target.global_transform.origin, 0.5, Color.red)
 	
 	# Normal
-	DebugDraw.draw_line_3d($"Lines/1".global_transform.origin, target.global_transform.origin, Color.fuchsia)
-	DebugDraw.draw_ray_3d($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.crimson)
+	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.fuchsia)
+	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.crimson)
 	
 	if time3 <= 0:
-		DebugDraw.draw_line_3d($"Lines/6".global_transform.origin, target.global_transform.origin, Color.fuchsia, 2)
+		DebugDraw.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.fuchsia, 2)
 		time3 = 2
 	time3 -= delta
 	
 	# Arrow
-	DebugDraw.draw_arrow_line_3d($"Lines/2".global_transform.origin, target.global_transform.origin, Color.blue)
-	DebugDraw.draw_arrow_ray_3d($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.lavender)
+	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.blue, 0.5, true)
+	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.lavender, 0.5, true)
 	# Path
 	var points: PoolVector3Array = []
 	var points_below: PoolVector3Array = []
@@ -112,19 +121,27 @@ func _process(delta: float) -> void:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
 	
-	DebugDraw.draw_lines_3d(lines_above)
-	DebugDraw.draw_line_path_3d(points, Color.beige)
-	DebugDraw.draw_arrow_path_3d(points_below, Color.gold, 0.75)
-	DebugDraw.draw_line_3d_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.aqua)
+	DebugDraw.draw_lines(lines_above)
+	DebugDraw.draw_line_path(points, Color.beige)
+	DebugDraw.draw_arrow_path(points_below, Color.gold, 0.5)
+	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.aqua)
+	
 	# Misc
 	DebugDraw.draw_camera_frustum($Camera, Color.darkorange)
 	
 	DebugDraw.draw_billboard_square($Misc/Billboard.global_transform.origin, 0.5, Color.green)
 	
-	DebugDraw.draw_position_3d_xf($Misc/Position.global_transform, Color.brown)
+	DebugDraw.draw_position($Misc/Position.global_transform, Color.brown)
 	
-	DebugDraw.draw_gizmo_3d($Misc/Gizmo.global_transform.origin, $Misc/Gizmo.global_transform.basis.get_rotation_quat(), Vector3.ONE)
-	DebugDraw.draw_gizmo_3d_xf($Misc/GizmoTransform.global_transform, true)
+	DebugDraw.draw_gizmo($Misc/GizmoTransform.global_transform, true)
+	DebugDraw.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), false)
+	
+	var tg = $Misc/Grids/Grid.global_transform
+	var tn = $Misc/Grids/Grid/Subdivision.transform.origin
+	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2(tn.x*10, tn.z*10), Color.lightcoral, false)
+	
+	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
+	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2(tn1.x*10, tn1.z*10))
 	
 	# Text
 	DebugDraw.text_custom_font = custom_font
@@ -150,9 +167,12 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("Visible Wireframes", RenderCount.visible_wireframes, 5)
 		DebugDraw.end_text_group()
 	
+	DebugDraw.begin_text_group("controls", 1024, Color.white, false)
+	DebugDraw.set_text("TODO write CONTROLS asd", null, 1)
+	
 	# Lag Test
 	$LagTest.translation = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0).origin + Vector3(sin(OS.get_ticks_msec() / 100.0) * 2.5, 0, 0)
-	DebugDraw.draw_box($LagTest.global_transform.origin, Quat(), Vector3.ONE * 2.01)
+	DebugDraw.draw_box(Transform(Basis.IDENTITY.scaled(Vector3.ONE * 2.01), $LagTest.global_transform.origin))
 	
 	if more_test_cases:
 		for ray in $HitTest/RayEmitter.get_children():
@@ -162,22 +182,26 @@ func _process(delta: float) -> void:
 	else:
 		for ray in $HitTest/RayEmitter.get_children():
 			ray.set_physics_process_internal(false)
+	
+	if draw_array_of_boxes:
+		_draw_array_of_boxes()
 
 func _more_tests():
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast:
-			DebugDraw.draw_line_3d_hit(ray.global_transform.origin, ray.global_transform.translated(ray.cast_to).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
+			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.cast_to).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
+		# Delayed line render
+	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(OS.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
+
+func _draw_array_of_boxes():
 	if time2 <= 0:
 		for x in 50:
 			for y in 50:
 				for z in 3:
-					DebugDraw.draw_box(Vector3(x, z, y), Quat(), Vector3.ONE, DebugDraw.empty_color, false, 1.25)
+					DebugDraw.draw_box(Transform(Basis.IDENTITY, Vector3(x, -4-z, y)), DebugDraw.empty_color, false, 1.25)
 		time2 = 1.25
 	time2 -= get_process_delta_time()
-	
-		# Delayed line render
-	DebugDraw.draw_line_3d($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(OS.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
 
 func _graph_test():
 	_create_graph("fps", true, true, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)

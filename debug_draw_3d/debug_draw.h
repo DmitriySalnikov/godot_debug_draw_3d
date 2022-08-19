@@ -4,19 +4,15 @@
 #include "debug_geometry_container.h"
 #include "geometry_generators.h"
 #include "grouped_text.h"
-#include "render_instances.h"
-#include "utils.h"
+#include "colors.h"
 
 #include <CanvasItem.hpp>
 #include <CanvasLayer.hpp>
 #include <Font.hpp>
-#include <GlobalConstants.hpp>
 #include <Godot.hpp>
 #include <Node.hpp>
 #include <Reference.hpp>
 #include <Viewport.hpp>
-
-#include <unordered_set>
 
 using namespace godot;
 
@@ -44,7 +40,6 @@ public:
 	};
 
 private:
-
 #define CONST_GET(_enum, _const) \
 	int64_t get_##_enum##_##_const() { return _enum::_const; }
 
@@ -102,12 +97,15 @@ private:
 	bool freeze_3d_render = false;
 	/// Debug for debug...
 	bool draw_instance_bounds = false;
-	/// Geometry culling based on camera frustum. Change to false to disable it
-	bool use_frustum_culling = true;
+	/// Geometry culling based on camera frustum.
+	/// It is not recommended to use with the current implementation.
+	bool use_frustum_culling = false;
 	/// Force use camera placed on edited scene. Usable for editor.
 	bool force_use_camera_from_scene = false;
 	/// Base offset for all graphs
 	Vector2 graphs_base_offset = Vector2(8, 8);
+	/// Layers on which the geometry will be displayed
+	int64_t geometry_render_layers = 1;
 
 	// TEXT
 
@@ -177,28 +175,40 @@ public:
 
 	void set_graphs_base_offset(Vector2 offset);
 	Vector2 get_graphs_base_offset();
+
+	void set_geometry_render_layers(int64_t layers);
+	int64_t get_geometry_render_layers();
+
 	void set_text_block_position(int /*BlockPosition*/ position);
 	int /*BlockPosition*/ get_text_block_position();
+
 	void set_text_block_offset(Vector2 offset);
 	Vector2 get_text_block_offset();
+
 	void set_text_padding(Vector2 padding);
 	Vector2 get_text_padding();
+
 	void set_text_default_duration(real_t duration);
 	real_t get_text_default_duration();
+
 	void set_text_foreground_color(Color new_color);
 	Color get_text_foreground_color();
+
 	void set_text_background_color(Color new_color);
 	Color get_text_background_color();
+
 	void set_text_custom_font(Ref<Font> custom_font);
 	Ref<Font> get_text_custom_font();
 
 	void set_line_hit_color(Color new_color);
 	Color get_line_hit_color();
+
 	void set_line_after_hit_color(Color new_color);
 	Color get_line_after_hit_color();
 
 	void set_custom_viewport(Viewport *viewport);
 	Viewport *get_custom_viewport();
+
 	void set_custom_canvas(CanvasItem *canvas);
 	CanvasItem *get_custom_canvas();
 #pragma endregion // Exposed Parametes
@@ -224,75 +234,58 @@ public:
 	/// radius: Sphere radius
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere(Vector3 position, float radius = 0.5f, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere(Vector3 position, real_t radius = 0.5f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere
 	/// transform: Transform of the sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
-	
+	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+
 	/// Draw sphere with higher lines count
 	/// position: Position of the sphere center
 	/// radius: Sphere radius
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere_hd(Vector3 position, float radius = 0.5f, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere_hd(Vector3 position, real_t radius = 0.5f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere with higher lines count
 	/// transform: Transform of the sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere_hd_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+	void draw_sphere_hd_xf(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
 	/// Draw vertical cylinder
-	/// position: Center position
-	/// radius: Cylinder radius
-	/// height: Cylinder height
-	/// color: Cylinder color
-	/// duration: Duration of existence in seconds
-	void draw_cylinder(Vector3 position, Quat rotation, float radius = 1, float height = 1, Color color = Colors::empty_color, float duration = 0);
-
-	/// Draw vertical cylinder
 	/// transform: Cylinder transform
 	/// color: Cylinder color
 	/// duration: Duration of existence in seconds
-	void draw_cylinder_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
+	void draw_cylinder(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Cylinders
 #pragma region Boxes
 
 	/// Draw rotated box
-	/// position: Position of the box
-	/// rotation: Box rotation
-	/// size: Box size
-	/// color: Box color
-	/// duration: Duration of existence in seconds
-	/// isBoxCentered: Use 'position' as center of the box
-	void draw_box(Vector3 position, Quat rotation, Vector3 size, Color color = Colors::empty_color, bool is_box_centered = true, float duration = 0);
-
-	/// Draw rotated box
 	/// transform: Box transform
 	/// color: Box color
-	/// duration: Duration of existence in seconds
 	/// isBoxCentered: Use 'position' as center of the box
-	void draw_box_xf(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_box(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
 
 	/// Draw AABB
 	/// aabb: AABB
 	/// color: Box color
 	/// duration: Duration of existence in seconds
-	void draw_aabb(AABB aabb, Color color = Colors::empty_color, float duration = 0);
+	void draw_aabb(AABB aabb, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw AABB from 'a' to 'b'
 	/// a: Firts corner
 	/// b: Second corner
 	/// color: Box color
 	/// duration: Duration of existence in seconds
-	void draw_aabb_ab(Vector3 a, Vector3 b, Color color = Colors::empty_color, float duration = 0);
+	void draw_aabb_ab(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Boxes
 #pragma region Lines
@@ -302,20 +295,20 @@ public:
 	/// b: End point
 	/// is_hit: Is hit
 	/// unitOffsetOfHit: Unit offset on the line where the hit occurs
-	/// duration: Duration of existence in seconds
 	/// hitColor: Color of the hit point and line before hit
 	/// afterHitColor: Color of line after hit position
-	void draw_line_3d_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_line_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, real_t hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
 	/// a: Start point
 	/// b: End point
 	/// is_hit: Is hit
 	/// unitOffsetOfHit: Unit offset on the line where the hit occurs
-	/// duration: Duration of existence in seconds
 	/// hitColor: Color of the hit point and line before hit
 	/// afterHitColor: Color of line after hit position
-	void draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit = 0.5f, float hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_line_hit_offset(Vector3 start, Vector3 end, bool is_hit, real_t unit_offset_of_hit = 0.5f, real_t hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, real_t duration = 0);
 
 #pragma region Normal
 
@@ -324,13 +317,13 @@ public:
 	/// b: End point
 	/// color: Line color
 	/// duration: Duration of existence in seconds
-	void draw_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float duration = 0);
-	
+	void draw_line(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t duration = 0);
+
 	/// Draw many line
 	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
 	/// color: Line color
 	/// duration: Duration of existence in seconds
-	void draw_lines_3d(PoolVector3Array lines, Color color = Colors::empty_color, float duration = 0);
+	void draw_lines(PoolVector3Array lines, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw ray
 	/// origin: Origin
@@ -338,43 +331,49 @@ public:
 	/// length: Length
 	/// color: Ray color
 	/// duration: Duration of existence in seconds
-	void draw_ray_3d(Vector3 origin, Vector3 direction, float length, Color color = Colors::empty_color, float duration = 0);
+	void draw_ray(Vector3 origin, Vector3 direction, real_t length, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw a sequence of points connected by lines
 	/// path: Sequence of points
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_line_path_3d(PoolVector3Array path, Color color = Colors::empty_color, float duration = 0);
+	void draw_line_path(PoolVector3Array path, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Normal
 #pragma region Arrows
+
+	/// Draw arrow
+	/// Transform: Start point
+	/// color: Line color
+	/// duration: Duration of existence in seconds
+	void draw_arrow(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw line with arrow
 	/// a: Start point
 	/// b: End point
 	/// color: Line color
-	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_line_3d(Vector3 a, Vector3 b, Color color = Colors::empty_color, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_arrow_line(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t arrow_size = 0.5f, bool absolute_size = false, real_t duration = 0);
 
 	/// Draw ray with arrow
 	/// origin: Origin
 	/// direction: Direction
 	/// length: Length
 	/// color: Ray color
-	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_ray_3d(Vector3 origin, Vector3 direction, float length, Color color = Colors::empty_color, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color = Colors::empty_color, real_t arrow_size = 0.5f, bool absolute_size = false, real_t duration = 0);
 
 	/// Draw a sequence of points connected by lines with arrows
 	/// path: Sequence of points
 	/// color: Color
-	/// duration: Duration of existence in seconds
 	/// arrowSize: Size of the arrow
 	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
-	void draw_arrow_path_3d(PoolVector3Array path, Color color = Colors::empty_color, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0);
+	/// duration: Duration of existence in seconds
+	void draw_arrow_path(PoolVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool absolute_size = true, real_t duration = 0);
 
 #pragma endregion // Arrows
 #pragma endregion // Lines
@@ -385,7 +384,36 @@ public:
 	/// color: Color
 	/// size: Unit size
 	/// duration: Duration of existence in seconds
-	void draw_billboard_square(Vector3 position, float size = 0.2f, Color color = Colors::empty_color, float duration = 0);
+	void draw_billboard_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
+
+	/// Draw 3 intersecting lines with the given transformations
+	/// transform: Transform
+	/// color: Color
+	/// duration: Duration of existence in seconds
+	void draw_position(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+
+	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// transform: Transform
+	/// duration: Duration of existence in seconds
+	void draw_gizmo(Transform transform, bool is_centered = false, real_t duration = 0);
+
+	/// Draw simple grid with given size and subdivision
+	/// origin:
+	/// x_size:
+	/// y_size:
+	/// subdivision:
+	/// color:
+	/// is_centered:
+	/// duration: Duration of existence in seconds
+	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+
+	/// Draw simple grid with given size and subdivision
+	/// transform:
+	/// subdivision:
+	/// color:
+	/// is_centered:
+	/// duration: Duration of existence in seconds
+	void draw_grid_xf(Transform transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 #pragma region Camera Frustum
 
@@ -393,41 +421,15 @@ public:
 	/// camera: Camera node
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_camera_frustum(class Camera *camera, Color color = Colors::empty_color, float duration = 0);
+	void draw_camera_frustum(class Camera *camera, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw camera frustum area
 	/// cameraFrustum: Array of frustum planes
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_camera_frustum_planes(Array camera_frustum, Color color = Colors::empty_color, float duration = 0);
+	void draw_camera_frustum_planes(Array camera_frustum, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Camera Frustum
-
-	/// Draw 3 intersecting lines with the given transformations
-	/// position: Center position
-	/// rotation: Rotation
-	/// scale: Scale
-	/// color: Color
-	/// duration: Duration of existence in seconds
-	void draw_position_3d(Vector3 position, Quat rotation, Vector3 scale, Color color = Colors::empty_color, float duration = 0);
-
-	/// Draw 3 intersecting lines with the given transformations
-	/// transform: Transform
-	/// color: Color
-	/// duration: Duration of existence in seconds
-	void draw_position_3d_xf(Transform transform, Color color = Colors::empty_color, float duration = 0);
-	
-	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
-	/// position: Center position
-	/// rotation: Rotation
-	/// scale: Scale
-	/// duration: Duration of existence in seconds
-	void draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered = false, float duration = 0);
-
-	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
-	/// transform: Transform
-	/// duration: Duration of existence in seconds
-	void draw_gizmo_3d_xf(Transform transform, bool is_centered = false, float duration = 0);
 
 #pragma endregion // Misc
 #pragma endregion // 3D
@@ -453,16 +455,18 @@ public:
 	/// value: Value of field
 	/// priority: Priority of this line. Lower value is higher position.
 	/// duration: Expiration time
-	void set_text(String key, Variant value = "", int priority = 0, Color color_of_value = Colors::empty_color, float duration = -1);
+	void set_text(String key, Variant value = "", int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 #pragma endregion // Text
 #pragma region Graphs
 
-	/// Create new graph with custom data
+	/// Create new graph with custom data.
+	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> create_graph(String title);
 
-	/// Create new graph with custom data
+	/// Create new graph with custom data.
+	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> create_fps_graph(String title);
 
@@ -478,7 +482,8 @@ public:
 	/// Remove all graphs
 	void clear_graphs();
 
-	/// Get config for graph
+	/// Get config for graph.
+	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> get_graph_config(String title);
 

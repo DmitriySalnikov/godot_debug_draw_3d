@@ -141,6 +141,36 @@ more_test_cases = true
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.953032, 0.302869, 0, -0.302869, 0.953032, -3.98764, 13.5247, 37.2096 )
+cull_mask = 1048557
+current = true
+fov = 38.8
+near = 2.63
+far = 52.5
+
+[node name="Panel" type="PanelContainer" parent="."]
+visible = false
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 11.0
+margin_top = -200.0
+margin_right = 199.0
+margin_bottom = -12.0
+
+[node name="ViewportContainer" type="ViewportContainer" parent="Panel"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 181.0
+margin_bottom = 181.0
+stretch = true
+
+[node name="Viewport" type="Viewport" parent="Panel/ViewportContainer"]
+size = Vector2( 174, 174 )
+handle_input_locally = false
+render_target_update_mode = 0
+
+[node name="CameraLayer2_5" type="Camera" parent="Panel/ViewportContainer/Viewport"]
+transform = Transform( 1, 0, 0, 0, 0.34202, 0.939692, 0, -0.939692, 0.34202, -3.988, 39.474, 14.053 )
+cull_mask = 18
 current = true
 fov = 38.8
 near = 2.63
@@ -161,7 +191,7 @@ transform = Transform( 10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0
 transform = Transform( 4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -3.37336, -0.206735, 4.28992 )
 
 [node name="Cylinders" type="Spatial" parent="Zones"]
-transform = Transform( 9.78549, 0, 0, 0, 3.23309, 0, 0, 0, 5.62455, -23.6827, 0.117228, -6.19233 )
+transform = Transform( 9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0.015712, -6.19233 )
 
 [node name="Lines" type="Spatial" parent="Zones"]
 transform = Transform( 10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416 )
@@ -190,7 +220,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0 )
 
 [node name="Cylinder1" type="Spatial" parent="."]
-transform = Transform( 1.5392, 0.388841, 3.73947e-07, 0.706247, -0.74277, 0.929685, 0.265123, -0.278834, -2.47654, -25.6488, 0, -6.39029 )
+transform = Transform( 1.30832, 0.213863, -3.73947e-07, 0.60031, -0.408523, 0.929687, 0.225355, -0.153359, -2.47654, -25.6488, 0, -6.39029 )
 
 [node name="Cylinder2" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -22.134, -9.53674e-07, -6.39029 )
@@ -205,7 +235,7 @@ transform = Transform( 1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, -
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6349, 0.625214, -5.81358 )
 
 [node name="Box1" type="Spatial" parent="."]
-transform = Transform( 2.902, 0, -5.359, 0, 3.928, 0, 0.576, 0, 1.88, -14.007, 0, 2.794 )
+transform = Transform( 2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.0141019, 0.556318, -0.0303774, 1.91619, -14.007, 0, 2.794 )
 
 [node name="Box2" type="Spatial" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 6.91676 )
@@ -223,7 +253,7 @@ transform = Transform( -0.574779, -0.656578, 0.488398, -0.669272, 0.720607, 0.18
 transform = Transform( 0.999999, 4.33065e-08, 2.98023e-08, 1.5134e-08, 0.999999, 4.09782e-08, -2.6077e-08, 1.49012e-08, 1, 0.821057, 1.16918, 2.89658 )
 
 [node name="AABB_fixed" type="Spatial" parent="."]
-transform = Transform( -0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.012195, -0.0566929, -0.0370724, -0.997703, -18.195, -1.788, 6.289 )
+transform = Transform( 0.913794, 0, -0.406178, 0, 1, 0, 0.406179, 0, 0.913794, -16.8188, -1.788, 7.05104 )
 
 [node name="Misc" type="Spatial" parent="."]
 
@@ -233,11 +263,26 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -3.18606, -0.331599, 6.66091 )
 [node name="Position" type="Spatial" parent="Misc"]
 transform = Transform( 1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, -3.18606, -0.331599, 2.57602 )
 
-[node name="Gizmo" type="Spatial" parent="Misc"]
-transform = Transform( 2.00505, 0, -0.497231, 0, 0.999999, 0, 0.307496, 0, 3.24223, -2.69921, -0.331599, 4.79165 )
+[node name="GizmoNormal" type="Spatial" parent="Misc"]
+transform = Transform( 1.98138, 0, -0.702851, 0, 0.999999, 0, 0.434655, 0, 3.20395, -2.69921, -0.331599, 4.79165 )
 
 [node name="GizmoTransform" type="Spatial" parent="Misc"]
-transform = Transform( 0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189412, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259 )
+transform = Transform( 0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259 )
+
+[node name="Grids" type="Spatial" parent="Misc"]
+transform = Transform( 0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 7.45433, -2.5, 5.15179 )
+
+[node name="GridCentered" type="Spatial" parent="Misc/Grids"]
+transform = Transform( -1.54543e-07, 0.707107, -3.53553, -5, -4.37114e-08, 0, -1.54543e-07, 0.707107, 3.53553, 1.76593, 2.5, 1.7714 )
+
+[node name="Subdivision" type="Spatial" parent="Misc/Grids/GridCentered"]
+transform = Transform( 1, 4.44089e-15, 1.77635e-15, 8.52651e-14, 0.999999, 1.90735e-05, -1.35525e-20, 5.68434e-14, 0.999999, -0.5, 4.76837e-07, -0.200001 )
+
+[node name="Grid" type="Spatial" parent="Misc/Grids"]
+transform = Transform( 5, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0, 0 )
+
+[node name="Subdivision" type="Spatial" parent="Misc/Grids/Grid"]
+transform = Transform( 1, 0, 0, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 0.999999, 0, 1 )
 
 [node name="Lines" type="Spatial" parent="."]
 transform = Transform( 1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326 )

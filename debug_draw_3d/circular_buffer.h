@@ -81,4 +81,27 @@ public:
 		const size_t pos = start + idx;
 		return buffer[pos >= buf_size ? pos - buf_size : pos];
 	}
+
+	void get_min_max_avg(TValue *min, TValue *max, TValue *avg) {
+		if (size()) {
+			TValue sum = get(0);
+			*min = get(0);
+			*max = get(0);
+
+			for (size_t i = 1; i < size(); i++) {
+				TValue v = get(i);
+				if (v < *min) {
+					*min = v;
+				} else if (v > *max) {
+					*max = v;
+				}
+				sum += v;
+			}
+			*avg = sum / size();
+			return;
+		}
+
+		*min = *max = *avg = 0;
+		return;
+	}
 };

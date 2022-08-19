@@ -21,7 +21,7 @@ class DebugDraw3DEditorPlugin : public EditorPlugin {
 	//		* same..
 	//	* SpatialEditorViewport
 	//		* same..
-	Control* spatial_viewport_container = nullptr;
+	Control *spatial_viewport_container = nullptr;
 
 public:
 	static void _register_methods();
@@ -33,8 +33,8 @@ public:
 	void create_auto_find();
 	void find_viewport_control();
 
-	std::vector<Viewport*> get_custom_viewports();
-	CanvasItem* get_custom_canvas();
+	std::vector<Viewport *> get_custom_viewports();
+	CanvasItem *get_custom_canvas();
 
 	void _enter_tree();
 	void _exit_tree();

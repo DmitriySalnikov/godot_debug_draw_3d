@@ -47,7 +47,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 
 		if (spatial_viewport_container) {
 			d->set_custom_editor_viewport(get_custom_viewports());
-			
+
 			auto canvas = get_custom_canvas();
 			d->set_custom_canvas(canvas);
 

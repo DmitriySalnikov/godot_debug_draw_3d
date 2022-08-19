@@ -71,7 +71,7 @@
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
@@ -99,7 +99,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
@@ -118,6 +118,7 @@
     <None Include="SConstruct" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="debug_draw_3d\colors.cpp" />
     <ClCompile Include="debug_draw_3d\debug_draw.cpp" />
     <ClCompile Include="debug_draw_3d\editor_plugin.cpp" />
     <ClCompile Include="debug_draw_3d\data_graphs.cpp" />
@@ -131,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug_draw_3d\circular_buffer.h" />
+    <ClInclude Include="debug_draw_3d\colors.h" />
     <ClInclude Include="debug_draw_3d\debug_draw.h" />
     <ClInclude Include="debug_draw_3d\editor_plugin.h" />
     <ClInclude Include="debug_draw_3d\data_graphs.h" />

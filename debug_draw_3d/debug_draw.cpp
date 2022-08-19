@@ -1,4 +1,5 @@
 #include "debug_draw.h"
+#include "utils.h"
 
 #include <ConfigFile.hpp>
 #include <Directory.hpp>
@@ -123,6 +124,7 @@ void DebugDraw3D::_register_methods() {
 	REG_PROP_BOOL(use_frustum_culling, true);
 	REG_PROP_BOOL(force_use_camera_from_scene, false);
 	REG_PROP(graphs_base_offset, Vector2(8, 8));
+	REG_PROP(geometry_render_layers, (int64_t)1);
 	REG_PROP(text_block_position, (int)BlockPosition::LeftTop);
 	REG_PROP(text_block_offset, Vector2(8, 8));
 	REG_PROP(text_padding, Vector2(2, 1));
@@ -153,35 +155,34 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_sphere_hd_xf);
 
 	REG_METHOD(draw_cylinder);
-	REG_METHOD(draw_cylinder_xf);
 
 	REG_METHOD(draw_box);
-	REG_METHOD(draw_box_xf);
 	REG_METHOD(draw_aabb);
 	REG_METHOD(draw_aabb_ab);
 
-	REG_METHOD(draw_line_3d_hit);
-	REG_METHOD(draw_line_3d_hit_offset);
+	REG_METHOD(draw_line_hit);
+	REG_METHOD(draw_line_hit_offset);
 
-	REG_METHOD(draw_line_3d);
-	REG_METHOD(draw_lines_3d);
-	REG_METHOD(draw_ray_3d);
-	REG_METHOD(draw_line_path_3d);
+	REG_METHOD(draw_line);
+	REG_METHOD(draw_lines);
+	REG_METHOD(draw_ray);
+	REG_METHOD(draw_line_path);
 
-	REG_METHOD(draw_arrow_line_3d);
-	REG_METHOD(draw_arrow_ray_3d);
-	REG_METHOD(draw_arrow_path_3d);
+	REG_METHOD(draw_arrow_line);
+	REG_METHOD(draw_arrow_ray);
+	REG_METHOD(draw_arrow_path);
 
 	REG_METHOD(draw_billboard_square);
 
 	REG_METHOD(draw_camera_frustum);
 	REG_METHOD(draw_camera_frustum_planes);
 
-	REG_METHOD(draw_position_3d);
-	REG_METHOD(draw_position_3d_xf);
+	REG_METHOD(draw_position);
 
-	REG_METHOD(draw_gizmo_3d);
-	REG_METHOD(draw_gizmo_3d_xf);
+	REG_METHOD(draw_gizmo);
+
+	REG_METHOD(draw_grid);
+	REG_METHOD(draw_grid_xf);
 
 	REG_METHOD(begin_text_group);
 	REG_METHOD(end_text_group);
@@ -404,6 +405,19 @@ Vector2 DebugDraw3D::get_graphs_base_offset() {
 	RECALL_TO_SINGLETON_GETTER(graphs_base_offset, Vector2());
 }
 
+void DebugDraw3D::set_geometry_render_layers(int64_t layers) {
+	RECALL_TO_SINGLETON(set_geometry_render_layers, layers);
+
+	if (geometry_render_layers != layers) {
+		dgc->set_render_layer_mask(layers);
+		geometry_render_layers = layers;
+	}
+}
+
+int64_t DebugDraw3D::get_geometry_render_layers() {
+	RECALL_TO_SINGLETON_GETTER(geometry_render_layers, 0);
+}
+
 void DebugDraw3D::set_text_block_position(int position) {
 	RECALL_TO_SINGLETON_SETTER(text_block_position = (BlockPosition)position);
 }
@@ -549,130 +563,122 @@ void DebugDraw3D::clear_all() {
 
 #pragma region Spheres
 
-void DebugDraw3D::draw_sphere(Vector3 position, float radius, Color color, float duration) {
+void DebugDraw3D::draw_sphere(Vector3 position, real_t radius, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere, position, radius, color, duration);
 }
 
-void DebugDraw3D::draw_sphere_xf(Transform transform, Color color, float duration) {
+void DebugDraw3D::draw_sphere_xf(Transform transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_xf, transform, color, duration);
 }
 
-void DebugDraw3D::draw_sphere_hd(Vector3 position, float radius, Color color, float duration) {
+void DebugDraw3D::draw_sphere_hd(Vector3 position, real_t radius, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd, position, radius, color, duration);
 }
 
-void DebugDraw3D::draw_sphere_hd_xf(Transform transform, Color color, float duration) {
+void DebugDraw3D::draw_sphere_hd_xf(Transform transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd_xf, transform, color, duration);
 }
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
-void DebugDraw3D::draw_cylinder(Vector3 position, Quat rotation, float radius, float height, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_cylinder, position, rotation, radius, height, color, duration);
-}
-
-void DebugDraw3D::draw_cylinder_xf(Transform transform, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_cylinder_xf, transform, color, duration);
+void DebugDraw3D::draw_cylinder(Transform transform, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_cylinder, transform, color, duration);
 }
 
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugDraw3D::draw_box(Vector3 position, Quat rotation, Vector3 size, Color color, bool is_box_centered, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_box, position, rotation, size, color, is_box_centered, duration);
+void DebugDraw3D::draw_box(Transform transform, Color color, bool is_box_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_box, transform, color, is_box_centered, duration);
 }
 
-void DebugDraw3D::draw_box_xf(Transform transform, Color color, bool is_box_centered, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_box_xf, transform, color, is_box_centered, duration);
-}
-
-void DebugDraw3D::draw_aabb(AABB aabb, Color color, float duration) {
+void DebugDraw3D::draw_aabb(AABB aabb, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_aabb, aabb, color, duration);
 }
 
-void DebugDraw3D::draw_aabb_ab(Vector3 a, Vector3 b, Color color, float duration) {
+void DebugDraw3D::draw_aabb_ab(Vector3 a, Vector3 b, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_aabb_ab, a, b, color, duration);
 }
 
 #pragma endregion // Boxes
 #pragma region Lines
 
-void DebugDraw3D::draw_line_3d_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size, Color hit_color, Color after_hit_color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d_hit, start, end, hit, is_hit, hit_size, hit_color, after_hit_color, duration);
+void DebugDraw3D::draw_line_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line_hit, start, end, hit, is_hit, hit_size, hit_color, after_hit_color, duration);
 }
 
-void DebugDraw3D::draw_line_3d_hit_offset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit, float hit_size, Color hit_color, Color after_hit_color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d_hit_offset, start, end, is_hit, unit_offset_of_hit, hit_size, hit_color, after_hit_color, duration);
+void DebugDraw3D::draw_line_hit_offset(Vector3 start, Vector3 end, bool is_hit, real_t unit_offset_of_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line_hit_offset, start, end, is_hit, unit_offset_of_hit, hit_size, hit_color, after_hit_color, duration);
 }
 
 #pragma region Normal
 
-void DebugDraw3D::draw_line_3d(Vector3 a, Vector3 b, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_3d, a, b, color, duration);
+void DebugDraw3D::draw_line(Vector3 a, Vector3 b, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line, a, b, color, duration);
 }
 
-void DebugDraw3D::draw_lines_3d(PoolVector3Array lines, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_lines_3d, lines, color, duration);
+void DebugDraw3D::draw_lines(PoolVector3Array lines, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_lines, lines, color, duration);
 }
 
-void DebugDraw3D::draw_ray_3d(Vector3 origin, Vector3 direction, float length, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_ray_3d, origin, direction, length, color, duration);
+void DebugDraw3D::draw_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_ray, origin, direction, length, color, duration);
 }
 
-void DebugDraw3D::draw_line_path_3d(PoolVector3Array path, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_line_path_3d, path, color, duration);
+void DebugDraw3D::draw_line_path(PoolVector3Array path, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_line_path, path, color, duration);
 }
 
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugDraw3D::draw_arrow_line_3d(Vector3 a, Vector3 b, Color color, float arrow_size, bool absolute_size, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_line_3d, a, b, color, arrow_size, absolute_size, duration);
+void DebugDraw3D::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_line, a, b, color, arrow_size, absolute_size, duration);
 }
 
-void DebugDraw3D::draw_arrow_ray_3d(Vector3 origin, Vector3 direction, float length, Color color, float arrow_size, bool absolute_size, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_ray_3d, origin, direction, length, color, arrow_size, absolute_size, duration);
+void DebugDraw3D::draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_ray, origin, direction, length, color, arrow_size, absolute_size, duration);
 }
 
-void DebugDraw3D::draw_arrow_path_3d(PoolVector3Array path, Color color, float arrow_size, bool absolute_size, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_path_3d, path, color, arrow_size, absolute_size, duration);
+void DebugDraw3D::draw_arrow_path(PoolVector3Array path, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_path, path, color, arrow_size, absolute_size, duration);
 }
 
 #pragma endregion // Arrows
 #pragma endregion // Lines
 #pragma region Misc
 
-void DebugDraw3D::draw_billboard_square(Vector3 position, float size, Color color, float duration) {
+void DebugDraw3D::draw_billboard_square(Vector3 position, real_t size, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_billboard_square, position, size, color, duration);
 }
 
 #pragma region Camera Frustum
 
-void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, float duration) {
+void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum, camera, color, duration);
 }
 
-void DebugDraw3D::draw_camera_frustum_planes(Array cameraFrustum, Color color, float duration) {
+void DebugDraw3D::draw_camera_frustum_planes(Array cameraFrustum, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum_planes, cameraFrustum, color, duration);
 }
 
 #pragma endregion // Camera Frustum
 
-void DebugDraw3D::draw_position_3d(Vector3 position, Quat rotation, Vector3 scale, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_position_3d, position, rotation, scale, color, duration);
+void DebugDraw3D::draw_position(Transform transform, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_position, transform, color, duration);
 }
 
-void DebugDraw3D::draw_position_3d_xf(Transform transform, Color color, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_position_3d_xf, transform, color, duration);
+void DebugDraw3D::draw_gizmo(Transform transform, bool is_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo, transform, is_centered, duration);
 }
 
-void DebugDraw3D::draw_gizmo_3d(Vector3 position, Quat rotation, Vector3 scale, bool is_centered, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo_3d, position, rotation, scale, is_centered, duration);
+void DebugDraw3D::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_grid, origin, x_size, y_size, subdivision, color, is_centered, duration);
 }
 
-void DebugDraw3D::draw_gizmo_3d_xf(Transform transform, bool is_centered, float duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo_3d_xf, transform, is_centered, duration);
+void DebugDraw3D::draw_grid_xf(Transform transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_grid_xf, transform, subdivision, color, is_centered, duration);
 }
 
 #pragma endregion // Misc
@@ -695,7 +701,7 @@ void DebugDraw3D::end_text_group() {
 	grouped_text->end_text_group();
 }
 
-void DebugDraw3D::set_text(String key, Variant value, int priority, Color color_of_value, float duration) {
+void DebugDraw3D::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
 	RECALL_TO_SINGLETON(set_text, key, value, priority, color_of_value, duration);
 	if (NEED_LEAVE) return;
 	grouped_text->set_text(key, value, priority, color_of_value, duration);

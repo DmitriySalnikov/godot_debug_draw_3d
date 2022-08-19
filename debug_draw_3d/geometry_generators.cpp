@@ -285,7 +285,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float rad
 	std::vector<Vector3> points;
 	points.reserve(size_t(4 * edges + ((edges / drawEdgeEachNStep) * 2)));
 
-	Vector3 d = Vector3(0, height * 0.5f, 0);
+	Vector3 d = Vector3(0, height, 0);
 	for (int i = 0; i < edges; i++) {
 		float ra = Math::deg2rad(i * angle);
 		float rb = Math::deg2rad((i + 1) * angle);

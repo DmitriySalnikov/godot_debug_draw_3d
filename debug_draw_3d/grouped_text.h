@@ -1,11 +1,13 @@
 #pragma once
 
-#include "math_utils.h"
-#include "utils.h"
-
 #include <CanvasItem.hpp>
 #include <Font.hpp>
 #include <Godot.hpp>
+
+#include <memory>
+#include <unordered_set>
+#include <functional>
+#include <mutex>
 
 using namespace godot;
 
@@ -14,9 +16,9 @@ public:
 	String Key;
 	String Text;
 	int Priority;
-	real_t expiration_time = 0;
+	real_t expiration_time;
 
-	Color ValueColor = Colors::empty_color;
+	Color ValueColor;
 
 	// Just to show the text once and not delete it until the next frame ends.
 	// It is necessary to avoid the endless re - creation of these objects.

@@ -16,8 +16,8 @@
 #ifndef NO_EDITOR
 #include "editor_plugin.h"
 #endif
-#include "debug_draw.h"
 #include "data_graphs.h"
+#include "debug_draw.h"
 
 using namespace godot;
 
