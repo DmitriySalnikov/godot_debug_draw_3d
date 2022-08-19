@@ -19,16 +19,24 @@ endif
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := godot_qoi
+LOCAL_MODULE := debug_draw
 LOCAL_CPPFLAGS := -std=c++14 -O3
 LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_LDLIBS := -llog 
 #LOCAL_CFLAGS := -D_DEF
 
 LOCAL_SRC_FILES := \
-godot_qoi/qoi_utils.cpp \
-godot_qoi/qoi_wrapper.cpp \
-godot_qoi/register_types.cpp
+debug_draw_3d/colors.cpp \
+debug_draw_3d/data_graphs.cpp \
+debug_draw_3d/debug_draw.cpp \
+debug_draw_3d/debug_geometry_container.cpp \
+debug_draw_3d/editor_plugin.cpp \
+debug_draw_3d/geometry_generators.cpp \
+debug_draw_3d/grouped_text.cpp \
+debug_draw_3d/math_utils.cpp \
+debug_draw_3d/register_types.cpp \
+debug_draw_3d/render_instances.cpp \
+debug_draw_3d/utils.cpp
 
 LOCAL_C_INCLUDES := \
 godot-cpp/godot-headers \

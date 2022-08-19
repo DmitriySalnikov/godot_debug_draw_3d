@@ -46,7 +46,7 @@ void GraphParameters::_init() {
 	background_color = Colors::gray_graph_bg;
 	border_color = Colors::black;
 	text_suffix = "";
-	custom_font = nullptr;
+	custom_font = Ref<Font>();
 
 	if (IS_EDITOR_HINT()) {
 		position = DebugDraw3D::BlockPosition::LeftTop;

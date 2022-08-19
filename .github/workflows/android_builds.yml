@@ -1,7 +1,7 @@
 name: 🤖 Android
 on:
   push:
-    paths: [godot_qoi/**, .github/**, '!.github/**/util_*', '**.patch', SConstruct, Android.mk, jni/Application.mk]
+    paths: [debug_draw_3d/**, .github/**, '!.github/**/util_*', '**.patch', SConstruct, Android.mk, jni/Application.mk]
   repository_dispatch:
 
 # Stop the same workflow actions

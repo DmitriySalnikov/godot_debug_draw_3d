@@ -4,10 +4,10 @@
 #include <Font.hpp>
 #include <Godot.hpp>
 
-#include <memory>
-#include <unordered_set>
 #include <functional>
+#include <memory>
 #include <mutex>
+#include <unordered_set>
 
 using namespace godot;
 

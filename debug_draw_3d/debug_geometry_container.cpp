@@ -264,12 +264,12 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 Dictionary DebugGeometryContainer::get_rendered_primitives_count() {
 	LOCK_GUARD(datalock);
 	return Dictionary::make(
-			"instances", geometry_pool.get_used_instances_total(),
-			"visible_instances", geometry_pool.get_visible_instances(),
-			"wireframes", geometry_pool.get_used_lines_total(),
-			"visible_wireframes", geometry_pool.get_visible_lines(),
-			"total", geometry_pool.get_used_instances_total() + geometry_pool.get_used_lines_total(),
-			"total_visible", geometry_pool.get_visible_instances() + geometry_pool.get_visible_lines());
+			"instances", (int64_t)geometry_pool.get_used_instances_total(),
+			"visible_instances", (int64_t)geometry_pool.get_visible_instances(),
+			"wireframes", (int64_t)geometry_pool.get_used_lines_total(),
+			"visible_wireframes", (int64_t)geometry_pool.get_visible_lines(),
+			"total", (int64_t)geometry_pool.get_used_instances_total() + geometry_pool.get_used_lines_total(),
+			"total_visible", (int64_t)geometry_pool.get_visible_instances() + geometry_pool.get_visible_lines());
 }
 
 void DebugGeometryContainer::set_render_layer_mask(int64_t layers) {
@@ -585,7 +585,7 @@ void DebugGeometryContainer::draw_grid_xf(Transform transform, Vector2 subdivisi
 
 	Vector3 origin = is_centered ?
 							 transform.origin - x_d * subdivision.x * 0.5 - z_d * subdivision.y * 0.5 :
-							   transform.origin;
+							 transform.origin;
 
 	std::vector<Vector3> lines;
 	for (int x = 0; x < subdivision.x + 1; x++) {

@@ -1,10 +1,10 @@
 #pragma once
 
+#include "colors.h"
 #include "data_graphs.h"
 #include "debug_geometry_container.h"
 #include "geometry_generators.h"
 #include "grouped_text.h"
-#include "colors.h"
 
 #include <CanvasItem.hpp>
 #include <CanvasLayer.hpp>
@@ -40,8 +40,10 @@ public:
 	};
 
 private:
-#define CONST_GET(_enum, _const) \
-	int64_t get_##_enum##_##_const() { return _enum::_const; }
+#define CONST_GET(_enum, _const)       \
+	int64_t get_##_enum##_##_const() { \
+		return _enum::_const;          \
+	}
 
 	void fake_set_const(int64_t val){};
 	CONST_GET(BlockPosition, LeftTop);
@@ -82,7 +84,9 @@ private:
 	std::recursive_mutex datalock;
 	bool is_ready = false;
 
-	DebugDraw3D *get_singleton_gdscript() { return singleton; };
+	DebugDraw3D *get_singleton_gdscript() {
+		return singleton;
+	};
 	void on_canva_item_draw(CanvasItem *ci);
 
 #pragma region Exposed Parameter Values
@@ -143,7 +147,9 @@ public:
 	static void _register_methods();
 	void _init();
 
-	static DebugDraw3D *get_singleton() { return singleton; };
+	static DebugDraw3D *get_singleton() {
+		return singleton;
+	};
 	void mark_canvas_needs_update();
 
 	void set_custom_editor_viewport(std::vector<Viewport *> viewports);

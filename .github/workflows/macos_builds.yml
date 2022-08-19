@@ -1,7 +1,7 @@
 name: 🍏 MacOS
 on:
   push:
-    paths: [godot_qoi/**, .github/**, '!.github/**/util_*', '**.patch', lib_utils.py, SConstruct]
+    paths: [debug_draw_3d/**, .github/**, '!.github/**/util_*', '**.patch', lib_utils.py, SConstruct]
   repository_dispatch:
 
 # Stop the same workflow actions
