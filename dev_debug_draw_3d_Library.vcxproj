@@ -71,7 +71,7 @@
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
@@ -136,6 +136,7 @@
     <ClInclude Include="debug_draw_3d\debug_draw.h" />
     <ClInclude Include="debug_draw_3d\editor_plugin.h" />
     <ClInclude Include="debug_draw_3d\data_graphs.h" />
+    <ClInclude Include="debug_draw_3d\enums.h" />
     <ClInclude Include="debug_draw_3d\geometry_generators.h" />
     <ClInclude Include="debug_draw_3d\grouped_text.h" />
     <ClInclude Include="debug_draw_3d\math_utils.h" />

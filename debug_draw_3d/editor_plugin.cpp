@@ -78,6 +78,7 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 	Control *spatial_editor = nullptr;
 
 	int64_t hex_version = (int64_t)(Engine::get_singleton()->get_version_info()["hex"]);
+
 	if (hex_version >= 0x030400) {
 		// For Godot 3.4.x
 		spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent()->get_parent()->get_parent());
@@ -99,8 +100,8 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 			if (control->get_class() == "SpatialEditorViewport")
 				return control;
 
-			// 4 Levels must be enough for 3.2.4
-			if (level < 4) {
+			// 5 Levels must be enough for 3.5...
+			if (level < 5) {
 				Array ch = control->get_children();
 				for (int i = 0; i < ch.size(); i++) {
 					Control *obj = cast_to<Control>(ch[i]);

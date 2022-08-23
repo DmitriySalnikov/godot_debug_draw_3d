@@ -26,7 +26,7 @@ func get_singleton() -> Node:
 var recall_to_singleton: bool
 var debug_enabled: bool
 var freeze_3d_render: bool
-var draw_instance_bounds: bool
+var visible_instance_bounds: bool
 var use_frustum_culling: bool
 var force_use_camera_from_scene: bool
 var graphs_base_offset: Vector2
@@ -45,7 +45,7 @@ var custom_canvas: CanvasItem
 
 ### Draw Functions
 
-func get_rendered_primitives_count() -> Dictionary:
+func get_render_stats() -> Dictionary:
 	return Dictionary()
 func clear_3d_objects() -> void:
 	pass
@@ -93,7 +93,7 @@ func draw_billboard_square(position: Vector3, size: float = 0.2, color: Color = 
 	pass
 func draw_position(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
 	pass
-func draw_gizmo(transform: Transform, is_centered: bool = false, duration: float = 0) -> void:
+func draw_gizmo(transform: Transform, color: Color = empty_color, is_centered: bool = false, duration: float = 0) -> void:
 	pass
 func draw_grid(origin: Vector3, x_size: Vector3, y_size: Vector3, subdivision: Vector2, color: Color = empty_color, is_centered: bool = true, duration: float = 0) -> void:
 	pass
@@ -109,9 +109,9 @@ func end_text_group() -> void:
 	pass
 func set_text(key: String, value = "", priority: int = 0, color_of_value: Color = empty_color, duration: float = -1) -> void:
 	pass
-func create_graph(title: String) -> Reference:
+func create_graph(title: String) -> GraphParameters:
 	return null
-func create_fps_graph(title: String) -> Reference:
+func create_fps_graph(title: String) -> GraphParameters:
 	return null
 func graph_update_data(title: String, data: float) -> void:
 	pass
@@ -119,7 +119,29 @@ func remove_graph(title: String) -> void:
 	pass
 func clear_graphs() -> void:
 	pass
-func get_graph_config(title: String) -> Reference:
+func get_graph_config(title: String) -> GraphParameters:
 	return null
 func get_graph_names() -> PoolStringArray:
 	return PoolStringArray()
+
+
+#######################################################################
+#######################################################################
+
+
+class GraphParameters:
+	var enabled: bool
+	var show_title: bool
+	var frametime_mode: bool
+	var centered_graph_line: bool
+	var show_text_flags: int
+	var size: Vector2
+	var buffer_size: int
+	var offset: Vector2
+	var position: int
+	var line_color: Color
+	var text_color: Color
+	var background_color: Color
+	var border_color: Color
+	var text_suffix: String
+	var custom_font: Font

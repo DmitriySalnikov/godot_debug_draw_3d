@@ -3,6 +3,7 @@
 #include "colors.h"
 #include "data_graphs.h"
 #include "debug_geometry_container.h"
+#include "enums.h"
 #include "geometry_generators.h"
 #include "grouped_text.h"
 
@@ -23,22 +24,6 @@ class DebugDraw3D : public Node {
 	static int instance_counter;
 
 public:
-	enum BlockPosition : int {
-		LeftTop = 0,
-		RightTop = 1,
-		LeftBottom = 2,
-		RightBottom = 3,
-	};
-
-	enum GraphTextFlags : int {
-		None = 0,
-		Current = 1 << 0,
-		Avarage = 1 << 1,
-		Max = 1 << 2,
-		Min = 1 << 3,
-		All = Current | Avarage | Max | Min
-	};
-
 private:
 #define CONST_GET(_enum, _const)       \
 	int64_t get_##_enum##_##_const() { \
@@ -95,16 +80,17 @@ private:
 
 	/// Recall all calls from DebugDraw3D instance to its singleton if needed
 	bool recall_to_singleton = true;
-	/// Enable or disable all debug draw.
+	/// Enable or disable all debug draw
 	bool debug_enabled = true;
-	/// Debug for debug...
+	/// Freezing 3d debugging instances
 	bool freeze_3d_render = false;
 	/// Debug for debug...
-	bool draw_instance_bounds = false;
+	bool visible_instance_bounds = false;
 	/// Geometry culling based on camera frustum.
 	/// It is not recommended to use with the current implementation.
 	bool use_frustum_culling = false;
-	/// Force use camera placed on edited scene. Usable for editor.
+	/// Force use camera placed on edited scene.
+	/// Usable for editor.
 	bool force_use_camera_from_scene = false;
 	/// Base offset for all graphs
 	Vector2 graphs_base_offset = Vector2(8, 8);
@@ -119,20 +105,20 @@ private:
 	Vector2 text_block_offset = Vector2(8, 8);
 	/// Text padding for each line
 	Vector2 text_padding = Vector2(2, 1);
-	/// How long HUD text lines remain shown after being invoked.
+	/// How long text remain shown after being invoked.
 	real_t text_default_duration = 0.5f;
-	/// Color of the text drawn as HUD
+	/// Default color of the text
 	Color text_foreground_color = Colors::white;
-	/// Background color of the text drawn as HUD
+	/// Background color of the text
 	Color text_background_color = Colors::gray_bg;
-	/// Custom Font
+	/// Custom text Font
 	Ref<Font> text_custom_font = nullptr;
 
 	// GEOMETRY
 
-	/// Color of line with hit
+	/// Default color of line with hit
 	Color line_hit_color = Colors::red;
-	/// Color of line after hit
+	/// Default color of line after hit
 	Color line_after_hit_color = Colors::green;
 
 	// Misc
@@ -170,8 +156,8 @@ public:
 	void set_freeze_3d_render(bool state);
 	bool is_freeze_3d_render();
 
-	void set_draw_instance_bounds(bool state);
-	bool is_draw_instance_bounds();
+	void set_visible_instance_bounds(bool state);
+	bool is_visible_instance_bounds();
 
 	void set_use_frustum_culling(bool state);
 	bool is_use_frustum_culling();
@@ -221,7 +207,9 @@ public:
 
 #pragma region Exposed Draw Functions
 
-	Dictionary get_rendered_primitives_count();
+	/// Returns a dictionary with rendering statistics.
+	/// Some data can be delayed by 1 frame.
+	Dictionary get_render_stats();
 
 	/// Clear all 3D objects
 	void clear_3d_objects();
@@ -243,7 +231,7 @@ public:
 	void draw_sphere(Vector3 position, real_t radius = 0.5f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere
-	/// transform: Transform of the sphere
+	/// transform: Transform of the Sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
 	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
@@ -265,7 +253,7 @@ public:
 #pragma region Cylinders
 
 	/// Draw vertical cylinder
-	/// transform: Cylinder transform
+	/// transform: Transform of the Cylinder
 	/// color: Cylinder color
 	/// duration: Duration of existence in seconds
 	void draw_cylinder(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
@@ -273,10 +261,10 @@ public:
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-	/// Draw rotated box
-	/// transform: Box transform
+	/// Draw box
+	/// transform: Transform of the Box
 	/// color: Box color
-	/// isBoxCentered: Use 'position' as center of the box
+	/// is_box_centered: Use 'transform' as the center of the box, not as the bottom corner
 	/// duration: Duration of existence in seconds
 	void draw_box(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
 
@@ -297,22 +285,24 @@ public:
 #pragma region Lines
 
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
-	/// a: Start point
-	/// b: End point
+	/// start: Start point
+	/// end: End point
+	/// hit: Hit point
 	/// is_hit: Is hit
-	/// unitOffsetOfHit: Unit offset on the line where the hit occurs
-	/// hitColor: Color of the hit point and line before hit
-	/// afterHitColor: Color of line after hit position
+	/// hit_size: Size of the hit point
+	/// hit_color: Color of the hit point and line before hit
+	/// after_hit_color: Color of line after hit position
 	/// duration: Duration of existence in seconds
 	void draw_line_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, real_t hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
-	/// a: Start point
-	/// b: End point
+	/// start: Start point
+	/// end: End point
 	/// is_hit: Is hit
-	/// unitOffsetOfHit: Unit offset on the line where the hit occurs
-	/// hitColor: Color of the hit point and line before hit
-	/// afterHitColor: Color of line after hit position
+	/// unit_offset_of_hit: Unit offset on the line where the hit occurs
+	/// hit_size: Size of the hit point
+	/// hit_color: Color of the hit point and line before hit
+	/// after_hit_color: Color of line after hit position
 	/// duration: Duration of existence in seconds
 	void draw_line_hit_offset(Vector3 start, Vector3 end, bool is_hit, real_t unit_offset_of_hit = 0.5f, real_t hit_size = 0.25f, Color hit_color = Colors::empty_color, Color after_hit_color = Colors::empty_color, real_t duration = 0);
 
@@ -327,7 +317,7 @@ public:
 
 	/// Draw many line
 	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
-	/// color: Line color
+	/// color: Lines color
 	/// duration: Duration of existence in seconds
 	void draw_lines(PoolVector3Array lines, Color color = Colors::empty_color, real_t duration = 0);
 
@@ -341,7 +331,7 @@ public:
 
 	/// Draw a sequence of points connected by lines
 	/// path: Sequence of points
-	/// color: Color
+	/// color: Lines Color
 	/// duration: Duration of existence in seconds
 	void draw_line_path(PoolVector3Array path, Color color = Colors::empty_color, real_t duration = 0);
 
@@ -349,8 +339,8 @@ public:
 #pragma region Arrows
 
 	/// Draw arrow
-	/// Transform: Start point
-	/// color: Line color
+	/// Transform: Transform of the Arrow
+	/// color: Arrow color
 	/// duration: Duration of existence in seconds
 	void draw_arrow(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
@@ -358,8 +348,8 @@ public:
 	/// a: Start point
 	/// b: End point
 	/// color: Line color
-	/// arrowSize: Size of the arrow
-	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
+	/// arrow_size: Size of the arrow
+	/// absolute_size: Is the 'arrowSize' absolute or relative to the length of the line?
 	/// duration: Duration of existence in seconds
 	void draw_arrow_line(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t arrow_size = 0.5f, bool absolute_size = false, real_t duration = 0);
 
@@ -368,16 +358,16 @@ public:
 	/// direction: Direction
 	/// length: Length
 	/// color: Ray color
-	/// arrowSize: Size of the arrow
-	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
+	/// arrow_size: Size of the arrow
+	/// absolute_size: Is the 'arrowSize' absolute or relative to the length of the line?
 	/// duration: Duration of existence in seconds
 	void draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color = Colors::empty_color, real_t arrow_size = 0.5f, bool absolute_size = false, real_t duration = 0);
 
 	/// Draw a sequence of points connected by lines with arrows
 	/// path: Sequence of points
 	/// color: Color
-	/// arrowSize: Size of the arrow
-	/// absoluteSize: Is the 'arrowSize' absolute or relative to the length of the line?
+	/// arrow_size: Size of the arrow
+	/// absolute_size: Is the 'arrowSize' absolute or relative to the length of the line?
 	/// duration: Duration of existence in seconds
 	void draw_arrow_path(PoolVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool absolute_size = true, real_t duration = 0);
 
@@ -387,37 +377,39 @@ public:
 
 	/// Draw a square that will always be turned towards the camera
 	/// position: Center position of square
+	/// size: Square size
 	/// color: Color
-	/// size: Unit size
 	/// duration: Duration of existence in seconds
 	void draw_billboard_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw 3 intersecting lines with the given transformations
-	/// transform: Transform
+	/// transform: Transform of lines
 	/// color: Color
 	/// duration: Duration of existence in seconds
 	void draw_position(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
-	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
-	/// transform: Transform
+	/// Draw 3 lines with the given transformations and arrows at the ends
+	/// transform: Transform of lines
+	/// color: Color
+	/// is_centered: If 'true', then the lines will intersect in the center of the transform
 	/// duration: Duration of existence in seconds
-	void draw_gizmo(Transform transform, bool is_centered = false, real_t duration = 0);
+	void draw_gizmo(Transform transform, Color color = Colors::empty_color, bool is_centered = false, real_t duration = 0);
 
 	/// Draw simple grid with given size and subdivision
-	/// origin:
-	/// x_size:
-	/// y_size:
-	/// subdivision:
-	/// color:
-	/// is_centered:
+	/// origin: Grid origin
+	/// x_size: Direction and size of the X side. As an axis in the Basis.
+	/// y_size: Direction and size of the Y side. As an axis in the Basis.
+	/// subdivision: Number of cells for the X and Y axes
+	/// color: Lines color
+	/// is_centered: Draw lines relative to origin
 	/// duration: Duration of existence in seconds
 	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 	/// Draw simple grid with given size and subdivision
-	/// transform:
-	/// subdivision:
-	/// color:
-	/// is_centered:
+	/// transform: Transform of the Grid
+	/// subdivision: Number of cells for the X and Y axes
+	/// color: Lines color
+	/// is_centered: Draw lines relative to origin
 	/// duration: Duration of existence in seconds
 	void draw_grid_xf(Transform transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
@@ -444,22 +436,21 @@ public:
 #pragma region Text
 
 	/// Begin text group
-	/// groupTitle: Group title and ID
-	/// groupPriority: Group priority
-	/// showTitle: Whether to show the title
+	/// group_title: Group title and ID
+	/// group_priority: Group priority
+	/// group_color: Group color
+	/// show_title: Whether to show the title
 	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true);
 
 	/// End text group. Should be called after 'begin_text_group' if you don't need more than one group.
 	/// If you need to create 2+ groups just call again 'begin_text_group' and this function in the end.
-	/// groupTitle: Group title and ID
-	/// groupPriority: Group priority
-	/// showTitle: Whether to show the title
 	void end_text_group();
 
 	/// Add or update text in overlay
-	/// key: Name of field if 'value' exists, otherwise whole line will equal 'key'.
+	/// key: The name of the field, if there is a 'value', otherwise the whole string will be equal to the 'key'
 	/// value: Value of field
 	/// priority: Priority of this line. Lower value is higher position.
+	/// color_of_value: Value color
 	/// duration: Expiration time
 	void set_text(String key, Variant value = "", int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
 

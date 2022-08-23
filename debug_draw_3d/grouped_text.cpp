@@ -184,23 +184,23 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
 	switch (owner->get_text_block_position()) {
-		case DebugDraw3D::BlockPosition::LeftTop:
+		case BlockPosition::LeftTop:
 			pos = text_block_offset;
 			size_mul = 0;
 			break;
-		case DebugDraw3D::BlockPosition::RightTop:
+		case BlockPosition::RightTop:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
 					text_block_offset.y);
 			size_mul = -1;
 			break;
-		case DebugDraw3D::BlockPosition::LeftBottom:
+		case BlockPosition::LeftBottom:
 			pos = Vector2(
 					text_block_offset.x,
 					vp_size.y - text_block_offset.y - line_height * count);
 			size_mul = 0;
 			break;
-		case DebugDraw3D::BlockPosition::RightBottom:
+		case BlockPosition::RightBottom:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
 					vp_size.y - text_block_offset.y - line_height * count);

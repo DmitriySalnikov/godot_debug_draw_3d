@@ -1,7 +1,8 @@
 tool
 extends EditorScript
 
-const input_header = "debug_draw.h"
+const debug_draw_header = "debug_draw.h"
+const data_graph_header = "data_graphs.h"
 const out_gdscript = "res://addons/debug_draw_3d/debug_draw.gd"
 const out_csharp = "res://addons/debug_draw_3d/DebugDrawCS.cs"
 const out_gdscript_dummy = "res://addons/debug_draw_3d/debug_draw_dummy.gd"
@@ -53,38 +54,49 @@ func _run() -> void:
 	var d = Directory.new()
 	var f = File.new()
 	
-	if input_header.is_abs_path() and f.file_exists(input_header):
-		f.open(input_header, File.READ)
-	elif f.file_exists("res://" + input_header):
-		f.open("res://" + input_header, File.READ)
-	elif f.file_exists((get_script().resource_path).get_base_dir() + "/" + input_header):
-		f.open((get_script().resource_path).get_base_dir() + "/"  + input_header, File.READ)
+	var dir_path = ""
+	if debug_draw_header.is_abs_path() and f.file_exists(debug_draw_header):
+		pass
+	elif f.file_exists("res://" + debug_draw_header):
+		dir_path = "res://"
+	elif f.file_exists((get_script().resource_path).get_base_dir() + "/" + debug_draw_header):
+		dir_path = (get_script().resource_path).get_base_dir() + "/"
 	else:
-		printerr("No header file found with name: " + input_header)
+		printerr("No header file found with name: " + debug_draw_header)
 		return
 	
+	f.open(dir_path + debug_draw_header, File.READ)
 	var debug_draw_h_content = f.get_as_text()
+	f.close()
+	
+	f.open(dir_path + data_graph_header, File.READ)
+	var data_graphs_h_content = f.get_as_text()
 	f.close()
 	
 	# replace CR by LF
 	# on windows now can be LFLF replace by LF
 	# replace empty strings by LF
-	var header_lines = debug_draw_h_content.replace('\r', '\n').replace('\n\n', '\n').replace('\n\n', '\n').split('\n', false)
-	for i in header_lines.size():
-		header_lines[i] = header_lines[i].strip_edges()
+	var debug_draw_lines = debug_draw_h_content.replace('\r', '\n').replace('\n\n', '\n').replace('\n\n', '\n').split('\n', false)
+	for i in debug_draw_lines.size():
+		debug_draw_lines[i] = debug_draw_lines[i].strip_edges()
 	
-	var data = _parse_header(header_lines)
+	var data_graphs_lines = data_graphs_h_content.replace('\r', '\n').replace('\n\n', '\n').replace('\n\n', '\n').split('\n', false)
+	for i in data_graphs_lines.size():
+		data_graphs_lines[i] = data_graphs_lines[i].strip_edges()
+	
+	var debug_draw_data = _parse_header(debug_draw_lines)
+	var data_graphs_data = _parse_header(data_graphs_lines)
 	
 	f.open(out_gdscript, File.WRITE)
-	f.store_string(_generate_gdscript(data).join("\n"))
+	f.store_string(_generate_gdscript(debug_draw_data, data_graphs_data).join("\n"))
 	f.close()
 	
 	f.open(out_gdscript_dummy, File.WRITE)
-	f.store_string(_generate_gdscript(data, true).join("\n"))
+	f.store_string(_generate_gdscript(debug_draw_data, data_graphs_data, true).join("\n"))
 	f.close()
 	
 	f.open(out_csharp, File.WRITE)
-	f.store_string(_generate_csharp(data).join("\n"))
+	f.store_string(_generate_csharp(debug_draw_data, data_graphs_data).join("\n"))
 	f.close()
 	
 	print("Generation finished. Time elapsed: %s ms" % [OS.get_ticks_msec() - start_time])
@@ -125,7 +137,6 @@ func _parse_header(lines: PoolStringArray) -> DebugDrawHeader:
 		"FPSGraphTextFlags": "int",
 		"real_t": "float",
 		"int64_t": "int",
-		"GraphParameters": "Reference",
 	}
 	
 	var state: int = ParsingStates.Init
@@ -134,6 +145,10 @@ func _parse_header(lines: PoolStringArray) -> DebugDrawHeader:
 			ParsingStates.Init:
 				if l.begins_with("#define CONST_GET"):
 					state = ParsingStates.Constants
+				
+				# For data graphs
+				if l.begins_with("GODOT_CLASS(GraphParameters, Reference);"):
+					state = ParsingStates.Params
 			
 			ParsingStates.Constants:
 				if l.begins_with("CONST_GET("):
@@ -148,6 +163,11 @@ func _parse_header(lines: PoolStringArray) -> DebugDrawHeader:
 				elif l.begins_with("#pragma endregion // Exposed Parameter Values"):
 					state = ParsingStates.FindFuncs
 					res.params.remove(res.params.size()-1)
+				
+				# For data graphs
+				elif l.begins_with("public:"):
+					res.params.remove(res.params.size()-1)
+					return res
 				elif not l.begins_with("//"):
 					var split = l.split(" = ")
 					if split.size() == 2:
@@ -200,6 +220,14 @@ func _parse_header(lines: PoolStringArray) -> DebugDrawHeader:
 	
 	return res
 
+
+
+
+#########################################################################################################################################################################################################################################################################
+
+
+
+
 func __gdscript_setget_names(type: String, name: String) -> PoolStringArray:
 	if type == "bool":
 		return PoolStringArray(["set_" + name, "is_" + name])
@@ -216,28 +244,31 @@ func __gdscript_default_value_to_str(type: String, value) -> String:
 	return str(value)
 
 func __gdscript_get_default_return_val(type: String) -> String:
-	if type in ["Resource", "Reference", "Font", "Viewport", "CanvasItem"]:
+	if type in ["Resource", "Reference", "Font", "Viewport", "CanvasItem", "GraphParameters"]:
 		return "null"
 	elif type in ["Dictionary", "PoolStringArray", "bool", "Color", "int", "float", "Vector2", "Vector3"]:
 		return type + "()"
+	elif type == "String":
+		return "\"\""
 	return "WTF IS THIS??"
 
-func _generate_gdscript(data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
+func _generate_gdscript(data: DebugDrawHeader, data_graphs_data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
 	var res: PoolStringArray
 	res.append(
 """tool
 extends Node
 
-const empty_color = Color(0,0,0,0)
-""")
+const empty_color = Color(0,0,0,0)""")
 	
 	if !is_dummy_imp:
 		res.append("var _debug_draw_3d: Node = null")
 	
-	res.append("\n### Constants\n")
+	
+	res.append("\n\n### Constants\n")
 	
 	for c in data.int_constants:
 		res.append("var %s = 0" % [c])
+	
 	
 	if !is_dummy_imp:
 		res.append(
@@ -276,6 +307,7 @@ func get_singleton() -> Node:
 func get_singleton() -> Node:
 	return null""")
 	
+	
 	res.append("\n\n### Parameters\n")
 	if !is_dummy_imp:
 		for p in data.params:
@@ -285,6 +317,7 @@ func get_singleton() -> Node:
 	else:
 		for p in data.params:
 			res.append("var %s: %s" % [p.name, p.type])
+	
 	
 	res.append("\n### Draw Functions\n")
 	
@@ -324,7 +357,49 @@ func %s() -> %s:
 	else: return %s
 """ % [setgets[0], p.name, setgets[1], p.type, p.name, __gdscript_get_default_return_val(p.type)]);
 	
+	
+	res.append("\n\n#######################################################################\n#######################################################################\n\n")
+	
+	
+	res.append("class GraphParameters:")
+	if !is_dummy_imp:
+		res.append("""	var orig_ref : Reference
+	func _init(ref : Reference) -> void:
+		orig_ref = ref
+	""")
+	
+	if !is_dummy_imp:
+		for p in data_graphs_data.params:
+				for c in p.comments:
+					res.append("	## %s" % c)
+				res.append("	var %s: %s setget %s\n	" % [p.name, p.type, __gdscript_setget_names(p.type, p.name).join(", ")])
+		
+		res.append("	")
+		
+		for p in data_graphs_data.params:
+			var setgets: PoolStringArray = __gdscript_setget_names(p.type, p.name)
+			if !is_dummy_imp:
+				res.append("""	func %s(val):
+		if orig_ref: orig_ref.%s = val
+	
+	func %s() -> %s:
+		if orig_ref: return orig_ref.%s
+		else: return %s
+	""" % [setgets[0], p.name, setgets[1], p.type, p.name, __gdscript_get_default_return_val(p.type)]);
+		
+	else:
+		for p in data_graphs_data.params:
+			res.append("	var %s: %s" % [p.name, p.type])
+	
 	return res
+
+
+
+
+#########################################################################################################################################################################################################################################################################
+
+
+
 
 
 func __get_pascal_case_name(s : String) -> String:
@@ -349,18 +424,61 @@ func __csharp_default_value_to_str(type: String, value) -> String:
 	
 	return str(value)
 
-func _generate_csharp(data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
-	var remap_types:= {
-		"PoolVector3Array": "Vector3[]",
-		"PoolVector2Array": "Vector2[]",
-		"PoolColorArray": "Color[]",
-		"PoolStringArray": "string[]",
-		"PoolIntArray": "int[]",
-		"PoolRealArray": "float[]",
-		"Color": "Color?",
-		"String": "string",
+var __csharp_remap := {
+	"PoolVector3Array": "Vector3[]",
+	"PoolVector2Array": "Vector2[]",
+	"PoolColorArray": "Color[]",
+	"PoolStringArray": "string[]",
+	"PoolIntArray": "int[]",
+	"PoolRealArray": "float[]",
+	"Color": "Color?",
+	"String": "string",
+}
+
+var __csharp_remap_params := {
+	"PoolVector3Array": "Vector3[]",
+	"PoolVector2Array": "Vector2[]",
+	"PoolColorArray": "Color[]",
+	"PoolStringArray": "string[]",
+	"PoolIntArray": "int[]",
+	"PoolRealArray": "float[]",
+	"String": "string",
+}
+
+var __csharp_remap_defs := {
+	"Dictionary": "new Dictionary()",
+	"String": "\"\"",
+	"PoolStringArray": "new string[0]",
+}
+
+func _csharp_remap_types(type : String) -> String:
+	if type in __csharp_remap:
+		return __csharp_remap[type]
+	return type
+
+func _csharp_remap_params(type : String) -> String:
+	if type in __csharp_remap_params:
+		return __csharp_remap_params[type]
+	return type
+
+func _csharp_remap_ret_conv(type : String) -> String:
+	var remap_ret_conv:={
+		"GraphParameters": "GraphParameters)(Reference",
 	}
+	for r in __csharp_remap:
+		remap_ret_conv[r] = __csharp_remap[r]
 	
+	if type in remap_ret_conv:
+		return remap_ret_conv[type]
+	return type
+
+func _csharp_remap_def(type : String) -> String:
+	if type in __csharp_remap_defs:
+		return __csharp_remap_defs[type]
+	return "default"
+
+
+func _generate_csharp(data: DebugDrawHeader, data_graphs_data: DebugDrawHeader) -> PoolStringArray:
 	var res: PoolStringArray
 	res.append(
 """using Godot;
@@ -369,26 +487,50 @@ using Godot.Collections;
 [Tool]
 public class DebugDrawCS : Node
 {
+#if DEBUG
 	static Color empty_color = new Color(0,0,0,0);
 	static Node debug_draw_3d = null;
+#endif
 """)
 	
-	res.append("\n	/// Constants\n")
 	
+	res.append("#region Constants")
+	
+	res.append("#if DEBUG")
 	for c in data.int_constants:
 		res.append("	public static int %s { get; private set; } = 0;" % [c])
+	res.append("#else")
+	for c in data.int_constants:
+		res.append("	public const int %s = 0;" % [c])
+	res.append("#endif")
 	
-	res.append("\n\n	/// Parameters\n")
+	res.append("#endregion Constants\n\n")
+	
+	
+	res.append("#region Parameters")
+	
+	res.append("#if DEBUG")
 	
 	for p in data.params:
 		res.append("	/// <summary>")
 		for c in p.comments:
 			res.append("	/// %s" % c)
 		res.append("	/// </summary>")
-		res.append("	public static %s %s { get => (%s)debug_draw_3d?.Get(\"%s\"); set => debug_draw_3d?.Set(\"%s\", value); }\n" % [p.type, __get_pascal_case_name(p.name), p.type, p.name, p.name])
+		
+		res.append("	public static %s %s { get => (%s)debug_draw_3d?.Get(\"%s\"); set => debug_draw_3d?.Set(\"%s\", value); }\n" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), p.type, p.name, p.name])
 	
-	res.append("\n	/// Init")
+	res.append("#else")
 	
+	for p in data.params:
+		res.append("	public static %s %s = default;" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name)])
+	
+	res.append("#endif\n")
+	res.append("#endregion Parameters\n\n")
+	
+	
+	res.append("#region Init")
+	
+	res.append("#if DEBUG")
 	res.append("""	public DebugDrawCS(){
 		var f = new File();
 		if (f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
@@ -423,25 +565,33 @@ public class DebugDrawCS : Node
 	public static Node GetSingleton(){
 		return (Node)debug_draw_3d?.Call("get_singleton");
 	}""")
+	res.append("#endif")
 	
-	res.append("\n\n	/// Draw Functions\n")
+	res.append("#endregion Init\n\n")
+	
+	
+	res.append("#region Draw Functions")
+	
+	var real_impl = PoolStringArray()
+	var dummy_impl = PoolStringArray()
+	
 	for f in data.funcs:
 		if f.name.empty():
 			continue
 		
-		res.append("	/// <summary>")
+		real_impl.append("	/// <summary>")
 		var end_printed = false
 		for c in f.comments:
 			var cs : PoolStringArray = c.split(":")
 			if cs.size() > 1:
 				if !end_printed:
 					end_printed = true
-					res.append("	/// </summary>")
-				res.append("	/// <param name=\"%s\">%s</param>" % [cs[0], cs[1].strip_edges()])
+					real_impl.append("	/// </summary>")
+				real_impl.append("	/// <param name=\"%s\">%s</param>" % [cs[0], cs[1].strip_edges()])
 			else:
-				res.append("	/// " + c)
+				real_impl.append("	/// " + c)
 		if !end_printed:
-					res.append("	/// </summary>")
+					real_impl.append("	/// </summary>")
 		
 		var args: PoolStringArray
 		var args_to_call: PoolStringArray
@@ -450,7 +600,7 @@ public class DebugDrawCS : Node
 		
 		for a in f.args:
 			if a.type != "Variant":
-				args.append("%s %s%s" % [(remap_types[a.type] if a.type in remap_types else a.type), a.name, ("" if a.default == null else " = " +  __csharp_default_value_to_str(a.type, a.default))])
+				args.append("%s %s%s" % [_csharp_remap_types(a.type), a.name, ("" if a.default == null else " = " +  __csharp_default_value_to_str(a.type, a.default))])
 			elif a.type == "Variant" and a.default != null:
 				args.append("%s %s%s" % [a.type.replace("Variant", "object"), a.name, " = null"])
 			else:
@@ -460,7 +610,76 @@ public class DebugDrawCS : Node
 				args_to_call.append("%s == null? empty_color : %s" % [a.name, a.name])
 			else:
 				args_to_call.append(a.name)
-		res.append("	public static %s %s(%s){\n		%sdebug_draw_3d?.Call(\"%s\"%s);\n	}\n" % [(remap_types[f.ret_type] if f.ret_type in remap_types else f.ret_type), __get_pascal_case_name(f.name), args.join(", "), (("return (%s)" % (remap_types[f.ret_type] if f.ret_type in remap_types else f.ret_type)) if f.ret_type != "void" else ""), f.name, args_to_call.join(", ")])
+		
+		real_impl.append("""	public static %s %s(%s){
+		%sdebug_draw_3d?.Call(\"%s\"%s);
+	}
+""" % [
+			_csharp_remap_types(f.ret_type),
+			__get_pascal_case_name(f.name),
+			args.join(", "),
+			(("return (%s)" % _csharp_remap_ret_conv(f.ret_type)) if f.ret_type != "void" else ""),
+			f.name,
+			args_to_call.join(", "),
+		])
+		
+		dummy_impl.append("	public static %s %s(%s) %s" % [
+			_csharp_remap_types(f.ret_type),
+			__get_pascal_case_name(f.name),
+			args.join(", "),
+			( "=> %s;" % _csharp_remap_def(f.ret_type) if f.ret_type != "void" else "{}"),
+		])
+	
+	res.append("#if DEBUG")
+	res.append_array(real_impl)
+	res.append("#else")
+	res.append("#pragma warning disable IDE0060 // Remove unused parameter")
+	res.append_array(dummy_impl)
+	res.append("#pragma warning restore IDE0060 // Remove unused parameter")
+	res.append("#endif")
+	
+	res.append("#endregion Draw Functions\n\n")
+	
+	
+	res.append("	///////////////////////////////////////////////////////////////////////\n	///////////////////////////////////////////////////////////////////////\n	///////////////////////////////////////////////////////////////////////\n	///////////////////////////////////////////////////////////////////////\n\n")	
+	
+	res.append("	public class GraphParameters\n\t{")
+	
+	res.append("#if DEBUG")
+	res.append(
+"""		readonly Reference orig_ref;
+		public GraphParameters(Reference reference) { orig_ref = reference; }
+		public static explicit operator GraphParameters(Reference reference) => reference != null ? new GraphParameters(reference) : null;
+""")
+	res.append("#else")
+	res.append(
+"""#pragma warning disable IDE0060 // Remove unused parameter
+		public GraphParameters(Reference reference) { }
+#pragma warning restore IDE0060 // Remove unused parameter""")
+	res.append("#endif\n\n")
+	
+	
+	res.append("#region Parameters")
+	res.append("#if DEBUG")
+	
+	for p in data_graphs_data.params:
+		res.append("		/// <summary>")
+		for c in p.comments:
+			res.append("		/// %s" % c)
+		res.append("		/// </summary>")
+		
+		res.append("		public %s %s { get => (%s)orig_ref?.Get(\"%s\"); set => orig_ref?.Set(\"%s\", value); }\n" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), _csharp_remap_params(p.type), p.name, p.name])
+	
+	res.append("#else")
+	
+	for p in data_graphs_data.params:
+		res.append("		public %s %s = %s;" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), _csharp_remap_def(p.type)])
+	
+	res.append("#endif")
+	res.append("#endregion Parameters")
+	
+	res.append("	}")
+	
 	
 	res.append("""}
 

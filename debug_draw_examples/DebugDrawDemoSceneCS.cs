@@ -1,12 +1,14 @@
-﻿using Godot;
+using Godot;
 using System;
 using System.Collections.Generic;
 
 [Tool]
 public class DebugDrawDemoSceneCS : Spatial
 {
+    // Godot 3.x cannot properly release resources
     [Export] Font custom_font = null;
     [Export] bool zylann_example = false;
+    [Export] bool show_hints = true;
     [Export] bool test_graphs = false;
     [Export] bool more_test_cases = false;
     [Export] bool draw_array_of_boxes = false;
@@ -30,12 +32,6 @@ public class DebugDrawDemoSceneCS : Spatial
         DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 2, null, 1);
         DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 3, null, 1);
         DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 4, null, 1);
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        custom_font = null;
-        base.Dispose(disposing);
     }
 
     public override void _Input(InputEvent @event)
@@ -78,13 +74,15 @@ public class DebugDrawDemoSceneCS : Spatial
         DebugDrawCS.Freeze3dRender = Input.IsKeyPressed((int)KeyList.Enter);
         DebugDrawCS.ForceUseCameraFromScene = Input.IsKeyPressed((int)KeyList.Up);
         DebugDrawCS.DebugEnabled = !Input.IsKeyPressed((int)KeyList.Down);
-        DebugDrawCS.DrawInstanceBounds = Input.IsKeyPressed((int)KeyList.Right);
+        DebugDrawCS.VisibleInstanceBounds = Input.IsKeyPressed((int)KeyList.Right);
         if (toogle_frustum_key && !Input.IsKeyPressed((int)KeyList.Left))
             DebugDrawCS.UseFrustumCulling = !DebugDrawCS.UseFrustumCulling;
         toogle_frustum_key = Input.IsKeyPressed((int)KeyList.Left);
 
         // Enable FPSGraph
-        _create_graph("FPS", true, false, Engine.EditorHint ? DebugDrawCS.BlockPosition_LeftTop : DebugDrawCS.BlockPosition_RightTop, DebugDrawCS.GraphTextFlags_Current | DebugDrawCS.GraphTextFlags_Avarage | DebugDrawCS.GraphTextFlags_Max | DebugDrawCS.GraphTextFlags_Min, new Vector2(200, 80), custom_font);
+        var g = _create_graph("FPS", true, false, Engine.EditorHint ? DebugDrawCS.BlockPosition_LeftTop : DebugDrawCS.BlockPosition_RightTop, DebugDrawCS.GraphTextFlags_Current | DebugDrawCS.GraphTextFlags_Avarage | DebugDrawCS.GraphTextFlags_Max | DebugDrawCS.GraphTextFlags_Min, new Vector2(200, 80), custom_font);
+        if (g != null)
+            g.BufferSize = 300;
 
         if (test_graphs)
             _graph_test();
@@ -165,12 +163,15 @@ public class DebugDrawDemoSceneCS : Spatial
         // Misc
         DebugDrawCS.DrawCameraFrustum(GetNode<Camera>("Camera"), Colors.DarkOrange);
 
+        DebugDrawCS.DrawArrow(GetNode<Spatial>("Misc/Arrow").GlobalTransform, Colors.YellowGreen);
+
         DebugDrawCS.DrawBillboardSquare(GetNode<Spatial>("Misc/Billboard").GlobalTransform.origin, 0.5f, Colors.Green);
 
         DebugDrawCS.DrawPosition(GetNode<Spatial>("Misc/Position").GlobalTransform, Colors.Brown);
 
-        DebugDrawCS.DrawGizmo(GetNode<Spatial>("Misc/GizmoTransform").GlobalTransform, true);
-        DebugDrawCS.DrawGizmo(GetNode<Spatial>("Misc/GizmoNormal").GlobalTransform.Orthonormalized(), false);
+        DebugDrawCS.DrawGizmo(GetNode<Spatial>("Misc/GizmoTransform").GlobalTransform, null, true);
+        DebugDrawCS.DrawGizmo(GetNode<Spatial>("Misc/GizmoNormal").GlobalTransform.Orthonormalized(), null, false);
+        DebugDrawCS.DrawGizmo(GetNode<Spatial>("Misc/GizmoOneColor").GlobalTransform.Orthonormalized(), Colors.Brown, true);
 
         var tg = GetNode<Spatial>("Misc/Grids/Grid").GlobalTransform;
         var tn = GetNode<Spatial>("Misc/Grids/Grid/Subdivision").Transform.origin;
@@ -193,7 +194,7 @@ public class DebugDrawDemoSceneCS : Spatial
 
         DebugDrawCS.BeginTextGroup("-- Stats --", 3, Colors.Wheat);
 
-        var RenderCount = DebugDrawCS.GetRenderedPrimitivesCount();
+        var RenderCount = DebugDrawCS.GetRenderStats();
         if (RenderCount.Count > 0)
         {
             DebugDrawCS.SetText("Total", RenderCount["total"], 0);
@@ -204,6 +205,17 @@ public class DebugDrawDemoSceneCS : Spatial
             DebugDrawCS.SetText("Visible Wireframes", RenderCount["visible_wireframes"], 5);
         }
         DebugDrawCS.EndTextGroup();
+
+        if (show_hints)
+        {
+            DebugDrawCS.BeginTextGroup("controls", 1024, Colors.White, false);
+            DebugDrawCS.SetText("Shift: change render layers", DebugDrawCS.GeometryRenderLayers, 1);
+            DebugDrawCS.SetText("Enter: freeze render", DebugDrawCS.Freeze3dRender, 2);
+            DebugDrawCS.SetText("Up: use scene camera", DebugDrawCS.ForceUseCameraFromScene, 3);
+            DebugDrawCS.SetText("Down: toggle debug", DebugDrawCS.DebugEnabled, 4);
+            DebugDrawCS.SetText("Left: toggle frustum culling", DebugDrawCS.UseFrustumCulling, 5);
+            DebugDrawCS.SetText("Right: draw bounds for culling", DebugDrawCS.VisibleInstanceBounds, 6);
+        }
 
         // Lag Test
         GetNode<Spatial>("LagTest").Translation = ((Transform)GetNode<AnimationPlayer>("LagTest/RESET").GetAnimation("RESET").TrackGetKeyValue(0, 0)).origin + new Vector3(Mathf.Sin(OS.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
@@ -273,25 +285,27 @@ public class DebugDrawDemoSceneCS : Spatial
 
         if (DebugDrawCS.GetGraphConfig("fps5") != null)
         {
-            DebugDrawCS.GetGraphConfig("randf").Set("text_suffix", "utf8 ноль zéro");
+            DebugDrawCS.GetGraphConfig("randf").TextSuffix = "utf8 ноль zéro";
+            DebugDrawCS.GetGraphConfig("fps9").CenteredGraphLine = false;
+
             if (Engine.EditorHint)
             {
-                DebugDrawCS.GetGraphConfig("fps5").Set("offset", new Vector2(0, -30));
-                DebugDrawCS.GetGraphConfig("fps8").Set("offset", new Vector2(280, -60));
-                DebugDrawCS.GetGraphConfig("fps9").Set("offset", new Vector2(0, -75));
+                DebugDrawCS.GetGraphConfig("fps5").Offset = new Vector2(0, -30);
+                DebugDrawCS.GetGraphConfig("fps8").Offset = new Vector2(280, -60);
+                DebugDrawCS.GetGraphConfig("fps9").Offset =new Vector2(0, -75);
             }
             else
             {
-                DebugDrawCS.GetGraphConfig("fps5").Set("offset", new Vector2(0, 0));
-                DebugDrawCS.GetGraphConfig("fps8").Set("offset", new Vector2(280, 0));
-                DebugDrawCS.GetGraphConfig("fps9").Set("offset", new Vector2(0, -75));
+                DebugDrawCS.GetGraphConfig("fps5").Offset =new Vector2(0, 0);
+                DebugDrawCS.GetGraphConfig("fps8").Offset = new Vector2(280, 0);
+                DebugDrawCS.GetGraphConfig("fps9").Offset = new Vector2(0, -75);
             }
         }
 
         DebugDrawCS.GraphUpdateData("randf", (float)random.NextDouble());
     }
 
-    void _create_graph(string title, bool is_fps, bool show_title, int pos, int flags, Vector2? size = null, Font font = null)
+    DebugDrawCS.GraphParameters _create_graph(string title, bool is_fps, bool show_title, int pos, int flags, Vector2? size = null, Font font = null)
     {
         var graph = DebugDrawCS.GetGraphConfig(title);
         if (graph == null)
@@ -303,14 +317,16 @@ public class DebugDrawDemoSceneCS : Spatial
 
             if (graph != null)
             {
-                graph.Set("size", size.HasValue ? size : new Vector2(256, 60));
-                graph.Set("buffer_size", 50);
-                graph.Set("position", pos);
-                graph.Set("show_title", show_title);
-                graph.Set("show_text_flags", flags);
-                graph.Set("custom_font", font);
+                graph.Size = size.HasValue ? size.Value : new Vector2(256, 60);
+                graph.BufferSize =  50;
+                graph.Position= pos;
+                graph.ShowTitle= show_title;
+                graph.ShowTextFlags= flags;
+                graph.CustomFont =  font;
             }
         }
+
+        return graph;
     }
 
 }

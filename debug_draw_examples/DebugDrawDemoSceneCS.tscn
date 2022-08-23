@@ -5,3 +5,17 @@
 
 [node name="DebugDrawDemoSceneCS" instance=ExtResource( 2 )]
 script = ExtResource( 1 )
+more_test_cases = true
+
+[node name="Settings" parent="." index="18"]
+switch_to_scene = "res://debug_draw_examples/DebugDrawDemoScene.tscn"
+
+[node name="FPSEnabled" parent="Settings/VB/H" index="0"]
+margin_right = 288.0
+
+[node name="Button" parent="Settings/VB/H" index="1"]
+margin_left = 292.0
+text = "Switch to GD"
+
+[node name="Label" parent="." index="19"]
+text = "C# example"

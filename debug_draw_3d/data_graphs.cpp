@@ -15,11 +15,11 @@ void GraphParameters::_register_methods() {
 	REG_PROP_BOOL(show_title, false);
 	REG_PROP_BOOL(frame_time_mode, true);
 	REG_PROP_BOOL(centered_graph_line, true);
-	REG_PROP(show_text_flags, (int)DebugDraw3D::GraphTextFlags::All);
+	REG_PROP(show_text_flags, (int)GraphTextFlags::All);
 	REG_PROP(size, Vector2(256, 64));
 	REG_PROP(buffer_size, 256);
 	REG_PROP(offset, Vector2(0, 8));
-	REG_PROP(position, (int)DebugDraw3D::BlockPosition::RightTop);
+	REG_PROP(position, (int)BlockPosition::RightTop);
 	REG_PROP(line_color, Color(1, 0.27f, 0, 1));
 	REG_PROP(text_color, Color(0.96f, 0.96f, 0.96f, 1));
 	REG_PROP(background_color, Color(0.2f, 0.2f, 0.2f, 0.6f));
@@ -32,24 +32,8 @@ void GraphParameters::_register_methods() {
 }
 
 void GraphParameters::_init() {
-	enabled = true;
-	show_title = false;
-	frametime_mode = true;
-	centered_graph_line = true;
-	show_text_flags = DebugDraw3D::GraphTextFlags::All;
-	size = Vector2(256, 64);
-	buffer_size = 256;
-	offset = Vector2(0, 8);
-	position = DebugDraw3D::BlockPosition::RightTop;
-	line_color = Colors::orange_red;
-	text_color = Colors::white_smoke;
-	background_color = Colors::gray_graph_bg;
-	border_color = Colors::black;
-	text_suffix = "";
-	custom_font = Ref<Font>();
-
 	if (IS_EDITOR_HINT()) {
-		position = DebugDraw3D::BlockPosition::LeftTop;
+		position = BlockPosition::LeftTop;
 	}
 }
 
@@ -86,7 +70,7 @@ bool GraphParameters::is_centered_graph_line() {
 }
 
 void GraphParameters::set_show_text_flags(int _flags) {
-	show_text_flags = (DebugDraw3D::GraphTextFlags)_flags;
+	show_text_flags = (GraphTextFlags)_flags;
 }
 
 int GraphParameters::get_show_text_flags() {
@@ -118,7 +102,7 @@ Vector2 GraphParameters::get_offset() {
 }
 
 void GraphParameters::set_position(int _position) {
-	position = (DebugDraw3D::BlockPosition)_position;
+	position = (BlockPosition)_position;
 }
 
 int GraphParameters::get_position() {
@@ -194,7 +178,6 @@ void DataGraph::update(real_t value) {
 	LOCK_GUARD(datalock);
 
 	if (config->get_buffer_size() != data->buffer_size())
-		// data = CircularBuffer<real_t>(config->get_buffer_size());
 		data = std::make_shared<CircularBuffer<real_t> >(config->get_buffer_size());
 
 	_update_added(value);
@@ -222,19 +205,19 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	Vector2 title_size = draw_font->get_string_size(title);
 
 	switch (config->get_position()) {
-		case DebugDraw3D::BlockPosition::LeftTop:
+		case BlockPosition::LeftTop:
 			pos.y += base_offset.y;
 			pos.x += base_offset.x;
 			break;
-		case DebugDraw3D::BlockPosition::RightTop:
+		case BlockPosition::RightTop:
 			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + base_offset.y);
 			pos.x -= base_offset.x;
 			break;
-		case DebugDraw3D::BlockPosition::LeftBottom:
+		case BlockPosition::LeftBottom:
 			pos = Vector2(graphOffset.x, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x += base_offset.x;
 			break;
-		case DebugDraw3D::BlockPosition::RightBottom:
+		case BlockPosition::RightBottom:
 			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x -= base_offset.x;
 			break;
@@ -244,8 +227,8 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		Vector2 title_pos = pos;
 
 		switch (config->get_position()) {
-			case DebugDraw3D::BlockPosition::RightTop:
-			case DebugDraw3D::BlockPosition::RightBottom:
+			case BlockPosition::RightTop:
+			case BlockPosition::RightBottom:
 				title_pos.x = title_pos.x + graphSize.x - title_size.x - 8;
 				break;
 		}
@@ -289,27 +272,27 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	// Draw text
 	auto suffix = config->get_text_suffix().empty() ? "" : config->get_text_suffix().utf8().get_data();
 
-	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Max) == DebugDraw3D::GraphTextFlags::Max) {
+	if ((config->get_show_text_flags() & GraphTextFlags::Max) == GraphTextFlags::Max) {
 		String max_text = Utils::string_format("max: %.2f %s", max, suffix);
 		real_t max_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, max_height - 1);
 		ci->draw_string(draw_font, text_pos.floor(), max_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Avarage) == DebugDraw3D::GraphTextFlags::Avarage) {
+	if ((config->get_show_text_flags() & GraphTextFlags::Avarage) == GraphTextFlags::Avarage) {
 		String avg_text = Utils::string_format("avg: %.2f %s", avg, suffix);
 		real_t avg_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
 		ci->draw_string(draw_font, text_pos.floor(), avg_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Min) == DebugDraw3D::GraphTextFlags::Min) {
+	if ((config->get_show_text_flags() & GraphTextFlags::Min) == GraphTextFlags::Min) {
 		String min_text = Utils::string_format("min: %.2f %s", min, suffix);
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
 		ci->draw_string(draw_font, text_pos.floor(), min_text, config->get_text_color());
 	}
 
-	if ((config->get_show_text_flags() & DebugDraw3D::GraphTextFlags::Current) == DebugDraw3D::GraphTextFlags::Current) {
+	if ((config->get_show_text_flags() & GraphTextFlags::Current) == GraphTextFlags::Current) {
 		// `space` at the end of line for offset from border
 		String cur_text = Utils::string_format("%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
 		Vector2 cur_size = draw_font->get_string_size(cur_text);
@@ -318,11 +301,11 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	}
 
 	switch (config->get_position()) {
-		case DebugDraw3D::BlockPosition::LeftTop:
-		case DebugDraw3D::BlockPosition::RightTop:
+		case BlockPosition::LeftTop:
+		case BlockPosition::RightTop:
 			return Vector2(base_offset.x, border_size.position.y + border_size.size.y + 0);
-		case DebugDraw3D::BlockPosition::LeftBottom:
-		case DebugDraw3D::BlockPosition::RightBottom:
+		case BlockPosition::LeftBottom:
+		case BlockPosition::RightBottom:
 			return Vector2(base_offset.x, border_size.position.y - (config->is_show_title() ? title_size.y : -1));
 	}
 
@@ -388,7 +371,7 @@ void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) {
 	}
 }
 
-void DataGraphManager::update(String title, real_t data) {
+void DataGraphManager::graph_update_data(String title, real_t data) {
 	if (graphs.count(title)) {
 		if (graphs[title]->get_type() != DataGraph::Type::FPS) {
 			graphs[title]->update(data);

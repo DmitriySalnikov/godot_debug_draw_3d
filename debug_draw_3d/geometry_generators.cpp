@@ -5,7 +5,7 @@
 
 #pragma region Predefined Geometry Parts
 
-const Vector3 GeometryGenerator::CenteredCubeVertices[8]{
+const Vector3 GeometryGenerator::CenteredCubeVertices[]{
 	Vector3(-0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, 0.5f),
@@ -16,7 +16,7 @@ const Vector3 GeometryGenerator::CenteredCubeVertices[8]{
 	Vector3(-0.5f, 0.5f, 0.5f)
 };
 
-const Vector3 GeometryGenerator::CubeVertices[8]{
+const Vector3 GeometryGenerator::CubeVertices[]{
 	Vector3(0, 0, 0),
 	Vector3(1, 0, 0),
 	Vector3(1, 0, 1),
@@ -27,7 +27,7 @@ const Vector3 GeometryGenerator::CubeVertices[8]{
 	Vector3(0, 1, 1)
 };
 
-const int GeometryGenerator::CubeIndices[24]{
+const int GeometryGenerator::CubeIndices[]{
 	0,
 	1,
 	1,
@@ -56,7 +56,7 @@ const int GeometryGenerator::CubeIndices[24]{
 	7,
 };
 
-const int GeometryGenerator::CubeWithDiagonalsIndices[36]{
+const int GeometryGenerator::CubeWithDiagonalsIndices[]{
 	0, 1,
 	1, 2,
 	2, 3,
@@ -93,7 +93,7 @@ const int GeometryGenerator::CubeWithDiagonalsIndices[36]{
 	// 2, 5,
 };
 
-const Vector3 GeometryGenerator::ArrowheadVertices[6]{
+const Vector3 GeometryGenerator::ArrowheadVertices[]{
 	Vector3(0, 0, -1),
 	Vector3(0, 0.25f, 0),
 	Vector3(0, -0.25f, 0),
@@ -103,7 +103,7 @@ const Vector3 GeometryGenerator::ArrowheadVertices[6]{
 	Vector3(0, 0, -0.2f),
 };
 
-const int GeometryGenerator::ArrowheadIndices[16]{
+const int GeometryGenerator::ArrowheadIndices[]{
 	0,
 	1,
 	0,
@@ -112,6 +112,9 @@ const int GeometryGenerator::ArrowheadIndices[16]{
 	3,
 	0,
 	4,
+	// Center line
+	5,
+	0,
 	// Cross
 	// 1, 2,
 	// 3, 4,
@@ -126,14 +129,14 @@ const int GeometryGenerator::ArrowheadIndices[16]{
 	4,
 };
 
-const Vector3 GeometryGenerator::CenteredSquareVertices[4]{
+const Vector3 GeometryGenerator::CenteredSquareVertices[]{
 	Vector3(0.5f, 0.5f, 0),
 	Vector3(0.5f, -0.5f, 0),
 	Vector3(-0.5f, -0.5f, 0),
 	Vector3(-0.5f, 0.5f, 0),
 };
 
-const int GeometryGenerator::SquareIndices[6]{
+const int GeometryGenerator::SquareIndices[]{
 	0,
 	1,
 	2,
@@ -142,7 +145,7 @@ const int GeometryGenerator::SquareIndices[6]{
 	0,
 };
 
-const Vector3 GeometryGenerator::PositionVertices[6]{
+const Vector3 GeometryGenerator::PositionVertices[]{
 	Vector3(0.5f, 0, 0),
 	Vector3(-0.5f, 0, 0),
 	Vector3(0, 0.5f, 0),
@@ -151,7 +154,7 @@ const Vector3 GeometryGenerator::PositionVertices[6]{
 	Vector3(0, 0, -0.5f),
 };
 
-const int GeometryGenerator::PositionIndices[6]{
+const int GeometryGenerator::PositionIndices[]{
 	0,
 	1,
 	2,

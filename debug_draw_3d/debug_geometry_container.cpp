@@ -201,7 +201,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	geometry_pool.update_visibility(f);
 
 	// Debug bounds of instances and lines
-	if (owner->is_draw_instance_bounds()) {
+	if (owner->is_visible_instance_bounds()) {
 		// std::vector<Plane> new_instances(geometry_pool.get_used_instances());
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
@@ -261,7 +261,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	geometry_pool.reset_counter(delta);
 }
 
-Dictionary DebugGeometryContainer::get_rendered_primitives_count() {
+Dictionary DebugGeometryContainer::get_render_stats() {
 	LOCK_GUARD(datalock);
 	return Dictionary::make(
 			"instances", (int64_t)geometry_pool.get_used_instances_total(),
@@ -553,18 +553,27 @@ void DebugGeometryContainer::draw_position(Transform transform, Color color, rea
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
 
-void DebugGeometryContainer::draw_gizmo(Transform transform, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_gizmo(Transform transform, Color color, bool is_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
+	bool is_color_empty = color == Colors::empty_color;
+#define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
+#define MINUS(axis) transform.origin - transform.basis.##axis
+#define PLUS(axis) transform.origin + transform.basis.##axis
+
 	if (is_centered) {
-		draw_arrow_line(transform.origin - transform.basis.x /** 0.5f*/, transform.origin + transform.basis.x /** 0.5f*/, Colors::axis_x, 0.1f, true, duration);
-		draw_arrow_line(transform.origin - transform.basis.y /** 0.5f*/, transform.origin + transform.basis.y /** 0.5f*/, Colors::axis_y, 0.1f, true, duration);
-		draw_arrow_line(transform.origin - transform.basis.z /** 0.5f*/, transform.origin + transform.basis.z /** 0.5f*/, Colors::axis_z, 0.1f, true, duration);
+		draw_arrow_line(MINUS(x /** 0.5f*/), PLUS(x /** 0.5f*/), COLOR(x), 0.1f, true, duration);
+		draw_arrow_line(MINUS(y /** 0.5f*/), PLUS(y /** 0.5f*/), COLOR(y), 0.1f, true, duration);
+		draw_arrow_line(MINUS(z /** 0.5f*/), PLUS(z /** 0.5f*/), COLOR(z), 0.1f, true, duration);
 	} else {
-		draw_arrow_line(transform.origin, transform.origin + transform.basis.x, Colors::axis_x, 0.15f, true, duration);
-		draw_arrow_line(transform.origin, transform.origin + transform.basis.y, Colors::axis_y, 0.15f, true, duration);
-		draw_arrow_line(transform.origin, transform.origin + transform.basis.z, Colors::axis_z, 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(x), COLOR(x), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(y), COLOR(y), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(z), COLOR(z), 0.15f, true, duration);
 	}
+
+#undef COLOR
+#undef MINUS
+#undef PLUS
 }
 
 void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {

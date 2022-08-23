@@ -4,12 +4,13 @@ using Godot.Collections;
 [Tool]
 public class DebugDrawCS : Node
 {
+#if DEBUG
 	static Color empty_color = new Color(0,0,0,0);
 	static Node debug_draw_3d = null;
+#endif
 
-
-	/// Constants
-
+#region Constants
+#if DEBUG
 	public static int BlockPosition_LeftTop { get; private set; } = 0;
 	public static int BlockPosition_RightTop { get; private set; } = 0;
 	public static int BlockPosition_LeftBottom { get; private set; } = 0;
@@ -20,29 +21,42 @@ public class DebugDrawCS : Node
 	public static int GraphTextFlags_Max { get; private set; } = 0;
 	public static int GraphTextFlags_Min { get; private set; } = 0;
 	public static int GraphTextFlags_All { get; private set; } = 0;
+#else
+	public const int BlockPosition_LeftTop = 0;
+	public const int BlockPosition_RightTop = 0;
+	public const int BlockPosition_LeftBottom = 0;
+	public const int BlockPosition_RightBottom = 0;
+	public const int GraphTextFlags_None = 0;
+	public const int GraphTextFlags_Current = 0;
+	public const int GraphTextFlags_Avarage = 0;
+	public const int GraphTextFlags_Max = 0;
+	public const int GraphTextFlags_Min = 0;
+	public const int GraphTextFlags_All = 0;
+#endif
+#endregion Constants
 
 
-	/// Parameters
-
+#region Parameters
+#if DEBUG
 	/// <summary>
 	/// Recall all calls from DebugDraw3D instance to its singleton if needed
 	/// </summary>
 	public static bool RecallToSingleton { get => (bool)debug_draw_3d?.Get("recall_to_singleton"); set => debug_draw_3d?.Set("recall_to_singleton", value); }
 
 	/// <summary>
-	/// Enable or disable all debug draw.
+	/// Enable or disable all debug draw
 	/// </summary>
 	public static bool DebugEnabled { get => (bool)debug_draw_3d?.Get("debug_enabled"); set => debug_draw_3d?.Set("debug_enabled", value); }
 
 	/// <summary>
-	/// Debug for debug...
+	/// Freezing 3d debugging instances
 	/// </summary>
 	public static bool Freeze3dRender { get => (bool)debug_draw_3d?.Get("freeze_3d_render"); set => debug_draw_3d?.Set("freeze_3d_render", value); }
 
 	/// <summary>
 	/// Debug for debug...
 	/// </summary>
-	public static bool DrawInstanceBounds { get => (bool)debug_draw_3d?.Get("draw_instance_bounds"); set => debug_draw_3d?.Set("draw_instance_bounds", value); }
+	public static bool VisibleInstanceBounds { get => (bool)debug_draw_3d?.Get("visible_instance_bounds"); set => debug_draw_3d?.Set("visible_instance_bounds", value); }
 
 	/// <summary>
 	/// Geometry culling based on camera frustum.
@@ -51,7 +65,8 @@ public class DebugDrawCS : Node
 	public static bool UseFrustumCulling { get => (bool)debug_draw_3d?.Get("use_frustum_culling"); set => debug_draw_3d?.Set("use_frustum_culling", value); }
 
 	/// <summary>
-	/// Force use camera placed on edited scene. Usable for editor.
+	/// Force use camera placed on edited scene.
+	/// Usable for editor.
 	/// </summary>
 	public static bool ForceUseCameraFromScene { get => (bool)debug_draw_3d?.Get("force_use_camera_from_scene"); set => debug_draw_3d?.Set("force_use_camera_from_scene", value); }
 
@@ -81,32 +96,32 @@ public class DebugDrawCS : Node
 	public static Vector2 TextPadding { get => (Vector2)debug_draw_3d?.Get("text_padding"); set => debug_draw_3d?.Set("text_padding", value); }
 
 	/// <summary>
-	/// How long HUD text lines remain shown after being invoked.
+	/// How long text remain shown after being invoked.
 	/// </summary>
 	public static float TextDefaultDuration { get => (float)debug_draw_3d?.Get("text_default_duration"); set => debug_draw_3d?.Set("text_default_duration", value); }
 
 	/// <summary>
-	/// Color of the text drawn as HUD
+	/// Default color of the text
 	/// </summary>
 	public static Color TextForegroundColor { get => (Color)debug_draw_3d?.Get("text_foreground_color"); set => debug_draw_3d?.Set("text_foreground_color", value); }
 
 	/// <summary>
-	/// Background color of the text drawn as HUD
+	/// Background color of the text
 	/// </summary>
 	public static Color TextBackgroundColor { get => (Color)debug_draw_3d?.Get("text_background_color"); set => debug_draw_3d?.Set("text_background_color", value); }
 
 	/// <summary>
-	/// Custom Font
+	/// Custom text Font
 	/// </summary>
 	public static Font TextCustomFont { get => (Font)debug_draw_3d?.Get("text_custom_font"); set => debug_draw_3d?.Set("text_custom_font", value); }
 
 	/// <summary>
-	/// Color of line with hit
+	/// Default color of line with hit
 	/// </summary>
 	public static Color LineHitColor { get => (Color)debug_draw_3d?.Get("line_hit_color"); set => debug_draw_3d?.Set("line_hit_color", value); }
 
 	/// <summary>
-	/// Color of line after hit
+	/// Default color of line after hit
 	/// </summary>
 	public static Color LineAfterHitColor { get => (Color)debug_draw_3d?.Get("line_after_hit_color"); set => debug_draw_3d?.Set("line_after_hit_color", value); }
 
@@ -120,8 +135,33 @@ public class DebugDrawCS : Node
 	/// </summary>
 	public static CanvasItem CustomCanvas { get => (CanvasItem)debug_draw_3d?.Get("custom_canvas"); set => debug_draw_3d?.Set("custom_canvas", value); }
 
+#else
+	public static bool RecallToSingleton = default;
+	public static bool DebugEnabled = default;
+	public static bool Freeze3dRender = default;
+	public static bool VisibleInstanceBounds = default;
+	public static bool UseFrustumCulling = default;
+	public static bool ForceUseCameraFromScene = default;
+	public static Vector2 GraphsBaseOffset = default;
+	public static int GeometryRenderLayers = default;
+	public static int TextBlockPosition = default;
+	public static Vector2 TextBlockOffset = default;
+	public static Vector2 TextPadding = default;
+	public static float TextDefaultDuration = default;
+	public static Color TextForegroundColor = default;
+	public static Color TextBackgroundColor = default;
+	public static Font TextCustomFont = default;
+	public static Color LineHitColor = default;
+	public static Color LineAfterHitColor = default;
+	public static Viewport CustomViewport = default;
+	public static CanvasItem CustomCanvas = default;
+#endif
 
-	/// Init
+#endregion Parameters
+
+
+#region Init
+#if DEBUG
 	public DebugDrawCS(){
 		var f = new File();
 		if (f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
@@ -160,14 +200,18 @@ public class DebugDrawCS : Node
 	public static Node GetSingleton(){
 		return (Node)debug_draw_3d?.Call("get_singleton");
 	}
+#endif
+#endregion Init
 
 
-	/// Draw Functions
-
+#region Draw Functions
+#if DEBUG
 	/// <summary>
+	/// Returns a dictionary with rendering statistics.
+	/// Some data can be delayed by 1 frame.
 	/// </summary>
-	public static Dictionary GetRenderedPrimitivesCount(){
-		return (Dictionary)debug_draw_3d?.Call("get_rendered_primitives_count");
+	public static Dictionary GetRenderStats(){
+		return (Dictionary)debug_draw_3d?.Call("get_render_stats");
 	}
 
 	/// <summary>
@@ -205,7 +249,7 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw sphere
 	/// </summary>
-	/// <param name="transform">Transform of the sphere</param>
+	/// <param name="transform">Transform of the Sphere</param>
 	/// <param name="color">Sphere color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawSphereXf(Transform transform, Color? color = null, float duration = 0f){
@@ -236,7 +280,7 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw vertical cylinder
 	/// </summary>
-	/// <param name="transform">Cylinder transform</param>
+	/// <param name="transform">Transform of the Cylinder</param>
 	/// <param name="color">Cylinder color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawCylinder(Transform transform, Color? color = null, float duration = 0f){
@@ -244,11 +288,11 @@ public class DebugDrawCS : Node
 	}
 
 	/// <summary>
-	/// Draw rotated box
+	/// Draw box
 	/// </summary>
-	/// <param name="transform">Box transform</param>
+	/// <param name="transform">Transform of the Box</param>
 	/// <param name="color">Box color</param>
-	/// <param name="isBoxCentered">Use 'position' as center of the box</param>
+	/// <param name="is_box_centered">Use 'transform' as the center of the box, not as the bottom corner</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawBox(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f){
 		debug_draw_3d?.Call("draw_box", transform, color == null? empty_color : color, is_box_centered, duration);
@@ -278,12 +322,13 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
 	/// </summary>
-	/// <param name="a">Start point</param>
-	/// <param name="b">End point</param>
+	/// <param name="start">Start point</param>
+	/// <param name="end">End point</param>
+	/// <param name="hit">Hit point</param>
 	/// <param name="is_hit">Is hit</param>
-	/// <param name="unitOffsetOfHit">Unit offset on the line where the hit occurs</param>
-	/// <param name="hitColor">Color of the hit point and line before hit</param>
-	/// <param name="afterHitColor">Color of line after hit position</param>
+	/// <param name="hit_size">Size of the hit point</param>
+	/// <param name="hit_color">Color of the hit point and line before hit</param>
+	/// <param name="after_hit_color">Color of line after hit position</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawLineHit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color? hit_color = null, Color? after_hit_color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_line_hit", start, end, hit, is_hit, hit_size, hit_color == null? empty_color : hit_color, after_hit_color == null? empty_color : after_hit_color, duration);
@@ -292,12 +337,13 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw line separated by hit point (billboard square) or not separated if 'is_hit' = 'false'
 	/// </summary>
-	/// <param name="a">Start point</param>
-	/// <param name="b">End point</param>
+	/// <param name="start">Start point</param>
+	/// <param name="end">End point</param>
 	/// <param name="is_hit">Is hit</param>
-	/// <param name="unitOffsetOfHit">Unit offset on the line where the hit occurs</param>
-	/// <param name="hitColor">Color of the hit point and line before hit</param>
-	/// <param name="afterHitColor">Color of line after hit position</param>
+	/// <param name="unit_offset_of_hit">Unit offset on the line where the hit occurs</param>
+	/// <param name="hit_size">Size of the hit point</param>
+	/// <param name="hit_color">Color of the hit point and line before hit</param>
+	/// <param name="after_hit_color">Color of line after hit position</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawLineHitOffset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit = 0.5f, float hit_size = 0.25f, Color? hit_color = null, Color? after_hit_color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_line_hit_offset", start, end, is_hit, unit_offset_of_hit, hit_size, hit_color == null? empty_color : hit_color, after_hit_color == null? empty_color : after_hit_color, duration);
@@ -318,7 +364,7 @@ public class DebugDrawCS : Node
 	/// Draw many line
 	/// </summary>
 	/// <param name="lines">Array of line points. 1 line = 2 Vector3. The size of the array must be even.</param>
-	/// <param name="color">Line color</param>
+	/// <param name="color">Lines color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawLines(Vector3[] lines, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_lines", lines, color == null? empty_color : color, duration);
@@ -340,7 +386,7 @@ public class DebugDrawCS : Node
 	/// Draw a sequence of points connected by lines
 	/// </summary>
 	/// <param name="path">Sequence of points</param>
-	/// <param name="color">Color</param>
+	/// <param name="color">Lines Color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawLinePath(Vector3[] path, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_line_path", path, color == null? empty_color : color, duration);
@@ -349,8 +395,8 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw arrow
 	/// </summary>
-	/// <param name="Transform">Start point</param>
-	/// <param name="color">Line color</param>
+	/// <param name="Transform">Transform of the Arrow</param>
+	/// <param name="color">Arrow color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawArrow(Transform transform, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow", transform, color == null? empty_color : color, duration);
@@ -362,8 +408,8 @@ public class DebugDrawCS : Node
 	/// <param name="a">Start point</param>
 	/// <param name="b">End point</param>
 	/// <param name="color">Line color</param>
-	/// <param name="arrowSize">Size of the arrow</param>
-	/// <param name="absoluteSize">Is the 'arrowSize' absolute or relative to the length of the line?</param>
+	/// <param name="arrow_size">Size of the arrow</param>
+	/// <param name="absolute_size">Is the 'arrowSize' absolute or relative to the length of the line?</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawArrowLine(Vector3 a, Vector3 b, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow_line", a, b, color == null? empty_color : color, arrow_size, absolute_size, duration);
@@ -376,8 +422,8 @@ public class DebugDrawCS : Node
 	/// <param name="direction">Direction</param>
 	/// <param name="length">Length</param>
 	/// <param name="color">Ray color</param>
-	/// <param name="arrowSize">Size of the arrow</param>
-	/// <param name="absoluteSize">Is the 'arrowSize' absolute or relative to the length of the line?</param>
+	/// <param name="arrow_size">Size of the arrow</param>
+	/// <param name="absolute_size">Is the 'arrowSize' absolute or relative to the length of the line?</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawArrowRay(Vector3 origin, Vector3 direction, float length, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow_ray", origin, direction, length, color == null? empty_color : color, arrow_size, absolute_size, duration);
@@ -388,8 +434,8 @@ public class DebugDrawCS : Node
 	/// </summary>
 	/// <param name="path">Sequence of points</param>
 	/// <param name="color">Color</param>
-	/// <param name="arrowSize">Size of the arrow</param>
-	/// <param name="absoluteSize">Is the 'arrowSize' absolute or relative to the length of the line?</param>
+	/// <param name="arrow_size">Size of the arrow</param>
+	/// <param name="absolute_size">Is the 'arrowSize' absolute or relative to the length of the line?</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawArrowPath(Vector3[] path, Color? color = null, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0f){
 		debug_draw_3d?.Call("draw_arrow_path", path, color == null? empty_color : color, arrow_size, absolute_size, duration);
@@ -399,8 +445,8 @@ public class DebugDrawCS : Node
 	/// Draw a square that will always be turned towards the camera
 	/// </summary>
 	/// <param name="position">Center position of square</param>
+	/// <param name="size">Square size</param>
 	/// <param name="color">Color</param>
-	/// <param name="size">Unit size</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawBillboardSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f){
 		debug_draw_3d?.Call("draw_billboard_square", position, size, color == null? empty_color : color, duration);
@@ -409,7 +455,7 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw 3 intersecting lines with the given transformations
 	/// </summary>
-	/// <param name="transform">Transform</param>
+	/// <param name="transform">Transform of lines</param>
 	/// <param name="color">Color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawPosition(Transform transform, Color? color = null, float duration = 0f){
@@ -417,23 +463,25 @@ public class DebugDrawCS : Node
 	}
 
 	/// <summary>
-	/// Draw 3 intersecting lines with the given transformations and arrows at the ends
+	/// Draw 3 lines with the given transformations and arrows at the ends
 	/// </summary>
-	/// <param name="transform">Transform</param>
+	/// <param name="transform">Transform of lines</param>
+	/// <param name="color">Color</param>
+	/// <param name="is_centered">If 'true', then the lines will intersect in the center of the transform</param>
 	/// <param name="duration">Duration of existence in seconds</param>
-	public static void DrawGizmo(Transform transform, bool is_centered = false, float duration = 0f){
-		debug_draw_3d?.Call("draw_gizmo", transform, is_centered, duration);
+	public static void DrawGizmo(Transform transform, Color? color = null, bool is_centered = false, float duration = 0f){
+		debug_draw_3d?.Call("draw_gizmo", transform, color == null? empty_color : color, is_centered, duration);
 	}
 
 	/// <summary>
 	/// Draw simple grid with given size and subdivision
 	/// </summary>
-	/// <param name="origin"></param>
-	/// <param name="x_size"></param>
-	/// <param name="y_size"></param>
-	/// <param name="subdivision"></param>
-	/// <param name="color"></param>
-	/// <param name="is_centered"></param>
+	/// <param name="origin">Grid origin</param>
+	/// <param name="x_size">Direction and size of the X side. As an axis in the Basis.</param>
+	/// <param name="y_size">Direction and size of the Y side. As an axis in the Basis.</param>
+	/// <param name="subdivision">Number of cells for the X and Y axes</param>
+	/// <param name="color">Lines color</param>
+	/// <param name="is_centered">Draw lines relative to origin</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawGrid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color? color = null, bool is_centered = true, float duration = 0f){
 		debug_draw_3d?.Call("draw_grid", origin, x_size, y_size, subdivision, color == null? empty_color : color, is_centered, duration);
@@ -442,10 +490,10 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw simple grid with given size and subdivision
 	/// </summary>
-	/// <param name="transform"></param>
-	/// <param name="subdivision"></param>
-	/// <param name="color"></param>
-	/// <param name="is_centered"></param>
+	/// <param name="transform">Transform of the Grid</param>
+	/// <param name="subdivision">Number of cells for the X and Y axes</param>
+	/// <param name="color">Lines color</param>
+	/// <param name="is_centered">Draw lines relative to origin</param>
 	/// <param name="duration">Duration of existence in seconds</param>
 	public static void DrawGridXf(Transform transform, Vector2 subdivision, Color? color = null, bool is_centered = true, float duration = 0f){
 		debug_draw_3d?.Call("draw_grid_xf", transform, subdivision, color == null? empty_color : color, is_centered, duration);
@@ -474,9 +522,10 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Begin text group
 	/// </summary>
-	/// <param name="groupTitle">Group title and ID</param>
-	/// <param name="groupPriority">Group priority</param>
-	/// <param name="showTitle">Whether to show the title</param>
+	/// <param name="group_title">Group title and ID</param>
+	/// <param name="group_priority">Group priority</param>
+	/// <param name="group_color">Group color</param>
+	/// <param name="show_title">Whether to show the title</param>
 	public static void BeginTextGroup(string group_title, int group_priority = 0, Color? group_color = null, bool show_title = true){
 		debug_draw_3d?.Call("begin_text_group", group_title, group_priority, group_color == null? empty_color : group_color, show_title);
 	}
@@ -485,9 +534,6 @@ public class DebugDrawCS : Node
 	/// End text group. Should be called after 'begin_text_group' if you don't need more than one group.
 	/// If you need to create 2+ groups just call again 'begin_text_group' and this function in the end.
 	/// </summary>
-	/// <param name="groupTitle">Group title and ID</param>
-	/// <param name="groupPriority">Group priority</param>
-	/// <param name="showTitle">Whether to show the title</param>
 	public static void EndTextGroup(){
 		debug_draw_3d?.Call("end_text_group");
 	}
@@ -495,9 +541,10 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Add or update text in overlay
 	/// </summary>
-	/// <param name="key">Name of field if 'value' exists, otherwise whole line will equal 'key'.</param>
+	/// <param name="key">The name of the field, if there is a 'value', otherwise the whole string will be equal to the 'key'</param>
 	/// <param name="value">Value of field</param>
 	/// <param name="priority">Priority of this line. Lower value is higher position.</param>
+	/// <param name="color_of_value">Value color</param>
 	/// <param name="duration">Expiration time</param>
 	public static void SetText(string key, object value = null, int priority = 0, Color? color_of_value = null, float duration = -1f){
 		debug_draw_3d?.Call("set_text", key, value, priority, color_of_value == null? empty_color : color_of_value, duration);
@@ -508,8 +555,8 @@ public class DebugDrawCS : Node
 	/// To get more information about the returned class, please see the documentation.
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
-	public static Reference CreateGraph(string title){
-		return (Reference)debug_draw_3d?.Call("create_graph", title);
+	public static GraphParameters CreateGraph(string title){
+		return (GraphParameters)(Reference)debug_draw_3d?.Call("create_graph", title);
 	}
 
 	/// <summary>
@@ -517,8 +564,8 @@ public class DebugDrawCS : Node
 	/// To get more information about the returned class, please see the documentation.
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
-	public static Reference CreateFpsGraph(string title){
-		return (Reference)debug_draw_3d?.Call("create_fps_graph", title);
+	public static GraphParameters CreateFpsGraph(string title){
+		return (GraphParameters)(Reference)debug_draw_3d?.Call("create_fps_graph", title);
 	}
 
 	/// <summary>
@@ -550,8 +597,8 @@ public class DebugDrawCS : Node
 	/// To get more information about the returned class, please see the documentation.
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
-	public static Reference GetGraphConfig(string title){
-		return (Reference)debug_draw_3d?.Call("get_graph_config", title);
+	public static GraphParameters GetGraphConfig(string title){
+		return (GraphParameters)(Reference)debug_draw_3d?.Call("get_graph_config", title);
 	}
 
 	/// <summary>
@@ -561,5 +608,168 @@ public class DebugDrawCS : Node
 		return (string[])debug_draw_3d?.Call("get_graph_names");
 	}
 
+#else
+#pragma warning disable IDE0060 // Remove unused parameter
+	public static Dictionary GetRenderStats() => new Dictionary();
+	public static void Clear3dObjects() {}
+	public static void Clear2dObjects() {}
+	public static void ClearAll() {}
+	public static void DrawSphere(Vector3 position, float radius = 0.5f, Color? color = null, float duration = 0f) {}
+	public static void DrawSphereXf(Transform transform, Color? color = null, float duration = 0f) {}
+	public static void DrawSphereHd(Vector3 position, float radius = 0.5f, Color? color = null, float duration = 0f) {}
+	public static void DrawSphereHdXf(Transform transform, Color? color = null, float duration = 0f) {}
+	public static void DrawCylinder(Transform transform, Color? color = null, float duration = 0f) {}
+	public static void DrawBox(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f) {}
+	public static void DrawAabb(AABB aabb, Color? color = null, float duration = 0f) {}
+	public static void DrawAabbAb(Vector3 a, Vector3 b, Color? color = null, float duration = 0f) {}
+	public static void DrawLineHit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color? hit_color = null, Color? after_hit_color = null, float duration = 0f) {}
+	public static void DrawLineHitOffset(Vector3 start, Vector3 end, bool is_hit, float unit_offset_of_hit = 0.5f, float hit_size = 0.25f, Color? hit_color = null, Color? after_hit_color = null, float duration = 0f) {}
+	public static void DrawLine(Vector3 a, Vector3 b, Color? color = null, float duration = 0f) {}
+	public static void DrawLines(Vector3[] lines, Color? color = null, float duration = 0f) {}
+	public static void DrawRay(Vector3 origin, Vector3 direction, float length, Color? color = null, float duration = 0f) {}
+	public static void DrawLinePath(Vector3[] path, Color? color = null, float duration = 0f) {}
+	public static void DrawArrow(Transform transform, Color? color = null, float duration = 0f) {}
+	public static void DrawArrowLine(Vector3 a, Vector3 b, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f) {}
+	public static void DrawArrowRay(Vector3 origin, Vector3 direction, float length, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f) {}
+	public static void DrawArrowPath(Vector3[] path, Color? color = null, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0f) {}
+	public static void DrawBillboardSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f) {}
+	public static void DrawPosition(Transform transform, Color? color = null, float duration = 0f) {}
+	public static void DrawGizmo(Transform transform, Color? color = null, bool is_centered = false, float duration = 0f) {}
+	public static void DrawGrid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color? color = null, bool is_centered = true, float duration = 0f) {}
+	public static void DrawGridXf(Transform transform, Vector2 subdivision, Color? color = null, bool is_centered = true, float duration = 0f) {}
+	public static void DrawCameraFrustum(Camera camera, Color? color = null, float duration = 0f) {}
+	public static void DrawCameraFrustumPlanes(Array camera_frustum, Color? color = null, float duration = 0f) {}
+	public static void BeginTextGroup(string group_title, int group_priority = 0, Color? group_color = null, bool show_title = true) {}
+	public static void EndTextGroup() {}
+	public static void SetText(string key, object value = null, int priority = 0, Color? color_of_value = null, float duration = -1f) {}
+	public static GraphParameters CreateGraph(string title) => default;
+	public static GraphParameters CreateFpsGraph(string title) => default;
+	public static void GraphUpdateData(string title, float data) {}
+	public static void RemoveGraph(string title) {}
+	public static void ClearGraphs() {}
+	public static GraphParameters GetGraphConfig(string title) => default;
+	public static string[] GetGraphNames() => new string[0];
+#pragma warning restore IDE0060 // Remove unused parameter
+#endif
+#endregion Draw Functions
+
+
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////
+
+
+	public class GraphParameters
+	{
+#if DEBUG
+		readonly Reference orig_ref;
+		public GraphParameters(Reference reference) { orig_ref = reference; }
+		public static explicit operator GraphParameters(Reference reference) => reference != null ? new GraphParameters(reference) : null;
+
+#else
+#pragma warning disable IDE0060 // Remove unused parameter
+		public GraphParameters(Reference reference) { }
+#pragma warning restore IDE0060 // Remove unused parameter
+#endif
+
+
+#region Parameters
+#if DEBUG
+		/// <summary>
+		/// Is Graph enabled
+		/// </summary>
+		public bool Enabled { get => (bool)orig_ref?.Get("enabled"); set => orig_ref?.Set("enabled", value); }
+
+		/// <summary>
+		/// Draw Graph title
+		/// </summary>
+		public bool ShowTitle { get => (bool)orig_ref?.Get("show_title"); set => orig_ref?.Set("show_title", value); }
+
+		/// <summary>
+		/// Switch between frame time and FPS modes
+		/// Only for FPS Graphs
+		/// </summary>
+		public bool FrametimeMode { get => (bool)orig_ref?.Get("frametime_mode"); set => orig_ref?.Set("frametime_mode", value); }
+
+		/// <summary>
+		/// Draw a graph line aligned vertically in the center
+		/// </summary>
+		public bool CenteredGraphLine { get => (bool)orig_ref?.Get("centered_graph_line"); set => orig_ref?.Set("centered_graph_line", value); }
+
+		/// <summary>
+		/// Sets the text visibility *GraphTextFlags*
+		/// </summary>
+		public int ShowTextFlags { get => (int)orig_ref?.Get("show_text_flags"); set => orig_ref?.Set("show_text_flags", value); }
+
+		/// <summary>
+		/// The size of the graph.
+		/// </summary>
+		public Vector2 Size { get => (Vector2)orig_ref?.Get("size"); set => orig_ref?.Set("size", value); }
+
+		/// <summary>
+		/// The size of the buffer where the values are stored.
+		/// </summary>
+		public int BufferSize { get => (int)orig_ref?.Get("buffer_size"); set => orig_ref?.Set("buffer_size", value); }
+
+		/// <summary>
+		/// Offset from the corner selected in position
+		/// </summary>
+		public Vector2 Offset { get => (Vector2)orig_ref?.Get("offset"); set => orig_ref?.Set("offset", value); }
+
+		/// <summary>
+		/// FPS Graph position *BlockPosition*
+		/// </summary>
+		public int Position { get => (int)orig_ref?.Get("position"); set => orig_ref?.Set("position", value); }
+
+		/// <summary>
+		/// Graph line color
+		/// </summary>
+		public Color LineColor { get => (Color)orig_ref?.Get("line_color"); set => orig_ref?.Set("line_color", value); }
+
+		/// <summary>
+		/// Color of the info text
+		/// </summary>
+		public Color TextColor { get => (Color)orig_ref?.Get("text_color"); set => orig_ref?.Set("text_color", value); }
+
+		/// <summary>
+		/// Background color
+		/// </summary>
+		public Color BackgroundColor { get => (Color)orig_ref?.Get("background_color"); set => orig_ref?.Set("background_color", value); }
+
+		/// <summary>
+		/// Border color
+		/// </summary>
+		public Color BorderColor { get => (Color)orig_ref?.Get("border_color"); set => orig_ref?.Set("border_color", value); }
+
+		/// <summary>
+		/// Border color
+		/// </summary>
+		public string TextSuffix { get => (string)orig_ref?.Get("text_suffix"); set => orig_ref?.Set("text_suffix", value); }
+
+		/// <summary>
+		/// Custom Font
+		/// </summary>
+		public Font CustomFont { get => (Font)orig_ref?.Get("custom_font"); set => orig_ref?.Set("custom_font", value); }
+
+#else
+		public bool Enabled = default;
+		public bool ShowTitle = default;
+		public bool FrametimeMode = default;
+		public bool CenteredGraphLine = default;
+		public int ShowTextFlags = default;
+		public Vector2 Size = default;
+		public int BufferSize = default;
+		public Vector2 Offset = default;
+		public int Position = default;
+		public Color LineColor = default;
+		public Color TextColor = default;
+		public Color BackgroundColor = default;
+		public Color BorderColor = default;
+		public string TextSuffix = "";
+		public Font CustomFont = default;
+#endif
+#endregion Parameters
+	}
 }
 

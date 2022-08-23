@@ -2,10 +2,11 @@ tool
 extends Spatial
 
 export var custom_font : Font
-export var zylann_example = false
-export var test_graphs = false
-export var more_test_cases = false
-export var draw_array_of_boxes = false
+export var zylann_example := false
+export var show_hints := true
+export var test_graphs := false
+export var more_test_cases := true
+export var draw_array_of_boxes := false
 
 var time := 0.0
 var time2 := 0.0
@@ -54,13 +55,15 @@ func _process(delta: float) -> void:
 	DebugDraw.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
 	DebugDraw.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
 	DebugDraw.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
-	DebugDraw.draw_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	if toogle_frustum_key and !Input.is_key_pressed(KEY_LEFT):
 		DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
 	toogle_frustum_key = Input.is_key_pressed(KEY_LEFT)
 	
 	# Enable FPSGraph
-	_create_graph("FPS", true, false, DebugDraw.BlockPosition_LeftTop if Engine.editor_hint else DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current | DebugDraw.GraphTextFlags_Avarage | DebugDraw.GraphTextFlags_Max | DebugDraw.GraphTextFlags_Min, Vector2(200, 80), custom_font)
+	var g = _create_graph("FPS", true, false, DebugDraw.BlockPosition_LeftTop if Engine.editor_hint else DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current | DebugDraw.GraphTextFlags_Avarage | DebugDraw.GraphTextFlags_Max | DebugDraw.GraphTextFlags_Min, Vector2(200, 80), custom_font)
+	if g:
+		g.buffer_size = 300
 	
 	if test_graphs:
 		_graph_test()
@@ -129,12 +132,15 @@ func _process(delta: float) -> void:
 	# Misc
 	DebugDraw.draw_camera_frustum($Camera, Color.darkorange)
 	
+	DebugDraw.draw_arrow($Misc/Arrow.global_transform, Color.yellowgreen)
+	
 	DebugDraw.draw_billboard_square($Misc/Billboard.global_transform.origin, 0.5, Color.green)
 	
 	DebugDraw.draw_position($Misc/Position.global_transform, Color.brown)
 	
-	DebugDraw.draw_gizmo($Misc/GizmoTransform.global_transform, true)
-	DebugDraw.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), false)
+	DebugDraw.draw_gizmo($Misc/GizmoTransform.global_transform, DebugDraw.empty_color, true)
+	DebugDraw.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw.empty_color, false)
+	DebugDraw.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.brown, true)
 	
 	var tg = $Misc/Grids/Grid.global_transform
 	var tn = $Misc/Grids/Grid/Subdivision.transform.origin
@@ -157,7 +163,7 @@ func _process(delta: float) -> void:
 	
 	DebugDraw.begin_text_group("-- Stats --", 3, Color.wheat)
 	
-	var RenderCount = DebugDraw.get_rendered_primitives_count()
+	var RenderCount = DebugDraw.get_render_stats()
 	if RenderCount.size():
 		DebugDraw.set_text("Total", RenderCount.total, 0)
 		DebugDraw.set_text("Instances", RenderCount.instances, 1)
@@ -167,8 +173,14 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("Visible Wireframes", RenderCount.visible_wireframes, 5)
 		DebugDraw.end_text_group()
 	
-	DebugDraw.begin_text_group("controls", 1024, Color.white, false)
-	DebugDraw.set_text("TODO write CONTROLS asd", null, 1)
+	if show_hints:
+		DebugDraw.begin_text_group("controls", 1024, Color.white, false)
+		DebugDraw.set_text("Shift: change render layers", DebugDraw.geometry_render_layers, 1)
+		DebugDraw.set_text("Enter: freeze render", DebugDraw.freeze_3d_render, 2)
+		DebugDraw.set_text("Up: use scene camera", DebugDraw.force_use_camera_from_scene, 3)
+		DebugDraw.set_text("Down: toggle debug", DebugDraw.debug_enabled, 4)
+		DebugDraw.set_text("Left: toggle frustum culling", DebugDraw.use_frustum_culling, 5)
+		DebugDraw.set_text("Right: draw bounds for culling", DebugDraw.visible_instance_bounds, 6)
 	
 	# Lag Test
 	$LagTest.translation = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0).origin + Vector3(sin(OS.get_ticks_msec() / 100.0) * 2.5, 0, 0)
@@ -204,21 +216,33 @@ func _draw_array_of_boxes():
 	time2 -= get_process_delta_time()
 
 func _graph_test():
+# warning-ignore:return_value_discarded
 	_create_graph("fps", true, true, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
+# warning-ignore:return_value_discarded
 	_create_graph("fps2", true, false, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
+# warning-ignore:return_value_discarded
 	_create_graph("fps3", true, true, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
 	
+# warning-ignore:return_value_discarded
 	_create_graph("randf", false, true, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_Avarage, Vector2(256, 60), custom_font)
+# warning-ignore:return_value_discarded
 	_create_graph("fps5", true, false, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_All)
+# warning-ignore:return_value_discarded
 	_create_graph("fps6", true, true, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_All)
 	
+# warning-ignore:return_value_discarded
 	_create_graph("fps7", true, false, DebugDraw.BlockPosition_LeftTop, DebugDraw.GraphTextFlags_All)
+# warning-ignore:return_value_discarded
 	_create_graph("fps8", true, true, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
+# warning-ignore:return_value_discarded
 	_create_graph("fps9", true, true, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
+# warning-ignore:return_value_discarded
 	_create_graph("fps10", true, false, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
 	
 	if DebugDraw.get_graph_config("randf"):
 		DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
+		DebugDraw.get_graph_config("fps9").centered_graph_line = false
+		
 		if Engine.editor_hint:
 			DebugDraw.get_graph_config("fps5").offset = Vector2(0, -30)
 			DebugDraw.get_graph_config("fps8").offset = Vector2(280, -60)
@@ -230,7 +254,7 @@ func _graph_test():
 	
 	DebugDraw.graph_update_data("randf", randf())
 
-func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null):
+func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> DebugDraw.GraphParameters:
 	var graph = DebugDraw.get_graph_config(title)
 	if !graph:
 		if is_fps:
@@ -245,3 +269,5 @@ func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60
 			graph.show_title = show_title
 			graph.show_text_flags = flags
 			graph.custom_font = font
+	
+	return graph

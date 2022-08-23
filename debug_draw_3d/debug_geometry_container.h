@@ -43,7 +43,7 @@ public:
 	void update_geometry(real_t delta);
 	void set_render_layer_mask(int64_t layers);
 
-	Dictionary get_rendered_primitives_count();
+	Dictionary get_render_stats();
 	void create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, real_t duration = 0);
 
 #pragma region Exposed Draw Functions
@@ -96,7 +96,7 @@ public:
 
 	void draw_position(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 
-	void draw_gizmo(Transform transform, bool is_centered = false, real_t duration = 0);
+	void draw_gizmo(Transform transform, Color color = Colors::empty_color, bool is_centered = false, real_t duration = 0);
 
 	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 	void draw_grid_xf(Transform transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);

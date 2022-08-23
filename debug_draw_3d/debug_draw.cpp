@@ -36,46 +36,6 @@
 		}                                                 \
 	}
 
-#define RECALL_TO_SINGLETON_NA(func)                      \
-	if (recall_to_singleton && this != get_singleton()) { \
-		if (get_singleton()) {                            \
-			get_singleton()->func();                      \
-			return;                                       \
-		} else {                                          \
-			return;                                       \
-		}                                                 \
-	}
-
-#define RECALL_TO_SINGLETON_NA_RET(func, def)             \
-	if (recall_to_singleton && this != get_singleton()) { \
-		if (get_singleton()) {                            \
-			return get_singleton()->func();               \
-		} else {                                          \
-			return def;                                   \
-		}                                                 \
-	}
-
-#define RECALL_TO_SINGLETON_SETTER(setter)                \
-	if (recall_to_singleton && this != get_singleton()) { \
-		if (get_singleton()) {                            \
-			get_singleton()->setter;                      \
-			return;                                       \
-		} else {                                          \
-			return;                                       \
-		}                                                 \
-	}                                                     \
-	setter
-
-#define RECALL_TO_SINGLETON_GETTER(getter, def)           \
-	if (recall_to_singleton && this != get_singleton()) { \
-		if (get_singleton()) {                            \
-			return get_singleton()->getter;               \
-		} else {                                          \
-			return def;                                   \
-		}                                                 \
-	}                                                     \
-	return getter
-
 #define NEED_LEAVE (!debug_enabled || !is_ready)
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
@@ -120,7 +80,7 @@ void DebugDraw3D::_register_methods() {
 	REG_PROP_BOOL(recall_to_singleton, true);
 	REG_PROP_BOOL(debug_enabled, true);
 	REG_PROP_BOOL(freeze_3d_render, false);
-	REG_PROP_BOOL(draw_instance_bounds, false);
+	REG_PROP_BOOL(visible_instance_bounds, false);
 	REG_PROP_BOOL(use_frustum_culling, true);
 	REG_PROP_BOOL(force_use_camera_from_scene, false);
 	REG_PROP(graphs_base_offset, Vector2(8, 8));
@@ -168,6 +128,8 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_ray);
 	REG_METHOD(draw_line_path);
 
+	REG_METHOD(draw_arrow);
+
 	REG_METHOD(draw_arrow_line);
 	REG_METHOD(draw_arrow_ray);
 	REG_METHOD(draw_arrow_path);
@@ -198,7 +160,7 @@ void DebugDraw3D::_register_methods() {
 
 #pragma endregion // Draw Functions
 
-	REG_METHOD(get_rendered_primitives_count);
+	REG_METHOD(get_render_stats);
 
 #undef REG_METHOD
 }
@@ -340,6 +302,27 @@ std::vector<Viewport *> DebugDraw3D::get_custom_editor_viewport() {
 
 #pragma region Exposed Parameters
 
+#define RECALL_TO_SINGLETON_SETTER(setter)                \
+	if (recall_to_singleton && this != get_singleton()) { \
+		if (get_singleton()) {                            \
+			get_singleton()->setter;                      \
+			return;                                       \
+		} else {                                          \
+			return;                                       \
+		}                                                 \
+	}                                                     \
+	setter
+
+#define RECALL_TO_SINGLETON_GETTER(getter, def)           \
+	if (recall_to_singleton && this != get_singleton()) { \
+		if (get_singleton()) {                            \
+			return get_singleton()->getter;               \
+		} else {                                          \
+			return def;                                   \
+		}                                                 \
+	}                                                     \
+	return getter
+
 void DebugDraw3D::set_recall_to_singleton(bool state) {
 	RECALL_TO_SINGLETON_SETTER(recall_to_singleton = state);
 }
@@ -372,13 +355,13 @@ bool DebugDraw3D::is_freeze_3d_render() {
 	RECALL_TO_SINGLETON_GETTER(freeze_3d_render, false);
 }
 
-void DebugDraw3D::set_draw_instance_bounds(bool state) {
-	RECALL_TO_SINGLETON_SETTER(draw_instance_bounds = state);
-	draw_instance_bounds = state;
+void DebugDraw3D::set_visible_instance_bounds(bool state) {
+	RECALL_TO_SINGLETON_SETTER(visible_instance_bounds = state);
+	visible_instance_bounds = state;
 }
 
-bool DebugDraw3D::is_draw_instance_bounds() {
-	RECALL_TO_SINGLETON_GETTER(draw_instance_bounds, false);
+bool DebugDraw3D::is_visible_instance_bounds() {
+	RECALL_TO_SINGLETON_GETTER(visible_instance_bounds, false);
 }
 
 void DebugDraw3D::set_use_frustum_culling(bool state) {
@@ -527,20 +510,20 @@ CanvasItem *DebugDraw3D::get_custom_canvas() {
 
 #pragma region Draw Functions
 
-Dictionary DebugDraw3D::get_rendered_primitives_count() {
-	RECALL_TO_SINGLETON_NA_RET(get_rendered_primitives_count, Dictionary());
+Dictionary DebugDraw3D::get_render_stats() {
+	RECALL_TO_SINGLETON_RET(get_render_stats, Dictionary());
 	if (!is_ready) return Dictionary();
-	return dgc->get_rendered_primitives_count();
+	return dgc->get_render_stats();
 }
 
 void DebugDraw3D::clear_3d_objects() {
-	RECALL_TO_SINGLETON_NA(clear_3d_objects);
+	RECALL_TO_SINGLETON(clear_3d_objects);
 	if (!is_ready) return;
 	dgc->clear_3d_objects();
 }
 
 void DebugDraw3D::clear_2d_objects() {
-	RECALL_TO_SINGLETON_NA(clear_2d_objects);
+	RECALL_TO_SINGLETON(clear_2d_objects);
 	if (!is_ready) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
@@ -548,7 +531,7 @@ void DebugDraw3D::clear_2d_objects() {
 }
 
 void DebugDraw3D::clear_all() {
-	RECALL_TO_SINGLETON_NA(clear_all);
+	RECALL_TO_SINGLETON(clear_all);
 	if (!is_ready) return;
 	clear_2d_objects();
 	clear_3d_objects();
@@ -633,6 +616,10 @@ void DebugDraw3D::draw_line_path(PoolVector3Array path, Color color, real_t dura
 #pragma endregion // Normal
 #pragma region Arrows
 
+void DebugDraw3D::draw_arrow(Transform transform, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow, transform, color, duration);
+}
+
 void DebugDraw3D::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_line, a, b, color, arrow_size, absolute_size, duration);
 }
@@ -669,8 +656,8 @@ void DebugDraw3D::draw_position(Transform transform, Color color, real_t duratio
 	RECALL_TO_SINGLETON_CALL_DGC(draw_position, transform, color, duration);
 }
 
-void DebugDraw3D::draw_gizmo(Transform transform, bool is_centered, real_t duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo, transform, is_centered, duration);
+void DebugDraw3D::draw_gizmo(Transform transform, Color color, bool is_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo, transform, color, is_centered, duration);
 }
 
 void DebugDraw3D::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
@@ -684,72 +671,60 @@ void DebugDraw3D::draw_grid_xf(Transform transform, Vector2 subdivision, Color c
 #pragma endregion // Misc
 #pragma endregion // 3D
 
-#undef RECALL_TO_SINGLETON_CALL_DGC
-
 #pragma region 2D
 #pragma region Text
 
+#define RECALL_TO_SINGLETON_CALL_2D(obj, func, ...) \
+	RECALL_TO_SINGLETON(func, __VA_ARGS__);         \
+	if (NEED_LEAVE) return;                         \
+	obj->func(__VA_ARGS__)
+
+#define RECALL_TO_SINGLETON_CALL_2D_RET(obj, func, def, ...) \
+	RECALL_TO_SINGLETON_RET(func, def, __VA_ARGS__);         \
+	if (NEED_LEAVE) return def;                              \
+	return obj->func(__VA_ARGS__)
+
 void DebugDraw3D::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title) {
-	RECALL_TO_SINGLETON(begin_text_group, group_title, group_priority, group_color, show_title);
-	if (NEED_LEAVE) return;
-	grouped_text->begin_text_group(group_title, group_priority, group_color, show_title);
+	RECALL_TO_SINGLETON_CALL_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
 }
 
 void DebugDraw3D::end_text_group() {
-	RECALL_TO_SINGLETON_NA(end_text_group);
-	if (NEED_LEAVE) return;
-	grouped_text->end_text_group();
+	RECALL_TO_SINGLETON_CALL_2D(grouped_text, end_text_group);
 }
 
 void DebugDraw3D::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
-	RECALL_TO_SINGLETON(set_text, key, value, priority, color_of_value, duration);
-	if (NEED_LEAVE) return;
-	grouped_text->set_text(key, value, priority, color_of_value, duration);
+	RECALL_TO_SINGLETON_CALL_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
 }
 
 #pragma endregion // Text
 #pragma region Graphs
 
 Ref<GraphParameters> DebugDraw3D::create_graph(String title) {
-	RECALL_TO_SINGLETON_RET(create_graph, Ref<GraphParameters>(), title);
-	if (NEED_LEAVE) return Ref<GraphParameters>();
-	return data_graphs->create_graph(title);
+	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, create_graph, Ref<GraphParameters>(), title);
 }
 
 Ref<GraphParameters> DebugDraw3D::create_fps_graph(String title) {
-	RECALL_TO_SINGLETON_RET(create_fps_graph, Ref<GraphParameters>(), title);
-	if (NEED_LEAVE) return Ref<GraphParameters>();
-	return data_graphs->create_fps_graph(title);
+	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, create_fps_graph, Ref<GraphParameters>(), title);
 }
 
 void DebugDraw3D::graph_update_data(String title, real_t data) {
-	RECALL_TO_SINGLETON(graph_update_data, title, data);
-	if (NEED_LEAVE) return;
-	data_graphs->update(title, data);
+	RECALL_TO_SINGLETON_CALL_2D(data_graphs, graph_update_data, title, data);
 }
 
 void DebugDraw3D::remove_graph(String title) {
-	RECALL_TO_SINGLETON(remove_graph, title);
-	if (NEED_LEAVE) return;
-	data_graphs->remove_graph(title);
+	RECALL_TO_SINGLETON_CALL_2D(data_graphs, remove_graph, title);
 }
 
 void DebugDraw3D::clear_graphs() {
-	RECALL_TO_SINGLETON_NA(clear_graphs);
-	if (NEED_LEAVE) return;
-	data_graphs->clear_graphs();
+	RECALL_TO_SINGLETON_CALL_2D(data_graphs, clear_graphs);
 }
 
 Ref<GraphParameters> DebugDraw3D::get_graph_config(String title) {
-	RECALL_TO_SINGLETON_RET(get_graph_config, Ref<GraphParameters>(), title);
-	if (NEED_LEAVE) return Ref<GraphParameters>();
-	return data_graphs->get_graph_config(title);
+	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, get_graph_config, Ref<GraphParameters>(), title);
 }
 
 PoolStringArray DebugDraw3D::get_graph_names() {
-	RECALL_TO_SINGLETON_NA_RET(get_graph_names, PoolStringArray());
-	if (NEED_LEAVE) return PoolStringArray();
-	return data_graphs->get_graph_names();
+	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, get_graph_names, PoolStringArray());
 }
 
 #pragma endregion // Graphs

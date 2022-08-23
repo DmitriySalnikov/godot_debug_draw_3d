@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "circular_buffer.h"
+#include "colors.h"
+#include "enums.h"
 
 #include <CanvasItem.hpp>
 #include <Font.hpp>
@@ -14,36 +16,37 @@ using namespace godot;
 class GraphParameters : public Reference {
 	GODOT_CLASS(GraphParameters, Reference);
 
-	/// Is FPSGraph enabled
-	bool enabled;
+	/// Is Graph enabled
+	bool enabled = true;
 	/// Draw Graph title
-	bool show_title;
+	bool show_title = false;
 	/// Switch between frame time and FPS modes
-	bool frametime_mode;
+	/// Only for FPS Graphs
+	bool frametime_mode = true;
 	/// Draw a graph line aligned vertically in the center
 	bool centered_graph_line = true;
 	/// Sets the text visibility *GraphTextFlags*
-	int show_text_flags;
-	/// The size of the graph. The width is equal to the number of saved frames.
-	Vector2 size;
+	int show_text_flags = GraphTextFlags::All;
+	/// The size of the graph.
+	Vector2 size = Vector2(256, 64);
 	/// The size of the buffer where the values are stored.
-	int buffer_size;
+	int buffer_size = 256;
 	/// Offset from the corner selected in position
-	Vector2 offset;
+	Vector2 offset = Vector2(0, 8);
 	/// FPS Graph position *BlockPosition*
-	int position;
+	int position = BlockPosition::RightTop;
 	/// Graph line color
-	Color line_color;
+	Color line_color = Colors::orange_red;
 	/// Color of the info text
-	Color text_color;
+	Color text_color = Colors::white_smoke;
 	/// Background color
-	Color background_color;
+	Color background_color = Colors::gray_graph_bg;
 	/// Border color
-	Color border_color;
+	Color border_color = Colors::black;
 	/// Border color
-	String text_suffix;
+	String text_suffix = "";
 	/// Custom Font
-	Ref<Font> custom_font;
+	Ref<Font> custom_font = Ref<Font>();
 
 public:
 	static void _register_methods();
@@ -137,7 +140,7 @@ public:
 	Ref<GraphParameters> create_fps_graph(String title);
 	void _update_fps(real_t delta);
 	void draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size);
-	void update(String title, real_t data);
+	void graph_update_data(String title, real_t data);
 	void remove_graph(String title);
 	void clear_graphs();
 	Ref<GraphParameters> get_graph_config(String title);
