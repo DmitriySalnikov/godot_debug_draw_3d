@@ -558,8 +558,8 @@ void DebugGeometryContainer::draw_gizmo(Transform transform, Color color, bool i
 
 	bool is_color_empty = color == Colors::empty_color;
 #define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
-#define MINUS(axis) transform.origin - transform.basis.##axis
-#define PLUS(axis) transform.origin + transform.basis.##axis
+#define MINUS(axis) transform.origin - transform.basis. axis
+#define PLUS(axis) transform.origin + transform.basis. axis
 
 	if (is_centered) {
 		draw_arrow_line(MINUS(x /** 0.5f*/), PLUS(x /** 0.5f*/), COLOR(x), 0.1f, true, duration);

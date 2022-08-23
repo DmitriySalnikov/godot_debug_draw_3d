@@ -19,7 +19,7 @@ endif
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := debug_draw
+LOCAL_MODULE := debug_draw_3d
 LOCAL_CPPFLAGS := -std=c++14 -O3
 LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_LDLIBS := -llog 
