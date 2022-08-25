@@ -236,7 +236,7 @@ func draw_line_hit_offset(start: Vector3, end: Vector3, is_hit: bool, unit_offse
 func draw_line(a: Vector3, b: Vector3, color: Color = empty_color, duration: float = 0) -> void:
 	if _debug_draw_3d: _debug_draw_3d.draw_line(a, b, color, duration)
 
-## Draw many line
+## Draw many lines
 ## lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
 ## color: Lines color
 ## duration: Duration of existence in seconds
@@ -296,13 +296,30 @@ func draw_arrow_ray(origin: Vector3, direction: Vector3, length: float, color: C
 func draw_arrow_path(path: PoolVector3Array, color: Color = empty_color, arrow_size: float = 0.75, absolute_size: bool = true, duration: float = 0) -> void:
 	if _debug_draw_3d: _debug_draw_3d.draw_arrow_path(path, color, arrow_size, absolute_size, duration)
 
+## Draw a sequence of points connected by lines with billboard squares
+## path: Sequence of points
+## points_color: Color of points
+## lines_color: Color of lines
+## size: Size of squares
+## duration: Duration of existence in seconds
+func draw_point_path(path: PoolVector3Array, size: float = 0.25, points_color: Color = empty_color, lines_color: Color = empty_color, duration: float = 0) -> void:
+	if _debug_draw_3d: _debug_draw_3d.draw_point_path(path, size, points_color, lines_color, duration)
+
 ## Draw a square that will always be turned towards the camera
 ## position: Center position of square
 ## size: Square size
 ## color: Color
 ## duration: Duration of existence in seconds
-func draw_billboard_square(position: Vector3, size: float = 0.2, color: Color = empty_color, duration: float = 0) -> void:
-	if _debug_draw_3d: _debug_draw_3d.draw_billboard_square(position, size, color, duration)
+func draw_square(position: Vector3, size: float = 0.2, color: Color = empty_color, duration: float = 0) -> void:
+	if _debug_draw_3d: _debug_draw_3d.draw_square(position, size, color, duration)
+
+## Draw a sequence of points using billboard squares
+## path: Sequence of points
+## color: Color
+## size: Size of squares
+## duration: Duration of existence in seconds
+func draw_points(points: PoolVector3Array, size: float = 0.25, color: Color = empty_color, duration: float = 0) -> void:
+	if _debug_draw_3d: _debug_draw_3d.draw_points(points, size, color, duration)
 
 ## Draw 3 intersecting lines with the given transformations
 ## transform: Transform of lines

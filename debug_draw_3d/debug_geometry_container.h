@@ -90,10 +90,15 @@ public:
 	void draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color = Colors::empty_color, real_t arrow_size = 0.15f, bool is_absolute_size = false, real_t duration = 0);
 	void draw_arrow_path(PoolVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool is_absolute_size = true, real_t duration = 0);
 #pragma endregion // Arrows
+#pragma region Points
+
+	void draw_point_path(PoolVector3Array path, real_t size = 0.25f, Color points_color = Colors::empty_color, Color lines_color = Colors::empty_color, real_t duration = 0);
+#pragma endregion // Points
 #pragma endregion // Lines
 
 #pragma region Misc
-	void draw_billboard_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_points(PoolVector3Array points, real_t size = 0.25f, Color color = Colors::empty_color, real_t duration = 0);
 
 	void draw_position(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
 

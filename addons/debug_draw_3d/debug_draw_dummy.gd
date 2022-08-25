@@ -91,7 +91,11 @@ func draw_arrow_ray(origin: Vector3, direction: Vector3, length: float, color: C
 	pass
 func draw_arrow_path(path: PoolVector3Array, color: Color = empty_color, arrow_size: float = 0.75, absolute_size: bool = true, duration: float = 0) -> void:
 	pass
-func draw_billboard_square(position: Vector3, size: float = 0.2, color: Color = empty_color, duration: float = 0) -> void:
+func draw_point_path(path: PoolVector3Array, size: float = 0.25, points_color: Color = empty_color, lines_color: Color = empty_color, duration: float = 0) -> void:
+	pass
+func draw_square(position: Vector3, size: float = 0.2, color: Color = empty_color, duration: float = 0) -> void:
+	pass
+func draw_points(points: PoolVector3Array, size: float = 0.25, color: Color = empty_color, duration: float = 0) -> void:
 	pass
 func draw_position(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
 	pass

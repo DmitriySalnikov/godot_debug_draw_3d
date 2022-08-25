@@ -1,7 +1,87 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://debug_draw_examples/DebugDrawDemoScene.gd" type="Script" id=1]
 [ext_resource path="res://debug_draw_examples/Roboto_Bold_16.tres" type="DynamicFont" id=2]
+
+[sub_resource type="Animation" id=9]
+resource_name = "New Anim"
+length = 1.5
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Spatial2:transform")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.7 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 1 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.31558, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Spatial5:transform")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1, 1 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1.5801, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Spatial4:transform")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0, 1 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, -0.791383, 1.53767 ) ]
+}
+
+[sub_resource type="Animation" id=10]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("Spatial2:transform")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 1 ) ]
+}
+tracks/1/type = "value"
+tracks/1/path = NodePath("Spatial5:transform")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1, 1 ) ]
+}
+tracks/2/type = "value"
+tracks/2/path = NodePath("Spatial4:transform")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767 ) ]
+}
 
 [sub_resource type="SphereShape" id=4]
 
@@ -192,7 +272,7 @@ far = 52.5
 transform = Transform( 8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -12.4687, 0.645876, -7.74484 )
 
 [node name="Path" type="Spatial" parent="Zones"]
-transform = Transform( 5.95153, 0, 0, 0, 4.59268, 0, 0, 0, 6.31617, 0.184938, 0.774476, -7.18731 )
+transform = Transform( 5.95153, 0, 0, 0, 6.78237, 0, 0, 0, 6.31617, 0.184938, 1.49839, -7.18731 )
 
 [node name="Boxes" type="Spatial" parent="Zones"]
 transform = Transform( 10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0.206735, 6.43672 )
@@ -206,8 +286,14 @@ transform = Transform( 9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0
 [node name="Lines" type="Spatial" parent="Zones"]
 transform = Transform( 10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416 )
 
+[node name="LinePathAnim" type="AnimationPlayer" parent="."]
+root_node = NodePath("../LinePath")
+autoplay = "New Anim"
+"anims/New Anim" = SubResource( 9 )
+anims/RESET = SubResource( 10 )
+
 [node name="LinePath" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -8 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8 )
 
 [node name="Spatial" type="Spatial" parent="LinePath"]
 
@@ -215,7 +301,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -8 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 1, 1 )
 
 [node name="Spatial3" type="Spatial" parent="LinePath"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.462435, 0, 3 )
 
 [node name="Spatial4" type="Spatial" parent="LinePath"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767 )

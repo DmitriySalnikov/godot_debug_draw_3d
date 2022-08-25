@@ -94,7 +94,7 @@ func _process(delta: float) -> void:
 	
 	# Lines
 	var target = $Lines/Target
-	DebugDraw.draw_billboard_square(target.global_transform.origin, 0.5, Color.red)
+	DebugDraw.draw_square(target.global_transform.origin, 0.5, Color.red)
 	
 	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.fuchsia)
 	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.crimson)
@@ -108,15 +108,21 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.blue, 0.5, true)
 	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.lavender, 0.5, true)
 	
+	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.aqua)
+	
 	# Path
 	
 	## preparing data
 	var points: PoolVector3Array = []
 	var points_below: PoolVector3Array = []
+	var points_below2: PoolVector3Array = []
+	var points_below3: PoolVector3Array = []
 	var lines_above: PoolVector3Array = []
 	for c in $LinePath.get_children():
 		points.append(c.global_transform.origin)
 		points_below.append(c.global_transform.origin + Vector3.DOWN)
+		points_below2.append(c.global_transform.origin + Vector3.DOWN * 2)
+		points_below3.append(c.global_transform.origin + Vector3.DOWN * 3)
 	for x in points.size()-1:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
@@ -125,14 +131,15 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_lines(lines_above)
 	DebugDraw.draw_line_path(points, Color.beige)
 	DebugDraw.draw_arrow_path(points_below, Color.gold, 0.5)
-	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.aqua)
+	DebugDraw.draw_points(points_below2, 0.2, Color.darkgreen)
+	DebugDraw.draw_point_path(points_below3, 0.25, Color.blue, Color.tomato)
 	
 	# Misc
 	DebugDraw.draw_camera_frustum($Camera, Color.darkorange)
 	
 	DebugDraw.draw_arrow($Misc/Arrow.global_transform, Color.yellowgreen)
 	
-	DebugDraw.draw_billboard_square($Misc/Billboard.global_transform.origin, 0.5, Color.green)
+	DebugDraw.draw_square($Misc/Billboard.global_transform.origin, 0.5, Color.green)
 	
 	DebugDraw.draw_position($Misc/Position.global_transform, Color.brown)
 	

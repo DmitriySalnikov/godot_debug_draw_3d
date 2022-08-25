@@ -135,7 +135,10 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_arrow_ray);
 	REG_METHOD(draw_arrow_path);
 
-	REG_METHOD(draw_billboard_square);
+	REG_METHOD(draw_point_path);
+
+	REG_METHOD(draw_square);
+	REG_METHOD(draw_points);
 
 	REG_METHOD(draw_camera_frustum);
 	REG_METHOD(draw_camera_frustum_planes);
@@ -638,24 +641,23 @@ void DebugDraw3D::draw_arrow_path(PoolVector3Array path, Color color, real_t arr
 }
 
 #pragma endregion // Arrows
+#pragma region Points
+
+void DebugDraw3D::draw_point_path(PoolVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_point_path, path, size, points_color, lines_color, duration);
+}
+
+#pragma endregion // Points
 #pragma endregion // Lines
 #pragma region Misc
 
-void DebugDraw3D::draw_billboard_square(Vector3 position, real_t size, Color color, real_t duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_billboard_square, position, size, color, duration);
+void DebugDraw3D::draw_square(Vector3 position, real_t size, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_square, position, size, color, duration);
 }
 
-#pragma region Camera Frustum
-
-void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, real_t duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum, camera, color, duration);
+void DebugDraw3D::draw_points(PoolVector3Array points, real_t size, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_points, points, size, color, duration);
 }
-
-void DebugDraw3D::draw_camera_frustum_planes(Array cameraFrustum, Color color, real_t duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum_planes, cameraFrustum, color, duration);
-}
-
-#pragma endregion // Camera Frustum
 
 void DebugDraw3D::draw_position(Transform transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_position, transform, color, duration);
@@ -673,6 +675,17 @@ void DebugDraw3D::draw_grid_xf(Transform transform, Vector2 subdivision, Color c
 	RECALL_TO_SINGLETON_CALL_DGC(draw_grid_xf, transform, subdivision, color, is_centered, duration);
 }
 
+#pragma region Camera Frustum
+
+void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum, camera, color, duration);
+}
+
+void DebugDraw3D::draw_camera_frustum_planes(Array cameraFrustum, Color color, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum_planes, cameraFrustum, color, duration);
+}
+
+#pragma endregion // Camera Frustum
 #pragma endregion // Misc
 #pragma endregion // 3D
 

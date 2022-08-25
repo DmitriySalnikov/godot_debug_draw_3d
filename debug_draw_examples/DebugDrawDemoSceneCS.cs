@@ -113,7 +113,7 @@ public class DebugDrawDemoSceneCS : Spatial
 
         // Lines
         var target = GetNode<Spatial>("Lines/Target");
-        DebugDrawCS.DrawBillboardSquare(target.GlobalTransform.origin, 0.5f, Colors.Red);
+        DebugDrawCS.DrawSquare(target.GlobalTransform.origin, 0.5f, Colors.Red);
 
         DebugDrawCS.DrawLine(GetNode<Spatial>("Lines/1").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Fuchsia);
         DebugDrawCS.DrawRay(GetNode<Spatial>("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/3").GlobalTransform.origin).Normalized(), 3, Colors.Crimson);
@@ -128,12 +128,16 @@ public class DebugDrawDemoSceneCS : Spatial
         // Lines with Arrow
         DebugDrawCS.DrawArrowLine(GetNode<Spatial>("Lines/2").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Blue, 0.5f, true);
         DebugDrawCS.DrawArrowRay(GetNode<Spatial>("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/4").GlobalTransform.origin).Normalized(), 8, Colors.Lavender, 0.5f, true);
+        
+        DebugDrawCS.DrawLineHitOffset(GetNode<Spatial>("Lines/5").GlobalTransform.origin, target.GlobalTransform.origin, true, Mathf.Abs(Mathf.Sin(OS.GetTicksMsec() / 1000.0f)), 0.25f, Colors.Aqua);
 
         // Path
 
         /// preparing data
         List<Vector3> points = new List<Vector3>();
         List<Vector3> points_below = new List<Vector3>();
+        List<Vector3> points_below2 = new List<Vector3>();
+        List<Vector3> points_below3 = new List<Vector3>();
         List<Vector3> lines_above = new List<Vector3>();
         foreach (var ch in GetNode<Spatial>("LinePath").GetChildren())
         {
@@ -141,6 +145,8 @@ public class DebugDrawDemoSceneCS : Spatial
 
             points.Add(c.GlobalTransform.origin);
             points_below.Add(c.GlobalTransform.origin + Vector3.Down);
+            points_below2.Add(c.GlobalTransform.origin + Vector3.Down * 2);
+            points_below3.Add(c.GlobalTransform.origin + Vector3.Down * 3);
         }
 
         for (int x = 0; x<points.Count-1; x++)
@@ -153,14 +159,15 @@ public class DebugDrawDemoSceneCS : Spatial
         DebugDrawCS.DrawLines(lines_above.ToArray());
         DebugDrawCS.DrawLinePath(points.ToArray(), Colors.Beige);
         DebugDrawCS.DrawArrowPath(points_below.ToArray(), Colors.Gold, 0.5f);
-        DebugDrawCS.DrawLineHitOffset(GetNode<Spatial>("Lines/5").GlobalTransform.origin, target.GlobalTransform.origin, true, Mathf.Abs(Mathf.Sin(OS.GetTicksMsec() / 1000.0f)), 0.25f, Colors.Aqua);
+        DebugDrawCS.DrawPoints(points_below2.ToArray(), 0.2f, Colors.DarkGreen);
+        DebugDrawCS.DrawPointPath(points_below3.ToArray(), 0.25f, Colors.Blue, Colors.Tomato);
 
         // Misc
         DebugDrawCS.DrawCameraFrustum(GetNode<Camera>("Camera"), Colors.DarkOrange);
 
         DebugDrawCS.DrawArrow(GetNode<Spatial>("Misc/Arrow").GlobalTransform, Colors.YellowGreen);
 
-        DebugDrawCS.DrawBillboardSquare(GetNode<Spatial>("Misc/Billboard").GlobalTransform.origin, 0.5f, Colors.Green);
+        DebugDrawCS.DrawSquare(GetNode<Spatial>("Misc/Billboard").GlobalTransform.origin, 0.5f, Colors.Green);
 
         DebugDrawCS.DrawPosition(GetNode<Spatial>("Misc/Position").GlobalTransform, Colors.Brown);
 

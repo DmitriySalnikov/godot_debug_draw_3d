@@ -380,6 +380,17 @@ public:
 	void draw_arrow_path(PoolVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool absolute_size = true, real_t duration = 0);
 
 #pragma endregion // Arrows
+#pragma region Points
+
+	/// Draw a sequence of points connected by lines with billboard squares
+	/// path: Sequence of points
+	/// points_color: Color of points
+	/// lines_color: Color of lines
+	/// size: Size of squares
+	/// duration: Duration of existence in seconds
+	void draw_point_path(PoolVector3Array path, real_t size = 0.25f, Color points_color = Colors::empty_color, Color lines_color = Colors::empty_color, real_t duration = 0);
+
+#pragma endregion // Points
 #pragma endregion // Lines
 #pragma region Misc
 
@@ -388,7 +399,14 @@ public:
 	/// size: Square size
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_billboard_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_square(Vector3 position, real_t size = 0.2f, Color color = Colors::empty_color, real_t duration = 0);
+
+	/// Draw a sequence of points using billboard squares
+	/// path: Sequence of points
+	/// color: Color
+	/// size: Size of squares
+	/// duration: Duration of existence in seconds
+	void draw_points(PoolVector3Array points, real_t size = 0.25f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw 3 intersecting lines with the given transformations
 	/// transform: Transform of lines

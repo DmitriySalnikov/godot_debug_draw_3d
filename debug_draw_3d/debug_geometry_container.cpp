@@ -501,11 +501,19 @@ void DebugGeometryContainer::draw_arrow_path(PoolVector3Array path, Color color,
 }
 
 #pragma endregion // Arrows
+#pragma region Points
+
+void DebugGeometryContainer::draw_point_path(PoolVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+	draw_points(path, size, points_color == Colors::empty_color ? Colors::red : points_color, duration);
+	draw_line_path(path, lines_color == Colors::empty_color ? Colors::green : lines_color, duration);
+}
+
+#pragma endregion // Points
 #pragma endregion // Lines
 
 #pragma region Misc
 
-void DebugGeometryContainer::draw_billboard_square(Vector3 position, real_t size, Color color, real_t duration) {
+void DebugGeometryContainer::draw_square(Vector3 position, real_t size, Color color, real_t duration) {
 	Transform t(Basis(), position);
 	t.basis.scale(Vector3::ONE * size);
 
@@ -516,6 +524,12 @@ void DebugGeometryContainer::draw_billboard_square(Vector3 position, real_t size
 			t,
 			color == Colors::empty_color ? Colors::red : color,
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size));
+}
+
+void DebugGeometryContainer::draw_points(PoolVector3Array points, real_t size, Color color, real_t duration) {
+	for (int i = 0; i < points.size(); i++) {
+		draw_square(points[i], size, color, duration);
+	}
 }
 
 #pragma region Camera Frustum

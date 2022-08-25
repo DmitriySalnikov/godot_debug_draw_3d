@@ -28,6 +28,7 @@ Based on my previous addon, which was developed only for C# https://github.com/D
 * Line
 * Line Path
 * Line with Arrow
+* Points
 * Position 3D (3 crossing axes)
 * Sphere
 

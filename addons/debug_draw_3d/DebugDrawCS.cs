@@ -41,99 +41,99 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Recall all calls from DebugDraw3D instance to its singleton if needed
 	/// </summary>
-	public static bool RecallToSingleton { get => (bool)debug_draw_3d?.Get("recall_to_singleton"); set => debug_draw_3d?.Set("recall_to_singleton", value); }
+	public static bool RecallToSingleton { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("recall_to_singleton") : default; set => debug_draw_3d?.Set("recall_to_singleton", value); }
 
 	/// <summary>
 	/// Enable or disable all debug draw
 	/// </summary>
-	public static bool DebugEnabled { get => (bool)debug_draw_3d?.Get("debug_enabled"); set => debug_draw_3d?.Set("debug_enabled", value); }
+	public static bool DebugEnabled { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("debug_enabled") : default; set => debug_draw_3d?.Set("debug_enabled", value); }
 
 	/// <summary>
 	/// Freezing 3d debugging instances
 	/// </summary>
-	public static bool Freeze3dRender { get => (bool)debug_draw_3d?.Get("freeze_3d_render"); set => debug_draw_3d?.Set("freeze_3d_render", value); }
+	public static bool Freeze3dRender { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("freeze_3d_render") : default; set => debug_draw_3d?.Set("freeze_3d_render", value); }
 
 	/// <summary>
 	/// Debug for debug...
 	/// </summary>
-	public static bool VisibleInstanceBounds { get => (bool)debug_draw_3d?.Get("visible_instance_bounds"); set => debug_draw_3d?.Set("visible_instance_bounds", value); }
+	public static bool VisibleInstanceBounds { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("visible_instance_bounds") : default; set => debug_draw_3d?.Set("visible_instance_bounds", value); }
 
 	/// <summary>
 	/// Geometry culling based on camera frustum.
 	/// It is not recommended to use with the current implementation.
 	/// </summary>
-	public static bool UseFrustumCulling { get => (bool)debug_draw_3d?.Get("use_frustum_culling"); set => debug_draw_3d?.Set("use_frustum_culling", value); }
+	public static bool UseFrustumCulling { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("use_frustum_culling") : default; set => debug_draw_3d?.Set("use_frustum_culling", value); }
 
 	/// <summary>
 	/// Force use camera placed on edited scene.
 	/// Usable for editor.
 	/// </summary>
-	public static bool ForceUseCameraFromScene { get => (bool)debug_draw_3d?.Get("force_use_camera_from_scene"); set => debug_draw_3d?.Set("force_use_camera_from_scene", value); }
+	public static bool ForceUseCameraFromScene { get => debug_draw_3d != null ? (bool)debug_draw_3d.Get("force_use_camera_from_scene") : default; set => debug_draw_3d?.Set("force_use_camera_from_scene", value); }
 
 	/// <summary>
 	/// Base offset for all graphs
 	/// </summary>
-	public static Vector2 GraphsBaseOffset { get => (Vector2)debug_draw_3d?.Get("graphs_base_offset"); set => debug_draw_3d?.Set("graphs_base_offset", value); }
+	public static Vector2 GraphsBaseOffset { get => debug_draw_3d != null ? (Vector2)debug_draw_3d.Get("graphs_base_offset") : default; set => debug_draw_3d?.Set("graphs_base_offset", value); }
 
 	/// <summary>
 	/// Layers on which the geometry will be displayed
 	/// </summary>
-	public static int GeometryRenderLayers { get => (int)debug_draw_3d?.Get("geometry_render_layers"); set => debug_draw_3d?.Set("geometry_render_layers", value); }
+	public static int GeometryRenderLayers { get => debug_draw_3d != null ? (int)debug_draw_3d.Get("geometry_render_layers") : default; set => debug_draw_3d?.Set("geometry_render_layers", value); }
 
 	/// <summary>
 	/// Position of text block
 	/// </summary>
-	public static int TextBlockPosition { get => (int)debug_draw_3d?.Get("text_block_position"); set => debug_draw_3d?.Set("text_block_position", value); }
+	public static int TextBlockPosition { get => debug_draw_3d != null ? (int)debug_draw_3d.Get("text_block_position") : default; set => debug_draw_3d?.Set("text_block_position", value); }
 
 	/// <summary>
 	/// Offset from the corner selected in 'text_block_position'
 	/// </summary>
-	public static Vector2 TextBlockOffset { get => (Vector2)debug_draw_3d?.Get("text_block_offset"); set => debug_draw_3d?.Set("text_block_offset", value); }
+	public static Vector2 TextBlockOffset { get => debug_draw_3d != null ? (Vector2)debug_draw_3d.Get("text_block_offset") : default; set => debug_draw_3d?.Set("text_block_offset", value); }
 
 	/// <summary>
 	/// Text padding for each line
 	/// </summary>
-	public static Vector2 TextPadding { get => (Vector2)debug_draw_3d?.Get("text_padding"); set => debug_draw_3d?.Set("text_padding", value); }
+	public static Vector2 TextPadding { get => debug_draw_3d != null ? (Vector2)debug_draw_3d.Get("text_padding") : default; set => debug_draw_3d?.Set("text_padding", value); }
 
 	/// <summary>
 	/// How long text remain shown after being invoked.
 	/// </summary>
-	public static float TextDefaultDuration { get => (float)debug_draw_3d?.Get("text_default_duration"); set => debug_draw_3d?.Set("text_default_duration", value); }
+	public static float TextDefaultDuration { get => debug_draw_3d != null ? (float)debug_draw_3d.Get("text_default_duration") : default; set => debug_draw_3d?.Set("text_default_duration", value); }
 
 	/// <summary>
 	/// Default color of the text
 	/// </summary>
-	public static Color TextForegroundColor { get => (Color)debug_draw_3d?.Get("text_foreground_color"); set => debug_draw_3d?.Set("text_foreground_color", value); }
+	public static Color TextForegroundColor { get => debug_draw_3d != null ? (Color)debug_draw_3d.Get("text_foreground_color") : default; set => debug_draw_3d?.Set("text_foreground_color", value); }
 
 	/// <summary>
 	/// Background color of the text
 	/// </summary>
-	public static Color TextBackgroundColor { get => (Color)debug_draw_3d?.Get("text_background_color"); set => debug_draw_3d?.Set("text_background_color", value); }
+	public static Color TextBackgroundColor { get => debug_draw_3d != null ? (Color)debug_draw_3d.Get("text_background_color") : default; set => debug_draw_3d?.Set("text_background_color", value); }
 
 	/// <summary>
 	/// Custom text Font
 	/// </summary>
-	public static Font TextCustomFont { get => (Font)debug_draw_3d?.Get("text_custom_font"); set => debug_draw_3d?.Set("text_custom_font", value); }
+	public static Font TextCustomFont { get => debug_draw_3d != null ? (Font)debug_draw_3d.Get("text_custom_font") : default; set => debug_draw_3d?.Set("text_custom_font", value); }
 
 	/// <summary>
 	/// Default color of line with hit
 	/// </summary>
-	public static Color LineHitColor { get => (Color)debug_draw_3d?.Get("line_hit_color"); set => debug_draw_3d?.Set("line_hit_color", value); }
+	public static Color LineHitColor { get => debug_draw_3d != null ? (Color)debug_draw_3d.Get("line_hit_color") : default; set => debug_draw_3d?.Set("line_hit_color", value); }
 
 	/// <summary>
 	/// Default color of line after hit
 	/// </summary>
-	public static Color LineAfterHitColor { get => (Color)debug_draw_3d?.Get("line_after_hit_color"); set => debug_draw_3d?.Set("line_after_hit_color", value); }
+	public static Color LineAfterHitColor { get => debug_draw_3d != null ? (Color)debug_draw_3d.Get("line_after_hit_color") : default; set => debug_draw_3d?.Set("line_after_hit_color", value); }
 
 	/// <summary>
 	/// Custom 'Viewport' to use for frustum culling.
 	/// </summary>
-	public static Viewport CustomViewport { get => (Viewport)debug_draw_3d?.Get("custom_viewport"); set => debug_draw_3d?.Set("custom_viewport", value); }
+	public static Viewport CustomViewport { get => debug_draw_3d != null ? (Viewport)debug_draw_3d.Get("custom_viewport") : default; set => debug_draw_3d?.Set("custom_viewport", value); }
 
 	/// <summary>
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
 	/// </summary>
-	public static CanvasItem CustomCanvas { get => (CanvasItem)debug_draw_3d?.Get("custom_canvas"); set => debug_draw_3d?.Set("custom_canvas", value); }
+	public static CanvasItem CustomCanvas { get => debug_draw_3d != null ? (CanvasItem)debug_draw_3d.Get("custom_canvas") : default; set => debug_draw_3d?.Set("custom_canvas", value); }
 
 #else
 	public static bool RecallToSingleton = default;
@@ -181,7 +181,7 @@ public class DebugDrawCS : Node
 	}
 
 	public override void _EnterTree(){
-		if (!Engine.EditorHint){
+		if (!Engine.EditorHint && debug_draw_3d != null){
 			if(debug_draw_3d.Call("get_singleton") == null)
 				AddChild(debug_draw_3d);
 		}
@@ -211,7 +211,12 @@ public class DebugDrawCS : Node
 	/// Some data can be delayed by 1 frame.
 	/// </summary>
 	public static Dictionary GetRenderStats(){
-		return (Dictionary)debug_draw_3d?.Call("get_render_stats");
+		if (debug_draw_3d != null){
+			return (Dictionary)debug_draw_3d.Call("get_render_stats");
+		}
+		else{
+			return new Dictionary();
+		}
 	}
 
 	/// <summary>
@@ -373,7 +378,7 @@ public class DebugDrawCS : Node
 	}
 
 	/// <summary>
-	/// Draw many line
+	/// Draw many lines
 	/// </summary>
 	/// <param name="lines">Array of line points. 1 line = 2 Vector3. The size of the array must be even.</param>
 	/// <param name="color">Lines color</param>
@@ -454,14 +459,37 @@ public class DebugDrawCS : Node
 	}
 
 	/// <summary>
+	/// Draw a sequence of points connected by lines with billboard squares
+	/// </summary>
+	/// <param name="path">Sequence of points</param>
+	/// <param name="points_color">Color of points</param>
+	/// <param name="lines_color">Color of lines</param>
+	/// <param name="size">Size of squares</param>
+	/// <param name="duration">Duration of existence in seconds</param>
+	public static void DrawPointPath(Vector3[] path, float size = 0.25f, Color? points_color = null, Color? lines_color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_point_path", path, size, points_color == null? empty_color : points_color, lines_color == null? empty_color : lines_color, duration);
+	}
+
+	/// <summary>
 	/// Draw a square that will always be turned towards the camera
 	/// </summary>
 	/// <param name="position">Center position of square</param>
 	/// <param name="size">Square size</param>
 	/// <param name="color">Color</param>
 	/// <param name="duration">Duration of existence in seconds</param>
-	public static void DrawBillboardSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f){
-		debug_draw_3d?.Call("draw_billboard_square", position, size, color == null? empty_color : color, duration);
+	public static void DrawSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_square", position, size, color == null? empty_color : color, duration);
+	}
+
+	/// <summary>
+	/// Draw a sequence of points using billboard squares
+	/// </summary>
+	/// <param name="path">Sequence of points</param>
+	/// <param name="color">Color</param>
+	/// <param name="size">Size of squares</param>
+	/// <param name="duration">Duration of existence in seconds</param>
+	public static void DrawPoints(Vector3[] points, float size = 0.25f, Color? color = null, float duration = 0f){
+		debug_draw_3d?.Call("draw_points", points, size, color == null? empty_color : color, duration);
 	}
 
 	/// <summary>
@@ -568,7 +596,12 @@ public class DebugDrawCS : Node
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
 	public static GraphParameters CreateGraph(string title){
-		return (GraphParameters)(Reference)debug_draw_3d?.Call("create_graph", title);
+		if (debug_draw_3d != null){
+			return (GraphParameters)(Reference)debug_draw_3d.Call("create_graph", title);
+		}
+		else{
+			return default;
+		}
 	}
 
 	/// <summary>
@@ -577,7 +610,12 @@ public class DebugDrawCS : Node
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
 	public static GraphParameters CreateFpsGraph(string title){
-		return (GraphParameters)(Reference)debug_draw_3d?.Call("create_fps_graph", title);
+		if (debug_draw_3d != null){
+			return (GraphParameters)(Reference)debug_draw_3d.Call("create_fps_graph", title);
+		}
+		else{
+			return default;
+		}
 	}
 
 	/// <summary>
@@ -610,14 +648,24 @@ public class DebugDrawCS : Node
 	/// </summary>
 	/// <param name="title">Title of the graph</param>
 	public static GraphParameters GetGraphConfig(string title){
-		return (GraphParameters)(Reference)debug_draw_3d?.Call("get_graph_config", title);
+		if (debug_draw_3d != null){
+			return (GraphParameters)(Reference)debug_draw_3d.Call("get_graph_config", title);
+		}
+		else{
+			return default;
+		}
 	}
 
 	/// <summary>
 	/// Get all graph names
 	/// </summary>
 	public static string[] GetGraphNames(){
-		return (string[])debug_draw_3d?.Call("get_graph_names");
+		if (debug_draw_3d != null){
+			return (string[])debug_draw_3d.Call("get_graph_names");
+		}
+		else{
+			return new string[0];
+		}
 	}
 
 #else
@@ -645,7 +693,9 @@ public class DebugDrawCS : Node
 	public static void DrawArrowLine(Vector3 a, Vector3 b, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f) {}
 	public static void DrawArrowRay(Vector3 origin, Vector3 direction, float length, Color? color = null, float arrow_size = 0.5f, bool absolute_size = false, float duration = 0f) {}
 	public static void DrawArrowPath(Vector3[] path, Color? color = null, float arrow_size = 0.75f, bool absolute_size = true, float duration = 0f) {}
-	public static void DrawBillboardSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f) {}
+	public static void DrawPointPath(Vector3[] path, float size = 0.25f, Color? points_color = null, Color? lines_color = null, float duration = 0f) {}
+	public static void DrawSquare(Vector3 position, float size = 0.2f, Color? color = null, float duration = 0f) {}
+	public static void DrawPoints(Vector3[] points, float size = 0.25f, Color? color = null, float duration = 0f) {}
 	public static void DrawPosition(Transform transform, Color? color = null, float duration = 0f) {}
 	public static void DrawGizmo(Transform transform, Color? color = null, bool is_centered = false, float duration = 0f) {}
 	public static void DrawGrid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color? color = null, bool is_centered = true, float duration = 0f) {}
@@ -692,78 +742,78 @@ public class DebugDrawCS : Node
 		/// <summary>
 		/// Is Graph enabled
 		/// </summary>
-		public bool Enabled { get => (bool)orig_ref?.Get("enabled"); set => orig_ref?.Set("enabled", value); }
+		public bool Enabled { get => orig_ref != null ? (bool)orig_ref.Get("enabled") : default; set => orig_ref?.Set("enabled", value); }
 
 		/// <summary>
 		/// Draw Graph title
 		/// </summary>
-		public bool ShowTitle { get => (bool)orig_ref?.Get("show_title"); set => orig_ref?.Set("show_title", value); }
+		public bool ShowTitle { get => orig_ref != null ? (bool)orig_ref.Get("show_title") : default; set => orig_ref?.Set("show_title", value); }
 
 		/// <summary>
 		/// Switch between frame time and FPS modes
 		/// Only for FPS Graphs
 		/// </summary>
-		public bool FrametimeMode { get => (bool)orig_ref?.Get("frametime_mode"); set => orig_ref?.Set("frametime_mode", value); }
+		public bool FrametimeMode { get => orig_ref != null ? (bool)orig_ref.Get("frametime_mode") : default; set => orig_ref?.Set("frametime_mode", value); }
 
 		/// <summary>
 		/// Draw a graph line aligned vertically in the center
 		/// </summary>
-		public bool CenteredGraphLine { get => (bool)orig_ref?.Get("centered_graph_line"); set => orig_ref?.Set("centered_graph_line", value); }
+		public bool CenteredGraphLine { get => orig_ref != null ? (bool)orig_ref.Get("centered_graph_line") : default; set => orig_ref?.Set("centered_graph_line", value); }
 
 		/// <summary>
 		/// Sets the text visibility *GraphTextFlags*
 		/// </summary>
-		public int ShowTextFlags { get => (int)orig_ref?.Get("show_text_flags"); set => orig_ref?.Set("show_text_flags", value); }
+		public int ShowTextFlags { get => orig_ref != null ? (int)orig_ref.Get("show_text_flags") : default; set => orig_ref?.Set("show_text_flags", value); }
 
 		/// <summary>
 		/// The size of the graph.
 		/// </summary>
-		public Vector2 Size { get => (Vector2)orig_ref?.Get("size"); set => orig_ref?.Set("size", value); }
+		public Vector2 Size { get => orig_ref != null ? (Vector2)orig_ref.Get("size") : default; set => orig_ref?.Set("size", value); }
 
 		/// <summary>
 		/// The size of the buffer where the values are stored.
 		/// </summary>
-		public int BufferSize { get => (int)orig_ref?.Get("buffer_size"); set => orig_ref?.Set("buffer_size", value); }
+		public int BufferSize { get => orig_ref != null ? (int)orig_ref.Get("buffer_size") : default; set => orig_ref?.Set("buffer_size", value); }
 
 		/// <summary>
 		/// Offset from the corner selected in position
 		/// </summary>
-		public Vector2 Offset { get => (Vector2)orig_ref?.Get("offset"); set => orig_ref?.Set("offset", value); }
+		public Vector2 Offset { get => orig_ref != null ? (Vector2)orig_ref.Get("offset") : default; set => orig_ref?.Set("offset", value); }
 
 		/// <summary>
 		/// FPS Graph position *BlockPosition*
 		/// </summary>
-		public int Position { get => (int)orig_ref?.Get("position"); set => orig_ref?.Set("position", value); }
+		public int Position { get => orig_ref != null ? (int)orig_ref.Get("position") : default; set => orig_ref?.Set("position", value); }
 
 		/// <summary>
 		/// Graph line color
 		/// </summary>
-		public Color LineColor { get => (Color)orig_ref?.Get("line_color"); set => orig_ref?.Set("line_color", value); }
+		public Color LineColor { get => orig_ref != null ? (Color)orig_ref.Get("line_color") : default; set => orig_ref?.Set("line_color", value); }
 
 		/// <summary>
 		/// Color of the info text
 		/// </summary>
-		public Color TextColor { get => (Color)orig_ref?.Get("text_color"); set => orig_ref?.Set("text_color", value); }
+		public Color TextColor { get => orig_ref != null ? (Color)orig_ref.Get("text_color") : default; set => orig_ref?.Set("text_color", value); }
 
 		/// <summary>
 		/// Background color
 		/// </summary>
-		public Color BackgroundColor { get => (Color)orig_ref?.Get("background_color"); set => orig_ref?.Set("background_color", value); }
+		public Color BackgroundColor { get => orig_ref != null ? (Color)orig_ref.Get("background_color") : default; set => orig_ref?.Set("background_color", value); }
 
 		/// <summary>
 		/// Border color
 		/// </summary>
-		public Color BorderColor { get => (Color)orig_ref?.Get("border_color"); set => orig_ref?.Set("border_color", value); }
+		public Color BorderColor { get => orig_ref != null ? (Color)orig_ref.Get("border_color") : default; set => orig_ref?.Set("border_color", value); }
 
 		/// <summary>
 		/// Border color
 		/// </summary>
-		public string TextSuffix { get => (string)orig_ref?.Get("text_suffix"); set => orig_ref?.Set("text_suffix", value); }
+		public string TextSuffix { get => orig_ref != null ? (string)orig_ref.Get("text_suffix") : ""; set => orig_ref?.Set("text_suffix", value); }
 
 		/// <summary>
 		/// Custom Font
 		/// </summary>
-		public Font CustomFont { get => (Font)orig_ref?.Get("custom_font"); set => orig_ref?.Set("custom_font", value); }
+		public Font CustomFont { get => orig_ref != null ? (Font)orig_ref.Get("custom_font") : default; set => orig_ref?.Set("custom_font", value); }
 
 #else
 		public bool Enabled = default;

@@ -517,12 +517,23 @@ public class DebugDrawCS : Node
 			res.append("	/// %s" % c)
 		res.append("	/// </summary>")
 		
-		res.append("	public static %s %s { get => (%s)debug_draw_3d?.Get(\"%s\"); set => debug_draw_3d?.Set(\"%s\", value); }\n" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), p.type, p.name, p.name])
+		res.append("	public static %s %s { get => debug_draw_3d != null ? (%s)debug_draw_3d.Get(\"%s\") : %s; set => debug_draw_3d?.Set(\"%s\", value); }\n" % [
+			_csharp_remap_params(p.type),
+			__get_pascal_case_name(p.name),
+			p.type,
+			p.name,
+			_csharp_remap_def(p.type),
+			p.name,
+		])
 	
 	res.append("#else")
 	
 	for p in data.params:
-		res.append("	public static %s %s = default;" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name)])
+		res.append("	public static %s %s = %s;" % [
+			_csharp_remap_params(p.type),
+			__get_pascal_case_name(p.name),
+			_csharp_remap_def(p.type),
+		])
 	
 	res.append("#endif\n")
 	res.append("#endregion Parameters\n\n")
@@ -544,7 +555,7 @@ public class DebugDrawCS : Node
 	res.append("	}")
 	res.append("""
 	public override void _EnterTree(){
-		if (!Engine.EditorHint){
+		if (!Engine.EditorHint && debug_draw_3d != null){
 			if(debug_draw_3d.Call("get_singleton") == null)
 				AddChild(debug_draw_3d);
 		}
@@ -611,17 +622,35 @@ public class DebugDrawCS : Node
 			else:
 				args_to_call.append(a.name)
 		
-		real_impl.append("""	public static %s %s(%s){
-		%sdebug_draw_3d?.Call(\"%s\"%s);
+		if f.ret_type == "void":
+			real_impl.append("""	public static %s %s(%s){
+		debug_draw_3d?.Call(\"%s\"%s);
 	}
 """ % [
-			_csharp_remap_types(f.ret_type),
-			__get_pascal_case_name(f.name),
-			args.join(", "),
-			(("return (%s)" % _csharp_remap_ret_conv(f.ret_type)) if f.ret_type != "void" else ""),
-			f.name,
-			args_to_call.join(", "),
-		])
+				_csharp_remap_types(f.ret_type),
+				__get_pascal_case_name(f.name),
+				args.join(", "),
+				f.name,
+				args_to_call.join(", "),
+			])
+		else:
+			real_impl.append("""	public static %s %s(%s){
+		if (debug_draw_3d != null){
+			return (%s)debug_draw_3d.Call(\"%s\"%s);
+		}
+		else{
+			return %s;
+		}
+	}
+""" % [
+				_csharp_remap_types(f.ret_type),
+				__get_pascal_case_name(f.name),
+				args.join(", "),
+				_csharp_remap_ret_conv(f.ret_type),
+				f.name,
+				args_to_call.join(", "),
+				_csharp_remap_def(f.ret_type),
+			])
 		
 		dummy_impl.append("	public static %s %s(%s) %s" % [
 			_csharp_remap_types(f.ret_type),
@@ -668,12 +697,23 @@ public class DebugDrawCS : Node
 			res.append("		/// %s" % c)
 		res.append("		/// </summary>")
 		
-		res.append("		public %s %s { get => (%s)orig_ref?.Get(\"%s\"); set => orig_ref?.Set(\"%s\", value); }\n" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), _csharp_remap_params(p.type), p.name, p.name])
+		res.append("		public %s %s { get => orig_ref != null ? (%s)orig_ref.Get(\"%s\") : %s; set => orig_ref?.Set(\"%s\", value); }\n" % [
+			_csharp_remap_params(p.type),
+			__get_pascal_case_name(p.name),
+			_csharp_remap_params(p.type),
+			p.name,
+			_csharp_remap_def(p.type),
+			p.name,
+		])
 	
 	res.append("#else")
 	
 	for p in data_graphs_data.params:
-		res.append("		public %s %s = %s;" % [_csharp_remap_params(p.type), __get_pascal_case_name(p.name), _csharp_remap_def(p.type)])
+		res.append("		public %s %s = %s;" % [
+			_csharp_remap_params(p.type),
+			__get_pascal_case_name(p.name),
+			_csharp_remap_def(p.type),
+		])
 	
 	res.append("#endif")
 	res.append("#endregion Parameters")
