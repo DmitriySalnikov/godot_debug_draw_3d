@@ -4,7 +4,7 @@
 
 This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in C++ and can be used with GDScript or C#.
 
-Based on my previous addon, which was developed only for C# https://github.com/DmitriySalnikov/godot_debug_draw_cs, and which was inspired by Zilann's GDScript addon https://github.com/Zylann/godot_debug_draw
+Based on my previous addon, which was developed only for C# https://github.com/DmitriySalnikov/godot_debug_draw_cs, and which was inspired by Zylann's GDScript addon https://github.com/Zylann/godot_debug_draw
 
 ## Donations
 
@@ -37,9 +37,16 @@ Overlay:
 * FPS Graph
 * Custom Graphs
 
+Precompiled for:
+
+* Windows
+* Linux
+* macOS
+* Android
+
 ## Download
 
-To download, use the [Godot Asset Library](https://godotengine.org/404/NO_LINK_AT_THE_MOMENT) or download the archive by clicking the button at the top of the main repository page: `Code -> Download ZIP`, then unzip it to your project folder.
+To download, use the [Godot Asset Library](https://godotengine.org/404/NO_LINK_AT_THE_MOMENT) or download the archive by clicking the button at the top of the main repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the "Source Codes" in assets).
 
 ## Usage
 
