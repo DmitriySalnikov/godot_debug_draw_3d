@@ -2,15 +2,16 @@
 * text=auto eol=lf
 
 # Ignore some files when exporting to a ZIP.
-/.clang-format		export-ignore
-/.gitattributes		export-ignore
-/.gitignore			export-ignore
-/.gitmodules		export-ignore
-/.github			export-ignore
-/LICENSE			export-ignore
-/SConstruct			export-ignore
-/*.*				export-ignore
-/godot_qoi			export-ignore
-/godot-cpp			export-ignore
-/jni				export-ignore
-/testsuite			export-ignore
+/.clang-format			export-ignore
+/.gitattributes			export-ignore
+/.gitignore				export-ignore
+/.gitmodules			export-ignore
+/.github				export-ignore
+/LICENSE				export-ignore
+/SConstruct				export-ignore
+/*.*					export-ignore
+/debug_draw_3d			export-ignore
+/godot-cpp				export-ignore
+/images					export-ignore
+/jni					export-ignore
+/patches				export-ignore

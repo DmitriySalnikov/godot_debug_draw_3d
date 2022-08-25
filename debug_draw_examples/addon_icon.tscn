@@ -1,0 +1,37 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://debug_draw_examples/addon_icon.gd" type="Script" id=1]
+
+[sub_resource type="Environment" id=1]
+background_mode = 1
+
+[node name="icon" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5.39732 )
+environment = SubResource( 1 )
+current = true
+
+[node name="box" type="Spatial" parent="."]
+transform = Transform( 0.316305, 0.0204714, -0.293415, -0.239575, 0.267896, -0.239575, 0.170631, 0.338191, 0.207538, -0.410294, 0.312541, 0.243199 )
+
+[node name="gizmo" type="Spatial" parent="."]
+transform = Transform( 0.707107, 0, -0.707107, -0.294265, 0.909294, -0.294265, 0.642968, 0.416154, 0.642968, 0, 0, 0 )
+
+[node name="grid" type="Spatial" parent="gizmo"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.011, 0 )
+
+[node name="sphere" type="Spatial" parent="."]
+transform = Transform( 0.401341, 0.207831, -0.437109, -0.449118, 0.371584, -0.235691, 0.180418, 0.46267, 0.385639, 0.466197, 0.322665, 0.200436 )
+
+[node name="cylinder" type="Spatial" parent="."]
+transform = Transform( 0.155339, 0.116074, -0.113004, -0.160317, 0.13264, -0.0841321, 0.0232731, 0.138948, 0.174714, -0.0566943, -0.290515, 0.905274 )
+
+[node name="line" type="Spatial" parent="."]
+
+[node name="1" type="Spatial" parent="line"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.568458, -0.615948, 0.653444 )
+
+[node name="2" type="Spatial" parent="line"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0051975, 0.373791, 0.0974927 )

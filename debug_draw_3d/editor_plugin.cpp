@@ -67,7 +67,7 @@ void DebugDraw3DEditorPlugin::create_auto_find() {
 	}
 }
 
-// HACK for finding canvas and drawing on it
+// HACK For finding canvas and drawing on it
 void DebugDraw3DEditorPlugin::find_viewport_control() {
 	// Create temp control to get spatial viewport
 	Control *ctrl = Control::_new();

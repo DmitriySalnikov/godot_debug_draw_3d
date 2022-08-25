@@ -262,11 +262,19 @@ public:
 #pragma region Boxes
 
 	/// Draw box
+	/// position: Position of the Box
+	/// size: Size of the Box
+	/// color: Box color
+	/// is_box_centered: Use 'position' as the center of the box, not as the bottom corner
+	/// duration: Duration of existence in seconds
+	void draw_box(Vector3 position, Vector3 size, Color color = Colors::empty_color, bool is_box_centered = false, real_t duration = 0);
+
+	/// Draw box
 	/// transform: Transform of the Box
 	/// color: Box color
 	/// is_box_centered: Use 'transform' as the center of the box, not as the bottom corner
 	/// duration: Duration of existence in seconds
-	void draw_box(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
+	void draw_box_xf(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
 
 	/// Draw AABB
 	/// aabb: AABB
@@ -315,7 +323,7 @@ public:
 	/// duration: Duration of existence in seconds
 	void draw_line(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t duration = 0);
 
-	/// Draw many line
+	/// Draw many lines
 	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
 	/// color: Lines color
 	/// duration: Duration of existence in seconds

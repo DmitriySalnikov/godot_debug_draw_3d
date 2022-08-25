@@ -7,6 +7,9 @@
 script = ExtResource( 1 )
 more_test_cases = true
 
+[node name="a" parent="AABB" index="0"]
+transform = Transform( 1, -1.53668e-08, 2.23517e-08, 1.74623e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707 )
+
 [node name="Settings" parent="." index="18"]
 switch_to_scene = "res://debug_draw_examples/DebugDrawDemoScene.tscn"
 

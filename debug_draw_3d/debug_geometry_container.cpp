@@ -354,7 +354,11 @@ void DebugGeometryContainer::draw_cylinder(Transform transform, Color color, rea
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugGeometryContainer::draw_box(Transform transform, Color color, bool is_box_centered, real_t duration) {
+void DebugGeometryContainer::draw_box(Vector3 position, Vector3 size, Color color, bool is_box_centered, real_t duration) {
+	draw_box_xf(Transform(Basis().scaled(size), position), color, is_box_centered, duration);
+}
+
+void DebugGeometryContainer::draw_box_xf(Transform transform, Color color, bool is_box_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	/// It's possible to use less space to contain box, but this method works better in more cases
@@ -374,13 +378,13 @@ void DebugGeometryContainer::draw_box(Transform transform, Color color, bool is_
 void DebugGeometryContainer::draw_aabb(AABB aabb, Color color, real_t duration) {
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(aabb.position, aabb.position + aabb.size, bottom, top, diag);
-	draw_box(Transform(Basis().scaled(diag), bottom - diag * 0.5), color, false, duration);
+	draw_box(bottom, diag, color, false, duration);
 }
 
 void DebugGeometryContainer::draw_aabb_ab(Vector3 a, Vector3 b, Color color, real_t duration) {
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(a, b, bottom, top, diag);
-	draw_box(Transform(Basis().scaled(diag), bottom - diag * 0.5), color, false, duration);
+	draw_box(bottom, diag, color, false, duration);
 }
 
 #pragma endregion // Boxes
@@ -558,8 +562,8 @@ void DebugGeometryContainer::draw_gizmo(Transform transform, Color color, bool i
 
 	bool is_color_empty = color == Colors::empty_color;
 #define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
-#define MINUS(axis) transform.origin - transform.basis. axis
-#define PLUS(axis) transform.origin + transform.basis. axis
+#define MINUS(axis) transform.origin - transform.basis.axis
+#define PLUS(axis) transform.origin + transform.basis.axis
 
 	if (is_centered) {
 		draw_arrow_line(MINUS(x /** 0.5f*/), PLUS(x /** 0.5f*/), COLOR(x), 0.1f, true, duration);

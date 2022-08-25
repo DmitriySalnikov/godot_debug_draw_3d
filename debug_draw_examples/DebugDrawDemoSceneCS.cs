@@ -18,7 +18,6 @@ public class DebugDrawDemoSceneCS : Spatial
     float time = 0;
     float time2 = 0;
     float time3 = 0;
-    bool toogle_frustum_key = false;
 
     public override async void _Ready()
     {
@@ -26,12 +25,6 @@ public class DebugDrawDemoSceneCS : Spatial
 
         if (!IsInsideTree())
             return;
-
-        DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One, null, 10);
-        DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 1, null, 1);
-        DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 2, null, 1);
-        DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 3, null, 1);
-        DebugDrawCS.DrawLine(Vector3.Zero, Vector3.One * 4, null, 1);
     }
 
     public override void _Input(InputEvent @event)
@@ -41,9 +34,9 @@ public class DebugDrawDemoSceneCS : Spatial
             if (key.IsPressed())
             {
                 if (key.Scancode == (int)KeyList.F1)
-                {
                     zylann_example = !zylann_example;
-                }
+                if (key.Scancode == (int)KeyList.Left)
+                    DebugDrawCS.UseFrustumCulling = !DebugDrawCS.UseFrustumCulling;
             }
         }
     }
@@ -54,12 +47,12 @@ public class DebugDrawDemoSceneCS : Spatial
         if (zylann_example)
         {
             DebugDrawCS.ClearGraphs();
-            var _time = OS.GetTicksMsec() / 1000.0;
-            var box_pos = new Vector3(0, Mathf.Sin((float)_time * 4), 0);
-            var line_begin = new Vector3(-1, Mathf.Sin((float)_time * 4), 0);
-            var line_end = new Vector3(1, Mathf.Cos((float)_time * 4), 0);
+            var _time = OS.GetTicksMsec() / 1000f;
+            var box_pos = new Vector3(0, Mathf.Sin(_time * 4), 0);
+            var line_begin = new Vector3(-1, Mathf.Sin(_time * 4), 0);
+            var line_end = new Vector3(1, Mathf.Cos(_time * 4), 0);
 
-            DebugDrawCS.DrawAabbAb(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0), 0);// Box need to be NOT centered
+            DebugDrawCS.DrawBox(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0));
             DebugDrawCS.DrawLine(line_begin, line_end, new Color(1, 1, 0));
             DebugDrawCS.SetText("Time", _time);
             DebugDrawCS.SetText("Frames drawn", Engine.GetFramesDrawn());
@@ -68,34 +61,35 @@ public class DebugDrawDemoSceneCS : Spatial
             return;
         }
 
+        // Testing the rendering layers by showing the image from the second camera inside the 2D panel
         DebugDrawCS.GeometryRenderLayers = !Input.IsKeyPressed((int)KeyList.Shift) ? 1 : 0b10010;
         GetNode<Control>("Panel").Visible = Input.IsKeyPressed((int)KeyList.Shift);
 
+        // More property toggles
         DebugDrawCS.Freeze3dRender = Input.IsKeyPressed((int)KeyList.Enter);
         DebugDrawCS.ForceUseCameraFromScene = Input.IsKeyPressed((int)KeyList.Up);
         DebugDrawCS.DebugEnabled = !Input.IsKeyPressed((int)KeyList.Down);
         DebugDrawCS.VisibleInstanceBounds = Input.IsKeyPressed((int)KeyList.Right);
-        if (toogle_frustum_key && !Input.IsKeyPressed((int)KeyList.Left))
-            DebugDrawCS.UseFrustumCulling = !DebugDrawCS.UseFrustumCulling;
-        toogle_frustum_key = Input.IsKeyPressed((int)KeyList.Left);
 
-        // Enable FPSGraph
+        // Enable FPSGraph if not exists
         var g = _create_graph("FPS", true, false, Engine.EditorHint ? DebugDrawCS.BlockPosition_LeftTop : DebugDrawCS.BlockPosition_RightTop, DebugDrawCS.GraphTextFlags_Current | DebugDrawCS.GraphTextFlags_Avarage | DebugDrawCS.GraphTextFlags_Max | DebugDrawCS.GraphTextFlags_Min, new Vector2(200, 80), custom_font);
         if (g != null)
             g.BufferSize = 300;
 
+        // Adding more graphs
         if (test_graphs)
             _graph_test();
 
-        // Zones
+        // Zones with black borders
         var col = Colors.Black;
         foreach (var z in GetNode<Spatial>("Zones").GetChildren())
-            DebugDrawCS.DrawBox(((Spatial)z).GlobalTransform, col);
+            DebugDrawCS.DrawBoxXf(((Spatial)z).GlobalTransform, col);
 
         // Spheres
         DebugDrawCS.DrawSphereXf(GetNode<Spatial>("SphereTransform").GlobalTransform, Colors.Crimson);
         DebugDrawCS.DrawSphereHdXf(GetNode<Spatial>("SphereHDTransform").GlobalTransform, Colors.OrangeRed);
 
+        // Delayed spheres
         if (time <= 0)
         {
             DebugDrawCS.DrawSphere(GetNode<Spatial>("SpherePosition").GlobalTransform.origin, 2, Colors.BlueViolet, 2);
@@ -109,9 +103,9 @@ public class DebugDrawDemoSceneCS : Spatial
         DebugDrawCS.DrawCylinder(new Transform(Basis.Identity, GetNode<Spatial>("Cylinder2").GlobalTransform.origin).Scaled(new Vector3(1, 2, 1)), Colors.Red);
 
         // Boxes
-        DebugDrawCS.DrawBox(GetNode<Spatial>("Box1").GlobalTransform, Colors.Purple);
-        DebugDrawCS.DrawBox(new Transform(Basis.Identity, GetNode<Spatial>("Box2").GlobalTransform.origin), Colors.RebeccaPurple);
-        DebugDrawCS.DrawBox(new Transform(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), GetNode<Spatial>("Box3").GlobalTransform.origin), Colors.RosyBrown);
+        DebugDrawCS.DrawBoxXf(GetNode<Spatial>("Box1").GlobalTransform, Colors.Purple);
+        DebugDrawCS.DrawBox(GetNode<Spatial>("Box2").GlobalTransform.origin, Vector3.One, Colors.RebeccaPurple);
+        DebugDrawCS.DrawBoxXf(new Transform(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), GetNode<Spatial>("Box3").GlobalTransform.origin), Colors.RosyBrown);
 
         var r = GetNode<Spatial>("AABB");
         DebugDrawCS.DrawAabbAb(r.GetChild<Spatial>(0).GlobalTransform.origin, r.GetChild<Spatial>(1).GlobalTransform.origin, Colors.DeepPink);
@@ -121,10 +115,8 @@ public class DebugDrawDemoSceneCS : Spatial
         var target = GetNode<Spatial>("Lines/Target");
         DebugDrawCS.DrawBillboardSquare(target.GlobalTransform.origin, 0.5f, Colors.Red);
 
-        // Normal
         DebugDrawCS.DrawLine(GetNode<Spatial>("Lines/1").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Fuchsia);
         DebugDrawCS.DrawRay(GetNode<Spatial>("Lines/3").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/3").GlobalTransform.origin).Normalized(), 3, Colors.Crimson);
-
 
         if (time3 <= 0)
         {
@@ -133,11 +125,13 @@ public class DebugDrawDemoSceneCS : Spatial
         }
         time3 -= delta;
 
-        // Arrow
+        // Lines with Arrow
         DebugDrawCS.DrawArrowLine(GetNode<Spatial>("Lines/2").GlobalTransform.origin, target.GlobalTransform.origin, Colors.Blue, 0.5f, true);
         DebugDrawCS.DrawArrowRay(GetNode<Spatial>("Lines/4").GlobalTransform.origin, (target.GlobalTransform.origin - GetNode<Spatial>("Lines/4").GlobalTransform.origin).Normalized(), 8, Colors.Lavender, 0.5f, true);
 
         // Path
+
+        /// preparing data
         List<Vector3> points = new List<Vector3>();
         List<Vector3> points_below = new List<Vector3>();
         List<Vector3> lines_above = new List<Vector3>();
@@ -155,6 +149,7 @@ public class DebugDrawDemoSceneCS : Spatial
             lines_above.Add(points[x+1] + Vector3.Up);
         }
 
+        /// drawing lines
         DebugDrawCS.DrawLines(lines_above.ToArray());
         DebugDrawCS.DrawLinePath(points.ToArray(), Colors.Beige);
         DebugDrawCS.DrawArrowPath(points_below.ToArray(), Colors.Gold, 0.5f);
@@ -219,7 +214,7 @@ public class DebugDrawDemoSceneCS : Spatial
 
         // Lag Test
         GetNode<Spatial>("LagTest").Translation = ((Transform)GetNode<AnimationPlayer>("LagTest/RESET").GetAnimation("RESET").TrackGetKeyValue(0, 0)).origin + new Vector3(Mathf.Sin(OS.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
-        DebugDrawCS.DrawBox(new Transform(Basis.Identity.Scaled(Vector3.One * 2.01f), GetNode<Spatial>("LagTest").GlobalTransform.origin));
+        DebugDrawCS.DrawBox(GetNode<Spatial>("LagTest").GlobalTransform.origin, Vector3.One * 2.01f, null, true);
 
         if (more_test_cases)
         {
@@ -243,6 +238,7 @@ public class DebugDrawDemoSceneCS : Spatial
 
     void _more_tests()
     {
+        // Line hits render
         foreach (var _ray in GetNode("HitTest/RayEmitter").GetChildren())
         {
             if (_ray is RayCast ray)
@@ -257,12 +253,13 @@ public class DebugDrawDemoSceneCS : Spatial
 
     void _draw_array_of_boxes()
     {
+        // Lots of boxes to check performance.. I guess..
         if (time2 <= 0)
         {
             for (int x = 0; x< 50; x++)
                 for (int y = 0; y< 50; y++)
                     for (int z = 0; z< 3; z++)
-                        DebugDrawCS.DrawBox(new Transform(Basis.Identity, new Vector3(x, -4-z, y)), null, false, 1.25f);
+                        DebugDrawCS.DrawBox(new Vector3(x, -4-z, y), Vector3.One, null, false, 1.25f);
             time2 = 1.25f;
         }
         time2 -= GetProcessDeltaTime();
@@ -283,6 +280,7 @@ public class DebugDrawDemoSceneCS : Spatial
         _create_graph("fps9", true, true, DebugDrawCS.BlockPosition_LeftBottom, DebugDrawCS.GraphTextFlags_All);
         _create_graph("fps10", true, false, DebugDrawCS.BlockPosition_LeftBottom, DebugDrawCS.GraphTextFlags_All);
 
+        // If graphs exists, then more tests are done
         if (DebugDrawCS.GetGraphConfig("fps5") != null)
         {
             DebugDrawCS.GetGraphConfig("randf").TextSuffix = "utf8 ноль zéro";
@@ -302,6 +300,7 @@ public class DebugDrawDemoSceneCS : Spatial
             }
         }
 
+        // Just sending random data to the graph
         DebugDrawCS.GraphUpdateData("randf", (float)random.NextDouble());
     }
 

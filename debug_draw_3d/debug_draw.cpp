@@ -117,6 +117,7 @@ void DebugDraw3D::_register_methods() {
 	REG_METHOD(draw_cylinder);
 
 	REG_METHOD(draw_box);
+	REG_METHOD(draw_box_xf);
 	REG_METHOD(draw_aabb);
 	REG_METHOD(draw_aabb_ab);
 
@@ -572,8 +573,12 @@ void DebugDraw3D::draw_cylinder(Transform transform, Color color, real_t duratio
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugDraw3D::draw_box(Transform transform, Color color, bool is_box_centered, real_t duration) {
-	RECALL_TO_SINGLETON_CALL_DGC(draw_box, transform, color, is_box_centered, duration);
+void DebugDraw3D::draw_box(Vector3 position, Vector3 size, Color color, bool is_box_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_box, position, size, color, is_box_centered, duration);
+}
+
+void DebugDraw3D::draw_box_xf(Transform transform, Color color, bool is_box_centered, real_t duration) {
+	RECALL_TO_SINGLETON_CALL_DGC(draw_box_xf, transform, color, is_box_centered, duration);
 }
 
 void DebugDraw3D::draw_aabb(AABB aabb, Color color, real_t duration) {

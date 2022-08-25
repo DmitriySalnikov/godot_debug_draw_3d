@@ -290,12 +290,24 @@ public class DebugDrawCS : Node
 	/// <summary>
 	/// Draw box
 	/// </summary>
+	/// <param name="position">Position of the Box</param>
+	/// <param name="size">Size of the Box</param>
+	/// <param name="color">Box color</param>
+	/// <param name="is_box_centered">Use 'position' as the center of the box, not as the bottom corner</param>
+	/// <param name="duration">Duration of existence in seconds</param>
+	public static void DrawBox(Vector3 position, Vector3 size, Color? color = null, bool is_box_centered = false, float duration = 0f){
+		debug_draw_3d?.Call("draw_box", position, size, color == null? empty_color : color, is_box_centered, duration);
+	}
+
+	/// <summary>
+	/// Draw box
+	/// </summary>
 	/// <param name="transform">Transform of the Box</param>
 	/// <param name="color">Box color</param>
 	/// <param name="is_box_centered">Use 'transform' as the center of the box, not as the bottom corner</param>
 	/// <param name="duration">Duration of existence in seconds</param>
-	public static void DrawBox(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f){
-		debug_draw_3d?.Call("draw_box", transform, color == null? empty_color : color, is_box_centered, duration);
+	public static void DrawBoxXf(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f){
+		debug_draw_3d?.Call("draw_box_xf", transform, color == null? empty_color : color, is_box_centered, duration);
 	}
 
 	/// <summary>
@@ -619,7 +631,8 @@ public class DebugDrawCS : Node
 	public static void DrawSphereHd(Vector3 position, float radius = 0.5f, Color? color = null, float duration = 0f) {}
 	public static void DrawSphereHdXf(Transform transform, Color? color = null, float duration = 0f) {}
 	public static void DrawCylinder(Transform transform, Color? color = null, float duration = 0f) {}
-	public static void DrawBox(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f) {}
+	public static void DrawBox(Vector3 position, Vector3 size, Color? color = null, bool is_box_centered = false, float duration = 0f) {}
+	public static void DrawBoxXf(Transform transform, Color? color = null, bool is_box_centered = true, float duration = 0f) {}
 	public static void DrawAabb(AABB aabb, Color? color = null, float duration = 0f) {}
 	public static void DrawAabbAb(Vector3 a, Vector3 b, Color? color = null, float duration = 0f) {}
 	public static void DrawLineHit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, float hit_size = 0.25f, Color? hit_color = null, Color? after_hit_color = null, float duration = 0f) {}

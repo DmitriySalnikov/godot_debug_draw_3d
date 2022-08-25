@@ -63,7 +63,9 @@ func draw_sphere_hd_xf(transform: Transform, color: Color = empty_color, duratio
 	pass
 func draw_cylinder(transform: Transform, color: Color = empty_color, duration: float = 0) -> void:
 	pass
-func draw_box(transform: Transform, color: Color = empty_color, is_box_centered: bool = true, duration: float = 0) -> void:
+func draw_box(position: Vector3, size: Vector3, color: Color = empty_color, is_box_centered: bool = false, duration: float = 0) -> void:
+	pass
+func draw_box_xf(transform: Transform, color: Color = empty_color, is_box_centered: bool = true, duration: float = 0) -> void:
 	pass
 func draw_aabb(aabb: AABB, color: Color = empty_color, duration: float = 0) -> void:
 	pass

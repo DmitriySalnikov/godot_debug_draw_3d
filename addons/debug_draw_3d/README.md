@@ -1,29 +1,12 @@
-<img src="https://github.com/DmitriySalnikov/godot_qoi/blob/5bd25a2dc2ea907041b4c9a7f4ae12bc0ae19a94/icon.png" width=128/>
+![icon](/images/icon.png)
 
-# godot_qoi
+# Debug drawing utility for Godot
 
-This is a QOI ([Quite OK Image Format](https://github.com/phoboslab/qoi)) wrapper for Godot Engine. This addon will allow you to read, write, encode and decode images to or from the QOI format.
+This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in C++ and can be used with GDScript or C#.
 
-This is a GDNative library. Includes precompiled binaries for `Windows`, `Linux`, `macOS` and `Android`, but it must compile for each platform which Godot Engine supports.
+Based on my previous addon, which was developed only for C# https://github.com/DmitriySalnikov/godot_debug_draw_cs, and which was inspired by Zilann's GDScript addon https://github.com/Zylann/godot_debug_draw
 
-## Features
-
-* Fastest encoding
-* Fast decoding
-* Editor integration
-* Cross-platform
-* Simple API
-
-## Disadvantage
-
-* Large file size (compared to PNG or WebP. more than 2-3 times larger)
-* No VRAM compression
-
-## Approximate comparison of QOI encoding speed vs PNG
-
-https://user-images.githubusercontent.com/7782218/152955097-285f81dc-2b65-4f80-bd6a-890b7280d806.mp4
-
-## Support
+## Donations
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I53VZ2D)
 
@@ -31,250 +14,138 @@ https://user-images.githubusercontent.com/7782218/152955097-285f81dc-2b65-4f80-b
 
 [<img src="https://jobs.qiwi.com/assets/media/logo-mobile.83a2407e.svg" alt="qiwi" width=90px/>](https://qiwi.com/n/DMITRIYSALNIKOV)
 
+## Features
+
+3D Primitives:
+
+* Arrow
+* Billboard opaque square
+* Box
+* Camera Frustum
+* Cylinder
+* Gizmo
+* Grid
+* Line
+* Line Path
+* Line with Arrow
+* Position 3D (3 crossing axes)
+* Sphere
+
+Overlay:
+
+* Text (with grouping and coloring)
+* FPS Graph
+* Custom Graphs
+
 ## Download
 
-To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1226) or download the archive by clicking the button at the top of the main repository page: `Code -> Download ZIP`, then unzip it to your project folder.
+To download, use the [Godot Asset Library](https://godotengine.org/404/NO_LINK_AT_THE_MOMENT) or download the archive by clicking the button at the top of the main repository page: `Code -> Download ZIP`, then unzip it to your project folder.
 
-## Editor integration
+## Usage
 
-* After installation, do not forget to enable the plugin in the project settings.
+1. Copy `addons/debug_draw_3d` to your `addons` folder, create it if the folder doesn't exist
+1. Rebuild the project if you use C#
+1. Add `addons/debug_draw_3d/debug_draw.gd` or/and `addons/debug_draw_3d/DebugDrawCS.cs` to your project as autoload singleton
+1. (Optionally) Enable the `Debug Draw 3D for Editor` plugin to enable debug drawing support inside the editor
 
-As with regular textures, `qoi` can be used as sprites or textures of materials. QOI will be imported into the `.import` folder to write additional settings to the original `.qoi` file.
+## Examples
 
-Import parameters are also available:
+More examples can be found in the `debug_draw_examples/` folder.
 
-![godot windows opt tools 64_nPWBco0itA](https://user-images.githubusercontent.com/7782218/178936308-6dbb0d6a-c742-4635-87ea-f46c6fa44645.png)
+Simple test:
 
-And you can save any texture as a `qoi` image directly in the editor:
+```gdscript
+func _process(delta: float) -> void:
+    var _time = OS.get_ticks_msec() / 1000.0
+    var box_pos = Vector3(0, sin(_time * 4), 0)
+    var line_begin = Vector3(-1, sin(_time * 4), 0)
+    var line_end = Vector3(1, cos(_time * 4), 0)
+    
+    DebugDraw.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))
+    DebugDraw.draw_line(line_begin, line_end, Color(1, 1, 0))
+    DebugDraw.set_text("Time", _time)
+    DebugDraw.set_text("Frames drawn", Engine.get_frames_drawn())
+    DebugDraw.set_text("FPS", Engine.get_frames_per_second())
+    DebugDraw.set_text("delta", delta)
+```
 
-![godot windows opt tools 64_xrBag12kP4](https://user-images.githubusercontent.com/7782218/178931905-00a45d4e-a331-4ccd-8a45-551831786db0.png)
+```csharp
+public override void _Process(float delta)
+{
+    var _time = OS.GetTicksMsec() / 1000f;
+    var box_pos = new Vector3(0, Mathf.Sin(_time * 4), 0);
+    var line_begin = new Vector3(-1, Mathf.Sin(_time * 4), 0);
+    var line_end = new Vector3(1, Mathf.Cos(_time * 4), 0);
 
-### How to remove the editor integration?
+    DebugDrawCS.DrawBox(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0));
+    DebugDrawCS.DrawLine(line_begin, line_end, new Color(1, 1, 0));
+    DebugDrawCS.SetText("Time", _time);
+    DebugDrawCS.SetText("Frames drawn", Engine.GetFramesDrawn());
+    DebugDrawCS.SetText("FPS", Engine.GetFramesPerSecond());
+    DebugDrawCS.SetText("delta", delta);
+}
+```
 
-If you do not need integration into the editor, you can simply delete or not extract the `addons/qoi/editor/` folder. You will still be able to work with images using scripts, but the editor will not recognize qoi.
+![screenshot_1](/images/screenshot_1.png)
 
 ## API
 
-```gdscript
-# Enable or disable error printing
-# type bool, default true
-print_errors
+Information about all functions and properties is provided inside wrapper scripts `debug_draw.gd` and `DebugDrawCS.cs` in `addons/debug_draw_3d/`.
 
-# Read the QOI image from file
-# @return null or image
-Image read(path : String)
+## Exporting a project
 
-# Decode the QOI image from an encoded byte array
-# @return null or image
-Image decode(data : PoolByteArray)
+Most likely, when exporting the release version of the game, you will not want to export the debugging library with it. So you will need to make additional configuration of the project.
 
-# Write the Image as a file in QOI format
-# @return code of error
-int write(path : String, img : Image)
+### For GDScript
 
-# Encode the Image in QOI format as an array of bytes
-# @return an array of bytes. If an error occurs, it is empty.
-PoolByteArray encode(img : Image)
-```
+I made a dummy wrapper to remove unnecessary checks and calls in GDScript after exporting the release version of the game. It contains only definitions of functions and parameters, but does not execute any code.
 
-### Example
+To use it, follow these steps:
 
-```gdscript
-func example():
-	var qoi = load("res://addons/qoi/qoi.gdns").new()
-	qoi.print_errors = true
-	
-	qoi.write("user://example.qoi", load("res://icon.png").get_data())
-	var img = qoi.read("user://example.qoi")
-	var enc = qoi.encode(img)
-	var dec = qoi.decode(enc)
-	
-	var tex: = ImageTexture.new()
-	tex.create_from_image(dec)
-	$TextureRect.texture = tex
-```
+1. Open the project settings and the `Autoload` section in the `General` tab
+2. Select the `Debug Draw` script
+3. Click `Override For...` at the top right
+4. Select the necessary feature for which the dummy wrapper will be used, for example, `release`
+5. Specify the path for the overridden parameter to the dummy wrapper (`*res://addons/debug_draw_3d/debug_draw_dummy.gd`)
 
-## Benchmarks
+![override autoload](/images/override_autoload.png)
 
-To get these logs, the scene "testsuite/TestScene.tscn" was used.
+![override autoload result](/images/override_autoload_result.png)
 
-Perhaps someone will need this data...
+Now the `release` build of the project will use a dummy script instead of the usual one.
 
-```txt
---- Based on default '2D' preset. Only compression mode changed ---
+### For C\#
 
---- Avg for 5 runs, with 1920x1080 99 frames
+Just switch to the `release` build and all calls to this library will be removed.
 
--- Android, Honor 9X China, Kirin 810, Mali-G52 (MP6)
+### For Native Libraries
 
-webp lossy:	26698.691 ms
-webp:		28159.032 ms
-etc2:		2823.541 ms
-png:		29960.048 ms
-qoi:		10672.911 ms
+In order to not export native libraries in the release build, you need to specify an exclusion filter.
 
--- Windows 11, i7 3770, GTX 970
+To do this, select the profile in the `Export` menu, go to the `Resources` tab and add this line `addons/debug_draw_3d/libs/*` to the `Filters to exclude...`. If necessary, separate the previous values with a comma.
 
-webp lossy:	1665.573 ms
-webp:		2071.083 ms
-s3tc:		192.595 ms
-png:		4656.091 ms
-qoi:		1939.103 ms
-```
+![export filter](/images/export_filter.png)
 
-<details>
-<summary>Detailed logs</summary>
+### Remark
 
-```txt
---- Based on default '2D' preset. Only compression mode changed ---
+It will not be possible to completely get rid of this library in the release build in this way. Since empty functions can still be called, which can slow down code execution very slightly. To avoid this, you need to get rid of the calls of these functions in your code.
 
--- Android, Honor 9X China, Kirin 810, Mali-G52 (MP6)
+In `GDScript`, for example, you can use `if`'s before calling debugging functions so that they are not called in the release build. And in `C#`, conditional compilation (`#if DEBUG`) can be used so that calls to debugging functions occur only in the debug assembly.
 
-VRAM Compression:
+## Known issues and limitations
 
-Run: 0, Ext: png, 2931.171 ms
-Run: 1, Ext: png, 2760.742 ms
-Run: 2, Ext: png, 2815.537 ms
-Run: 3, Ext: png, 2811.050 ms
-Run: 4, Ext: png, 2799.204 ms
-Run: 0, Ext: qoi, 10739.582 ms
-Run: 1, Ext: qoi, 10636.819 ms
-Run: 2, Ext: qoi, 10613.298 ms
-Run: 3, Ext: qoi, 10688.168 ms
-Run: 4, Ext: qoi, 10738.884 ms
-Note 'importer_defaults/texture[compress/mode]' is not equal to 0. PNG was imported as VRAM compressed texture inside .import folder
-Platform: Android
-Avg for 5 runs, with 1920x1080 99 frames
-etc2:        2823.541 ms
-qoi: 10683.350 ms
+If you see `ERROR: _gl_debug_print: GL ERROR: Source: OpenGL  Type: Error ID: 1281   Severity: High   Message: GL_INVALID_VALUE error generated. Invalid offset and/or size.`, try increasing the value of `rendering/limits/buffers/immediate_buffer_size_kb`.
 
-WebP Lossy:
+Enabling occlusion culing can lower fps instead of increasing it. At the moment I do not know how to speed up the calculation of the visibility of objects.
 
-Run: 0, Ext: png, 26653.431 ms
-Run: 1, Ext: png, 26598.585 ms
-Run: 2, Ext: png, 26718.401 ms
-Run: 3, Ext: png, 26750.491 ms
-Run: 4, Ext: png, 26772.548 ms
-Run: 0, Ext: qoi, 10593.349 ms
-Run: 1, Ext: qoi, 10656.931 ms
-Run: 2, Ext: qoi, 10685.101 ms
-Run: 3, Ext: qoi, 10625.928 ms
-Run: 4, Ext: qoi, 10657.248 ms
-Note 'rendering/misc/lossless_compression/force_png' is off or 'importer_defaults/texture[compress/mode]' is lossy. PNG was imported as WebP inside .import folderPlatform: Android
-Avg for 5 runs, with 1920x1080 99 frames
-webp lossy:  26698.691 ms
-qoi: 10643.711 ms
+The text in the keys and values of a text group cannot contain multi-line strings.
 
-WebP Lossless:
+The entire text overlay can only be placed in one corner, unlike DataGraphs.
 
-Run: 0, Ext: png, 28225.728 ms
-Run: 1, Ext: png, 28185.932 ms
-Run: 2, Ext: png, 28140.142 ms
-Run: 3, Ext: png, 28097.408 ms
-Run: 4, Ext: png, 28145.951 ms
-Run: 0, Ext: qoi, 10669.436 ms
-Run: 1, Ext: qoi, 10664.980 ms
-Run: 2, Ext: qoi, 10683.432 ms
-Run: 3, Ext: qoi, 10702.113 ms
-Run: 4, Ext: qoi, 10638.751 ms
-Note 'rendering/misc/lossless_compression/force_png' is off or 'importer_defaults/texture[compress/mode]' is lossy. PNG was imported as WebP inside .import folderPlatform: Android
-Avg for 5 runs, with 1920x1080 99 frames
-webp:        28159.032 ms
-qoi: 10671.742 ms
+## More screenshots
 
-PNG:
+`DebugDrawDemoScene.tscn` in editor
+![screenshot_2](/images/screenshot_2.png)
 
-Run: 0, Ext: png, 30080.978 ms
-Run: 1, Ext: png, 29911.152 ms
-Run: 2, Ext: png, 29905.833 ms
-Run: 3, Ext: png, 29961.291 ms
-Run: 4, Ext: png, 29940.987 ms
-Run: 0, Ext: qoi, 10733.422 ms
-Run: 1, Ext: qoi, 10697.980 ms
-Run: 2, Ext: qoi, 10656.909 ms
-Run: 3, Ext: qoi, 10710.381 ms
-Run: 4, Ext: qoi, 10665.515 ms
-Platform: Android
-Avg for 5 runs, with 1920x1080 99 frames
-png: 29960.048 ms
-qoi: 10692.841 ms
-
--- Windows 11, i7 3770, GTX 970
-
-VRAM Compression:
-
-Run: 0, Ext: png, 273.765 ms
-Run: 1, Ext: png, 176.404 ms
-Run: 2, Ext: png, 170.142 ms
-Run: 3, Ext: png, 172.205 ms
-Run: 4, Ext: png, 170.459 ms
-Run: 0, Ext: qoi, 1966.354 ms
-Run: 1, Ext: qoi, 1963.467 ms
-Run: 2, Ext: qoi, 1962.730 ms
-Run: 3, Ext: qoi, 1973.714 ms
-Run: 4, Ext: qoi, 1943.954 ms
-Note 'importer_defaults/texture[compress/mode]' is not equal to 0. PNG was imported as VRAM compressed texture inside .import folder
-Platform: Windows
-Avg for 5 runs, with 1920x1080 99 frames
-s3tc:   192.595 ms
-qoi:    1962.044 ms
-
-WebP Lossy:
-
-Run: 0, Ext: png, 1702.099 ms
-Run: 1, Ext: png, 1660.662 ms
-Run: 2, Ext: png, 1653.947 ms
-Run: 3, Ext: png, 1633.476 ms
-Run: 4, Ext: png, 1677.683 ms
-Run: 0, Ext: qoi, 1891.697 ms
-Run: 1, Ext: qoi, 1910.959 ms
-Run: 2, Ext: qoi, 1891.640 ms
-Run: 3, Ext: qoi, 1889.121 ms
-Run: 4, Ext: qoi, 1934.738 ms
-Note 'rendering/misc/lossless_compression/force_png' is off or 'importer_defaults/texture[compress/mode]' is lossy. PNG was imported as WebP inside .import folder
-Platform: Windows
-Avg for 5 runs, with 1920x1080 99 frames
-webp lossy:     1665.573 ms
-qoi:    1903.631 ms
-
-WebP Lossless:
-
-Run: 0, Ext: png, 2166.656 ms
-Run: 1, Ext: png, 2164.790 ms
-Run: 2, Ext: png, 2022.571 ms
-Run: 3, Ext: png, 1983.932 ms
-Run: 4, Ext: png, 2017.466 ms
-Run: 0, Ext: qoi, 1989.682 ms
-Run: 1, Ext: qoi, 1894.387 ms
-Run: 2, Ext: qoi, 1915.186 ms
-Run: 3, Ext: qoi, 1922.443 ms
-Run: 4, Ext: qoi, 1913.443 ms
-Note 'rendering/misc/lossless_compression/force_png' is off or 'importer_defaults/texture[compress/mode]' is lossy. PNG was imported as WebP inside .import folder
-Platform: Windows
-Avg for 5 runs, with 1920x1080 99 frames
-webp:   2071.083 ms
-qoi:    1927.028 ms
-
-PNG:
-
-Run: 0, Ext: png, 4688.020 ms
-Run: 1, Ext: png, 4595.850 ms
-Run: 2, Ext: png, 4634.695 ms
-Run: 3, Ext: png, 4661.570 ms
-Run: 4, Ext: png, 4700.321 ms
-Run: 0, Ext: qoi, 1972.156 ms
-Run: 1, Ext: qoi, 1949.307 ms
-Run: 2, Ext: qoi, 1976.162 ms
-Run: 3, Ext: qoi, 1954.153 ms
-Run: 4, Ext: qoi, 1966.760 ms
-Platform: Windows
-Avg for 5 runs, with 1920x1080 99 frames
-png:    4656.091 ms
-qoi:    1963.708 ms
-```
-
-</details>
-
-## License
-
-MIT license
+`DebugDrawDemoScene.tscn` in play mode
+![screenshot_3](/images/screenshot_3.png)

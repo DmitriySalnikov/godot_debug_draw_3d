@@ -11,7 +11,6 @@ export var draw_array_of_boxes := false
 var time := 0.0
 var time2 := 0.0
 var time3 := 0.0
-var toogle_frustum_key = false
 
 func _ready() -> void:
 	yield(get_tree(), "idle_frame")
@@ -19,18 +18,16 @@ func _ready() -> void:
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
-	
-	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE, DebugDraw.empty_color, 10)
-	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 1, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 2, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 3, DebugDraw.empty_color, 1)
-	DebugDraw.draw_line(Vector3.ZERO, Vector3.ONE * 4, DebugDraw.empty_color, 1)
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed:
+			
+			# Some property toggles
 			if event.scancode == KEY_F1:
 				zylann_example = !zylann_example
+			if event.scancode == KEY_LEFT:
+				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
 
 func _process(delta: float) -> void:
 	# Zylann's example :D
@@ -41,7 +38,7 @@ func _process(delta: float) -> void:
 		var line_begin = Vector3(-1, sin(_time * 4), 0)
 		var line_end = Vector3(1, cos(_time * 4), 0)
 		
-		DebugDraw.draw_aabb_ab(box_pos, Vector3(1, 2, 1), Color(0, 1, 0), 0) # Box need to be NOT centered
+		DebugDraw.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))
 		DebugDraw.draw_line(line_begin, line_end, Color(1, 1, 0))
 		DebugDraw.set_text("Time", _time)
 		DebugDraw.set_text("Frames drawn", Engine.get_frames_drawn())
@@ -49,34 +46,34 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("delta", delta)
 		return
 	
+	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
 	
+	# More property toggles
 	DebugDraw.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
 	DebugDraw.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
 	DebugDraw.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
 	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
-	if toogle_frustum_key and !Input.is_key_pressed(KEY_LEFT):
-		DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
-	toogle_frustum_key = Input.is_key_pressed(KEY_LEFT)
 	
-	# Enable FPSGraph
+	# Enable FPSGraph if not exists
 	var g = _create_graph("FPS", true, false, DebugDraw.BlockPosition_LeftTop if Engine.editor_hint else DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current | DebugDraw.GraphTextFlags_Avarage | DebugDraw.GraphTextFlags_Max | DebugDraw.GraphTextFlags_Min, Vector2(200, 80), custom_font)
 	if g:
 		g.buffer_size = 300
 	
+	# Adding more graphs
 	if test_graphs:
 		_graph_test()
 	
-	# Zones
-	var col = Color.black
+	# Zones with black borders
 	for z in $Zones.get_children():
-		DebugDraw.draw_box(z.global_transform, col)
+		DebugDraw.draw_box_xf(z.global_transform, Color.black)
 	
 	# Spheres
 	DebugDraw.draw_sphere_xf($SphereTransform.global_transform, Color.crimson)
 	DebugDraw.draw_sphere_hd_xf($SphereHDTransform.global_transform, Color.orangered)
 	
+	# Delayed spheres
 	if time <= 0:
 		DebugDraw.draw_sphere($SpherePosition.global_transform.origin, 2, Color.blueviolet, 2)
 		DebugDraw.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2, Color.cornflower, 2)
@@ -88,20 +85,17 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_cylinder(Transform(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.red)
 	
 	# Boxes
-	DebugDraw.draw_box($Box1.global_transform, Color.purple)
-	DebugDraw.draw_box(Transform(Basis.IDENTITY, $Box2.global_transform.origin), Color.rebeccapurple)
-	DebugDraw.draw_box(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.rosybrown)
-	
-	var r = $AABB
-	DebugDraw.draw_aabb_ab(r.get_child(0).global_transform.origin, r.get_child(1).global_transform.origin, Color.deeppink)
+	DebugDraw.draw_box_xf($Box1.global_transform, Color.purple)
+	DebugDraw.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.rebeccapurple)
+	DebugDraw.draw_box_xf(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.rosybrown)
 	
 	DebugDraw.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.aqua)
+	DebugDraw.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.deeppink)
 	
 	# Lines
 	var target = $Lines/Target
 	DebugDraw.draw_billboard_square(target.global_transform.origin, 0.5, Color.red)
 	
-	# Normal
 	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.fuchsia)
 	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.crimson)
 	
@@ -110,10 +104,13 @@ func _process(delta: float) -> void:
 		time3 = 2
 	time3 -= delta
 	
-	# Arrow
+	# Lines with Arrow
 	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.blue, 0.5, true)
 	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.lavender, 0.5, true)
+	
 	# Path
+	
+	## preparing data
 	var points: PoolVector3Array = []
 	var points_below: PoolVector3Array = []
 	var lines_above: PoolVector3Array = []
@@ -124,6 +121,7 @@ func _process(delta: float) -> void:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
 	
+	## drawing lines
 	DebugDraw.draw_lines(lines_above)
 	DebugDraw.draw_line_path(points, Color.beige)
 	DebugDraw.draw_arrow_path(points_below, Color.gold, 0.5)
@@ -184,7 +182,7 @@ func _process(delta: float) -> void:
 	
 	# Lag Test
 	$LagTest.translation = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0).origin + Vector3(sin(OS.get_ticks_msec() / 100.0) * 2.5, 0, 0)
-	DebugDraw.draw_box(Transform(Basis.IDENTITY.scaled(Vector3.ONE * 2.01), $LagTest.global_transform.origin))
+	DebugDraw.draw_box($LagTest.global_transform.origin, Vector3.ONE * 2.01, DebugDraw.empty_color, true)
 	
 	if more_test_cases:
 		for ray in $HitTest/RayEmitter.get_children():
@@ -199,6 +197,7 @@ func _process(delta: float) -> void:
 		_draw_array_of_boxes()
 
 func _more_tests():
+	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast:
 			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.cast_to).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
@@ -207,11 +206,12 @@ func _more_tests():
 	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(OS.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
 
 func _draw_array_of_boxes():
+	# Lots of boxes to check performance.. I guess..
 	if time2 <= 0:
 		for x in 50:
 			for y in 50:
 				for z in 3:
-					DebugDraw.draw_box(Transform(Basis.IDENTITY, Vector3(x, -4-z, y)), DebugDraw.empty_color, false, 1.25)
+					DebugDraw.draw_box(Vector3(x, -4-z, y), Vector3.ONE, DebugDraw.empty_color, false, 1.25)
 		time2 = 1.25
 	time2 -= get_process_delta_time()
 
@@ -239,6 +239,7 @@ func _graph_test():
 # warning-ignore:return_value_discarded
 	_create_graph("fps10", true, false, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
 	
+	# If graphs exists, then more tests are done
 	if DebugDraw.get_graph_config("randf"):
 		DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
 		DebugDraw.get_graph_config("fps9").centered_graph_line = false
@@ -252,6 +253,7 @@ func _graph_test():
 			DebugDraw.get_graph_config("fps8").offset = Vector2(280, 0)
 			DebugDraw.get_graph_config("fps9").offset = Vector2(0, -75)
 	
+	# Just sending random data to the graph
 	DebugDraw.graph_update_data("randf", randf())
 
 func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> DebugDraw.GraphParameters:

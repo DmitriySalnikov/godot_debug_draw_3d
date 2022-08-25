@@ -64,7 +64,8 @@ public:
 #pragma endregion // Cylinders
 
 #pragma region Boxes
-	void draw_box(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
+	void draw_box(Vector3 position, Vector3 size, Color color = Colors::empty_color, bool is_box_centered = false, real_t duration = 0);
+	void draw_box_xf(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
 	void draw_aabb(AABB aabb, Color color = Colors::empty_color, real_t duration = 0);
 	void draw_aabb_ab(Vector3 a, Vector3 b, Color color = Colors::empty_color, real_t duration = 0);
 #pragma endregion // Boxes

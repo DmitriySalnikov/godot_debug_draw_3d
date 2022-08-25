@@ -173,12 +173,21 @@ func draw_cylinder(transform: Transform, color: Color = empty_color, duration: f
 	if _debug_draw_3d: _debug_draw_3d.draw_cylinder(transform, color, duration)
 
 ## Draw box
+## position: Position of the Box
+## size: Size of the Box
+## color: Box color
+## is_box_centered: Use 'position' as the center of the box, not as the bottom corner
+## duration: Duration of existence in seconds
+func draw_box(position: Vector3, size: Vector3, color: Color = empty_color, is_box_centered: bool = false, duration: float = 0) -> void:
+	if _debug_draw_3d: _debug_draw_3d.draw_box(position, size, color, is_box_centered, duration)
+
+## Draw box
 ## transform: Transform of the Box
 ## color: Box color
 ## is_box_centered: Use 'transform' as the center of the box, not as the bottom corner
 ## duration: Duration of existence in seconds
-func draw_box(transform: Transform, color: Color = empty_color, is_box_centered: bool = true, duration: float = 0) -> void:
-	if _debug_draw_3d: _debug_draw_3d.draw_box(transform, color, is_box_centered, duration)
+func draw_box_xf(transform: Transform, color: Color = empty_color, is_box_centered: bool = true, duration: float = 0) -> void:
+	if _debug_draw_3d: _debug_draw_3d.draw_box_xf(transform, color, is_box_centered, duration)
 
 ## Draw AABB
 ## aabb: AABB
