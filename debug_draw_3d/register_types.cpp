@@ -39,59 +39,50 @@ using namespace godot;
 extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *o) {
 	Godot::gdnative_init(o);
 
+	// Base class for others
+	godot::_TagDB::register_global_type("Object", typeid(Object).hash_code(), 0);
+	Object::___init_method_bindings();
+
 	// Custom register and init for only needed classes
 	// Works only with my patches
 
-	godot::_TagDB::register_global_type("ArrayMesh", typeid(ArrayMesh).hash_code(), typeid(Mesh).hash_code());
-	godot::_TagDB::register_global_type("Camera", typeid(Camera).hash_code(), typeid(Spatial).hash_code());
-	godot::_TagDB::register_global_type("CanvasItem", typeid(CanvasItem).hash_code(), typeid(Node).hash_code());
-	godot::_TagDB::register_global_type("CanvasLayer", typeid(CanvasLayer).hash_code(), typeid(Node).hash_code());
-	godot::_TagDB::register_global_type("Control", typeid(Control).hash_code(), typeid(CanvasItem).hash_code());
-	godot::_TagDB::register_global_type("EditorPlugin", typeid(EditorPlugin).hash_code(), typeid(Node).hash_code());
-	godot::_TagDB::register_global_type("Engine", typeid(Engine).hash_code(), typeid(Object).hash_code());
-	godot::_TagDB::register_global_type("Font", typeid(Font).hash_code(), typeid(Object).hash_code());
-	godot::_TagDB::register_global_type("GeometryInstance", typeid(GeometryInstance).hash_code(), typeid(VisualInstance).hash_code());
-	godot::_TagDB::register_global_type("ImmediateGeometry", typeid(ImmediateGeometry).hash_code(), typeid(GeometryInstance).hash_code());
-	godot::_TagDB::register_global_type("MainLoop", typeid(MainLoop).hash_code(), typeid(Object).hash_code());
-	godot::_TagDB::register_global_type("Material", typeid(Material).hash_code(), typeid(Resource).hash_code());
-	godot::_TagDB::register_global_type("Mesh", typeid(Mesh).hash_code(), typeid(Resource).hash_code());
-	godot::_TagDB::register_global_type("MultiMesh", typeid(MultiMesh).hash_code(), typeid(Resource).hash_code());
-	godot::_TagDB::register_global_type("MultiMeshInstance", typeid(MultiMeshInstance).hash_code(), typeid(GeometryInstance).hash_code());
-	godot::_TagDB::register_global_type("Node", typeid(Node).hash_code(), typeid(Object).hash_code());
-	godot::_TagDB::register_global_type("Node2D", typeid(Node2D).hash_code(), typeid(CanvasItem).hash_code());
-	godot::_TagDB::register_global_type("Object", typeid(Object).hash_code(), 0);
-	godot::_TagDB::register_global_type("Reference", typeid(Reference).hash_code(), typeid(Object).hash_code());
-	godot::_TagDB::register_global_type("Resource", typeid(Resource).hash_code(), typeid(Reference).hash_code());
-	godot::_TagDB::register_global_type("SceneTree", typeid(SceneTree).hash_code(), typeid(MainLoop).hash_code());
-	godot::_TagDB::register_global_type("SpatialMaterial", typeid(SpatialMaterial).hash_code(), typeid(Material).hash_code());
-	godot::_TagDB::register_global_type("Texture", typeid(Texture).hash_code(), typeid(Resource).hash_code());
-	godot::_TagDB::register_global_type("Viewport", typeid(Viewport).hash_code(), typeid(Node).hash_code());
-	godot::_TagDB::register_global_type("VisualInstance", typeid(VisualInstance).hash_code(), typeid(CullInstance).hash_code());
+#define CUSTOM_CLASS(_class, _base, _name)                                                             \
+	godot::_TagDB::register_global_type(_name, typeid(_class).hash_code(), typeid(_base).hash_code()); \
+	_class::___init_method_bindings();
 
-	ArrayMesh::___init_method_bindings();
-	Camera::___init_method_bindings();
-	CanvasItem::___init_method_bindings();
-	CanvasLayer::___init_method_bindings();
-	Control::___init_method_bindings();
-	EditorPlugin::___init_method_bindings();
-	Engine::___init_method_bindings();
-	Font::___init_method_bindings();
-	GeometryInstance::___init_method_bindings();
-	ImmediateGeometry::___init_method_bindings();
-	MainLoop::___init_method_bindings();
-	Material::___init_method_bindings();
-	Mesh::___init_method_bindings();
-	MultiMesh::___init_method_bindings();
-	MultiMeshInstance::___init_method_bindings();
-	Node::___init_method_bindings();
-	Object::___init_method_bindings();
-	Reference::___init_method_bindings();
-	Resource::___init_method_bindings();
-	SceneTree::___init_method_bindings();
-	SpatialMaterial::___init_method_bindings();
-	Texture::___init_method_bindings();
-	Viewport::___init_method_bindings();
-	VisualInstance::___init_method_bindings();
+#define TEXT(t) #t
+#define REGULAR_CLASS(_class, _base) CUSTOM_CLASS(_class, _base, #_class)
+#define REGULAR_CLASS_DASH(_class, _base) CUSTOM_CLASS(_class, _base, TEXT(_##_class))
+
+	REGULAR_CLASS(ArrayMesh, Mesh);
+	REGULAR_CLASS(Camera, Spatial);
+	REGULAR_CLASS(CanvasItem, Node);
+	REGULAR_CLASS(CanvasLayer, Node);
+	REGULAR_CLASS(Control, CanvasItem);
+	REGULAR_CLASS(EditorPlugin, Node);
+	REGULAR_CLASS(Engine, Object);
+	REGULAR_CLASS(Font, Object);
+	REGULAR_CLASS(GeometryInstance, VisualInstance);
+	REGULAR_CLASS(ImmediateGeometry, GeometryInstance);
+	REGULAR_CLASS(MainLoop, Object);
+	REGULAR_CLASS(Material, Resource);
+	REGULAR_CLASS(Mesh, Resource);
+	REGULAR_CLASS(MultiMesh, Resource);
+	REGULAR_CLASS(MultiMeshInstance, GeometryInstance);
+	REGULAR_CLASS(Node, Object);
+	REGULAR_CLASS(Node2D, CanvasItem);
+	REGULAR_CLASS(Reference, Object);
+	REGULAR_CLASS(Resource, Reference);
+	REGULAR_CLASS(SceneTree, MainLoop);
+	REGULAR_CLASS(SpatialMaterial, Material);
+	REGULAR_CLASS(Texture, Resource);
+	REGULAR_CLASS(Viewport, Node);
+	REGULAR_CLASS(VisualInstance, CullInstance);
+
+#undef CUSTOM_CLASS
+#undef TEXT
+#undef REGULAR_CLASS
+#undef REGULAR_CLASS_DASH
 }
 
 /** GDNative Terminate **/
