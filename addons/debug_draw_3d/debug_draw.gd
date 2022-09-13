@@ -23,7 +23,7 @@ var GraphTextFlags_All = 0
 
 func _init() -> void:
 	var f = File.new()
-	if f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
+	if not is_in_release() and f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
 		_debug_draw_3d = load("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns").new()
 		
 		BlockPosition_LeftTop = _debug_draw_3d.BlockPosition_LeftTop
@@ -51,6 +51,11 @@ func get_singleton() -> Node:
 		return _debug_draw_3d.get_singleton()
 	else:
 		return null
+		
+func is_in_release():
+	# Detect if the game is running in a release build
+	# (ergo not debug and not from the editor)
+	return OS.has_feature("release")
 
 
 ### Parameters
