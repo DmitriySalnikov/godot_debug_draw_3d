@@ -1,6 +1,16 @@
 tool
 extends Node
 
+# Indicates the need for library initialization.
+# Can be overridden in the project settings.
+var is_need_to_initialize_lib_setting : String = "debug/settings/debug_draw_3d/is_need_to_initialize_lib" 
+
+####################################################
+### THIS FILE HAS BEEN GENERATED.
+### CHANGES IN THIS FILE WILL BE OVERWRITTEN AFTER THE UPDATE!
+### SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+####################################################
+
 const empty_color = Color(0,0,0,0)
 var _debug_draw_3d: Node = null
 
@@ -22,8 +32,13 @@ var GraphTextFlags_All = 0
 ### Init
 
 func _init() -> void:
+	_register_setting(is_need_to_initialize_lib_setting, false)
+	_register_setting(is_need_to_initialize_lib_setting + ".debug", true)
+	
 	var f = File.new()
-	if f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
+	if (Engine.editor_hint\
+			or bool(ProjectSettings.get_setting(is_need_to_initialize_lib_setting)))\
+			and f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
 		_debug_draw_3d = load("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns").new()
 		
 		BlockPosition_LeftTop = _debug_draw_3d.BlockPosition_LeftTop
@@ -36,6 +51,13 @@ func _init() -> void:
 		GraphTextFlags_Max = _debug_draw_3d.GraphTextFlags_Max
 		GraphTextFlags_Min = _debug_draw_3d.GraphTextFlags_Min
 		GraphTextFlags_All = _debug_draw_3d.GraphTextFlags_All
+
+func _register_setting(name, default_value):
+	if !ProjectSettings.has_setting(name):
+		ProjectSettings.set_setting(name, default_value)
+	
+	ProjectSettings.set_initial_value(name, default_value)
+	ProjectSettings.add_property_info({"name": name, "type": TYPE_BOOL})
 
 func _enter_tree() -> void:
 	if !Engine.editor_hint and _debug_draw_3d:

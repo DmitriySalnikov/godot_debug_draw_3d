@@ -7,6 +7,8 @@ const out_gdscript = "res://addons/debug_draw_3d/debug_draw.gd"
 const out_csharp = "res://addons/debug_draw_3d/DebugDrawCS.cs"
 const out_gdscript_dummy = "res://addons/debug_draw_3d/debug_draw_dummy.gd"
 
+const is_need_to_initialize_lib_setting = "debug/settings/debug_draw_3d/is_need_to_initialize_lib"
+
 class DebugDrawHeader:
 	var int_constants: PoolStringArray
 	var params: Array # Parameters
@@ -254,15 +256,35 @@ func __gdscript_get_default_return_val(type: String) -> String:
 
 func _generate_gdscript(data: DebugDrawHeader, data_graphs_data: DebugDrawHeader, is_dummy_imp = false) -> PoolStringArray:
 	var res: PoolStringArray
-	res.append(
-"""tool
-extends Node
-
-const empty_color = Color(0,0,0,0)""")
+	res.append("""tool
+extends Node""")
+	
+	if !is_dummy_imp:
+		res.append("""
+# Indicates the need for library initialization.
+# Can be overridden in the project settings.
+var is_need_to_initialize_lib_setting : String = "%s" """ % is_need_to_initialize_lib_setting)
+		
+		res.append("""
+####################################################
+### THIS FILE HAS BEEN GENERATED.
+### CHANGES IN THIS FILE WILL BE OVERWRITTEN AFTER THE UPDATE!
+### SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+####################################################
+""")
+	else:
+		res.append("""
+####################################################
+### THIS FILE IS GENERATED DO NOT EDIT
+### This file can be used in the release build
+### SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+####################################################
+""")
+	
+	res.append("const empty_color = Color(0,0,0,0)")
 	
 	if !is_dummy_imp:
 		res.append("var _debug_draw_3d: Node = null")
-	
 	
 	res.append("\n\n### Constants\n")
 	
@@ -277,8 +299,13 @@ const empty_color = Color(0,0,0,0)""")
 ### Init
 
 func _init() -> void:
+	_register_setting(is_need_to_initialize_lib_setting, false)
+	_register_setting(is_need_to_initialize_lib_setting + ".debug", true)
+	
 	var f = File.new()
-	if f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
+	if (Engine.editor_hint\\
+			or bool(ProjectSettings.get_setting(is_need_to_initialize_lib_setting)))\\
+			and f.file_exists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns"):
 		_debug_draw_3d = load("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns").new()
 		""")
 		
@@ -287,6 +314,13 @@ func _init() -> void:
 		
 		
 		res.append("""
+func _register_setting(name, default_value):
+	if !ProjectSettings.has_setting(name):
+		ProjectSettings.set_setting(name, default_value)
+	
+	ProjectSettings.set_initial_value(name, default_value)
+	ProjectSettings.add_property_info({"name": name, "type": TYPE_BOOL})
+
 func _enter_tree() -> void:
 	if !Engine.editor_hint and _debug_draw_3d:
 		if !_debug_draw_3d.get_singleton():
@@ -480,6 +514,24 @@ func _csharp_remap_def(type : String) -> String:
 
 func _generate_csharp(data: DebugDrawHeader, data_graphs_data: DebugDrawHeader) -> PoolStringArray:
 	var res: PoolStringArray
+	var csharp_debug_condition = "DEBUG_DRAW_3D_IMPLEMENTATION"
+	
+	res.append("""
+// This condition will indicate when the API implementation needs to be compiled.
+// While it is not recommended to change the conditions here, you can add
+// DEBUG_DRAW_3D_IMPLEMENTATION to the "Conditional compilation symbols" in your project properties.
+#if DEBUG // examples: DEBUG || WITH_3D_DEBUG, (GODOT_WINDOWS || GODOT_LINUX) && !TOOLS, true
+#define DEBUG_DRAW_3D_IMPLEMENTATION
+#endif""")
+	
+	res.append("""
+/// ////////////////////////////////////////////////
+/// THIS FILE HAS BEEN GENERATED.
+/// CHANGES IN THIS FILE WILL BE OVERWRITTEN AFTER THE UPDATE!
+/// SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+/// ////////////////////////////////////////////////
+""")
+	
 	res.append(
 """using Godot;
 using Godot.Collections;
@@ -487,16 +539,20 @@ using Godot.Collections;
 [Tool]
 public class DebugDrawCS : Node
 {
-#if DEBUG
+#if %s
+	/// Indicates the need for library initialization.
+	/// Can be overridden in the project settings.
+	static string is_need_to_initialize_lib_setting = "%s";
+	
 	static Color empty_color = new Color(0,0,0,0);
 	static Node debug_draw_3d = null;
 #endif
-""")
+""" % [csharp_debug_condition, is_need_to_initialize_lib_setting])
 	
 	
 	res.append("#region Constants")
 	
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	for c in data.int_constants:
 		res.append("	public static int %s { get; private set; } = 0;" % [c])
 	res.append("#else")
@@ -509,7 +565,7 @@ public class DebugDrawCS : Node
 	
 	res.append("#region Parameters")
 	
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	
 	for p in data.params:
 		res.append("	/// <summary>")
@@ -541,10 +597,14 @@ public class DebugDrawCS : Node
 	
 	res.append("#region Init")
 	
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	res.append("""	public DebugDrawCS(){
+		_register_setting(is_need_to_initialize_lib_setting, false);
+		_register_setting(is_need_to_initialize_lib_setting + ".debug", true);
+		
 		var f = new File();
-		if (f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
+		if ((Engine.EditorHint || (bool)ProjectSettings.GetSetting(is_need_to_initialize_lib_setting))
+			&& f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
 			debug_draw_3d = ResourceLoader.Load<NativeScript>(\"res://addons/debug_draw_3d/libs/debug_draw_3d.gdns\").New() as Node;
 """)
 	
@@ -563,6 +623,14 @@ public class DebugDrawCS : Node
 	
 	
 	res.append("""
+	protected void _register_setting(string name, object default_value){
+		if (!ProjectSettings.HasSetting(name))
+			ProjectSettings.SetSetting(name, default_value);
+
+		ProjectSettings.SetInitialValue(name, default_value);
+		ProjectSettings.AddPropertyInfo(new Dictionary {{"name", name}, {"type", Variant.Type.Bool}});
+	}
+
 	protected override void Dispose(bool disposing){
 		debug_draw_3d?.QueueFree();
 		debug_draw_3d = null;
@@ -659,7 +727,7 @@ public class DebugDrawCS : Node
 			( "=> %s;" % _csharp_remap_def(f.ret_type) if f.ret_type != "void" else "{}"),
 		])
 	
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	res.append_array(real_impl)
 	res.append("#else")
 	res.append("#pragma warning disable IDE0060 // Remove unused parameter")
@@ -674,7 +742,7 @@ public class DebugDrawCS : Node
 	
 	res.append("	public class GraphParameters\n\t{")
 	
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	res.append(
 """		readonly Reference orig_ref;
 		public GraphParameters(Reference reference) { orig_ref = reference; }
@@ -689,7 +757,7 @@ public class DebugDrawCS : Node
 	
 	
 	res.append("#region Parameters")
-	res.append("#if DEBUG")
+	res.append("#if %s" % csharp_debug_condition)
 	
 	for p in data_graphs_data.params:
 		res.append("		/// <summary>")

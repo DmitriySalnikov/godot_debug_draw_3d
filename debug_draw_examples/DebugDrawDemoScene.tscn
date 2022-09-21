@@ -205,18 +205,24 @@ func _ready() -> void:
 
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
-	DebugDraw.get_graph_config(\"FPS\").enabled = button_pressed
+	var cfg = DebugDraw.get_graph_config(\"FPS\")
+	if cfg:
+		cfg.enabled = button_pressed
 
 func _on_FPSMS_toggled(button_pressed: bool) -> void:
-	DebugDraw.get_graph_config(\"FPS\").frame_time_mode = button_pressed
+	var cfg = DebugDraw.get_graph_config(\"FPS\")
+	if cfg:
+		cfg.frame_time_mode = button_pressed
 
 func _on_HSlider_value_changed(value: float) -> void:
-	var c = DebugDraw.get_graph_config(\"FPS\")
-	c.size = Vector2(value, c.size.y)
+	var cfg = DebugDraw.get_graph_config(\"FPS\")
+	if cfg:
+		cfg.size = Vector2(value, cfg.size.y)
 
 func _on_HSlider2_value_changed(value: float) -> void:
-	var c = DebugDraw.get_graph_config(\"FPS\")
-	c.buffer_size = value
+	var cfg = DebugDraw.get_graph_config(\"FPS\")
+	if cfg:
+		cfg.buffer_size = value
 
 
 func _on_Button_pressed() -> void:

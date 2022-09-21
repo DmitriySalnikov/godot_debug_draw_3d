@@ -1,16 +1,34 @@
+
+// This condition will indicate when the API implementation needs to be compiled.
+// While it is not recommended to change the conditions here, you can add
+// DEBUG_DRAW_3D_IMPLEMENTATION to the "Conditional compilation symbols" in your project properties.
+#if DEBUG // examples: DEBUG || WITH_3D_DEBUG, (GODOT_WINDOWS || GODOT_LINUX) && !TOOLS, true
+#define DEBUG_DRAW_3D_IMPLEMENTATION
+#endif
+
+/// ////////////////////////////////////////////////
+/// THIS FILE HAS BEEN GENERATED.
+/// CHANGES IN THIS FILE WILL BE OVERWRITTEN AFTER THE UPDATE!
+/// SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+/// ////////////////////////////////////////////////
+
 using Godot;
 using Godot.Collections;
 
 [Tool]
 public class DebugDrawCS : Node
 {
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
+	/// Indicates the need for library initialization.
+	/// Can be overridden in the project settings.
+	static string is_need_to_initialize_lib_setting = "debug/settings/debug_draw_3d/is_need_to_initialize_lib";
+	
 	static Color empty_color = new Color(0,0,0,0);
 	static Node debug_draw_3d = null;
 #endif
 
 #region Constants
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 	public static int BlockPosition_LeftTop { get; private set; } = 0;
 	public static int BlockPosition_RightTop { get; private set; } = 0;
 	public static int BlockPosition_LeftBottom { get; private set; } = 0;
@@ -37,7 +55,7 @@ public class DebugDrawCS : Node
 
 
 #region Parameters
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 	/// <summary>
 	/// Recall all calls from DebugDraw3D instance to its singleton if needed
 	/// </summary>
@@ -161,10 +179,14 @@ public class DebugDrawCS : Node
 
 
 #region Init
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 	public DebugDrawCS(){
+		_register_setting(is_need_to_initialize_lib_setting, false);
+		_register_setting(is_need_to_initialize_lib_setting + ".debug", true);
+		
 		var f = new File();
-		if (f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
+		if ((Engine.EditorHint || (bool)ProjectSettings.GetSetting(is_need_to_initialize_lib_setting))
+			&& f.FileExists("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns")){
 			debug_draw_3d = ResourceLoader.Load<NativeScript>("res://addons/debug_draw_3d/libs/debug_draw_3d.gdns").New() as Node;
 
 			BlockPosition_LeftTop = (int)debug_draw_3d.Get("BlockPosition_LeftTop");
@@ -187,6 +209,14 @@ public class DebugDrawCS : Node
 		}
 	}
 
+	protected void _register_setting(string name, object default_value){
+		if (!ProjectSettings.HasSetting(name))
+			ProjectSettings.SetSetting(name, default_value);
+
+		ProjectSettings.SetInitialValue(name, default_value);
+		ProjectSettings.AddPropertyInfo(new Dictionary {{"name", name}, {"type", Variant.Type.Bool}});
+	}
+
 	protected override void Dispose(bool disposing){
 		debug_draw_3d?.QueueFree();
 		debug_draw_3d = null;
@@ -205,7 +235,7 @@ public class DebugDrawCS : Node
 
 
 #region Draw Functions
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 	/// <summary>
 	/// Returns a dictionary with rendering statistics.
 	/// Some data can be delayed by 1 frame.
@@ -725,7 +755,7 @@ public class DebugDrawCS : Node
 
 	public class GraphParameters
 	{
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 		readonly Reference orig_ref;
 		public GraphParameters(Reference reference) { orig_ref = reference; }
 		public static explicit operator GraphParameters(Reference reference) => reference != null ? new GraphParameters(reference) : null;
@@ -738,7 +768,7 @@ public class DebugDrawCS : Node
 
 
 #region Parameters
-#if DEBUG
+#if DEBUG_DRAW_3D_IMPLEMENTATION
 		/// <summary>
 		/// Is Graph enabled
 		/// </summary>

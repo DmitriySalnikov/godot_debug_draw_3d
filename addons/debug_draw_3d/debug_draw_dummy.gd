@@ -1,6 +1,12 @@
 tool
 extends Node
 
+####################################################
+### THIS FILE IS GENERATED DO NOT EDIT
+### This file can be used in the release build
+### SEE debug_draw_3d/generate_debug_draw_3d_api.gd
+####################################################
+
 const empty_color = Color(0,0,0,0)
 
 

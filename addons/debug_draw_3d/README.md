@@ -108,19 +108,9 @@ Most likely, when exporting the release version of the game, you will not want t
 
 I made a dummy wrapper to remove unnecessary checks and calls in GDScript after exporting the release version of the game. It contains only definitions of functions and parameters, but does not execute any code.
 
-To use it, follow these steps:
+To use it, you need to replace the original autoload with the dummy version (`res://addons/debug_draw_3d/debug_draw_dummy.gd`) before exporting.
 
-1. Open the project settings and the `Autoload` section in the `General` tab
-2. Select the `Debug Draw` script
-3. Click `Override For...` at the top right
-4. Select the necessary feature for which the dummy wrapper will be used, for example, `release`
-5. Specify the path for the overridden parameter to the dummy wrapper (`*res://addons/debug_draw_3d/debug_draw_dummy.gd`)
-
-![override autoload](/images/override_autoload.png)
-
-![override autoload result](/images/override_autoload_result.png)
-
-Now the `release` build of the project will use a dummy script instead of the usual one.
+*note:* I previously suggested overriding autoloads via project settings, but this approach did not work correctly and was removed in godot 3.5.
 
 ### For C\#
 
@@ -133,6 +123,10 @@ In order to not export native libraries in the release build, you need to specif
 To do this, select the profile in the `Export` menu, go to the `Resources` tab and add this line `addons/debug_draw_3d/libs/*` to the `Filters to exclude...`. If necessary, separate the previous values with a comma.
 
 ![export filter](/images/export_filter.png)
+
+There are also additional parameters in the project settings to disable debug rendering in certain conditions.
+
+![proj settings](/images/additional_proj_settings.png)
 
 ### Remark
 
