@@ -1,30 +1,34 @@
 #include "editor_plugin.h"
 
 #include "debug_draw.h"
-
 #include "utils.h"
-#include <ConfigFile.hpp>
-#include <Control.hpp>
-#include <Directory.hpp>
-#include <Engine.hpp>
-#include <File.hpp>
-#include <GlobalConstants.hpp>
-#include <ProjectSettings.hpp>
-#include <SceneTree.hpp>
+
 #include <functional>
 
-void DebugDraw3DEditorPlugin::_register_methods() {
-	register_method("on_scene_changed", &DebugDraw3DEditorPlugin::on_scene_changed);
+#include <godot_cpp/classes/config_file.hpp>
+#include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
-	register_method("disable_plugin", &DebugDraw3DEditorPlugin::disable_plugin);
-	register_method("_enter_tree", &DebugDraw3DEditorPlugin::_enter_tree);
-	register_method("_exit_tree", &DebugDraw3DEditorPlugin::_exit_tree);
+using namespace godot;
+
+void DebugDraw3DEditorPlugin::_bind_methods() {
+	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw3DEditorPlugin::_on_scene_changed);
+
+	ClassDB::bind_method(D_METHOD(TEXT(disable_plugin)), &DebugDraw3DEditorPlugin::disable_plugin);
+	ClassDB::bind_method(D_METHOD(TEXT(_enter_tree)), &DebugDraw3DEditorPlugin::_enter_tree);
+	ClassDB::bind_method(D_METHOD(TEXT(_exit_tree)), &DebugDraw3DEditorPlugin::_exit_tree);
 }
 
-void DebugDraw3DEditorPlugin::_init() {
+DebugDraw3DEditorPlugin::DebugDraw3DEditorPlugin() {
 }
 
-void DebugDraw3DEditorPlugin::on_scene_changed(Node *node) {
+void DebugDraw3DEditorPlugin::_on_scene_changed(Node *node) {
 	if (!node) return;
 
 	create_new_node(node);
@@ -33,7 +37,7 @@ void DebugDraw3DEditorPlugin::on_scene_changed(Node *node) {
 void DebugDraw3DEditorPlugin::remove_prev_node() {
 	DebugDraw3D *dbg3d = DebugDraw3D::get_singleton();
 	if (dbg3d && !dbg3d->is_queued_for_deletion()) {
-		dbg3d->free();
+		memfree(dbg3d);
 	}
 }
 
@@ -42,7 +46,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 	if (!DebugDraw3D::get_singleton()) {
 		find_viewport_control();
 
-		DebugDraw3D *d = DebugDraw3D::_new();
+		DebugDraw3D *d = memnew(DebugDraw3D);
 		parent->add_child(d);
 
 		if (spatial_viewport_container) {
@@ -53,7 +57,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 
 			if (canvas) {
 				canvas->set_meta("UseParentSize", true);
-				canvas->update();
+				canvas->queue_redraw();
 			}
 		}
 	}
@@ -61,7 +65,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 
 void DebugDraw3DEditorPlugin::create_auto_find() {
 	remove_prev_node();
-	Node *node = cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())->get_edited_scene_root();
+	Node *node = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())->get_edited_scene_root();
 	if (node) {
 		create_new_node(node);
 	}
@@ -70,7 +74,7 @@ void DebugDraw3DEditorPlugin::create_auto_find() {
 // HACK For finding canvas and drawing on it
 void DebugDraw3DEditorPlugin::find_viewport_control() {
 	// Create temp control to get spatial viewport
-	Control *ctrl = Control::_new();
+	Control *ctrl = memnew(Control);
 	ctrl->set_name("MY_BEST_CONTROL_NODE!");
 
 	add_control_to_container(CustomControlContainer::CONTAINER_SPATIAL_EDITOR_MENU, ctrl);
@@ -81,15 +85,15 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 
 	if (hex_version >= 0x030400) {
 		// For Godot 3.4.x
-		spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent()->get_parent()->get_parent());
+		spatial_editor = Object::cast_to<Control>(ctrl->get_parent()->get_parent()->get_parent()->get_parent());
 	} else {
 		// For Godot 3.3.x and lower
-		spatial_editor = cast_to<Control>(ctrl->get_parent()->get_parent());
+		spatial_editor = Object::cast_to<Control>(ctrl->get_parent()->get_parent());
 	}
 
 	// Remove and destroy temp control
 	remove_control_from_container(CustomControlContainer::CONTAINER_SPATIAL_EDITOR_MENU, ctrl);
-	ctrl->free();
+	memfree(ctrl);
 
 	spatial_viewport_container = nullptr;
 	if (spatial_editor->get_class() == "SpatialEditor") {
@@ -104,7 +108,7 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 			if (level < 5) {
 				Array ch = control->get_children();
 				for (int i = 0; i < ch.size(); i++) {
-					Control *obj = cast_to<Control>(ch[i]);
+					Control *obj = Object::cast_to<Control>(ch[i]);
 					if (obj) {
 						Control *res = get(obj, level + 1);
 						if (res)
@@ -120,7 +124,7 @@ void DebugDraw3DEditorPlugin::find_viewport_control() {
 		if (node) {
 			// SpatialEditorViewportContainer	<-SpatialEditorViewport
 			// spatial_viewport_container		<-node
-			spatial_viewport_container = cast_to<Control>(node->get_parent());
+			spatial_viewport_container = Object::cast_to<Control>(node->get_parent());
 		}
 	}
 }
@@ -131,7 +135,7 @@ std::vector<Viewport *> DebugDraw3DEditorPlugin::get_custom_viewports() {
 	for (int i = 0; i < children.size(); i++) {
 		// SpatialEditorViewportContainer	->SpatialEditorViewport	->ViewportContainer	->Viewport
 		// spatial_viewport_container		->one_of_children		->child(0)			->child(0)
-		viewports[i] = cast_to<Viewport>(cast_to<Control>(((Object *)children[i]))->get_child(0)->get_child(0));
+		viewports[i] = Object::cast_to<Viewport>(Object::cast_to<Control>(((Object *)children[i]))->get_child(0)->get_child(0));
 	}
 
 	return viewports;
@@ -140,15 +144,15 @@ std::vector<Viewport *> DebugDraw3DEditorPlugin::get_custom_viewports() {
 CanvasItem *DebugDraw3DEditorPlugin::get_custom_canvas() {
 	// SpatialEditorViewportContainer	->SpatialEditorViewport	->ViewportContainer
 	// spatial_viewport_container		->one_of_children		->child(0)
-	return cast_to<CanvasItem>(spatial_viewport_container->get_child(0)->get_child(0));
+	return Object::cast_to<CanvasItem>(spatial_viewport_container->get_child(0)->get_child(0));
 }
 
 void DebugDraw3DEditorPlugin::_enter_tree() {
-	connect("scene_changed", this, TEXT(on_scene_changed));
+	connect("scene_changed", Callable(this, TEXT(_on_scene_changed)));
 }
 
 void DebugDraw3DEditorPlugin::_exit_tree() {
-	disconnect("scene_changed", this, TEXT(on_scene_changed));
+	disconnect("scene_changed", Callable(this, TEXT(_on_scene_changed)));
 
 	remove_prev_node();
 }

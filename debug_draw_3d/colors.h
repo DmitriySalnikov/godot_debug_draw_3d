@@ -1,6 +1,7 @@
-#pragma once
+#ifndef DD_COLORS_H
+#define DD_COLORS_H
 
-#include <Godot.hpp>
+#include <godot_cpp/variant/color.hpp>
 
 class Colors {
 public:
@@ -27,3 +28,5 @@ public:
 	const static godot::Color white;
 	const static godot::Color yellow;
 };
+
+#endif // !DD_COLORS_H

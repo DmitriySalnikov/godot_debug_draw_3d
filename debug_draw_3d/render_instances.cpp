@@ -1,15 +1,15 @@
 #include "render_instances.h"
 
-#include <Mesh.hpp>
-#include <MultiMesh.hpp>
-#include <Texture.hpp>
+#include <godot_cpp/classes/mesh.hpp>
+#include <godot_cpp/classes/multi_mesh.hpp>
+#include <godot_cpp/classes/texture.hpp>
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
 	DEBUG_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
 }
 
-void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds) {
+void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Transform3D _transform, Color _col, SphereBounds _bounds) {
 	_update(_exp_time, true);
 
 	type = _type;
@@ -43,7 +43,7 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &
 	if (lines.size() > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
 		Vector3 begin = lines[0];
-		Vector3 end = lines[0] + Vector3::ZERO;
+		Vector3 end = lines[0] + Vector3_ZERO;
 
 		for (Vector3 v : lines) {
 			if (v.x < begin.x) {
@@ -73,13 +73,13 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &
 	}
 }
 
-PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
-	PoolRealArray res;
+PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
+	PackedFloat32Array res;
 	res.resize((int)((instances[type].used_instant + instances[type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT));
 
 	size_t last_added = 0;
 	{
-		auto w = res.write();
+		auto w = res.ptrw();
 
 		auto write_data = [&last_added, &w](DelayedRendererInstance &o) {
 			int id = (int)(last_added * INSTANCE_DATA_FLOAT_COUNT);
@@ -87,17 +87,19 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 			o.is_used_one_time = true;
 			if (o.is_visible) {
 				last_added++;
-				w[id + 0] = o.transform.basis.elements[0][0];
-				w[id + 1] = o.transform.basis.elements[0][1];
-				w[id + 2] = o.transform.basis.elements[0][2];
+
+				// TODO need testing
+				w[id + 0] = o.transform.basis.rows[0][0];
+				w[id + 1] = o.transform.basis.rows[0][1];
+				w[id + 2] = o.transform.basis.rows[0][2];
 				w[id + 3] = o.transform.origin.x;
-				w[id + 4] = o.transform.basis.elements[1][0];
-				w[id + 5] = o.transform.basis.elements[1][1];
-				w[id + 6] = o.transform.basis.elements[1][2];
+				w[id + 4] = o.transform.basis.rows[1][0];
+				w[id + 5] = o.transform.basis.rows[1][1];
+				w[id + 6] = o.transform.basis.rows[1][2];
 				w[id + 7] = o.transform.origin.y;
-				w[id + 8] = o.transform.basis.elements[2][0];
-				w[id + 9] = o.transform.basis.elements[2][1];
-				w[id + 10] = o.transform.basis.elements[2][2];
+				w[id + 8] = o.transform.basis.rows[2][0];
+				w[id + 9] = o.transform.basis.rows[2][1];
+				w[id + 10] = o.transform.basis.rows[2][2];
 				w[id + 11] = o.transform.origin.z;
 				w[id + 12] = o.color[0];
 				w[id + 13] = o.color[1];
@@ -125,15 +127,15 @@ PoolRealArray GeometryPool::get_raw_data(InstanceType type) {
 	return res;
 }
 
-void GeometryPool::fill_lines_data(ImmediateGeometry *ig) {
-	ig->begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
+void GeometryPool::fill_lines_data(Ref<ImmediateMesh> ig) {
+	ig->surface_begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
 
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		auto &o = lines.instant[i];
 		if (o.is_visible) {
-			ig->set_color(o.color);
+			ig->surface_set_color(o.color);
 			for (auto &l : o.get_lines()) {
-				ig->add_vertex(l);
+				ig->surface_add_vertex(l);
 			};
 		}
 		o.is_used_one_time = true;
@@ -146,16 +148,16 @@ void GeometryPool::fill_lines_data(ImmediateGeometry *ig) {
 		if (!o.is_expired()) {
 			lines.used_delayed++;
 			if (o.is_visible) {
-				ig->set_color(o.color);
+				ig->surface_set_color(o.color);
 				for (auto &l : o.get_lines()) {
-					ig->add_vertex(l);
+					ig->surface_add_vertex(l);
 				};
 			}
 		}
 		o.is_used_one_time = true;
 	}
 
-	ig->end();
+	ig->surface_end();
 }
 
 void GeometryPool::reset_counter(real_t delta) {
@@ -293,7 +295,7 @@ void GeometryPool::scan_visible_instances() {
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd) {
+void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd) {
 	DelayedRendererInstance *inst = instances[_type].get(_exp_time > 0);
 	inst->update(_exp_time, _type, _transform, _col, _bounds);
 	if (custom_upd)

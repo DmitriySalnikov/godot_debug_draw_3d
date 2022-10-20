@@ -2,8 +2,8 @@
 #include "debug_draw.h"
 #include "utils.h"
 
-#include <Engine.hpp>
-#include <Texture.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/texture.hpp>
 
 using namespace godot;
 
@@ -11,39 +11,43 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 	owner = root;
 
 	// Create wireframe mesh drawer
-	_immediateGeometry = ImmediateGeometry::_new();
+	_immediate_mesh.instantiate();
+	_immediate_instance = memnew(MeshInstance3D);
+
 	{
-		_immediateGeometry->set_name(TEXT(_immediateGeometry));
-		_immediateGeometry->set_cast_shadows_setting(GeometryInstance::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
-		_immediateGeometry->set_flag(GeometryInstance::Flags::FLAG_USE_BAKED_LIGHT, false);
+		_immediate_instance->set_mesh(_immediate_mesh);
 
-		Ref<SpatialMaterial> mat;
-		mat.instance();
-		mat->set_flag(SpatialMaterial::Flags::FLAG_UNSHADED, true);
-		mat->set_flag(SpatialMaterial::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		_immediate_instance->set_name(TEXT(_immediate_mesh));
+		_immediate_instance->set_cast_shadows_setting(GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+		_immediate_instance->set_gi_mode(GeometryInstance3D::GI_MODE_DISABLED);
 
-		_immediateGeometry->set_material_override(mat);
+		Ref<StandardMaterial3D> mat;
+		mat.instantiate();
+		mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+		mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+		_immediate_instance->set_material_override(mat);
 	}
 
-	root->add_child(_immediateGeometry);
+	root->add_child(_immediate_instance);
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
-	MultiMeshInstance *mmi_cubes = CreateMMI(root, InstanceType::CUBES, TEXT(mmi_cubes));
-	MultiMeshInstance *mmi_cubes_centered = CreateMMI(root, InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered));
-	MultiMeshInstance *mmi_arrowheads = CreateMMI(root, InstanceType::ARROWHEADS, TEXT(mmi_arrowheads));
-	MultiMeshInstance *mmi_billboard_squares = CreateMMI(root, InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares));
-	MultiMeshInstance *mmi_positions = CreateMMI(root, InstanceType::POSITIONS, TEXT(mmi_positions));
-	MultiMeshInstance *mmi_spheres = CreateMMI(root, InstanceType::SPHERES, TEXT(mmi_spheres));
-	MultiMeshInstance *mmi_spheres_hd = CreateMMI(root, InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd));
-	MultiMeshInstance *mmi_cylinders = CreateMMI(root, InstanceType::CYLINDERS, TEXT(mmi_cylinders));
+	MultiMeshInstance3D *mmi_cubes = CreateMMI(root, InstanceType::CUBES, TEXT(mmi_cubes));
+	MultiMeshInstance3D *mmi_cubes_centered = CreateMMI(root, InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered));
+	MultiMeshInstance3D *mmi_arrowheads = CreateMMI(root, InstanceType::ARROWHEADS, TEXT(mmi_arrowheads));
+	MultiMeshInstance3D *mmi_billboard_squares = CreateMMI(root, InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares));
+	MultiMeshInstance3D *mmi_positions = CreateMMI(root, InstanceType::POSITIONS, TEXT(mmi_positions));
+	MultiMeshInstance3D *mmi_spheres = CreateMMI(root, InstanceType::SPHERES, TEXT(mmi_spheres));
+	MultiMeshInstance3D *mmi_spheres_hd = CreateMMI(root, InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd));
+	MultiMeshInstance3D *mmi_cylinders = CreateMMI(root, InstanceType::CYLINDERS, TEXT(mmi_cylinders));
 
 	set_render_layer_mask(1);
 
 	// Customize parameters
-	Ref<SpatialMaterial> sq_mat = mmi_billboard_squares->get_material_override();
+	Ref<StandardMaterial3D> sq_mat = mmi_billboard_squares->get_material_override();
 	if (sq_mat.is_valid()) {
-		sq_mat->set_billboard_mode(SpatialMaterial::BillboardMode::BILLBOARD_ENABLED);
-		sq_mat->set_flag(SpatialMaterial::Flags::FLAG_BILLBOARD_KEEP_SCALE, true);
+		sq_mat->set_billboard_mode(StandardMaterial3D::BillboardMode::BILLBOARD_ENABLED);
+		sq_mat->set_flag(StandardMaterial3D::Flags::FLAG_BILLBOARD_KEEP_SCALE, true);
 	}
 
 	// Create Meshes
@@ -65,13 +69,13 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 			GeometryGenerator::PositionVertices, C_ARR_SIZE(GeometryGenerator::PositionVertices), GeometryGenerator::PositionIndices, C_ARR_SIZE(GeometryGenerator::PositionIndices)));
 
 	mmi_spheres->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
-			GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3::ZERO)));
+			GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
 
 	mmi_spheres_hd->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
-			GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3::ZERO)));
+			GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
 
 	mmi_cylinders->get_multimesh()->set_mesh(CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES,
-			GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3::ZERO, 4)));
+			GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
 }
 
 DebugGeometryContainer::~DebugGeometryContainer() {
@@ -81,26 +85,27 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 	geometry_pool.clear_pool();
 }
 
-MultiMeshInstance *DebugGeometryContainer::CreateMMI(Node *root, InstanceType type, String name) {
-	MultiMeshInstance *mmi = MultiMeshInstance::_new();
+MultiMeshInstance3D *DebugGeometryContainer::CreateMMI(Node *root, InstanceType type, String name) {
+	MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
 	mmi->set_name(name);
-	mmi->set_cast_shadows_setting(GeometryInstance::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
-	mmi->set_flag(GeometryInstance::Flags::FLAG_USE_BAKED_LIGHT, false);
+	mmi->set_cast_shadows_setting(GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+	mmi->set_gi_mode(GeometryInstance3D::GI_MODE_DISABLED);
 
-	Ref<SpatialMaterial> new_mat;
-	new_mat.instance();
-	new_mat->set_flag(SpatialMaterial::Flags::FLAG_UNSHADED, true);
-	new_mat->set_flag(SpatialMaterial::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	Ref<StandardMaterial3D> new_mat;
+	new_mat.instantiate();
+	new_mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	new_mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 	mmi->set_material_override(new_mat);
 
 	Ref<MultiMesh> new_mm;
-	new_mm.instance();
+	new_mm.instantiate();
 	new_mm->set_name(String::num_int64(type));
 
 	new_mm->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
-	new_mm->set_color_format(MultiMesh::ColorFormat::COLOR_FLOAT);
-	new_mm->set_custom_data_format(MultiMesh::CustomDataFormat::CUSTOM_DATA_NONE);
+	new_mm->set_use_colors(true);
+	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
+	new_mm->set_use_custom_data(false);
 
 	mmi->set_multimesh(new_mm);
 
@@ -110,22 +115,22 @@ MultiMeshInstance *DebugGeometryContainer::CreateMMI(Node *root, InstanceType ty
 }
 
 Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices, const size_t indices_size, const Color *colors, const size_t colors_size) {
-	PoolVector3Array pool_vertices = Utils::convert_to_pool_array<PoolVector3Array>(vertices, vertices_size);
-	PoolIntArray pool_indices = Utils::convert_to_pool_array<PoolIntArray>(indices, indices_size);
-	PoolColorArray pool_colors = Utils::convert_to_pool_array<PoolColorArray>(colors, colors_size);
+	PackedVector3Array pool_vertices = Utils::convert_to_pool_array<PackedVector3Array>(vertices, vertices_size);
+	PackedInt32Array pool_indices = Utils::convert_to_pool_array<PackedInt32Array>(indices, indices_size);
+	PackedColorArray pool_colors = Utils::convert_to_pool_array<PackedColorArray>(colors, colors_size);
 	return CreateMesh(type, pool_vertices, pool_indices, pool_colors);
 }
 
 Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const std::vector<Vector3> vertices, const std::vector<int> indices, const std::vector<Color> colors) {
-	PoolVector3Array pool_vertices = Utils::convert_to_pool_array<PoolVector3Array>(vertices);
-	PoolIntArray pool_indices = Utils::convert_to_pool_array<PoolIntArray>(indices);
-	PoolColorArray pool_colors = Utils::convert_to_pool_array<PoolColorArray>(colors);
+	PackedVector3Array pool_vertices = Utils::convert_to_pool_array<PackedVector3Array>(vertices);
+	PackedInt32Array pool_indices = Utils::convert_to_pool_array<PackedInt32Array>(indices);
+	PackedColorArray pool_colors = Utils::convert_to_pool_array<PackedColorArray>(colors);
 	return CreateMesh(type, pool_vertices, pool_indices, pool_colors);
 }
 
-Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const PoolVector3Array &vertices, const PoolIntArray &indices, const PoolColorArray &colors) {
+Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices, const PackedColorArray &colors) {
 	Ref<ArrayMesh> mesh;
-	mesh.instance();
+	mesh.instantiate();
 	Array a;
 	a.resize((int)ArrayMesh::ArrayType::ARRAY_MAX);
 
@@ -147,7 +152,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	if (owner->is_freeze_3d_render())
 		return;
 
-	_immediateGeometry->clear();
+	_immediate_mesh->clear_surfaces();
 
 	// Return if nothing to do
 	if (!owner->is_debug_enabled()) {
@@ -162,7 +167,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	// TODO try to get all active cameras inside scene to properly calculate visibilty
 
 	// Get camera frustum
-	Camera *vp_cam = owner->get_viewport()->get_camera();
+	Camera3D *vp_cam = owner->get_viewport()->get_camera_3d();
 
 	std::vector<std::vector<Plane> > f;
 	if (owner->is_use_frustum_culling()) {
@@ -173,12 +178,13 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 		if ((owner->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
 		} else if (owner->get_custom_viewport()) {
-			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera()->get_frustum());
+			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera_3d()->get_frustum());
 		} else if (editor_viewports.size() > 0) {
 			for (auto vp : editor_viewports) {
-				if (vp->get_update_mode() == Viewport::UpdateMode::UPDATE_ALWAYS) {
-					frustum_arrays.push_back(vp->get_camera()->get_frustum());
-				}
+				// TODO idk where is update mode. Mb UPDATE_ALWAYS is default now.
+				//if (vp->get_update_mode() == Viewport::UpdateMode::UPDATE_ALWAYS) {
+					frustum_arrays.push_back(vp->get_camera_3d()->get_frustum());
+				//}
 			}
 		} else {
 			PRINT_WARNING("No camera found to perform frustum culling for DebugDraw");
@@ -218,7 +224,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 			geometry_pool.add_or_update_instance(
 					InstanceType::SPHERES_HD,
 					0,
-					Transform(Basis().scaled(Vector3::ONE * i.second * 2), i.first),
+					Transform3D(Basis().scaled(Vector3_ONE * i.second * 2), i.first),
 					Colors::debug_bounds,
 					SphereBounds(i.first, i.second),
 					[](auto d) { d->is_used_one_time = true; });
@@ -234,7 +240,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 			geometry_pool.add_or_update_instance(
 					InstanceType::CUBES,
 					0,
-					Transform(Basis().scaled(diag), bottom),
+					Transform3D(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
 					SphereBounds(bottom + diag * 0.5f, abs(diag.length() * 0.5f)),
 					[](auto d) { d->is_used_one_time = true; });
@@ -242,7 +248,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	}
 
 	// Draw immediate lines
-	geometry_pool.fill_lines_data(_immediateGeometry);
+	geometry_pool.fill_lines_data(_immediate_mesh);
 
 	// Update MultiMeshInstances
 	for (int i = 0; i < InstanceType::ALL; i++) {
@@ -252,7 +258,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 		auto a = geometry_pool.get_raw_data((InstanceType)i);
 		mms->set_instance_count(a.size() / INSTANCE_DATA_FLOAT_COUNT);
 		if (a.size()) {
-			mms->set_as_bulk_array(a);
+			mms->set_buffer(a);
 		}
 	}
 
@@ -261,9 +267,12 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	geometry_pool.reset_counter(delta);
 }
 
+#include <godot_cpp/variant/dictionary.hpp>
+
 Dictionary DebugGeometryContainer::get_render_stats() {
 	LOCK_GUARD(datalock);
-	return Dictionary::make(
+	
+	return Utils::make_dict(
 			"instances", (int64_t)geometry_pool.get_used_instances_total(),
 			"visible_instances", (int64_t)geometry_pool.get_visible_instances(),
 			"wireframes", (int64_t)geometry_pool.get_used_lines_total(),
@@ -276,7 +285,7 @@ void DebugGeometryContainer::set_render_layer_mask(int64_t layers) {
 	for (auto &mmi : multi_mesh_instances)
 		mmi->set_layer_mask(layers);
 
-	_immediateGeometry->set_layer_mask(layers);
+	_immediate_instance->set_layer_mask(layers);
 }
 
 void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
@@ -286,9 +295,9 @@ void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, rea
 	Vector3 pos = b - dir.normalized() * size;
 
 	const Vector3 UP = Vector3(0.0000000001f, 1, 0);
-	Transform t = Transform();
+	Transform3D t;
 	t.set_look_at(pos, b, UP);
-	t.scale(Vector3::ONE * (size));
+	t.scale(Vector3_ONE * (size));
 	t.origin = pos;
 
 	geometry_pool.add_or_update_instance(
@@ -296,7 +305,7 @@ void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, rea
 			duration,
 			t,
 			color == Colors::empty_color ? Colors::light_green : color,
-			SphereBounds(t.origin - t.basis.z * 0.5f, MathUtils::ArrowRadiusForSphere * size));
+			SphereBounds(t.origin - t.basis.rows[2] * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 
 #pragma region Draw Functions
@@ -305,7 +314,7 @@ void DebugGeometryContainer::clear_3d_objects() {
 	for (auto s : multi_mesh_instances) {
 		s->get_multimesh()->set_instance_count(0);
 	}
-	_immediateGeometry->clear();
+	_immediate_mesh->clear_surfaces();
 
 	geometry_pool.clear_pool();
 }
@@ -314,13 +323,13 @@ void DebugGeometryContainer::clear_3d_objects() {
 #pragma region Spheres
 
 void DebugGeometryContainer::draw_sphere(Vector3 position, real_t radius, Color color, real_t duration, bool hd) {
-	Transform t(Basis(), position);
-	t.basis.scale(Vector3::ONE * (radius * 2));
+	Transform3D t(Basis(), position);
+	t.basis.scale(Vector3_ONE * (radius * 2));
 
 	draw_sphere_xf(t, color, duration, hd);
 }
 
-void DebugGeometryContainer::draw_sphere_xf(Transform transform, Color color, real_t duration, bool hd) {
+void DebugGeometryContainer::draw_sphere_xf(Transform3D transform, Color color, real_t duration, bool hd) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
@@ -334,14 +343,14 @@ void DebugGeometryContainer::draw_sphere_hd(Vector3 position, real_t radius, Col
 	draw_sphere(position, radius, color, duration, true);
 }
 
-void DebugGeometryContainer::draw_sphere_hd_xf(Transform transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_sphere_hd_xf(Transform3D transform, Color color, real_t duration) {
 	draw_sphere_xf(transform, color, duration, true);
 }
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
-void DebugGeometryContainer::draw_cylinder(Transform transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_cylinder(Transform3D transform, Color color, real_t duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			InstanceType::CYLINDERS,
@@ -355,10 +364,10 @@ void DebugGeometryContainer::draw_cylinder(Transform transform, Color color, rea
 #pragma region Boxes
 
 void DebugGeometryContainer::draw_box(Vector3 position, Vector3 size, Color color, bool is_box_centered, real_t duration) {
-	draw_box_xf(Transform(Basis().scaled(size), position), color, is_box_centered, duration);
+	draw_box_xf(Transform3D(Basis().scaled(size), position), color, is_box_centered, duration);
 }
 
-void DebugGeometryContainer::draw_box_xf(Transform transform, Color color, bool is_box_centered, real_t duration) {
+void DebugGeometryContainer::draw_box_xf(Transform3D transform, Color color, bool is_box_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	/// It's possible to use less space to contain box, but this method works better in more cases
@@ -399,7 +408,7 @@ void DebugGeometryContainer::draw_line_hit(Vector3 start, Vector3 end, Vector3 h
 		geometry_pool.add_or_update_instance(
 				InstanceType::BILLBOARD_SQUARES,
 				duration,
-				Transform(Basis().scaled(Vector3::ONE * hit_size), hit),
+				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
 				hit_color == Colors::empty_color ? owner->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size));
 	} else {
@@ -423,7 +432,7 @@ void DebugGeometryContainer::draw_line(Vector3 a, Vector3 b, Color color, real_t
 	geometry_pool.add_or_update_line(duration, { a, b }, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_lines(PoolVector3Array lines, Color color, real_t duration) {
+void DebugGeometryContainer::draw_lines(PackedVector3Array lines, Color color, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	if (lines.size() % 2 != 0) {
@@ -433,8 +442,7 @@ void DebugGeometryContainer::draw_lines(PoolVector3Array lines, Color color, rea
 
 	std::vector<Vector3> l(lines.size());
 	{
-		auto r = lines.read();
-		memcpy(l.data(), r.ptr(), (size_t)lines.size() * sizeof(Vector3));
+		memcpy(l.data(), lines.ptr(), (size_t)lines.size() * sizeof(Vector3));
 	}
 
 	geometry_pool.add_or_update_line(duration, l, color == Colors::empty_color ? Colors::red : color);
@@ -456,7 +464,7 @@ void DebugGeometryContainer::draw_ray(Vector3 origin, Vector3 direction, real_t 
 	geometry_pool.add_or_update_line(duration, { origin, origin + direction * length }, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_line_path(PoolVector3Array path, Color color, real_t duration) {
+void DebugGeometryContainer::draw_line_path(PackedVector3Array path, Color color, real_t duration) {
 	if (path.size() < 2) {
 		PRINT_ERROR("Line path must contains at least 2 points. " + String::num_int64(path.size()) + " is not enough.");
 		return;
@@ -469,7 +477,7 @@ void DebugGeometryContainer::draw_line_path(PoolVector3Array path, Color color, 
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugGeometryContainer::draw_arrow(Transform transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_arrow(Transform3D transform, Color color, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	geometry_pool.add_or_update_instance(
@@ -477,7 +485,7 @@ void DebugGeometryContainer::draw_arrow(Transform transform, Color color, real_t
 			duration,
 			transform,
 			color == Colors::empty_color ? Colors::light_green : color,
-			SphereBounds(transform.origin - transform.basis.z * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
+			SphereBounds(transform.origin - transform.basis.rows[2] * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
 void DebugGeometryContainer::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
@@ -491,7 +499,7 @@ void DebugGeometryContainer::draw_arrow_ray(Vector3 origin, Vector3 direction, r
 	draw_arrow_line(origin, origin + direction * length, color, arrow_size, is_absolute_size, duration);
 }
 
-void DebugGeometryContainer::draw_arrow_path(PoolVector3Array path, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
+void DebugGeometryContainer::draw_arrow_path(PackedVector3Array path, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_line(duration, GeometryGenerator::CreateLinesFromPath(path), color == Colors::empty_color ? Colors::light_green : color);
 
@@ -503,7 +511,7 @@ void DebugGeometryContainer::draw_arrow_path(PoolVector3Array path, Color color,
 #pragma endregion // Arrows
 #pragma region Points
 
-void DebugGeometryContainer::draw_point_path(PoolVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+void DebugGeometryContainer::draw_point_path(PackedVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
 	draw_points(path, size, points_color == Colors::empty_color ? Colors::red : points_color, duration);
 	draw_line_path(path, lines_color == Colors::empty_color ? Colors::green : lines_color, duration);
 }
@@ -514,8 +522,8 @@ void DebugGeometryContainer::draw_point_path(PoolVector3Array path, real_t size,
 #pragma region Misc
 
 void DebugGeometryContainer::draw_square(Vector3 position, real_t size, Color color, real_t duration) {
-	Transform t(Basis(), position);
-	t.basis.scale(Vector3::ONE * size);
+	Transform3D t(Basis(), position);
+	t.basis.scale(Vector3_ONE * size);
 
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
@@ -526,7 +534,7 @@ void DebugGeometryContainer::draw_square(Vector3 position, real_t size, Color co
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size));
 }
 
-void DebugGeometryContainer::draw_points(PoolVector3Array points, real_t size, Color color, real_t duration) {
+void DebugGeometryContainer::draw_points(PackedVector3Array points, real_t size, Color color, real_t duration) {
 	for (int i = 0; i < points.size(); i++) {
 		draw_square(points[i], size, color, duration);
 	}
@@ -534,7 +542,7 @@ void DebugGeometryContainer::draw_points(PoolVector3Array points, real_t size, C
 
 #pragma region Camera Frustum
 
-void DebugGeometryContainer::draw_camera_frustum(Camera *camera, Color color, real_t duration) {
+void DebugGeometryContainer::draw_camera_frustum(Camera3D *camera, Color color, real_t duration) {
 	draw_camera_frustum_planes(camera->get_frustum(), color, duration);
 }
 
@@ -561,7 +569,7 @@ void DebugGeometryContainer::draw_camera_frustum_planes_c(Plane planes[6], Color
 
 #pragma endregion // Camera Frustum
 
-void DebugGeometryContainer::draw_position(Transform transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_position(Transform3D transform, Color color, real_t duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			InstanceType::POSITIONS,
@@ -571,22 +579,22 @@ void DebugGeometryContainer::draw_position(Transform transform, Color color, rea
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
 
-void DebugGeometryContainer::draw_gizmo(Transform transform, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool is_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	bool is_color_empty = color == Colors::empty_color;
 #define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
-#define MINUS(axis) transform.origin - transform.basis.axis
-#define PLUS(axis) transform.origin + transform.basis.axis
+#define MINUS(axis) transform.origin - transform.basis axis
+#define PLUS(axis) transform.origin + transform.basis axis
 
 	if (is_centered) {
-		draw_arrow_line(MINUS(x /** 0.5f*/), PLUS(x /** 0.5f*/), COLOR(x), 0.1f, true, duration);
-		draw_arrow_line(MINUS(y /** 0.5f*/), PLUS(y /** 0.5f*/), COLOR(y), 0.1f, true, duration);
-		draw_arrow_line(MINUS(z /** 0.5f*/), PLUS(z /** 0.5f*/), COLOR(z), 0.1f, true, duration);
+		draw_arrow_line(MINUS([0] /** 0.5f*/), PLUS([0] /** 0.5f*/), COLOR(x), 0.1f, true, duration);
+		draw_arrow_line(MINUS([1] /** 0.5f*/), PLUS([1] /** 0.5f*/), COLOR(y), 0.1f, true, duration);
+		draw_arrow_line(MINUS([2] /** 0.5f*/), PLUS([2] /** 0.5f*/), COLOR(z), 0.1f, true, duration);
 	} else {
-		draw_arrow_line(transform.origin, PLUS(x), COLOR(x), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS(y), COLOR(y), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS(z), COLOR(z), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS([0]), COLOR(x), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS([1]), COLOR(y), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS([2]), COLOR(z), 0.15f, true, duration);
 	}
 
 #undef COLOR
@@ -596,19 +604,20 @@ void DebugGeometryContainer::draw_gizmo(Transform transform, Color color, bool i
 
 void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
 	Basis b;
-	b.set_axis(0, x_size);
-	b.set_axis(1, y_size.cross(x_size).normalized());
-	b.set_axis(2, y_size);
-	draw_grid_xf(Transform(b, origin), subdivision, color, is_centered, duration);
+	// TODO need testing
+	b.set_column(0, x_size);
+	b.set_column(1, y_size.cross(x_size).normalized());
+	b.set_column(2, y_size);
+	draw_grid_xf(Transform3D(b, origin), subdivision, color, is_centered, duration);
 }
 
-void DebugGeometryContainer::draw_grid_xf(Transform transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
 	subdivision = subdivision.floor().abs();
 	subdivision = Vector2((real_t)Math::clamp((int)subdivision.x, 1, INT32_MAX), (real_t)Math::clamp((int)subdivision.y, 1, INT32_MAX));
-	Vector3 x_d = transform.basis.x / subdivision.x;
-	Vector3 z_d = transform.basis.z / subdivision.y;
+	Vector3 x_d = transform.basis.rows[0] / subdivision.x;
+	Vector3 z_d = transform.basis.rows[2] / subdivision.y;
 
 	Vector3 origin = is_centered ?
 							 transform.origin - x_d * subdivision.x * 0.5 - z_d * subdivision.y * 0.5 :
@@ -617,12 +626,12 @@ void DebugGeometryContainer::draw_grid_xf(Transform transform, Vector2 subdivisi
 	std::vector<Vector3> lines;
 	for (int x = 0; x < subdivision.x + 1; x++) {
 		lines.push_back(origin + x_d * (real_t)x);
-		lines.push_back(origin + x_d * (real_t)x + transform.basis.z);
+		lines.push_back(origin + x_d * (real_t)x + transform.basis.rows[2]);
 	}
 
 	for (int y = 0; y < subdivision.y + 1; y++) {
 		lines.push_back(origin + z_d * (real_t)y);
-		lines.push_back(origin + z_d * (real_t)y + transform.basis.x);
+		lines.push_back(origin + z_d * (real_t)y + transform.basis.rows[0]);
 	}
 
 	draw_lines_c(lines, color == Colors::empty_color ? Colors::white : color, duration);

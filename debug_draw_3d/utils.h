@@ -1,8 +1,12 @@
-#pragma once
+#ifndef DD_UTILS_H
+#define DD_UTILS_H
 
 #include "circular_buffer.h"
 
-#include <Godot.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -28,10 +32,16 @@
 #define EXPAND_MACRO(x)
 #endif
 
+#if REAL_T_IS_DOUBLE
+typedef godot::PackedFloat64Array PackedRealArray;
+#else
+typedef godot::PackedFloat32Array PackedRealArray;
+#endif
+
 #pragma region PRINTING
 
 #if _DEBUG
-#define DEBUG_PRINT(text) godot::Godot::print(godot::Variant(text))
+#define DEBUG_PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
 #define DEBUG_PRINT_STD(format, ...) Utils::logv(format, false, false, __VA_ARGS__)
 #define DEBUG_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, __VA_ARGS__)
 #else
@@ -40,9 +50,29 @@
 #define DEBUG_PRINT_STD_ERR(format, ...)
 #endif
 
-#define PRINT(text) godot::Godot::print(godot::Variant(text))
-#define PRINT_ERROR(text) godot::Godot::print_error(godot::Variant(text), __FUNCTION__, godot::get_file_name_in_repository(__FILE__), __LINE__)
-#define PRINT_WARNING(text) godot::Godot::print_warning(godot::Variant(text), __FUNCTION__, godot::get_file_name_in_repository(__FILE__), __LINE__)
+#define PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
+#define PRINT_ERROR(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify())
+#define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), true)
+
+// TODO temp constants. I didn't find them in gdnative api
+
+const godot::Vector2 Vector2_ZERO = godot::Vector2(0, 0);
+const godot::Vector2 Vector2_ONE = godot::Vector2(1, 1);
+const godot::Vector2 Vector2_UP = godot::Vector2(0, -1);
+const godot::Vector2 Vector2_DOWN = godot::Vector2(0, 1);
+const godot::Vector2 Vector2_RIGHT = godot::Vector2(1, 0);
+const godot::Vector2 Vector2_LEFT = godot::Vector2(-1, 0);
+
+const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
+const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
+const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
+const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);
+const godot::Vector3 Vector3_LEFT = godot::Vector3(-1, 0, 0);
+const godot::Vector3 Vector3_RIGHT = godot::Vector3(1, 0, 0);
+const godot::Vector3 Vector3_BACK = godot::Vector3(0, 0, 1);
+const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
+
+const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 
 namespace godot {
 static String get_file_name_in_repository(String name) {
@@ -96,7 +126,7 @@ public:
 		TPool p;
 		if (arr.size() > 0) {
 			p.resize((int)arr.size());
-			memcpy(p.write().ptr(), arr.data(), sizeof(arr[0]) * arr.size());
+			memcpy(p.ptrw(), arr.data(), sizeof(arr[0]) * arr.size());
 		}
 		return p;
 	}
@@ -106,7 +136,7 @@ public:
 		TPool p;
 		if (size > 0) {
 			p.resize((int)size);
-			memcpy(p.write().ptr(), arr, sizeof(TVal) * size);
+			memcpy(p.ptrw(), arr, sizeof(TVal) * size);
 		}
 		return p;
 	}
@@ -143,4 +173,31 @@ public:
 		std::sort(ordered.begin(), ordered.end(), comparator_bool_tval_tval);
 		return ordered;
 	}
+
+	// TODO need to use make from API when it becomes possible
+#pragma region HACK_FOR_DICTIONARIES
+	template <class... Args>
+	static godot::Dictionary make_dict(Args... args) {
+		return dict_append_all(godot::Dictionary(), args...);
+	}
+
+	template <typename T, typename Key, typename Value>
+	static T dict_append_all(T appendable, Key key, Value val) {
+		appendable[key] = val;
+		return appendable;
+	}
+
+	template <typename T, typename Key, typename Value, typename... Args>
+	static T dict_append_all(T appendable, Key key, Value val, Args... args) {
+		appendable[key] = val;
+		return dict_append_all(appendable, args...);
+	}
+
+	template <typename T>
+	static T dict_append_all(T appendable) {
+		return appendable;
+	}
+#pragma endregion
 };
+
+#endif // !DD_UTILS_H

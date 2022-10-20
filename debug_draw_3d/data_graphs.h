@@ -1,20 +1,23 @@
-﻿#pragma once
+﻿#ifndef DD_DATA_GRAPHS_H
+#define DD_DATA_GRAPHS_H
 
 #include "circular_buffer.h"
 #include "colors.h"
 #include "enums.h"
 
-#include <CanvasItem.hpp>
-#include <Font.hpp>
-#include <Godot.hpp>
-#include <Reference.hpp>
+#include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
 
 #include <map>
 
 using namespace godot;
 
-class GraphParameters : public Reference {
-	GODOT_CLASS(GraphParameters, Reference);
+class GraphParameters : public RefCounted {
+	GDCLASS(GraphParameters, RefCounted);
 
 	/// Is Graph enabled
 	bool enabled = true;
@@ -48,9 +51,11 @@ class GraphParameters : public Reference {
 	/// Custom Font
 	Ref<Font> custom_font = Ref<Font>();
 
+protected:
+	static void _bind_methods();
+
 public:
-	static void _register_methods();
-	void _init();
+	GraphParameters();
 
 	void set_enabled(bool state);
 	bool is_enabled();
@@ -144,5 +149,7 @@ public:
 	void remove_graph(String title);
 	void clear_graphs();
 	Ref<GraphParameters> get_graph_config(String title);
-	PoolStringArray get_graph_names();
+	PackedStringArray get_graph_names();
 };
+
+#endif // DD_DATA_GRAPHS_H

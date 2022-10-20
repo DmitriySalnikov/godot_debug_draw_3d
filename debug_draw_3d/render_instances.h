@@ -1,13 +1,13 @@
-#pragma once
+#ifndef DD_RENDER_INSTANCES_H
+#define DD_RENDER_INSTANCES_H
 
 #include "math_utils.h"
 #include "utils.h"
 
-#include <Godot.hpp>
-#include <ImmediateGeometry.hpp>
+#include <godot_cpp/classes/immediate_mesh.hpp>
 
-#define INSTANCE_DATA_SIZE (sizeof(Transform) + sizeof(Color))
-#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform) + sizeof(Color)) / sizeof(real_t))
+#define INSTANCE_DATA_SIZE (sizeof(Transform3D) + sizeof(Color))
+#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color)) / sizeof(real_t))
 
 using namespace godot;
 
@@ -77,11 +77,11 @@ public:
 
 class DelayedRendererInstance : public DelayedRenderer<SphereBounds> {
 public:
-	Transform transform;
+	Transform3D transform;
 	InstanceType type = InstanceType::CUBES;
 
 	DelayedRendererInstance();
-	void update(real_t _exp_time, InstanceType _type, Transform _transform, Color _col, SphereBounds _bounds);
+	void update(real_t _exp_time, InstanceType _type, Transform3D _transform, Color _col, SphereBounds _bounds);
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
@@ -198,8 +198,8 @@ public:
 	~GeometryPool() {
 	}
 
-	PoolRealArray get_raw_data(InstanceType type);
-	void fill_lines_data(ImmediateGeometry *ig);
+	PackedFloat32Array get_raw_data(InstanceType type);
+	void fill_lines_data(Ref<ImmediateMesh> ig);
 	void reset_counter(real_t delta);
 	void reset_visible_objects();
 	size_t get_visible_instances();
@@ -216,6 +216,8 @@ public:
 	void update_visibility(std::vector<std::vector<Plane> > frustums);
 	void update_expiration(real_t delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
 };
+
+#endif // !DD_RENDER_INSTANCES_H

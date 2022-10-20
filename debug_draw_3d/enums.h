@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DD_ENUMS_H
+#define DD_ENUMS_H
 
 enum BlockPosition : int {
 	LeftTop = 0,
@@ -15,3 +16,5 @@ enum GraphTextFlags : int {
 	Min = 1 << 3,
 	All = Current | Avarage | Max | Min
 };
+
+#endif // !DD_ENUMS_H

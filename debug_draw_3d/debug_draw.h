@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DEBUG_DRAW_H
+#define DEBUG_DRAW_H
 
 #include "colors.h"
 #include "data_graphs.h"
@@ -7,44 +8,22 @@
 #include "geometry_generators.h"
 #include "grouped_text.h"
 
-#include <CanvasItem.hpp>
-#include <CanvasLayer.hpp>
-#include <Font.hpp>
-#include <Godot.hpp>
-#include <Node.hpp>
-#include <Reference.hpp>
-#include <Viewport.hpp>
+#include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/canvas_layer.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
 
 using namespace godot;
 
 class DebugDraw3D : public Node {
-	GODOT_CLASS(DebugDraw3D, Node)
+	GDCLASS(DebugDraw3D, Node)
 
 	static DebugDraw3D *singleton;
 	static int instance_counter;
 
-public:
 private:
-#define CONST_GET(_enum, _const)       \
-	int64_t get_##_enum##_##_const() { \
-		return _enum::_const;          \
-	}
-
-	void fake_set_const(int64_t val){};
-	CONST_GET(BlockPosition, LeftTop);
-	CONST_GET(BlockPosition, RightTop);
-	CONST_GET(BlockPosition, LeftBottom);
-	CONST_GET(BlockPosition, RightBottom);
-
-	CONST_GET(GraphTextFlags, None);
-	CONST_GET(GraphTextFlags, Current);
-	CONST_GET(GraphTextFlags, Avarage);
-	CONST_GET(GraphTextFlags, Max);
-	CONST_GET(GraphTextFlags, Min);
-	CONST_GET(GraphTextFlags, All);
-
-#undef CONST_GET
-
 	std::vector<Viewport *> custom_editor_viewports;
 
 	// Logs
@@ -72,7 +51,7 @@ private:
 	DebugDraw3D *get_singleton_gdscript() {
 		return singleton;
 	};
-	void on_canva_item_draw(CanvasItem *ci);
+	void _on_canvas_item_draw(CanvasItem *ci);
 
 #pragma region Exposed Parameter Values
 
@@ -129,9 +108,11 @@ private:
 	CanvasItem *custom_canvas = nullptr;
 #pragma endregion // Exposed Parameter Values
 
+protected:
+	static void _bind_methods();
+
 public:
-	static void _register_methods();
-	void _init();
+	DebugDraw3D();
 
 	static DebugDraw3D *get_singleton() {
 		return singleton;
@@ -231,10 +212,10 @@ public:
 	void draw_sphere(Vector3 position, real_t radius = 0.5f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere
-	/// transform: Transform of the Sphere
+	/// transform: Transform3D of the Sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere_xf(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_sphere_xf(Transform3D transform, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere with higher lines count
 	/// position: Position of the sphere center
@@ -244,19 +225,19 @@ public:
 	void draw_sphere_hd(Vector3 position, real_t radius = 0.5f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw sphere with higher lines count
-	/// transform: Transform of the sphere
+	/// transform: Transform3D of the sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
-	void draw_sphere_hd_xf(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_sphere_hd_xf(Transform3D transform, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
 	/// Draw vertical cylinder
-	/// transform: Transform of the Cylinder
+	/// transform: Transform3D of the Cylinder
 	/// color: Cylinder color
 	/// duration: Duration of existence in seconds
-	void draw_cylinder(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_cylinder(Transform3D transform, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Cylinders
 #pragma region Boxes
@@ -270,11 +251,11 @@ public:
 	void draw_box(Vector3 position, Vector3 size, Color color = Colors::empty_color, bool is_box_centered = false, real_t duration = 0);
 
 	/// Draw box
-	/// transform: Transform of the Box
+	/// transform: Transform3D of the Box
 	/// color: Box color
 	/// is_box_centered: Use 'transform' as the center of the box, not as the bottom corner
 	/// duration: Duration of existence in seconds
-	void draw_box_xf(Transform transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
+	void draw_box_xf(Transform3D transform, Color color = Colors::empty_color, bool is_box_centered = true, real_t duration = 0);
 
 	/// Draw AABB
 	/// aabb: AABB
@@ -327,7 +308,7 @@ public:
 	/// lines: Array of line points. 1 line = 2 Vector3. The size of the array must be even.
 	/// color: Lines color
 	/// duration: Duration of existence in seconds
-	void draw_lines(PoolVector3Array lines, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_lines(PackedVector3Array lines, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw ray
 	/// origin: Origin
@@ -341,16 +322,16 @@ public:
 	/// path: Sequence of points
 	/// color: Lines Color
 	/// duration: Duration of existence in seconds
-	void draw_line_path(PoolVector3Array path, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_line_path(PackedVector3Array path, Color color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Normal
 #pragma region Arrows
 
 	/// Draw arrow
-	/// Transform: Transform of the Arrow
+	/// Transform: Transform3D of the Arrow
 	/// color: Arrow color
 	/// duration: Duration of existence in seconds
-	void draw_arrow(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_arrow(Transform3D transform, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw line with arrow
 	/// a: Start point
@@ -377,7 +358,7 @@ public:
 	/// arrow_size: Size of the arrow
 	/// absolute_size: Is the 'arrowSize' absolute or relative to the length of the line?
 	/// duration: Duration of existence in seconds
-	void draw_arrow_path(PoolVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool absolute_size = true, real_t duration = 0);
+	void draw_arrow_path(PackedVector3Array path, Color color = Colors::empty_color, real_t arrow_size = 0.75f, bool absolute_size = true, real_t duration = 0);
 
 #pragma endregion // Arrows
 #pragma region Points
@@ -388,7 +369,7 @@ public:
 	/// lines_color: Color of lines
 	/// size: Size of squares
 	/// duration: Duration of existence in seconds
-	void draw_point_path(PoolVector3Array path, real_t size = 0.25f, Color points_color = Colors::empty_color, Color lines_color = Colors::empty_color, real_t duration = 0);
+	void draw_point_path(PackedVector3Array path, real_t size = 0.25f, Color points_color = Colors::empty_color, Color lines_color = Colors::empty_color, real_t duration = 0);
 
 #pragma endregion // Points
 #pragma endregion // Lines
@@ -406,20 +387,20 @@ public:
 	/// color: Color
 	/// size: Size of squares
 	/// duration: Duration of existence in seconds
-	void draw_points(PoolVector3Array points, real_t size = 0.25f, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_points(PackedVector3Array points, real_t size = 0.25f, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw 3 intersecting lines with the given transformations
-	/// transform: Transform of lines
+	/// transform: Transform3D of lines
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_position(Transform transform, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_position(Transform3D transform, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw 3 lines with the given transformations and arrows at the ends
-	/// transform: Transform of lines
+	/// transform: Transform3D of lines
 	/// color: Color
 	/// is_centered: If 'true', then the lines will intersect in the center of the transform
 	/// duration: Duration of existence in seconds
-	void draw_gizmo(Transform transform, Color color = Colors::empty_color, bool is_centered = false, real_t duration = 0);
+	void draw_gizmo(Transform3D transform, Color color = Colors::empty_color, bool is_centered = false, real_t duration = 0);
 
 	/// Draw simple grid with given size and subdivision
 	/// origin: Grid origin
@@ -432,12 +413,12 @@ public:
 	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 	/// Draw simple grid with given size and subdivision
-	/// transform: Transform of the Grid
+	/// transform: Transform3D of the Grid
 	/// subdivision: Number of cells for the X and Y axes
 	/// color: Lines color
 	/// is_centered: Draw lines relative to origin
 	/// duration: Duration of existence in seconds
-	void draw_grid_xf(Transform transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+	void draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 #pragma region Camera Frustum
 
@@ -445,7 +426,7 @@ public:
 	/// camera: Camera node
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_camera_frustum(class Camera *camera, Color color = Colors::empty_color, real_t duration = 0);
+	void draw_camera_frustum(class Camera3D *camera, Color color = Colors::empty_color, real_t duration = 0);
 
 	/// Draw camera frustum area
 	/// cameraFrustum: Array of frustum planes
@@ -511,9 +492,11 @@ public:
 	Ref<GraphParameters> get_graph_config(String title);
 
 	/// Get all graph names
-	PoolStringArray get_graph_names();
+	PackedStringArray get_graph_names();
 
 #pragma endregion // Graphs
 #pragma endregion // 2D
 #pragma endregion // Exposed Draw Functions
 };
+
+#endif // !DEBUG_DRAW_H

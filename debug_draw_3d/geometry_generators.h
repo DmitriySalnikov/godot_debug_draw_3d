@@ -1,6 +1,8 @@
-#pragma once
+#ifndef DD_GEOMETRY_GENERATORS_H
+#define DD_GEOMETRY_GENERATORS_H
 
-#include <Godot.hpp>
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
 
 #include <vector>
 
@@ -24,8 +26,9 @@ public:
 #pragma endregion
 
 	static std::vector<Vector3> CreateCameraFrustumLines(Plane frustum[6]);
-	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quat rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
+	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
 	static std::vector<Vector3> CreateSphereLines(int lats, int lons, float radius, Vector3 position);
 	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);
-	static std::vector<Vector3> CreateLinesFromPath(PoolVector3Array path);
+	static std::vector<Vector3> CreateLinesFromPath(PackedVector3Array path);
 };
+#endif // !DD_GEOMETRY_GENERATORS_H

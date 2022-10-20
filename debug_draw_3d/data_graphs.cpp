@@ -3,35 +3,41 @@
 #include "math_utils.h"
 #include "utils.h"
 
-#include <Engine.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
 
-void GraphParameters::_register_methods() {
-#define REG_PROP(name, def) register_property(#name, &GraphParameters::set_##name, &GraphParameters::get_##name, def);
-#define REG_PROP_BOOL(name, def) register_property(#name, &GraphParameters::set_##name, &GraphParameters::is_##name, def);
+void GraphParameters::_bind_methods() {
+#define REG_PROP_BASE(name, type, getter)                                                    \
+	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &GraphParameters::set_##name); \
+	ClassDB::bind_method(D_METHOD(TEXT(get_##name)), &GraphParameters::getter##name);        \
+	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
+#define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
+#define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
 
-	REG_PROP_BOOL(enabled, true);
-	REG_PROP_BOOL(show_title, false);
-	REG_PROP_BOOL(frame_time_mode, true);
-	REG_PROP_BOOL(centered_graph_line, true);
-	REG_PROP(show_text_flags, (int)GraphTextFlags::All);
-	REG_PROP(size, Vector2(256, 64));
-	REG_PROP(buffer_size, 256);
-	REG_PROP(offset, Vector2(0, 8));
-	REG_PROP(position, (int)BlockPosition::RightTop);
-	REG_PROP(line_color, Color(1, 0.27f, 0, 1));
-	REG_PROP(text_color, Color(0.96f, 0.96f, 0.96f, 1));
-	REG_PROP(background_color, Color(0.2f, 0.2f, 0.2f, 0.6f));
-	REG_PROP(border_color, Color(0, 0, 0, 1));
-	REG_PROP(text_suffix, String());
-	REG_PROP(custom_font, Ref<Font>());
+	REG_PROP_BOOL(enabled);
+	REG_PROP_BOOL(show_title);
+	REG_PROP_BOOL(frame_time_mode);
+	REG_PROP_BOOL(centered_graph_line);
+	REG_PROP(show_text_flags, Variant::INT);
+	REG_PROP(size, Variant::VECTOR2);
+	REG_PROP(buffer_size, Variant::INT);
+	REG_PROP(offset, Variant::VECTOR2);
+	REG_PROP(position, Variant::INT);
+	REG_PROP(line_color, Variant::COLOR);
+	REG_PROP(text_color, Variant::COLOR);
+	REG_PROP(background_color, Variant::COLOR);
+	REG_PROP(border_color, Variant::COLOR);
+	REG_PROP(text_suffix, Variant::STRING);
+	REG_PROP(custom_font, Variant::OBJECT);
 
 #undef REG_PROP
 #undef REG_PROP_BOOL
+#undef REG_PROP_BASE
 }
 
-void GraphParameters::_init() {
+GraphParameters::GraphParameters() {
 	if (IS_EDITOR_HINT()) {
 		position = BlockPosition::LeftTop;
 	}
@@ -237,7 +243,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		Rect2 border_size(title_pos + Vector2(0, -4), title_size + Vector2(8, 0));
 		// Draw background
 		ci->draw_rect(border_size, config->get_background_color(), true);
-		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height - 3)).floor(), title, config->get_text_color());
+		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height - 3)).floor(), title, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 
 		pos += Vector2(0, max_height);
 	}
@@ -245,20 +251,21 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	real_t height_multiplier = graphSize.y / max;
 	real_t center_offset = config->is_centered_graph_line() ? (graphSize.y - height_multiplier * (max - min)) * 0.5f : 0;
 
-	Rect2 border_size(pos + Vector2::UP, graphSize + Vector2::DOWN);
+	Rect2 border_size(pos + Vector2_UP, graphSize + Vector2_DOWN);
 
 	// Draw background
 	ci->draw_rect(border_size, config->get_background_color(), true);
 
 	// Draw graph line
 	if (data->is_filled() || data->size() > 2) {
-		PoolVector2Array line_points;
+		PackedVector2Array line_points;
+
 		const int offset = (int)data->is_filled();
 		double points_interval = (double)config->get_size().x / ((int64_t)config->get_buffer_size() - 1 - offset);
 
 		line_points.resize((int)data->size() - offset);
 		{
-			auto w = line_points.write();
+			auto w = line_points.ptrw();
 			for (size_t i = 0; i < data->size() - offset; i++) {
 				w[(int)i] = pos + Vector2((real_t)(i * points_interval), graphSize.y - data->get(i) * height_multiplier + center_offset);
 			}
@@ -270,26 +277,26 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	ci->draw_rect(border_size, config->get_border_color(), false);
 
 	// Draw text
-	auto suffix = config->get_text_suffix().empty() ? "" : config->get_text_suffix().utf8().get_data();
+	auto suffix = config->get_text_suffix().is_empty() ? "" : config->get_text_suffix().utf8().get_data();
 
 	if ((config->get_show_text_flags() & GraphTextFlags::Max) == GraphTextFlags::Max) {
 		String max_text = Utils::string_format("max: %.2f %s", max, suffix);
 		real_t max_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, max_height - 1);
-		ci->draw_string(draw_font, text_pos.floor(), max_text, config->get_text_color());
+		ci->draw_string(draw_font, text_pos.floor(), max_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if ((config->get_show_text_flags() & GraphTextFlags::Avarage) == GraphTextFlags::Avarage) {
 		String avg_text = Utils::string_format("avg: %.2f %s", avg, suffix);
 		real_t avg_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
-		ci->draw_string(draw_font, text_pos.floor(), avg_text, config->get_text_color());
+		ci->draw_string(draw_font, text_pos.floor(), avg_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if ((config->get_show_text_flags() & GraphTextFlags::Min) == GraphTextFlags::Min) {
 		String min_text = Utils::string_format("min: %.2f %s", min, suffix);
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
-		ci->draw_string(draw_font, text_pos.floor(), min_text, config->get_text_color());
+		ci->draw_string(draw_font, text_pos.floor(), min_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if ((config->get_show_text_flags() & GraphTextFlags::Current) == GraphTextFlags::Current) {
@@ -297,7 +304,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		String cur_text = Utils::string_format("%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
 		Vector2 cur_size = draw_font->get_string_size(cur_text);
 		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2);
-		ci->draw_string(draw_font, text_pos.floor(), cur_text, config->get_text_color());
+		ci->draw_string(draw_font, text_pos.floor(), cur_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	switch (config->get_position()) {
@@ -337,7 +344,7 @@ DataGraphManager::~DataGraphManager() {
 
 Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	Ref<GraphParameters> config;
-	config.instance();
+	config.instantiate();
 
 	LOCK_GUARD(datalock);
 	graphs[title] = std::make_shared<DataGraph>(config);
@@ -346,7 +353,7 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 
 Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	Ref<GraphParameters> config;
-	config.instance();
+	config.instantiate();
 
 	LOCK_GUARD(datalock);
 	graphs[title] = std::make_shared<FPSGraph>(config);
@@ -403,10 +410,10 @@ Ref<GraphParameters> DataGraphManager::get_graph_config(String title) {
 	return Ref<GraphParameters>();
 }
 
-PoolStringArray DataGraphManager::get_graph_names() {
+PackedStringArray DataGraphManager::get_graph_names() {
 	LOCK_GUARD(datalock);
 
-	PoolStringArray res;
+	PackedStringArray res;
 	for (auto i : graphs) {
 		res.append(i.first);
 	}

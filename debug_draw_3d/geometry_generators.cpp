@@ -195,14 +195,14 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(Plane frustum[6
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quat rotation, Vector3 size, bool centeredBox, bool withDiagonals) {
+std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox, bool withDiagonals) {
 	Vector3 scaled[8];
 	std::vector<Vector3> res_with_diags;
 	res_with_diags.resize(C_ARR_SIZE(CubeWithDiagonalsIndices));
 	std::vector<Vector3> res;
 	res.resize(C_ARR_SIZE(CubeIndices));
 
-	bool dont_rot = rotation == Quat::IDENTITY;
+	bool dont_rot = rotation == Quaternion_IDENTITY;
 
 	std::function<Vector3(int)> get;
 	if (centeredBox) {
@@ -290,8 +290,8 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float rad
 
 	Vector3 d = Vector3(0, height, 0);
 	for (int i = 0; i < edges; i++) {
-		float ra = Math::deg2rad(i * angle);
-		float rb = Math::deg2rad((i + 1) * angle);
+		float ra = Math::deg_to_rad(i * angle);
+		float rb = Math::deg_to_rad((i + 1) * angle);
 		Vector3 a = Vector3(sin(ra), 0, cos(ra)) * radius + position;
 		Vector3 b = Vector3(sin(rb), 0, cos(rb)) * radius + position;
 
@@ -313,7 +313,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float rad
 	return points;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateLinesFromPath(PoolVector3Array path) {
+std::vector<Vector3> GeometryGenerator::CreateLinesFromPath(PackedVector3Array path) {
 	std::vector<Vector3> res;
 	res.resize(((size_t)path.size() - 1) * 2);
 

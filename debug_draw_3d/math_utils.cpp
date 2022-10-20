@@ -7,8 +7,8 @@ const float MathUtils::AxisRadiusForSphere = 0.5000000000f; // "%.10f" % (Vector
 const float MathUtils::ArrowRadiusForSphere = 0.5153881907f; // "%.10f" % (Vector3(1,0.25,0) * 0.5).length()
 
 void MathUtils::get_diagonal_vectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag) {
-	bottom = Vector3::ZERO;
-	top = Vector3::ZERO;
+	bottom = Vector3_ZERO;
+	top = Vector3_ZERO;
 
 	if (a.x > b.x) {
 		top.x = a.x;
@@ -59,7 +59,7 @@ bool MathUtils::is_bounds_partially_inside_convex_shape(SphereBounds sphere, std
 	return true;
 }
 
-float MathUtils::get_max_value(Vector3 &value) {
+real_t MathUtils::get_max_value(Vector3 &value) {
 	return Math::max(abs(value.x), Math::max(abs(value.y), abs(value.z)));
 }
 
@@ -71,8 +71,9 @@ real_t MathUtils::get_max_vector_length(Vector3 &a, Vector3 &b, Vector3 &c) {
 }
 
 real_t MathUtils::get_max_basis_length(Basis &b) {
-	real_t a_l = b.x.length();
-	real_t b_l = b.y.length();
-	real_t c_l = b.z.length();
+	// TODO need testing
+	real_t a_l = b.rows[0].length();
+	real_t b_l = b.rows[1].length();
+	real_t c_l = b.rows[2].length();
 	return Math::max(a_l, Math::max(b_l, c_l));
 }

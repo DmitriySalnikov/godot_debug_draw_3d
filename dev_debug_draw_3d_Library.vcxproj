@@ -45,7 +45,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\include\gen;$(ProjectDir)godot-cpp\include\core;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <TargetName>debug_draw_3d.windows.release.$(PlatformArchitecture)</TargetName>
@@ -54,7 +54,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\include\gen;$(ProjectDir)godot-cpp\include\core;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
     <TargetName>debug_draw_3d.windows.release.$(PlatformArchitecture)</TargetName>
@@ -65,13 +65,14 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;_DEBUG;GDNATIVE_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;REAL_T_IS_DOUBLE
+;TYPED_METHOD_BIND;_DEBUG;DEBUG_ENABLED;GDNATIVE_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
@@ -80,7 +81,7 @@
     <Link>
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libgodot-cpp.windows.$(Configuration).$(PlatformArchitecture).lib;</AdditionalDependencies>
+      <AdditionalDependencies>libgodot-cpp.windows.editor.$(LlvmPlatformName).lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -94,7 +95,8 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;GDNATIVE_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;REAL_T_IS_DOUBLE
+;TYPED_METHOD_BIND;GDNATIVE_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -107,7 +109,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>libgodot-cpp.windows.$(Configuration).$(PlatformArchitecture).lib;</AdditionalDependencies>
+      <AdditionalDependencies>libgodot-cpp.windows.editor.$(LlvmPlatformName).lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>

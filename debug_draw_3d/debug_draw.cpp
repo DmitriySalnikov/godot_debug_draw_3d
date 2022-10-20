@@ -1,17 +1,18 @@
 #include "debug_draw.h"
 #include "utils.h"
 
-#include <ConfigFile.hpp>
-#include <Directory.hpp>
-#include <Engine.hpp>
-#include <File.hpp>
-#include <GlobalConstants.hpp>
-#include <Label.hpp>
-#include <Node2D.hpp>
-#include <ProjectSettings.hpp>
-#include <SceneTree.hpp>
-#include <SpatialMaterial.hpp>
-#include <Viewport.hpp>
+#include <godot_cpp/classes/config_file.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/label.hpp>
+#include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/window.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -41,64 +42,71 @@
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
 int DebugDraw3D::instance_counter = 0;
 
-void DebugDraw3D::_register_methods() {
-	register_method("get_singleton", &DebugDraw3D::get_singleton_gdscript);
+void DebugDraw3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw3D::get_singleton_gdscript);
 
-#define REG_METHOD(name) register_method(#name, &DebugDraw3D::name)
+#define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &DebugDraw3D::name)
+#define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &DebugDraw3D::name)
 
 	REG_METHOD(_enter_tree);
 	REG_METHOD(_exit_tree);
 	REG_METHOD(_ready);
 	REG_METHOD(_process);
 
-	REG_METHOD(on_canva_item_draw);
+	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw3D::_on_canvas_item_draw);
+	//REG_METHOD(_on_canvas_item_draw);
 
 #pragma region Constants
-#define CONST_REG(_enum, _const) \
-	register_property(TEXT(_enum##_##_const), &DebugDraw3D::fake_set_const, &DebugDraw3D::get_##_enum##_##_const, (int64_t)_enum::_const)
 
-	CONST_REG(BlockPosition, LeftTop);
-	CONST_REG(BlockPosition, RightTop);
-	CONST_REG(BlockPosition, LeftBottom);
-	CONST_REG(BlockPosition, RightBottom);
+	// TODO register somehow
+	/*
+	BIND_ENUM_CONSTANT(BlockPosition::LeftTop);
+	BIND_ENUM_CONSTANT(BlockPosition::RightTop);
+	BIND_ENUM_CONSTANT(BlockPosition::LeftBottom);
+	BIND_ENUM_CONSTANT(BlockPosition::RightBottom);
 
-	CONST_REG(GraphTextFlags, None);
-	CONST_REG(GraphTextFlags, Current);
-	CONST_REG(GraphTextFlags, Avarage);
-	CONST_REG(GraphTextFlags, Max);
-	CONST_REG(GraphTextFlags, Min);
-	CONST_REG(GraphTextFlags, All);
+	BIND_ENUM_CONSTANT(GraphTextFlags::None);
+	BIND_ENUM_CONSTANT(GraphTextFlags::Current);
+	BIND_ENUM_CONSTANT(GraphTextFlags::Avarage);
+	BIND_ENUM_CONSTANT(GraphTextFlags::Max);
+	BIND_ENUM_CONSTANT(GraphTextFlags::Min);
+	BIND_ENUM_CONSTANT(GraphTextFlags::All);
+	*/
 
 #undef CONST_REG
-#pragma endregion
 
 #pragma region Parameters
 
-#define REG_PROP(name, def) register_property(#name, &DebugDraw3D::set_##name, &DebugDraw3D::get_##name, def);
-#define REG_PROP_BOOL(name, def) register_property(#name, &DebugDraw3D::set_##name, &DebugDraw3D::is_##name, def);
+#define REG_PROP_BASE(name, type, getter)                                                \
+	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &DebugDraw3D::set_##name); \
+	ClassDB::bind_method(D_METHOD(TEXT(get_##name)), &DebugDraw3D::getter##name);        \
+	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
+#define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
+#define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
 
-	REG_PROP_BOOL(recall_to_singleton, true);
-	REG_PROP_BOOL(debug_enabled, true);
-	REG_PROP_BOOL(freeze_3d_render, false);
-	REG_PROP_BOOL(visible_instance_bounds, false);
-	REG_PROP_BOOL(use_frustum_culling, true);
-	REG_PROP_BOOL(force_use_camera_from_scene, false);
-	REG_PROP(graphs_base_offset, Vector2(8, 8));
-	REG_PROP(geometry_render_layers, (int64_t)1);
-	REG_PROP(text_block_position, (int)BlockPosition::LeftTop);
-	REG_PROP(text_block_offset, Vector2(8, 8));
-	REG_PROP(text_padding, Vector2(2, 1));
-	REG_PROP(text_default_duration, (real_t)0.5f);
-	REG_PROP(text_foreground_color, Color(1, 1, 1));
-	REG_PROP(text_background_color, Color(0.3f, 0.3f, 0.3f, 0.8f));
-	REG_PROP(text_custom_font, Ref<Font>());
-	REG_PROP(line_hit_color, Color(1, 0, 0, 1));
-	REG_PROP(line_after_hit_color, Color(0, 1, 0, 1));
-	REG_PROP(custom_viewport, (Viewport *)nullptr);
-	REG_PROP(custom_canvas, (CanvasItem *)nullptr);
+	REG_PROP_BOOL(recall_to_singleton);
+	REG_PROP_BOOL(debug_enabled);
+	REG_PROP_BOOL(freeze_3d_render);
+	REG_PROP_BOOL(visible_instance_bounds);
+	REG_PROP_BOOL(use_frustum_culling);
+	REG_PROP_BOOL(force_use_camera_from_scene);
+	REG_PROP(graphs_base_offset, Variant::VECTOR2);
+	REG_PROP(geometry_render_layers, Variant::INT);
+	REG_PROP(text_block_position, Variant::INT);
+	REG_PROP(text_block_offset, Variant::VECTOR2);
+	REG_PROP(text_padding, Variant::VECTOR2);
+	REG_PROP(text_default_duration, Variant::FLOAT);
+	REG_PROP(text_foreground_color, Variant::COLOR);
+	REG_PROP(text_background_color, Variant::COLOR);
+	REG_PROP(text_custom_font, Variant::OBJECT);
+	REG_PROP(line_hit_color, Variant::COLOR);
+	REG_PROP(line_after_hit_color, Variant::COLOR);
+	REG_PROP(custom_viewport, Variant::OBJECT);
+	REG_PROP(custom_canvas, Variant::OBJECT);
 
 #undef REG_PROP
 #undef REG_PROP_BOOL
+#undef REG_PROP_BASE
 
 #pragma endregion
 
@@ -108,7 +116,7 @@ void DebugDraw3D::_register_methods() {
 
 	REG_METHOD(clear_all);
 
-	REG_METHOD(draw_sphere);
+	REG_METHOD_ARGS(draw_sphere, "position", "radius", "color", "duration");
 	REG_METHOD(draw_sphere_xf);
 
 	REG_METHOD(draw_sphere_hd);
@@ -169,7 +177,7 @@ void DebugDraw3D::_register_methods() {
 #undef REG_METHOD
 }
 
-void DebugDraw3D::_init() {
+DebugDraw3D::DebugDraw3D() {
 }
 
 void DebugDraw3D::_enter_tree() {
@@ -217,14 +225,14 @@ void DebugDraw3D::_exit_tree() {
 
 	_font.unref();
 
-	if (default_canvas && default_canvas->is_connected("draw", this, TEXT(on_canva_item_draw)))
-		default_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
-	if (custom_canvas && custom_canvas->is_connected("draw", this, TEXT(on_canva_item_draw)))
-		custom_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
+	if (default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw))))
+		default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+	if (custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw))))
+		custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
 	// Clear editor canvas
 	if (custom_canvas)
-		custom_canvas->update();
+		custom_canvas->queue_redraw();
 }
 
 void DebugDraw3D::_ready() {
@@ -232,9 +240,9 @@ void DebugDraw3D::_ready() {
 
 	// Funny hack to get default font
 	{
-		Control *c = Control::_new();
+		Control *c = memnew(Control);
 		add_child(c);
-		_font = c->get_font("font");
+		_font = c->get_theme_default_font();
 		c->queue_free();
 	}
 
@@ -242,12 +250,12 @@ void DebugDraw3D::_ready() {
 	grouped_text->end_text_group();
 
 	// Create canvas item and canvas layer
-	_canvasLayer = CanvasLayer::_new();
+	_canvasLayer = memnew(CanvasLayer);
 	_canvasLayer->set_layer(64);
-	default_canvas = Node2D::_new();
+	default_canvas = memnew(Node2D);
 
 	if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
-		default_canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(default_canvas));
+		default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(default_canvas));
 
 	add_child(_canvasLayer);
 	_canvasLayer->add_child(default_canvas);
@@ -263,9 +271,9 @@ void DebugDraw3D::_process(real_t delta) {
 	// Update overlay
 	if (_canvasNeedUpdate) {
 		if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
-			default_canvas->update();
+			default_canvas->queue_redraw();
 		else
-			custom_canvas->update();
+			custom_canvas->queue_redraw();
 
 		// reset some values
 		_canvasNeedUpdate = false;
@@ -283,10 +291,10 @@ void DebugDraw3D::_process(real_t delta) {
 	}
 }
 
-void DebugDraw3D::on_canva_item_draw(CanvasItem *ci) {
-	RECALL_TO_SINGLETON(on_canva_item_draw, ci);
+void DebugDraw3D::_on_canvas_item_draw(CanvasItem *ci) {
+	RECALL_TO_SINGLETON(_on_canvas_item_draw, ci);
 
-	Vector2 vp_size = ci->has_meta("UseParentSize") ? cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
+	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size);
@@ -488,19 +496,19 @@ Viewport *DebugDraw3D::get_custom_viewport() {
 void DebugDraw3D::set_custom_canvas(CanvasItem *canvas) {
 	RECALL_TO_SINGLETON(set_custom_canvas, canvas);
 
-	bool connected_internal = default_canvas && default_canvas->is_connected("draw", this, TEXT(on_canva_item_draw));
-	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", this, TEXT(on_canva_item_draw));
+	bool connected_internal = default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
 	if (!canvas) {
 		if (!connected_internal)
-			default_canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(default_canvas));
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(default_canvas));
 		if (connected_custom)
-			custom_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
+			custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 	} else {
 		if (connected_internal)
-			default_canvas->disconnect("draw", this, TEXT(on_canva_item_draw));
+			default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 		if (!connected_custom)
-			canvas->connect("draw", this, TEXT(on_canva_item_draw), Array::make(canvas));
+			canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(canvas));
 	}
 
 	custom_canvas = canvas;
@@ -554,7 +562,7 @@ void DebugDraw3D::draw_sphere(Vector3 position, real_t radius, Color color, real
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere, position, radius, color, duration);
 }
 
-void DebugDraw3D::draw_sphere_xf(Transform transform, Color color, real_t duration) {
+void DebugDraw3D::draw_sphere_xf(Transform3D transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_xf, transform, color, duration);
 }
 
@@ -562,14 +570,14 @@ void DebugDraw3D::draw_sphere_hd(Vector3 position, real_t radius, Color color, r
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd, position, radius, color, duration);
 }
 
-void DebugDraw3D::draw_sphere_hd_xf(Transform transform, Color color, real_t duration) {
+void DebugDraw3D::draw_sphere_hd_xf(Transform3D transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_sphere_hd_xf, transform, color, duration);
 }
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
-void DebugDraw3D::draw_cylinder(Transform transform, Color color, real_t duration) {
+void DebugDraw3D::draw_cylinder(Transform3D transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_cylinder, transform, color, duration);
 }
 
@@ -580,7 +588,7 @@ void DebugDraw3D::draw_box(Vector3 position, Vector3 size, Color color, bool is_
 	RECALL_TO_SINGLETON_CALL_DGC(draw_box, position, size, color, is_box_centered, duration);
 }
 
-void DebugDraw3D::draw_box_xf(Transform transform, Color color, bool is_box_centered, real_t duration) {
+void DebugDraw3D::draw_box_xf(Transform3D transform, Color color, bool is_box_centered, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_box_xf, transform, color, is_box_centered, duration);
 }
 
@@ -609,7 +617,7 @@ void DebugDraw3D::draw_line(Vector3 a, Vector3 b, Color color, real_t duration) 
 	RECALL_TO_SINGLETON_CALL_DGC(draw_line, a, b, color, duration);
 }
 
-void DebugDraw3D::draw_lines(PoolVector3Array lines, Color color, real_t duration) {
+void DebugDraw3D::draw_lines(PackedVector3Array lines, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_lines, lines, color, duration);
 }
 
@@ -617,14 +625,14 @@ void DebugDraw3D::draw_ray(Vector3 origin, Vector3 direction, real_t length, Col
 	RECALL_TO_SINGLETON_CALL_DGC(draw_ray, origin, direction, length, color, duration);
 }
 
-void DebugDraw3D::draw_line_path(PoolVector3Array path, Color color, real_t duration) {
+void DebugDraw3D::draw_line_path(PackedVector3Array path, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_line_path, path, color, duration);
 }
 
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugDraw3D::draw_arrow(Transform transform, Color color, real_t duration) {
+void DebugDraw3D::draw_arrow(Transform3D transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow, transform, color, duration);
 }
 
@@ -636,14 +644,14 @@ void DebugDraw3D::draw_arrow_ray(Vector3 origin, Vector3 direction, real_t lengt
 	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_ray, origin, direction, length, color, arrow_size, absolute_size, duration);
 }
 
-void DebugDraw3D::draw_arrow_path(PoolVector3Array path, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
+void DebugDraw3D::draw_arrow_path(PackedVector3Array path, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_arrow_path, path, color, arrow_size, absolute_size, duration);
 }
 
 #pragma endregion // Arrows
 #pragma region Points
 
-void DebugDraw3D::draw_point_path(PoolVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+void DebugDraw3D::draw_point_path(PackedVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_point_path, path, size, points_color, lines_color, duration);
 }
 
@@ -655,15 +663,15 @@ void DebugDraw3D::draw_square(Vector3 position, real_t size, Color color, real_t
 	RECALL_TO_SINGLETON_CALL_DGC(draw_square, position, size, color, duration);
 }
 
-void DebugDraw3D::draw_points(PoolVector3Array points, real_t size, Color color, real_t duration) {
+void DebugDraw3D::draw_points(PackedVector3Array points, real_t size, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_points, points, size, color, duration);
 }
 
-void DebugDraw3D::draw_position(Transform transform, Color color, real_t duration) {
+void DebugDraw3D::draw_position(Transform3D transform, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_position, transform, color, duration);
 }
 
-void DebugDraw3D::draw_gizmo(Transform transform, Color color, bool is_centered, real_t duration) {
+void DebugDraw3D::draw_gizmo(Transform3D transform, Color color, bool is_centered, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo, transform, color, is_centered, duration);
 }
 
@@ -671,13 +679,13 @@ void DebugDraw3D::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vect
 	RECALL_TO_SINGLETON_CALL_DGC(draw_grid, origin, x_size, y_size, subdivision, color, is_centered, duration);
 }
 
-void DebugDraw3D::draw_grid_xf(Transform transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugDraw3D::draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_grid_xf, transform, subdivision, color, is_centered, duration);
 }
 
 #pragma region Camera Frustum
 
-void DebugDraw3D::draw_camera_frustum(class Camera *camera, Color color, real_t duration) {
+void DebugDraw3D::draw_camera_frustum(class Camera3D *camera, Color color, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_camera_frustum, camera, color, duration);
 }
 
@@ -741,8 +749,8 @@ Ref<GraphParameters> DebugDraw3D::get_graph_config(String title) {
 	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, get_graph_config, Ref<GraphParameters>(), title);
 }
 
-PoolStringArray DebugDraw3D::get_graph_names() {
-	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, get_graph_names, PoolStringArray());
+PackedStringArray DebugDraw3D::get_graph_names() {
+	RECALL_TO_SINGLETON_CALL_2D_RET(data_graphs, get_graph_names, PackedStringArray());
 }
 
 #pragma endregion // Graphs

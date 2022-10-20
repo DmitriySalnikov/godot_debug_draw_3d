@@ -179,7 +179,7 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 	Vector2 text_padding = owner->get_text_padding();
 	Vector2 font_offset = ascent + text_padding;
 	float line_height = draw_font->get_height() + text_padding.y * 2;
-	Vector2 pos = Vector2::ZERO;
+	Vector2 pos = Vector2_ZERO;
 	float size_mul = 0;
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
@@ -238,17 +238,17 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 				// Both parts with same color
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text, g->GroupColor);
+						text, godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, g->GroupColor); // TODO font size must be in cofig, not in font
 			} else {
 				// Both parts with different colors
 				String textSep = keyText + separator;
 				int _keyLength = textSep.length();
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text.substr(0, _keyLength), g->GroupColor);
+						text.substr(0, _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, g->GroupColor); // TODO font size must be in cofig, not in font
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep).x, pos.y + font_offset.y).floor(),
-						text.substr(_keyLength, text.length() - _keyLength), t->ValueColor);
+						text.substr(_keyLength, text.length() - _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, t->ValueColor); // TODO font size must be in cofig, not in font
 			}
 			pos.y += line_height;
 		}

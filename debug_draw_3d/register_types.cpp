@@ -1,5 +1,6 @@
 /* register_types.cpp */
 
+/*
 #include <ArrayMesh.hpp>
 #include <Camera.hpp>
 #include <CanvasItem.hpp>
@@ -26,6 +27,7 @@
 #include <Texture.hpp>
 #include <Viewport.hpp>
 #include <VisualInstance.hpp>
+*/
 
 #ifndef NO_EDITOR
 #include "editor_plugin.h"
@@ -33,12 +35,39 @@
 #include "data_graphs.h"
 #include "debug_draw.h"
 
+#include <godot_cpp/core/class_db.hpp>
+
 using namespace godot;
 
 /** GDNative Initialize **/
-extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *o) {
-	Godot::gdnative_init(o);
+extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
+	ClassDB::register_class<DebugDraw3D>();
+	ClassDB::register_class<GraphParameters>();
+
+#ifndef NO_EDITOR
+	ClassDB::register_class<DebugDraw3DEditorPlugin>();
+#endif
+}
+
+/** GDNative Uninitialize **/
+extern "C" void GDN_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+}
+
+/** GDNative Initialize **/
+extern "C" {
+GDNativeBool GDN_EXPORT debug_draw_3d_library_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
+	godot::GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+
+	init_obj.register_initializer(initialize_debug_draw_3d_module);
+	init_obj.register_terminator(uninitialize_debug_draw_3d_module);
+	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
+
+	return init_obj.init();
+	/*
 	// Base class for others
 	godot::_TagDB::register_global_type("Object", typeid(Object).hash_code(), 0);
 	Object::___init_method_bindings();
@@ -83,25 +112,6 @@ extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options *o) {
 #undef TEXT
 #undef REGULAR_CLASS
 #undef REGULAR_CLASS_DASH
+	*/
 }
-
-/** GDNative Terminate **/
-extern "C" void GDN_EXPORT godot_gdnative_terminate(godot_gdnative_terminate_options *o) {
-	Godot::gdnative_terminate(o);
-}
-
-/** GDNative Singleton **/
-extern "C" void GDN_EXPORT godot_gdnative_singleton() {
-}
-
-/** NativeScript Initialize **/
-extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
-	Godot::nativescript_init(handle);
-
-	register_tool_class<DebugDraw3D>();
-	register_tool_class<GraphParameters>();
-
-#ifndef NO_EDITOR
-	register_tool_class<DebugDraw3DEditorPlugin>();
-#endif
 }

@@ -1,15 +1,16 @@
-#pragma once
+#ifndef DD_EDITOR_PLUGIN_H
+#define DD_EDITOR_PLUGIN_H
 
 #include <vector>
 
-#include <EditorPlugin.hpp>
-#include <Godot.hpp>
-#include <ViewportContainer.hpp>
+#include <godot_cpp/classes/editor_plugin.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/canvas_item.hpp>
 
 using namespace godot;
 
 class DebugDraw3DEditorPlugin : public EditorPlugin {
-	GODOT_CLASS(DebugDraw3DEditorPlugin, EditorPlugin)
+	GDCLASS(DebugDraw3DEditorPlugin, EditorPlugin)
 
 	// SpatialEditorViewportContainer
 	//	* SpatialEditorViewport
@@ -23,11 +24,13 @@ class DebugDraw3DEditorPlugin : public EditorPlugin {
 	//		* same..
 	Control *spatial_viewport_container = nullptr;
 
-public:
-	static void _register_methods();
-	void _init();
+protected:
+	static void _bind_methods();
 
-	void on_scene_changed(Node *node);
+public:
+	DebugDraw3DEditorPlugin();
+
+	void _on_scene_changed(Node *node);
 	void remove_prev_node();
 	void create_new_node(Node *parent);
 	void create_auto_find();
@@ -40,3 +43,5 @@ public:
 	void _exit_tree();
 	void disable_plugin();
 };
+
+#endif // !DD_EDITOR_PLUGIN_H
