@@ -43,8 +43,7 @@ DebugDraw3D *DebugDraw3D::singleton = nullptr;
 int DebugDraw3D::instance_counter = 0;
 
 void DebugDraw3D::_bind_methods() {
-#define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &DebugDraw3D::name)
-#define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &DebugDraw3D::name)
+#define REG_CLASS_NAME DebugDraw3D
 
 	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw3D::get_singleton_gdscript);
 
@@ -66,13 +65,6 @@ void DebugDraw3D::_bind_methods() {
 	BIND_CONSTANT(GraphTextFlags::All);
 
 #pragma region Parameters
-
-#define REG_PROP_BASE(name, type, getter)                                                \
-	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &DebugDraw3D::set_##name); \
-	ClassDB::bind_method(D_METHOD(TEXT(getter##name)), &DebugDraw3D::getter##name);      \
-	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
-#define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
-#define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
 
 	REG_PROP_BOOL(recall_to_singleton);
 	REG_PROP_BOOL(debug_enabled);
@@ -96,10 +88,6 @@ void DebugDraw3D::_bind_methods() {
 	REG_PROP(custom_viewport, Variant::OBJECT);
 	REG_PROP(custom_canvas, Variant::OBJECT);
 	*/
-
-#undef REG_PROP
-#undef REG_PROP_BOOL
-#undef REG_PROP_BASE
 
 #pragma endregion
 
@@ -168,8 +156,6 @@ void DebugDraw3D::_bind_methods() {
 #pragma endregion // Draw Functions
 
 	REG_METHOD(get_render_stats);
-
-#undef REG_METHOD
 }
 
 DebugDraw3D::DebugDraw3D() {

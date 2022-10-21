@@ -53,6 +53,19 @@ typedef godot::PackedFloat32Array PackedRealArray;
 #define PRINT_ERROR(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify())
 #define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), true)
 
+namespace godot {
+static String get_file_name_in_repository(String name) {
+	if (name != "") {
+		int idx = name.find("debug_draw_3d");
+		if (idx != -1)
+			name = name.substr(name.find("debug_draw_3d"), name.length());
+	}
+	return name;
+}
+} // namespace godot
+
+#pragma endregion !PRINTING
+
 // TODO temp constants. I didn't find them in gdnative api
 
 const godot::Vector2 Vector2_ZERO = godot::Vector2(0, 0);
@@ -73,18 +86,23 @@ const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
 
 const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 
-namespace godot {
-static String get_file_name_in_repository(String name) {
-	if (name != "") {
-		int idx = name.find("debug_draw_3d");
-		if (idx != -1)
-			name = name.substr(name.find("debug_draw_3d"), name.length());
-	}
-	return name;
-}
-} // namespace godot
+#pragma region BINDING REGISTRATION
 
-#pragma endregion PRINTING
+// For this to work, you need to define REG_CLASS_NAME before using it.
+// e.g. #define REG_CLASS_NAME DebugDraw3D
+// REG_METHOD("draw_box")
+
+#define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &REG_CLASS_NAME::name)
+#define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &REG_CLASS_NAME::name)
+
+#define REG_PROP_BASE(name, type, getter)                                                   \
+	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &REG_CLASS_NAME::set_##name); \
+	ClassDB::bind_method(D_METHOD(TEXT(getter##name)), &REG_CLASS_NAME::getter##name);      \
+	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
+#define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
+#define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
+
+#pragma endregion !BINDING REGISTRATION
 
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 
