@@ -1,5 +1,4 @@
-#ifndef DD_UTILS_H
-#define DD_UTILS_H
+#pragma once
 
 #include "circular_buffer.h"
 
@@ -199,5 +198,3 @@ public:
 	}
 #pragma endregion
 };
-
-#endif // !DD_UTILS_H

@@ -1,5 +1,4 @@
-#ifndef DEBUG_DRAW_H
-#define DEBUG_DRAW_H
+#pragma once
 
 #include "colors.h"
 #include "data_graphs.h"
@@ -10,7 +9,6 @@
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
-#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -36,6 +34,9 @@ private:
 
 	CanvasItem *default_canvas = nullptr;
 
+	// TODO remove it and use Callable::bind in connect methods
+	CanvasItem *current_draw_canvas = nullptr;
+
 	// Text
 	std::unique_ptr<GroupedText> grouped_text;
 
@@ -51,7 +52,9 @@ private:
 	DebugDraw3D *get_singleton_gdscript() {
 		return singleton;
 	};
-	void _on_canvas_item_draw(CanvasItem *ci);
+	// TODO use pointer to CanvasItem from Callable::bind
+	// void _on_canvas_item_draw(CanvasItem *ci);
+	void _on_canvas_item_draw();
 
 #pragma region Exposed Parameter Values
 
@@ -410,7 +413,7 @@ public:
 	/// color: Lines color
 	/// is_centered: Draw lines relative to origin
 	/// duration: Duration of existence in seconds
-	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 	/// Draw simple grid with given size and subdivision
 	/// transform: Transform3D of the Grid
@@ -418,7 +421,7 @@ public:
 	/// color: Lines color
 	/// is_centered: Draw lines relative to origin
 	/// duration: Duration of existence in seconds
-	void draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+	void draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 #pragma region Camera Frustum
 
@@ -498,5 +501,3 @@ public:
 #pragma endregion // 2D
 #pragma endregion // Exposed Draw Functions
 };
-
-#endif // !DEBUG_DRAW_H

@@ -1,5 +1,4 @@
-﻿#ifndef DD_DATA_GRAPHS_H
-#define DD_DATA_GRAPHS_H
+﻿#pragma once
 
 #include "circular_buffer.h"
 #include "colors.h"
@@ -151,5 +150,3 @@ public:
 	Ref<GraphParameters> get_graph_config(String title);
 	PackedStringArray get_graph_names();
 };
-
-#endif // DD_DATA_GRAPHS_H

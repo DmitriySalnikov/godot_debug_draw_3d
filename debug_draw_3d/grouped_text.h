@@ -1,5 +1,4 @@
-#ifndef DD_GROUPED_TEXT_H
-#define DD_GROUPED_TEXT_H
+#pragma once
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
@@ -73,4 +72,3 @@ public:
 	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration);
 	void draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size);
 };
-#endif // !DD_GROUPED_TEXT_H

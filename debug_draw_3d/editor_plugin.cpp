@@ -18,11 +18,11 @@
 using namespace godot;
 
 void DebugDraw3DEditorPlugin::_bind_methods() {
+	/* TODO pointers is not available..
 	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw3DEditorPlugin::_on_scene_changed);
+	*/
 
 	ClassDB::bind_method(D_METHOD(TEXT(disable_plugin)), &DebugDraw3DEditorPlugin::disable_plugin);
-	ClassDB::bind_method(D_METHOD(TEXT(_enter_tree)), &DebugDraw3DEditorPlugin::_enter_tree);
-	ClassDB::bind_method(D_METHOD(TEXT(_exit_tree)), &DebugDraw3DEditorPlugin::_exit_tree);
 }
 
 DebugDraw3DEditorPlugin::DebugDraw3DEditorPlugin() {

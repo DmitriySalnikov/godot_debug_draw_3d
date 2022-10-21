@@ -1,5 +1,4 @@
-#ifndef DD_GEOMETRY_GENERATORS_H
-#define DD_GEOMETRY_GENERATORS_H
+#pragma once
 
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -31,4 +30,3 @@ public:
 	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);
 	static std::vector<Vector3> CreateLinesFromPath(PackedVector3Array path);
 };
-#endif // !DD_GEOMETRY_GENERATORS_H

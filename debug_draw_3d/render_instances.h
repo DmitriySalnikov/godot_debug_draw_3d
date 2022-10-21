@@ -1,5 +1,4 @@
-#ifndef DD_RENDER_INSTANCES_H
-#define DD_RENDER_INSTANCES_H
+#pragma once
 
 #include "math_utils.h"
 #include "utils.h"
@@ -219,5 +218,3 @@ public:
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
 };
-
-#endif // !DD_RENDER_INSTANCES_H

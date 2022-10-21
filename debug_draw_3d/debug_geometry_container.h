@@ -1,5 +1,4 @@
-#ifndef DD_DEBUG_GEOMETRY_CONTAINER_H
-#define DD_DEBUG_GEOMETRY_CONTAINER_H
+#pragma once
 
 #include "colors.h"
 #include "geometry_generators.h"
@@ -105,8 +104,8 @@ public:
 
 	void draw_gizmo(Transform3D transform, Color color = Colors::empty_color, bool is_centered = false, real_t duration = 0);
 
-	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
-	void draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+	void draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
+	void draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color = Colors::empty_color, bool is_centered = true, real_t duration = 0);
 
 #pragma region Camera Frustum
 	void draw_camera_frustum(Camera3D *camera, Color color = Colors::empty_color, real_t duration = 0);
@@ -118,5 +117,3 @@ public:
 #pragma endregion // 3D
 #pragma endregion // Exposed Draw Functions
 };
-
-#endif // !DD_DEBUG_GEOMETRY_CONTAINER_H

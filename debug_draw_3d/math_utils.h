@@ -1,5 +1,4 @@
-#ifndef DD_MATH_UTILS_H
-#define DD_MATH_UTILS_H
+#pragma once
 
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -38,5 +37,3 @@ public:
 			Position(pos),
 			Radius(radius) {}
 };
-
-#endif // !DD_MATH_UTILS_H

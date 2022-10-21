@@ -43,43 +43,33 @@ DebugDraw3D *DebugDraw3D::singleton = nullptr;
 int DebugDraw3D::instance_counter = 0;
 
 void DebugDraw3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw3D::get_singleton_gdscript);
-
 #define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &DebugDraw3D::name)
 #define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &DebugDraw3D::name)
 
-	REG_METHOD(_enter_tree);
-	REG_METHOD(_exit_tree);
-	REG_METHOD(_ready);
-	REG_METHOD(_process);
+	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw3D::get_singleton_gdscript);
 
-	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw3D::_on_canvas_item_draw);
-	//REG_METHOD(_on_canvas_item_draw);
+	REG_METHOD(_on_canvas_item_draw);
 
 #pragma region Constants
 
-	// TODO register somehow
-	/*
-	BIND_ENUM_CONSTANT(BlockPosition::LeftTop);
-	BIND_ENUM_CONSTANT(BlockPosition::RightTop);
-	BIND_ENUM_CONSTANT(BlockPosition::LeftBottom);
-	BIND_ENUM_CONSTANT(BlockPosition::RightBottom);
+	// TODO actually must be BIND_ENUM_CONSTANT
+	BIND_CONSTANT(BlockPosition::LeftTop);
+	BIND_CONSTANT(BlockPosition::RightTop);
+	BIND_CONSTANT(BlockPosition::LeftBottom);
+	BIND_CONSTANT(BlockPosition::RightBottom);
 
-	BIND_ENUM_CONSTANT(GraphTextFlags::None);
-	BIND_ENUM_CONSTANT(GraphTextFlags::Current);
-	BIND_ENUM_CONSTANT(GraphTextFlags::Avarage);
-	BIND_ENUM_CONSTANT(GraphTextFlags::Max);
-	BIND_ENUM_CONSTANT(GraphTextFlags::Min);
-	BIND_ENUM_CONSTANT(GraphTextFlags::All);
-	*/
-
-#undef CONST_REG
+	BIND_CONSTANT(GraphTextFlags::None);
+	BIND_CONSTANT(GraphTextFlags::Current);
+	BIND_CONSTANT(GraphTextFlags::Avarage);
+	BIND_CONSTANT(GraphTextFlags::Max);
+	BIND_CONSTANT(GraphTextFlags::Min);
+	BIND_CONSTANT(GraphTextFlags::All);
 
 #pragma region Parameters
 
 #define REG_PROP_BASE(name, type, getter)                                                \
 	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &DebugDraw3D::set_##name); \
-	ClassDB::bind_method(D_METHOD(TEXT(get_##name)), &DebugDraw3D::getter##name);        \
+	ClassDB::bind_method(D_METHOD(TEXT(getter##name)), &DebugDraw3D::getter##name);      \
 	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
 #define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
 #define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
@@ -101,8 +91,11 @@ void DebugDraw3D::_bind_methods() {
 	REG_PROP(text_custom_font, Variant::OBJECT);
 	REG_PROP(line_hit_color, Variant::COLOR);
 	REG_PROP(line_after_hit_color, Variant::COLOR);
+
+	/* TODO pointers is not available..
 	REG_PROP(custom_viewport, Variant::OBJECT);
 	REG_PROP(custom_canvas, Variant::OBJECT);
+	*/
 
 #undef REG_PROP
 #undef REG_PROP_BOOL
@@ -117,57 +110,59 @@ void DebugDraw3D::_bind_methods() {
 	REG_METHOD(clear_all);
 
 	REG_METHOD_ARGS(draw_sphere, "position", "radius", "color", "duration");
-	REG_METHOD(draw_sphere_xf);
+	REG_METHOD_ARGS(draw_sphere_xf, "transform", "color", "duration");
 
-	REG_METHOD(draw_sphere_hd);
-	REG_METHOD(draw_sphere_hd_xf);
+	REG_METHOD_ARGS(draw_sphere_hd, "position", "radius", "color", "duration");
+	REG_METHOD_ARGS(draw_sphere_hd_xf, "transform", "color", "duration");
 
-	REG_METHOD(draw_cylinder);
+	REG_METHOD_ARGS(draw_cylinder, "transform", "color", "duration");
 
-	REG_METHOD(draw_box);
-	REG_METHOD(draw_box_xf);
-	REG_METHOD(draw_aabb);
-	REG_METHOD(draw_aabb_ab);
+	REG_METHOD_ARGS(draw_box, "position", "size", "color", "is_box_centered", "duration");
+	REG_METHOD_ARGS(draw_box_xf, "transform", "color", "is_box_centered", "duration");
+	REG_METHOD_ARGS(draw_aabb, "aabb", "color", "duration");
+	REG_METHOD_ARGS(draw_aabb_ab, "a", "b", "color", "duration");
 
-	REG_METHOD(draw_line_hit);
-	REG_METHOD(draw_line_hit_offset);
+	REG_METHOD_ARGS(draw_line_hit, "start", "end", "hit", "is_hit", "hit_size", "hit_color", "after_hit_color", "duration");
+	REG_METHOD_ARGS(draw_line_hit_offset, "start", "end", "is_hit", "unit_offset_of_hit", "hit_size", "hit_color", "after_hit_color", "duration");
 
-	REG_METHOD(draw_line);
-	REG_METHOD(draw_lines);
-	REG_METHOD(draw_ray);
-	REG_METHOD(draw_line_path);
+	REG_METHOD_ARGS(draw_line, "a", "b", "color", "duration");
+	REG_METHOD_ARGS(draw_lines, "lines", "color", "duration");
+	REG_METHOD_ARGS(draw_ray, "origin", "direction", "length", "color", "duration");
+	REG_METHOD_ARGS(draw_line_path, "path", "color", "duration");
 
-	REG_METHOD(draw_arrow);
+	REG_METHOD_ARGS(draw_arrow, "transform", "color", "duration");
 
-	REG_METHOD(draw_arrow_line);
-	REG_METHOD(draw_arrow_ray);
-	REG_METHOD(draw_arrow_path);
+	REG_METHOD_ARGS(draw_arrow_line, "a", "b", "color", "arrow_size", "is_absolute_size", "duration");
+	REG_METHOD_ARGS(draw_arrow_ray, "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration");
+	REG_METHOD_ARGS(draw_arrow_path, "path", "color", "arrow_size", "is_absolute_size", "duration");
 
-	REG_METHOD(draw_point_path);
+	REG_METHOD_ARGS(draw_point_path, "path", "size", "points_color", "lines_color", "duration");
 
-	REG_METHOD(draw_square);
-	REG_METHOD(draw_points);
+	REG_METHOD_ARGS(draw_square, "position", "size", "color", "duration");
+	REG_METHOD_ARGS(draw_points, "points", "size", "color", "duration");
 
-	REG_METHOD(draw_camera_frustum);
-	REG_METHOD(draw_camera_frustum_planes);
+	/* TODO pointers is not available..
+	REG_METHOD_ARGS(draw_camera_frustum, "camera", "color", "duration");
+	*/
+	REG_METHOD_ARGS(draw_camera_frustum_planes, "camera_frustum", "color", "duration");
 
-	REG_METHOD(draw_position);
+	REG_METHOD_ARGS(draw_position, "transform", "color", "duration");
 
-	REG_METHOD(draw_gizmo);
+	REG_METHOD_ARGS(draw_gizmo, "transform", "color", "is_centered", "duration");
 
-	REG_METHOD(draw_grid);
-	REG_METHOD(draw_grid_xf);
+	REG_METHOD_ARGS(draw_grid, "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration");
+	REG_METHOD_ARGS(draw_grid_xf, "transform", "subdivision", "color", "is_centered", "duration");
 
-	REG_METHOD(begin_text_group);
+	REG_METHOD_ARGS(begin_text_group, "group_title", "group_priority", "group_color", "show_title");
 	REG_METHOD(end_text_group);
-	REG_METHOD(set_text);
+	REG_METHOD_ARGS(set_text, "key", "value", "priority", "color_of_value", "duration");
 
-	REG_METHOD(create_graph);
-	REG_METHOD(create_fps_graph);
-	REG_METHOD(graph_update_data);
-	REG_METHOD(remove_graph);
+	REG_METHOD_ARGS(create_graph, "title");
+	REG_METHOD_ARGS(create_fps_graph, "title");
+	REG_METHOD_ARGS(graph_update_data, "title", "data");
+	REG_METHOD_ARGS(remove_graph, "title");
 	REG_METHOD(clear_graphs);
-	REG_METHOD(get_graph_config);
+	REG_METHOD_ARGS(get_graph_config, "title");
 	REG_METHOD(get_graph_names);
 
 #pragma endregion // Draw Functions
@@ -225,10 +220,14 @@ void DebugDraw3D::_exit_tree() {
 
 	_font.unref();
 
-	if (default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw))))
+	if (default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
 		default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-	if (custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw))))
+		current_draw_canvas = nullptr;
+	}
+	if (custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
 		custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+		current_draw_canvas = nullptr;
+	}
 
 	// Clear editor canvas
 	if (custom_canvas)
@@ -254,8 +253,10 @@ void DebugDraw3D::_ready() {
 	_canvasLayer->set_layer(64);
 	default_canvas = memnew(Node2D);
 
-	if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
-		default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(default_canvas));
+	if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
+		default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+		current_draw_canvas = default_canvas;
+	}
 
 	add_child(_canvasLayer);
 	_canvasLayer->add_child(default_canvas);
@@ -291,8 +292,13 @@ void DebugDraw3D::_process(real_t delta) {
 	}
 }
 
-void DebugDraw3D::_on_canvas_item_draw(CanvasItem *ci) {
-	RECALL_TO_SINGLETON(_on_canvas_item_draw, ci);
+// TODO use version with pointer
+// void DebugDraw3D::_on_canvas_item_draw(CanvasItem *ci) {
+void DebugDraw3D::_on_canvas_item_draw() {
+	RECALL_TO_SINGLETON(_on_canvas_item_draw);
+
+	// TODO remove it
+	CanvasItem *ci = current_draw_canvas;
 
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
@@ -500,15 +506,23 @@ void DebugDraw3D::set_custom_canvas(CanvasItem *canvas) {
 	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
 	if (!canvas) {
-		if (!connected_internal)
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(default_canvas));
-		if (connected_custom)
+		if (!connected_internal) {
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			current_draw_canvas = default_canvas;
+		}
+		if (connected_custom) {
 			custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+			current_draw_canvas = nullptr;
+		}
 	} else {
-		if (connected_internal)
+		if (connected_internal) {
 			default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-		if (!connected_custom)
-			canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bind(canvas));
+			current_draw_canvas = nullptr;
+		}
+		if (!connected_custom) {
+			canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			current_draw_canvas = canvas;
+		}
 	}
 
 	custom_canvas = canvas;
@@ -675,11 +689,11 @@ void DebugDraw3D::draw_gizmo(Transform3D transform, Color color, bool is_centere
 	RECALL_TO_SINGLETON_CALL_DGC(draw_gizmo, transform, color, is_centered, duration);
 }
 
-void DebugDraw3D::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugDraw3D::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_grid, origin, x_size, y_size, subdivision, color, is_centered, duration);
 }
 
-void DebugDraw3D::draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugDraw3D::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
 	RECALL_TO_SINGLETON_CALL_DGC(draw_grid_xf, transform, subdivision, color, is_centered, duration);
 }
 

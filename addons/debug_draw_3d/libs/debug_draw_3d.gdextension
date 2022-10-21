@@ -1,0 +1,13 @@
+[configuration]
+
+entry_symbol = "debug_draw_3d_library_init"
+
+[libraries]
+
+macos.debug = "macos/INSERT_NAME_HERE.framework"
+macos.release = "macos/INSERT_NAME_HERE.framework"
+windows.debug.x86_64 = "win/debug_draw_3d.windows.debug.x86_64.dll"
+windows.release.x86_64 = "win/debug_draw_3d.windows.release.x86_64.dll"
+linux.debug.x86_64 = "linux/INSERT_NAME_HERE.so"
+linux.release.x86_64 = "linux/INSERT_NAME_HERE.so"
+# Repeat for other architectures to support arm64, rv64, etc.

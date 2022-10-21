@@ -1,5 +1,4 @@
-#ifndef DD_EDITOR_PLUGIN_H
-#define DD_EDITOR_PLUGIN_H
+#pragma once
 
 #include <vector>
 
@@ -43,5 +42,3 @@ public:
 	void _exit_tree();
 	void disable_plugin();
 };
-
-#endif // !DD_EDITOR_PLUGIN_H

@@ -602,7 +602,7 @@ void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool
 #undef PLUS
 }
 
-void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
 	Basis b;
 	// TODO need testing
 	b.set_column(0, x_size);
@@ -611,11 +611,11 @@ void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y
 	draw_grid_xf(Transform3D(b, origin), subdivision, color, is_centered, duration);
 }
 
-void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2 subdivision, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
 	LOCK_GUARD(datalock);
 
-	subdivision = subdivision.floor().abs();
-	subdivision = Vector2((real_t)Math::clamp((int)subdivision.x, 1, INT32_MAX), (real_t)Math::clamp((int)subdivision.y, 1, INT32_MAX));
+	subdivision = subdivision.abs();
+	subdivision = Vector2((real_t)Math::clamp(subdivision.x, 1, INT32_MAX), (real_t)Math::clamp(subdivision.y, 1, INT32_MAX));
 	Vector3 x_d = transform.basis.rows[0] / subdivision.x;
 	Vector3 z_d = transform.basis.rows[2] / subdivision.y;
 

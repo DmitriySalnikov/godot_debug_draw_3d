@@ -11,7 +11,7 @@ using namespace godot;
 void GraphParameters::_bind_methods() {
 #define REG_PROP_BASE(name, type, getter)                                                    \
 	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &GraphParameters::set_##name); \
-	ClassDB::bind_method(D_METHOD(TEXT(get_##name)), &GraphParameters::getter##name);        \
+	ClassDB::bind_method(D_METHOD(TEXT(getter##name)), &GraphParameters::getter##name);      \
 	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
 #define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
 #define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
@@ -30,11 +30,14 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(background_color, Variant::COLOR);
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
+
+	/* TODO pointers is not available..
 	REG_PROP(custom_font, Variant::OBJECT);
 
 #undef REG_PROP
 #undef REG_PROP_BOOL
 #undef REG_PROP_BASE
+	*/
 }
 
 GraphParameters::GraphParameters() {

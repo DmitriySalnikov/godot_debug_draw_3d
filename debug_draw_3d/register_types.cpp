@@ -35,9 +35,12 @@
 #include "data_graphs.h"
 #include "debug_draw.h"
 
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
 
 using namespace godot;
+
+DebugDraw3D *debug_draw_3d_singleton = nullptr;
 
 /** GDNative Initialize **/
 extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
@@ -48,13 +51,23 @@ extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	ClassDB::register_class<DebugDraw3D>();
 	ClassDB::register_class<GraphParameters>();
 
-#ifndef NO_EDITOR
+	debug_draw_3d_singleton = memnew(DebugDraw3D);
+	Engine::get_singleton()->register_singleton(TEXT(DebugDraw3D), debug_draw_3d_singleton);
+	// TODO EditorPlugin's is not available in GDExtensions...
+	/*
+#ifdef TOOLS_ENABLED
 	ClassDB::register_class<DebugDraw3DEditorPlugin>();
 #endif
+	*/
 }
 
 /** GDNative Uninitialize **/
 extern "C" void GDN_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+	if (debug_draw_3d_singleton) {
+		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw3D));
+		memfree(debug_draw_3d_singleton);
+		debug_draw_3d_singleton = nullptr;
+	}
 }
 
 /** GDNative Initialize **/
@@ -67,7 +80,8 @@ GDNativeBool GDN_EXPORT debug_draw_3d_library_init(const GDNativeInterface *p_in
 	init_obj.set_minimum_library_initialization_level(MODULE_INITIALIZATION_LEVEL_SCENE);
 
 	return init_obj.init();
-	/*
+	/* TODO remove unused code from godot-cpp
+	*
 	// Base class for others
 	godot::_TagDB::register_global_type("Object", typeid(Object).hash_code(), 0);
 	Object::___init_method_bindings();
