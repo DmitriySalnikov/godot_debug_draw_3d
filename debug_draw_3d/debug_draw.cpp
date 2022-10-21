@@ -328,11 +328,11 @@ std::vector<Viewport *> DebugDraw3D::get_custom_editor_viewport() {
 	return getter
 
 void DebugDraw3D::set_recall_to_singleton(bool state) {
-	RECALL_TO_SINGLETON_SETTER(recall_to_singleton = state);
+	recall_to_singleton = state;
 }
 
 bool DebugDraw3D::is_recall_to_singleton() {
-	RECALL_TO_SINGLETON_GETTER(recall_to_singleton, true);
+	return recall_to_singleton;
 }
 
 void DebugDraw3D::set_debug_enabled(bool state) {
