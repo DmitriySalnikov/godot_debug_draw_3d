@@ -6,12 +6,12 @@ def extract_used_classes(source_folder, file_path="../patches/used_classes.json"
     find_class = re.compile(r"(?:#include <godot_cpp\/classes\/)(.*)(?:.hpp>)", re.MULTILINE)
 
     found_classes = []
-    for dir,subdir,files in os.walk(source_folder):
+    for dir,subdirs,files in os.walk(source_folder):
         for f in files:
             if not f.endswith((".cpp", ".c", ".inc", ".hpp", ".h")):
                 continue
 
-            with open(Path(source_folder) / f, "r") as file:
+            with open(Path(dir) / f, "r") as file:
                 data = file.read()
                 matches = find_class.finditer(data)
                 
