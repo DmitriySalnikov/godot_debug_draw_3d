@@ -9,33 +9,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Windows Binaries
+      - name: Download Binaries
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: windows_builds.yml
+          workflow: gdextension_build.yml
           path: extracted_files
-      
-      - name: Download Linux Binaries
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: linux_builds.yml
-          path: extracted_files
-      
-      - name: Download Android Binaries
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: android_builds.yml
-          path: extracted_files
-      
-      - name: Download MacOS Binaries
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: macos_builds.yml
-          path: extracted_files
-      
-      - name: Upload GDNative
+
+      - name: Upload GDExtension
         uses: actions/upload-artifact@v3
         with:
-          name: gdnative_libs
+          name: gdextension_libs
           retention-days: 7
           path: extracted_files/*

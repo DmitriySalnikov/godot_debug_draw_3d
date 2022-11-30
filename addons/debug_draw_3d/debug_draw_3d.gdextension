@@ -1,0 +1,47 @@
+[configuration]
+
+entry_symbol = "debug_draw_3d_library_init"
+autodetect_library_prefix = "res://addons/debug_draw_3d"
+
+[dependencies]
+
+macos.debug = [ ]
+macos.release = [ ]
+windows.debug.x86_64 = [ ]
+windows.release.x86_64 = [ ]
+linux.debug.x86_64 = [ ]
+linux.release.x86_64 = [ ]
+
+android.debug.arm32 = [ ]
+android.debug.arm64 = [ ]
+android.debug.x86_32 = [ ]
+android.debug.x86_64 = [ ]
+
+android.release.arm32 = [ ]
+android.release.arm64 = [ ]
+android.release.x86_32 = [ ]
+android.release.x86_64 = [ ]
+
+[libraries]
+
+macos.debug = "res://addons/debug_draw_3d/libs/macos/libdebug_draw_3d.macos.editor.universal.dylib"
+macos.release = "res://addons/debug_draw_3d/libs/macos/libdebug_draw_3d.macos.template_release.universal.dylib"
+windows.debug.x86_64 = "res://addons/debug_draw_3d/libs/win/debug_draw_3d.windows.editor.x86_64.dll"
+windows.release.x86_64 = "res://addons/debug_draw_3d/libs/win/debug_draw_3d.windows.template_release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/debug_draw_3d/libs/linux/libdebug_draw_3d.linux.editor.x86_64.so"
+linux.release.x86_64 = "res://addons/debug_draw_3d/libs/linux/libdebug_draw_3d.linux.template_release.x86_64.so"
+
+android.debug.arm32 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_debug.arm32.so"
+android.debug.arm64 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_debug.arm64.so"
+android.debug.x86_32 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_debug.x86_32.so"
+android.debug.x86_64 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_debug.x86_64.so"
+
+android.release.arm32 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_release.arm32.so"
+android.release.arm64 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_release.arm64.so"
+android.release.x86_32 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_release.x86_32.so"
+android.release.x86_64 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_release.x86_64.so"
+
+# Repeat for other architectures to support arm64, rv64, etc.
+
+# TODO need more testing after https://github.com/godotengine/godot/pull/67906
+# TODO remove absolute paths

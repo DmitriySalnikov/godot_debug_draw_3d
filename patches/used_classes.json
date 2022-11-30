@@ -1,0 +1,1 @@
+["Engine", "CanvasItem", "Font", "RefCounted", "ConfigFile", "DirAccess", "FileAccess", "GlobalConstants", "Label", "Node2D", "ProjectSettings", "SceneTree", "StandardMaterial3D", "Viewport", "Window", "CanvasLayer", "Texture", "ArrayMesh", "Camera3D", "ImmediateMesh", "Mesh", "MeshInstance3D", "MultiMesh", "MultiMeshInstance3D", "Control", "EditorPlugin", "Node"]

@@ -1,14 +1,17 @@
-name: Build GDNative
-description: Build GDNative library
+name: Build GDExtension
+description: Build GDExtension library
 inputs:
   platform:
-    description: Target platform
+    description: Target platform (linux|macos|windows|android|ios|javascript)
     required: true
   target:
-    description: The scons target (debug/release_debug/release).
+    description: Compilation target (editor|template_release|template_debug)
     default: "release"
-  bits:
-    description: Bits or arch (bits=64, bits=32, arch=arm64 or empty)
+  arch:
+    description: Arch (universal|x86_32|x86_64|arm32|arm64|rv64|ppc32|ppc64|wasm32)
+    default: ""
+  additional:
+    description: Any additional arguments
     default: ""
   artifact:
     description: Artifact name
@@ -31,13 +34,13 @@ runs:
         python -m pip install scons
         python --version
         scons --version
-      
+
     - name: Linux dependencies
       shell: bash
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        if [[ "${{ inputs.bits }}" == *"32" ]];then
+        if [[ "${{ inputs.arch }}" == *"32" ]];then
           sudo apt-get install gcc-multilib g++-multilib
         fi
 
@@ -45,12 +48,12 @@ runs:
       shell: bash
       run: |
         cd godot-cpp
-        git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_trim_unused_classes.patch
+        git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
         cd ..
-        scons platform=${{ inputs.platform }} ${{ inputs.bits }} target=${{ inputs.target }}
+        scons platform=${{ inputs.platform }} arch=${{ inputs.arch }} target=${{ inputs.target }} ${{ inputs.additional }}
 
     - name: Prepare artifact Unix
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && inputs.platform != 'android'
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then

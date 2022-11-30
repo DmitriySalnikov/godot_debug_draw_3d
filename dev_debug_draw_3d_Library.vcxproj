@@ -14,7 +14,7 @@
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{a265372d-fcd7-4fbd-9f8c-0d31f6d0f557}</ProjectGuid>
-    <RootNamespace>QOI_Library</RootNamespace>
+    <RootNamespace>debug_draw_3d_Library</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>debug_draw_3d_Library</ProjectName>
   </PropertyGroup>
