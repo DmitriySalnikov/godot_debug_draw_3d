@@ -3,10 +3,10 @@ on:
   push:
     paths:
       [
-        debug_draw_3d/**,
+        src/**,
         .github/**,
         "!.github/**/util_*",
-        "**.patch",
+        "patches/**",
         lib_utils.py,
         SConstruct,
       ]
