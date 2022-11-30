@@ -56,9 +56,9 @@ typedef godot::PackedFloat32Array PackedRealArray;
 namespace godot {
 static String get_file_name_in_repository(String name) {
 	if (name != "") {
-		int idx = name.find("debug_draw_3d");
+		int idx = name.find("src");
 		if (idx != -1)
-			name = name.substr(name.find("debug_draw_3d"), name.length());
+			name = name.substr(name.find("src"), name.length());
 	}
 	return name;
 }
