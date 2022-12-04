@@ -1,3 +1,5 @@
+# Not working at the moment. Very early version! Use Godot 3.x version!
+
 ![icon](/images/icon.png)
 
 # Debug drawing utility for Godot
