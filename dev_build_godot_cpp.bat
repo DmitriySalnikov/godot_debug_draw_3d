@@ -4,12 +4,12 @@ set api=
 
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 
-title win x64 editor dev
-scons platform=windows target=editor arch=x86_64 dev_build=yes %api% generate_bindings=yes
+title win x64 debug dev
+scons platform=windows target=template_debug arch=x86_64 dev_build=yes %api% generate_bindings=yes
 if errorlevel 1 ( echo Failed to generate and compile debug godot-cpp source code. Code: %errorlevel% && exit /b %errorlevel% )
 
-title win x64 editor
-scons platform=windows target=editor arch=x86_64 %api%
+title win x64 debug
+scons platform=windows target=template_debug arch=x86_64 %api%
 if errorlevel 1 ( echo Failed to generate and compile debug godot-cpp source code. Code: %errorlevel% && exit /b %errorlevel% )
 
 title win x64

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="editor_dev|x64">
-      <Configuration>editor_dev</Configuration>
+    <ProjectConfiguration Include="template_dev|x64">
+      <Configuration>template_dev</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="editor|x64">
-      <Configuration>editor</Configuration>
+    <ProjectConfiguration Include="template_debug|x64">
+      <Configuration>template_debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="template_release|x64">
@@ -23,13 +23,13 @@
     <ProjectName>debug_draw_3d_Library</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'" Label="Configuration">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -47,17 +47,17 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'" Label="PropertySheets">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='template_release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
@@ -65,11 +65,11 @@
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)\bin\</OutDir>
-    <TargetName>debug_draw_3d.windows.editor.$(LlvmPlatformName)</TargetName>
+    <TargetName>debug_draw_3d.windows.template_debug.$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -81,7 +81,7 @@
     <TargetName>debug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
@@ -110,7 +110,7 @@
       <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
@@ -130,7 +130,7 @@
     <Link>
       <SubSystem>NotSet</SubSystem>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalDependencies>libgodot-cpp.windows.editor.dev.$(LlvmPlatformName).lib</AdditionalDependencies>
+      <AdditionalDependencies>libgodot-cpp.windows.template_debug.dev.$(LlvmPlatformName).lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <SuppressStartupBanner>true</SuppressStartupBanner>

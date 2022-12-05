@@ -24,11 +24,11 @@ android.release.x86_64 = [ ]
 
 [libraries]
 
-macos.debug = "res://addons/debug_draw_3d/libs/macos/libdebug_draw_3d.macos.editor.universal.dylib"
+macos.debug = "res://addons/debug_draw_3d/libs/macos/libdebug_draw_3d.macos.template_debug.universal.dylib"
 macos.release = "res://addons/debug_draw_3d/libs/macos/libdebug_draw_3d.macos.template_release.universal.dylib"
-windows.debug.x86_64 = "res://addons/debug_draw_3d/libs/win/debug_draw_3d.windows.editor.x86_64.dll"
+windows.debug.x86_64 = "res://addons/debug_draw_3d/libs/win/debug_draw_3d.windows.template_debug.x86_64.dll"
 windows.release.x86_64 = "res://addons/debug_draw_3d/libs/win/debug_draw_3d.windows.template_release.x86_64.dll"
-linux.debug.x86_64 = "res://addons/debug_draw_3d/libs/linux/libdebug_draw_3d.linux.editor.x86_64.so"
+linux.debug.x86_64 = "res://addons/debug_draw_3d/libs/linux/libdebug_draw_3d.linux.template_debug.x86_64.so"
 linux.release.x86_64 = "res://addons/debug_draw_3d/libs/linux/libdebug_draw_3d.linux.template_release.x86_64.so"
 
 android.debug.arm32 = "res://addons/debug_draw_3d/libs/android/libdebug_draw_3d.android.template_debug.arm32.so"
