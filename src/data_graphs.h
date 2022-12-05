@@ -2,7 +2,6 @@
 
 #include "circular_buffer.h"
 #include "colors.h"
-#include "enums.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
@@ -10,6 +9,7 @@
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
+#include <godot_cpp/core/binder_common.hpp>
 
 #include <map>
 
@@ -17,6 +17,22 @@ using namespace godot;
 
 class GraphParameters : public RefCounted {
 	GDCLASS(GraphParameters, RefCounted);
+
+	enum GraphPosition : int {
+		LeftTop = 0,
+		RightTop = 1,
+		LeftBottom = 2,
+		RightBottom = 3,
+	};
+
+	enum GraphTextFlags : int {
+		None = 0,
+		Current = 1 << 0,
+		Avarage = 1 << 1,
+		Max = 1 << 2,
+		Min = 1 << 3,
+		All = Current | Avarage | Max | Min
+	};
 
 	/// Is Graph enabled
 	bool enabled = true;
@@ -28,15 +44,15 @@ class GraphParameters : public RefCounted {
 	/// Draw a graph line aligned vertically in the center
 	bool centered_graph_line = true;
 	/// Sets the text visibility *GraphTextFlags*
-	int show_text_flags = GraphTextFlags::All;
+	GraphTextFlags show_text_flags = GraphTextFlags::All;
 	/// The size of the graph.
 	Vector2 size = Vector2(256, 64);
 	/// The size of the buffer where the values are stored.
 	int buffer_size = 256;
 	/// Offset from the corner selected in position
 	Vector2 offset = Vector2(0, 8);
-	/// FPS Graph position *BlockPosition*
-	int position = BlockPosition::RightTop;
+	/// FPS Graph position *GraphPosition*
+	GraphPosition position = GraphPosition::RightTop;
 	/// Graph line color
 	Color line_color = Colors::orange_red;
 	/// Color of the info text
@@ -72,8 +88,8 @@ public:
 	int get_buffer_size();
 	void set_offset(Vector2 offset);
 	Vector2 get_offset();
-	void set_position(int /*BlockPosition*/ position);
-	int /*BlockPosition*/ get_position();
+	void set_position(int /*GraphPosition*/ position);
+	int /*GraphPosition*/ get_position();
 	void set_line_color(Color new_color);
 	Color get_line_color();
 	void set_text_color(Color new_color);
@@ -87,6 +103,9 @@ public:
 	void set_custom_font(Ref<Font> _custom_font);
 	Ref<Font> get_custom_font();
 };
+
+VARIANT_ENUM_CAST(GraphParameters, GraphParameters::GraphPosition);
+VARIANT_BITFIELD_CAST(GraphParameters, GraphParameters::GraphTextFlags);
 
 class DataGraph {
 public:
@@ -134,10 +153,10 @@ class DataGraphManager {
 	};
 	std::map<String, std::shared_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
 	std::recursive_mutex datalock;
-	class DebugDraw3D *owner;
+	class DebugDraw *owner;
 
 public:
-	DataGraphManager(class DebugDraw3D *root);
+	DataGraphManager(class DebugDraw *root);
 	~DataGraphManager();
 
 	Ref<GraphParameters> create_graph(String title);

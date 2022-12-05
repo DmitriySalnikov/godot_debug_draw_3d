@@ -35,7 +35,7 @@ void DebugDraw3DEditorPlugin::_on_scene_changed(Node *node) {
 }
 
 void DebugDraw3DEditorPlugin::remove_prev_node() {
-	DebugDraw3D *dbg3d = DebugDraw3D::get_singleton();
+	DebugDraw *dbg3d = DebugDraw::get_singleton();
 	if (dbg3d && !dbg3d->is_queued_for_deletion()) {
 		memfree(dbg3d);
 	}
@@ -43,10 +43,10 @@ void DebugDraw3DEditorPlugin::remove_prev_node() {
 
 void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 	remove_prev_node();
-	if (!DebugDraw3D::get_singleton()) {
+	if (!DebugDraw::get_singleton()) {
 		find_viewport_control();
 
-		DebugDraw3D *d = memnew(DebugDraw3D);
+		/* DebugDraw *d = memnew(DebugDraw); TODO move to DebugDraw
 		parent->add_child(d);
 
 		if (spatial_viewport_container) {
@@ -60,6 +60,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 				canvas->queue_redraw();
 			}
 		}
+		*/
 	}
 }
 

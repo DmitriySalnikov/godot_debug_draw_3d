@@ -1,10 +1,9 @@
 #pragma once
 
 #include "colors.h"
-#include "data_graphs.h"
 #include "debug_geometry_container.h"
-#include "enums.h"
 #include "geometry_generators.h"
+#include "data_graphs.h"
 #include "grouped_text.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -15,11 +14,19 @@
 
 using namespace godot;
 
-class DebugDraw3D : public Node {
-	GDCLASS(DebugDraw3D, Node)
+class DebugDraw : public Object {
+	GDCLASS(DebugDraw, Object)
 
-	static DebugDraw3D *singleton;
+	static DebugDraw *singleton;
 	static int instance_counter;
+
+public:
+	enum BlockPosition : int {
+		LeftTop = 0,
+		RightTop = 1,
+		LeftBottom = 2,
+		RightBottom = 3,
+	};
 
 private:
 	std::vector<Viewport *> custom_editor_viewports;
@@ -38,18 +45,19 @@ private:
 	CanvasItem *current_draw_canvas = nullptr;
 
 	// Text
-	std::unique_ptr<GroupedText> grouped_text;
+	std::unique_ptr<class GroupedText> grouped_text;
 
 	// Graphs
-	std::unique_ptr<DataGraphManager> data_graphs;
+	std::unique_ptr<class DataGraphManager> data_graphs;
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
 	std::recursive_mutex datalock;
-	bool is_ready = false;
+	// TODO bool is_ready = false;
+	bool is_ready = true;
 
-	DebugDraw3D *get_singleton_gdscript() {
+	DebugDraw *get_singleton_gdscript() {
 		return singleton;
 	};
 	// TODO use pointer to CanvasItem from Callable::bind
@@ -60,8 +68,6 @@ private:
 
 	// GENERAL
 
-	/// Recall all calls from DebugDraw3D instance to its singleton if needed
-	bool recall_to_singleton = true;
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
 	/// Freezing 3d debugging instances
@@ -115,9 +121,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	DebugDraw3D();
+	DebugDraw();
 
-	static DebugDraw3D *get_singleton() {
+	static DebugDraw *get_singleton() {
 		return singleton;
 	};
 	void mark_canvas_needs_update();
@@ -131,9 +137,6 @@ public:
 	void _process(real_t delta);
 
 #pragma region Exposed Parameters
-	void set_recall_to_singleton(bool state);
-	bool is_recall_to_singleton();
-
 	void set_debug_enabled(bool state);
 	bool is_debug_enabled();
 
@@ -155,8 +158,8 @@ public:
 	void set_geometry_render_layers(int64_t layers);
 	int64_t get_geometry_render_layers();
 
-	void set_text_block_position(int /*BlockPosition*/ position);
-	int /*BlockPosition*/ get_text_block_position();
+	void set_text_block_position(BlockPosition position);
+	BlockPosition get_text_block_position();
 
 	void set_text_block_offset(Vector2 offset);
 	Vector2 get_text_block_offset();
@@ -501,3 +504,5 @@ public:
 #pragma endregion // 2D
 #pragma endregion // Exposed Draw Functions
 };
+
+VARIANT_ENUM_CAST(DebugDraw, DebugDraw::BlockPosition);

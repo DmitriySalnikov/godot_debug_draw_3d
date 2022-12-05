@@ -15,6 +15,7 @@ void GraphParameters::_bind_methods() {
 	REG_PROP_BOOL(show_title);
 	REG_PROP_BOOL(frame_time_mode);
 	REG_PROP_BOOL(centered_graph_line);
+
 	REG_PROP(show_text_flags, Variant::INT);
 	REG_PROP(size, Variant::VECTOR2);
 	REG_PROP(buffer_size, Variant::INT);
@@ -26,6 +27,18 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
 
+	BIND_ENUM_CONSTANT(LeftTop);
+	BIND_ENUM_CONSTANT(RightTop);
+	BIND_ENUM_CONSTANT(LeftBottom);
+	BIND_ENUM_CONSTANT(RightBottom);
+
+	BIND_BITFIELD_FLAG(None);
+	BIND_BITFIELD_FLAG(Current);
+	BIND_BITFIELD_FLAG(Avarage);
+	BIND_BITFIELD_FLAG(Max);
+	BIND_BITFIELD_FLAG(Min);
+	BIND_BITFIELD_FLAG(All);
+
 	/* TODO pointers is not available..
 	REG_PROP(custom_font, Variant::OBJECT);
 	*/
@@ -33,7 +46,7 @@ void GraphParameters::_bind_methods() {
 
 GraphParameters::GraphParameters() {
 	if (IS_EDITOR_HINT()) {
-		position = BlockPosition::LeftTop;
+		position = GraphPosition::LeftTop;
 	}
 }
 
@@ -70,7 +83,7 @@ bool GraphParameters::is_centered_graph_line() {
 }
 
 void GraphParameters::set_show_text_flags(int _flags) {
-	show_text_flags = (GraphTextFlags)_flags;
+	show_text_flags = (GraphParameters::GraphTextFlags)_flags;
 }
 
 int GraphParameters::get_show_text_flags() {
@@ -102,7 +115,7 @@ Vector2 GraphParameters::get_offset() {
 }
 
 void GraphParameters::set_position(int _position) {
-	position = (BlockPosition)_position;
+	position = (GraphPosition)_position;
 }
 
 int GraphParameters::get_position() {
@@ -205,19 +218,19 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	Vector2 title_size = draw_font->get_string_size(title);
 
 	switch (config->get_position()) {
-		case BlockPosition::LeftTop:
+		case GraphParameters::GraphPosition::LeftTop:
 			pos.y += base_offset.y;
 			pos.x += base_offset.x;
 			break;
-		case BlockPosition::RightTop:
+		case GraphParameters::GraphPosition::RightTop:
 			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + base_offset.y);
 			pos.x -= base_offset.x;
 			break;
-		case BlockPosition::LeftBottom:
+		case GraphParameters::GraphPosition::LeftBottom:
 			pos = Vector2(graphOffset.x, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x += base_offset.x;
 			break;
-		case BlockPosition::RightBottom:
+		case GraphParameters::GraphPosition::RightBottom:
 			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x -= base_offset.x;
 			break;
@@ -227,8 +240,8 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		Vector2 title_pos = pos;
 
 		switch (config->get_position()) {
-			case BlockPosition::RightTop:
-			case BlockPosition::RightBottom:
+			case GraphParameters::GraphPosition::RightTop:
+			case GraphParameters::GraphPosition::RightBottom:
 				title_pos.x = title_pos.x + graphSize.x - title_size.x - 8;
 				break;
 		}
@@ -273,27 +286,27 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	// Draw text
 	auto suffix = config->get_text_suffix().is_empty() ? "" : config->get_text_suffix().utf8().get_data();
 
-	if ((config->get_show_text_flags() & GraphTextFlags::Max) == GraphTextFlags::Max) {
+	if ((config->get_show_text_flags() & GraphParameters::GraphTextFlags::Max) == GraphParameters::GraphTextFlags::Max) {
 		String max_text = Utils::string_format("max: %.2f %s", max, suffix);
 		real_t max_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, max_height - 1);
 		ci->draw_string(draw_font, text_pos.floor(), max_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
-	if ((config->get_show_text_flags() & GraphTextFlags::Avarage) == GraphTextFlags::Avarage) {
+	if ((config->get_show_text_flags() & GraphParameters::GraphTextFlags::Avarage) == GraphParameters::GraphTextFlags::Avarage) {
 		String avg_text = Utils::string_format("avg: %.2f %s", avg, suffix);
 		real_t avg_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
 		ci->draw_string(draw_font, text_pos.floor(), avg_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
-	if ((config->get_show_text_flags() & GraphTextFlags::Min) == GraphTextFlags::Min) {
+	if ((config->get_show_text_flags() & GraphParameters::GraphTextFlags::Min) == GraphParameters::GraphTextFlags::Min) {
 		String min_text = Utils::string_format("min: %.2f %s", min, suffix);
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
 		ci->draw_string(draw_font, text_pos.floor(), min_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
-	if ((config->get_show_text_flags() & GraphTextFlags::Current) == GraphTextFlags::Current) {
+	if ((config->get_show_text_flags() & GraphParameters::GraphTextFlags::Current) == GraphParameters::GraphTextFlags::Current) {
 		// `space` at the end of line for offset from border
 		String cur_text = Utils::string_format("%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
 		Vector2 cur_size = draw_font->get_string_size(cur_text);
@@ -302,11 +315,11 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	}
 
 	switch (config->get_position()) {
-		case BlockPosition::LeftTop:
-		case BlockPosition::RightTop:
+		case GraphParameters::GraphPosition::LeftTop:
+		case GraphParameters::GraphPosition::RightTop:
 			return Vector2(base_offset.x, border_size.position.y + border_size.size.y + 0);
-		case BlockPosition::LeftBottom:
-		case BlockPosition::RightBottom:
+		case GraphParameters::GraphPosition::LeftBottom:
+		case GraphParameters::GraphPosition::RightBottom:
 			return Vector2(base_offset.x, border_size.position.y - (config->is_show_title() ? title_size.y : -1));
 	}
 
@@ -329,7 +342,7 @@ void FPSGraph::_update_added(real_t value) {
 ////////////////////////////////////
 // DataGraphManager
 
-DataGraphManager::DataGraphManager(DebugDraw3D *root) {
+DataGraphManager::DataGraphManager(DebugDraw *root) {
 	owner = root;
 }
 

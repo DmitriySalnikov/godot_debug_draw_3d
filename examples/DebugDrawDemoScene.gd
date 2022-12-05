@@ -1,19 +1,19 @@
-tool
-extends Spatial
+@tool
+extends Node3D
 
-export var custom_font : Font
-export var zylann_example := false
-export var show_hints := true
-export var test_graphs := false
-export var more_test_cases := true
-export var draw_array_of_boxes := false
+@export var custom_font : Font
+@export var zylann_example := false
+@export var show_hints := true
+@export var test_graphs := false
+@export var more_test_cases := true
+@export var draw_array_of_boxes := false
 
 var time := 0.0
 var time2 := 0.0
 var time3 := 0.0
 
 func _ready() -> void:
-	yield(get_tree(), "idle_frame")
+	await get_tree().process_frame
 	# this check is required for inherited scenes, because an instance of this 
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
@@ -33,7 +33,7 @@ func _process(delta: float) -> void:
 	# Zylann's example :D
 	if zylann_example:
 		DebugDraw.clear_graphs()
-		var _time = OS.get_ticks_msec() / 1000.0
+		var _time = Time.get_ticks_msec() / 1000.0
 		var box_pos = Vector3(0, sin(_time * 4), 0)
 		var line_begin = Vector3(-1, sin(_time * 4), 0)
 		var line_end = Vector3(1, cos(_time * 4), 0)
@@ -67,57 +67,57 @@ func _process(delta: float) -> void:
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
-		DebugDraw.draw_box_xf(z.global_transform, Color.black)
+		DebugDraw.draw_box_xf(z.global_transform, Color.BLACK)
 	
 	# Spheres
-	DebugDraw.draw_sphere_xf($SphereTransform.global_transform, Color.crimson)
-	DebugDraw.draw_sphere_hd_xf($SphereHDTransform.global_transform, Color.orangered)
+	DebugDraw.draw_sphere_xf($SphereTransform.global_transform, Color.CRIMSON)
+	DebugDraw.draw_sphere_hd_xf($SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
 	# Delayed spheres
 	if time <= 0:
-		DebugDraw.draw_sphere($SpherePosition.global_transform.origin, 2, Color.blueviolet, 2)
-		DebugDraw.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2, Color.cornflower, 2)
+		DebugDraw.draw_sphere($SpherePosition.global_transform.origin, 2, Color.BLUE_VIOLET, 2)
+		DebugDraw.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2, Color.CORNFLOWER_BLUE, 2)
 		time = 2
 	time -= delta
 	
 	# Cylinders
-	DebugDraw.draw_cylinder($Cylinder1.global_transform, Color.crimson)
-	DebugDraw.draw_cylinder(Transform(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.red)
+	DebugDraw.draw_cylinder($Cylinder1.global_transform, Color.CRIMSON)
+	DebugDraw.draw_cylinder(Transform(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.RED)
 	
 	# Boxes
-	DebugDraw.draw_box_xf($Box1.global_transform, Color.purple)
-	DebugDraw.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.rebeccapurple)
-	DebugDraw.draw_box_xf(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.rosybrown)
+	DebugDraw.draw_box_xf($Box1.global_transform, Color.MEDIUM_PURPLE)
+	DebugDraw.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
+	DebugDraw.draw_box_xf(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
 	
-	DebugDraw.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.aqua)
-	DebugDraw.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.deeppink)
+	DebugDraw.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
+	DebugDraw.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
 	
 	# Lines
 	var target = $Lines/Target
-	DebugDraw.draw_square(target.global_transform.origin, 0.5, Color.red)
+	DebugDraw.draw_square(target.global_transform.origin, 0.5, Color.RED)
 	
-	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.fuchsia)
-	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.crimson)
+	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.FUCHSIA)
+	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.CRIMSON)
 	
 	if time3 <= 0:
-		DebugDraw.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.fuchsia, 2)
+		DebugDraw.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2)
 		time3 = 2
 	time3 -= delta
 	
 	# Lines with Arrow
-	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.blue, 0.5, true)
-	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.lavender, 0.5, true)
+	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.BLUE, 0.5, true)
+	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.LAVENDER, 0.5, true)
 	
-	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.aqua)
+	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
 	
 	# Path
 	
 	## preparing data
-	var points: PoolVector3Array = []
-	var points_below: PoolVector3Array = []
-	var points_below2: PoolVector3Array = []
-	var points_below3: PoolVector3Array = []
-	var lines_above: PoolVector3Array = []
+	var points: PackedVector3Array = []
+	var points_below: PackedVector3Array = []
+	var points_below2: PackedVector3Array = []
+	var points_below3: PackedVector3Array = []
+	var lines_above: PackedVector3Array = []
 	for c in $LinePath.get_children():
 		points.append(c.global_transform.origin)
 		points_below.append(c.global_transform.origin + Vector3.DOWN)
@@ -129,44 +129,44 @@ func _process(delta: float) -> void:
 	
 	## drawing lines
 	DebugDraw.draw_lines(lines_above)
-	DebugDraw.draw_line_path(points, Color.beige)
-	DebugDraw.draw_arrow_path(points_below, Color.gold, 0.5)
-	DebugDraw.draw_points(points_below2, 0.2, Color.darkgreen)
-	DebugDraw.draw_point_path(points_below3, 0.25, Color.blue, Color.tomato)
+	DebugDraw.draw_line_path(points, Color.BEIGE)
+	DebugDraw.draw_arrow_path(points_below, Color.GOLD, 0.5)
+	DebugDraw.draw_points(points_below2, 0.2, Color.DARK_GREEN)
+	DebugDraw.draw_point_path(points_below3, 0.25, Color.BLUE, Color.TOMATO)
 	
 	# Misc
-	DebugDraw.draw_camera_frustum($Camera, Color.darkorange)
+	DebugDraw.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
-	DebugDraw.draw_arrow($Misc/Arrow.global_transform, Color.yellowgreen)
+	DebugDraw.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
-	DebugDraw.draw_square($Misc/Billboard.global_transform.origin, 0.5, Color.green)
+	DebugDraw.draw_square($Misc/Billboard.global_transform.origin, 0.5, Color.GREEN)
 	
-	DebugDraw.draw_position($Misc/Position.global_transform, Color.brown)
+	DebugDraw.draw_position($Misc/Position.global_transform, Color.BROWN)
 	
 	DebugDraw.draw_gizmo($Misc/GizmoTransform.global_transform, DebugDraw.empty_color, true)
 	DebugDraw.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw.empty_color, false)
-	DebugDraw.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.brown, true)
+	DebugDraw.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.BROWN, true)
 	
 	var tg = $Misc/Grids/Grid.global_transform
 	var tn = $Misc/Grids/Grid/Subdivision.transform.origin
-	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2(tn.x*10, tn.z*10), Color.lightcoral, false)
+	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2(tn.x*10, tn.z*10), Color.LIGHT_CORAL, false)
 	
 	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
 	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2(tn1.x*10, tn1.z*10))
 	
 	# Text
 	DebugDraw.text_custom_font = custom_font
-	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.gold)
+	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
-	DebugDraw.begin_text_group("-- First Group --", 2, Color.forestgreen)
+	DebugDraw.begin_text_group("-- First Group --", 2, Color.FOREST_GREEN)
 	DebugDraw.set_text("Simple text")
-	DebugDraw.set_text("Text", "Value", 0, Color.aquamarine)
-	DebugDraw.set_text("Text out of order", null, -1, Color.silver)
-	DebugDraw.begin_text_group("-- Second Group --", 1, Color.beige)
+	DebugDraw.set_text("Text", "Value", 0, Color.AQUAMARINE)
+	DebugDraw.set_text("Text out of order", null, -1, Color.SILVER)
+	DebugDraw.begin_text_group("-- Second Group --", 1, Color.BEIGE)
 	DebugDraw.set_text("Rendered frames", Engine.get_frames_drawn())
 	DebugDraw.end_text_group()
 	
-	DebugDraw.begin_text_group("-- Stats --", 3, Color.wheat)
+	DebugDraw.begin_text_group("-- Stats --", 3, Color.WHEAT)
 	
 	var RenderCount = DebugDraw.get_render_stats()
 	if RenderCount.size():
@@ -179,7 +179,7 @@ func _process(delta: float) -> void:
 		DebugDraw.end_text_group()
 	
 	if show_hints:
-		DebugDraw.begin_text_group("controls", 1024, Color.white, false)
+		DebugDraw.begin_text_group("controls", 1024, Color.WHITE, false)
 		DebugDraw.set_text("Shift: change render layers", DebugDraw.geometry_render_layers, 1)
 		DebugDraw.set_text("Enter: freeze render", DebugDraw.freeze_3d_render, 2)
 		DebugDraw.set_text("Up: use scene camera", DebugDraw.force_use_camera_from_scene, 3)
@@ -206,7 +206,7 @@ func _process(delta: float) -> void:
 func _more_tests():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
-		if ray is RayCast:
+		if ray is RayCast3D:
 			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.cast_to).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
 		# Delayed line render

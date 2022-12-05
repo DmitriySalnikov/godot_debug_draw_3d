@@ -105,6 +105,9 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #pragma endregion !BINDING REGISTRATION
 
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
+#define SCENE_TREE() cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
+#define SCENE_ROOT() (SCENE_TREE()->get_root())
+#define RS() RenderingServer::get_singleton()
 
 #define C_ARR_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)

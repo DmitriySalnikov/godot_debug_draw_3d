@@ -58,13 +58,13 @@ class GroupedText {
 	TextGroupItem_ptr item_for_title_of_groups;
 	std::unordered_set<TextGroup_ptr> _textGroups;
 	TextGroup_ptr _currentTextGroup;
-	class DebugDraw3D *owner;
+	class DebugDraw *owner;
 	std::recursive_mutex datalock;
 
 	void _create_new_default_groupd_if_needed();
 
 public:
-	GroupedText(class DebugDraw3D *p_owner);
+	void init_group(class DebugDraw *p_owner);
 	void clear_text();
 	void cleanup_text(real_t delta);
 	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle);

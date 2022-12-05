@@ -16,20 +16,31 @@
 #include <godot_cpp/classes/multi_mesh_instance3d.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
 
 #include <map>
 
 using namespace godot;
 
 class DebugGeometryContainer {
-	class DebugDraw3D *owner;
-	MultiMeshInstance3D *multi_mesh_instances[InstanceType::ALL];
+	class DebugDraw *owner;
 
-	MeshInstance3D *_immediate_instance = nullptr;
+	struct MultiMeshStorage {
+		RID instance;
+		Ref<MultiMesh> mesh;
+		Ref<Material> material;
+		
+		~MultiMeshStorage() {
+			RS()->free_rid(instance);
+		}
+	};
+	MultiMeshStorage multi_mesh_storage[InstanceType::ALL];
+
+	RID _immediate_instance;
 	Ref<ImmediateMesh> _immediate_mesh;
 	GeometryPool geometry_pool;
 
-	MultiMeshInstance3D *CreateMMI(Node *root, InstanceType type, String name);
+	RID CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh);
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices = nullptr, const size_t indices_size = 0, const Color *colors = nullptr, const size_t colors_size = 0);
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const std::vector<Vector3> vertices, const std::vector<int> indices = {}, const std::vector<Color> colors = {});
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {});
@@ -37,7 +48,7 @@ class DebugGeometryContainer {
 	std::recursive_mutex datalock;
 
 public:
-	DebugGeometryContainer(class DebugDraw3D *root);
+	DebugGeometryContainer(class DebugDraw *root);
 	~DebugGeometryContainer();
 
 	void update_geometry(real_t delta);
