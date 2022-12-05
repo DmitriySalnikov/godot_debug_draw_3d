@@ -11,10 +11,10 @@ index 880d19c..e1208a8 100644
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index fd994bf..9f36eda 100644
+index fd994bf..1f58170 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -5,6 +5,70 @@ import re
+@@ -5,6 +5,72 @@ import re
  import shutil
  from pathlib import Path
  
@@ -47,8 +47,10 @@ index fd994bf..9f36eda 100644
 +def _GET_DEPS(api, name):
 +    def _ADD_UNIQUE_ENGINE_CLASS(_class, _to_add):
 +        class_name = _class
-+        if _class.startswith("enum::"):
-+            class_name = _class[len("enum::"):].partition(".")[0]
++        for start in ["enum::", "typedarray::", "bitfield::"]:
++            if _class.startswith(start):
++                class_name = _class[len(start):].partition(".")[0]
++                break
 +
 +        if class_name in TEMP_ENGINE_CLASS_NAMES and class_name not in _to_add:
 +            _to_add.append(class_name)
@@ -85,7 +87,7 @@ index fd994bf..9f36eda 100644
  
  def generate_mod_version(argcount, const=False, returns=False):
      s = """
-@@ -77,6 +141,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -77,6 +143,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
      with open(api_filepath) as api_file:
          api = json.load(api_file)
  
@@ -93,7 +95,7 @@ index fd994bf..9f36eda 100644
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
      include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
      source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -101,6 +166,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -101,6 +168,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if engine_class["name"] == "ClassDB":
              continue
@@ -102,7 +104,7 @@ index fd994bf..9f36eda 100644
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
          if headers:
-@@ -140,6 +207,9 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -140,6 +209,9 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
  
  
  def scons_emit_files(target, source, env):
@@ -112,7 +114,7 @@ index fd994bf..9f36eda 100644
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(files, target)
      return [target[0]] + files, source
-@@ -962,6 +1032,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -962,6 +1034,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if class_api["name"] == "ClassDB":
              continue
