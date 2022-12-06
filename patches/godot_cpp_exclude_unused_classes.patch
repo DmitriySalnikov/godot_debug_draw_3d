@@ -1,20 +1,21 @@
 diff --git a/SConstruct b/SConstruct
-index 880d19c..e1208a8 100644
+index 880d19c..2439f7b 100644
 --- a/SConstruct
 +++ b/SConstruct
-@@ -88,6 +88,7 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
+@@ -88,6 +88,8 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
  
  opts.Add(BoolVariable("build_library", "Build the godot-cpp library.", True))
  opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
 +opts.Add(BoolVariable("exclude_unused_classes", "Disable generation of unused classes.", True))
++opts.Add(PathVariable("folder_to_include_classes", "Path to the directory containing extension sources", "../src", PathVariable.PathIsDir))
  
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index fd994bf..1f58170 100644
+index aac51fa..5e840a6 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -5,6 +5,72 @@ import re
+@@ -5,6 +5,73 @@ import re
  import shutil
  from pathlib import Path
  
@@ -24,6 +25,7 @@ index fd994bf..1f58170 100644
 +USED_CLASSES = []
 +DEPENDENCIES = []
 +TEMP_ENGINE_CLASS_NAMES = []
++SOURCES_FOLDER = ""
 +
 +def SCAN_DEPENDENCIES(api):
 +    global USED_CLASSES
@@ -33,7 +35,7 @@ index fd994bf..1f58170 100644
 +    import sys
 +    sys.path.insert(0, "../patches")
 +    import get_used_classes
-+    get_used_classes.extract_used_classes("../src", used_classes_file)
++    get_used_classes.extract_used_classes(SOURCES_FOLDER, used_classes_file)
 +
 +    with open(used_classes_file, "r") as uc_file:
 +        USED_CLASSES = json.load(uc_file)
@@ -87,7 +89,7 @@ index fd994bf..1f58170 100644
  
  def generate_mod_version(argcount, const=False, returns=False):
      s = """
-@@ -77,6 +143,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -77,6 +144,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
      with open(api_filepath) as api_file:
          api = json.load(api_file)
  
@@ -95,7 +97,7 @@ index fd994bf..1f58170 100644
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
      include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
      source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -101,6 +168,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -101,6 +169,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if engine_class["name"] == "ClassDB":
              continue
@@ -104,17 +106,20 @@ index fd994bf..1f58170 100644
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
          if headers:
-@@ -140,6 +209,9 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -140,6 +210,12 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
  
  
  def scons_emit_files(target, source, env):
 +    global USED_CLASSES
-+    if "exclude_unused_classes" in env and not env["exclude_unused_classes"]:
++    global SOURCES_FOLDER
++    SOURCES_FOLDER = env.get("folder_to_include_classes", "../src")
++    if not env.get("exclude_unused_classes", False):
 +        USED_CLASSES = []
++
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(files, target)
      return [target[0]] + files, source
-@@ -962,6 +1034,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -962,6 +1038,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if class_api["name"] == "ClassDB":
              continue
