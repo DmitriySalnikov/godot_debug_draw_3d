@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64]
-        target: [editor, template_release]
+        target: [template_debug, template_release]
 
     steps:
       - name: Checkout
@@ -53,7 +53,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          artifact: win
+          artifact: windows
 
   # ============================================
 
@@ -65,7 +65,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64]
-        target: [editor, template_release]
+        target: [template_debug, template_release]
 
     steps:
       - name: Checkout
@@ -100,7 +100,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [universal]
-        target: [editor, template_release]
+        target: [template_debug, template_release]
 
     steps:
       - name: Checkout

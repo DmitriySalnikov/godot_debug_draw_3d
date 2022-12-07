@@ -12,22 +12,27 @@ index 880d19c..2439f7b 100644
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index aac51fa..5e840a6 100644
+index aac51fa..6097004 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -5,6 +5,73 @@ import re
+@@ -5,6 +5,78 @@ import re
  import shutil
  from pathlib import Path
  
 +# This patch does not affect the size of the library, but speeds up the build time.
 +# Pass the argument `exclude_unused_classes=no` to generate all classes
 +
++EXCLUDE_CLASSES = True
++SOURCES_FOLDER = ""
 +USED_CLASSES = []
 +DEPENDENCIES = []
 +TEMP_ENGINE_CLASS_NAMES = []
-+SOURCES_FOLDER = ""
 +
 +def SCAN_DEPENDENCIES(api):
++    global EXCLUDE_CLASSES
++    if not EXCLUDE_CLASSES:
++        return
++
 +    global USED_CLASSES
 +    global DEPENDENCIES
 +
@@ -89,7 +94,7 @@ index aac51fa..5e840a6 100644
  
  def generate_mod_version(argcount, const=False, returns=False):
      s = """
-@@ -77,6 +144,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -77,6 +149,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
      with open(api_filepath) as api_file:
          api = json.load(api_file)
  
@@ -97,7 +102,7 @@ index aac51fa..5e840a6 100644
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
      include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
      source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -101,6 +169,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -101,6 +174,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if engine_class["name"] == "ClassDB":
              continue
@@ -106,20 +111,19 @@ index aac51fa..5e840a6 100644
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
          if headers:
-@@ -140,6 +210,12 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -140,6 +215,11 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
  
  
  def scons_emit_files(target, source, env):
-+    global USED_CLASSES
++    global EXCLUDE_CLASSES
 +    global SOURCES_FOLDER
++    EXCLUDE_CLASSES = env.get("exclude_unused_classes", True)
 +    SOURCES_FOLDER = env.get("folder_to_include_classes", "../src")
-+    if not env.get("exclude_unused_classes", False):
-+        USED_CLASSES = []
 +
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(files, target)
      return [target[0]] + files, source
-@@ -962,6 +1038,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -962,6 +1042,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
          # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
          if class_api["name"] == "ClassDB":
              continue
