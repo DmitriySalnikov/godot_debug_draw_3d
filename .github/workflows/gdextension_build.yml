@@ -14,11 +14,12 @@ on:
 
 # Stop the same workflow actions
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.run_id}}
   cancel-in-progress: true
 
 env:
-  SCONS_CACHE: ${{ github.workspace }}/.scons-cache/
+  SCONS_CACHE: ${{github.workspace}}/.scons-cache/
+  OUTPUT_LIBS_PATH: bin
 
 jobs:
   windows-gdextension:
@@ -41,15 +42,17 @@ jobs:
       - name: Setup build cache
         uses: ./.github/actions/gdextension_cache
         with:
-          config: ${{ matrix.arch }}_${{ matrix.target }}
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
         continue-on-error: true
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
           platform: windows
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: win
 
   # ============================================
@@ -74,15 +77,17 @@ jobs:
       - name: Setup build cache
         uses: ./.github/actions/gdextension_cache
         with:
-          config: ${{ matrix.arch }}_${{ matrix.target }}
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
         continue-on-error: true
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
           platform: linux
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: linux
 
   # ============================================
@@ -107,15 +112,17 @@ jobs:
       - name: Setup build cache
         uses: ./.github/actions/gdextension_cache
         with:
-          config: ${{ matrix.arch }}_${{ matrix.target }}
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
         continue-on-error: true
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
           platform: macos
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: macos
 
   # ============================================
@@ -143,13 +150,15 @@ jobs:
       - name: Setup build cache
         uses: ./.github/actions/gdextension_cache
         with:
-          config: ${{ matrix.arch }}_${{ matrix.target }}
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
         continue-on-error: true
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
           platform: android
-          target: ${{ matrix.target }}
-          arch: ${{ matrix.arch }}
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android

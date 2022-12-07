@@ -16,6 +16,9 @@ inputs:
   artifact:
     description: Artifact name
     default: "bin"
+  output_libs_path:
+    description: Path to compiled libraries
+    default: "bin"
 runs:
   using: "composite"
   steps:
@@ -40,7 +43,7 @@ runs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        if [[ "${{ inputs.arch }}" == *"32" ]];then
+        if [[ "${{inputs.arch}}" == *"32" ]];then
           sudo apt-get install gcc-multilib g++-multilib
         fi
 
@@ -51,27 +54,27 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/typed_ptr.patch
         cd ..
-        scons platform=${{ inputs.platform }} arch=${{ inputs.arch }} target=${{ inputs.target }} ${{ inputs.additional }}
+        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
 
     - name: Prepare artifact Unix
       if: runner.os != 'Windows' && inputs.platform != 'android'
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
-          strip -u bin/*
+          strip -u $(find -L ${{inputs.output_libs_path}} -type f)
         else
-          strip bin/*
+          strip $(find -L ${{inputs.output_libs_path}} -type f)
         fi
 
     - name: Prepare artifact Windows
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
+        Remove-Item ${{inputs.output_libs_path}}/* -Recurse -Include *.exp,*.lib,*.pdb -Force
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.artifact }}
+        name: ${{inputs.artifact}}
         retention-days: 7
-        path: bin/*
+        path: ${{inputs.output_libs_path}}/*

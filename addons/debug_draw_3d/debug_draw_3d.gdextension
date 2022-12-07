@@ -27,8 +27,8 @@ android.template_release.x86_64 = { }
 
 macos = "libs/macos/libdebug_draw_3d.macos.template_debug.universal.dylib"
 macos.template_release = "libs/macos/libdebug_draw_3d.macos.template_release.universal.dylib"
-windows.x86_64 = "libs/win/debug_draw_3d.windows.template_debug.x86_64.dll"
-windows.template_release.x86_64 = "libs/win/debug_draw_3d.windows.template_release.x86_64.dll"
+windows.x86_64 = "libs/windows/debug_draw_3d.windows.template_debug.x86_64.dll"
+windows.template_release.x86_64 = "libs/windows/debug_draw_3d.windows.template_release.x86_64.dll"
 linux.x86_64 = "libs/linux/libdebug_draw_3d.linux.template_debug.x86_64.so"
 linux.template_release.x86_64 = "libs/linux/libdebug_draw_3d.linux.template_release.x86_64.so"
 

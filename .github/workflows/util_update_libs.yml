@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      libs_path: addons/debug_draw_3d/libs
+      ADDON_LIBS_PATH: addons/debug_draw_3d/libs
 
     steps:
       - name: Checkout
@@ -22,15 +22,15 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: util_collect_binaries.yml
-          branch: ${{ github.ref_name }}
+          branch: ${{github.ref_name}}
           name: gdextension_libs
           path: extracted_files/
 
       - name: Replace with new files
         run: |
           ls extracted_files/*
-          rm -rf ${{ env.libs_path }}/
-          mv -f extracted_files ${{ env.libs_path }}
+          rm -rf ${{env.ADDON_LIBS_PATH}}/
+          mv -f extracted_files ${{env.ADDON_LIBS_PATH}}
 
       - name: Commit report
         run: |
