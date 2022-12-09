@@ -18,7 +18,7 @@
 
 #define TEXT(s) #s
 
-#if _DEBUG && _MSC_VER
+#if DEBUG_ENABLED && _MSC_VER
 #ifndef _CRT_STRINGIZE
 #define _CRT_STRINGIZE_(x) #x
 #define _CRT_STRINGIZE(x) _CRT_STRINGIZE_(x)
@@ -39,10 +39,10 @@ typedef godot::PackedFloat32Array PackedRealArray;
 
 #pragma region PRINTING
 
-#if _DEBUG
+#if DEBUG_ENABLED
 #define DEBUG_PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
-#define DEBUG_PRINT_STD(format, ...) Utils::logv(format, false, false, __VA_ARGS__)
-#define DEBUG_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, __VA_ARGS__)
+#define DEBUG_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
+#define DEBUG_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
 #else
 #define DEBUG_PRINT(text)
 #define DEBUG_PRINT_STD(format, ...)
@@ -113,7 +113,7 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
 
 class Utils {
-#if _DEBUG
+#if DEBUG_ENABLED
 	struct LogData {
 		size_t hash;
 		std::string text;

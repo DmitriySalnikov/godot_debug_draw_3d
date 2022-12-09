@@ -5,12 +5,12 @@
 
 using namespace godot;
 
-#if _DEBUG
+#if DEBUG_ENABLED
 std::queue<Utils::LogData> Utils::log_buffer;
 #endif
 
 void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
-#if _DEBUG
+#if DEBUG_ENABLED
 
 	const int static_buf_size = 512;
 	char static_buf[static_buf_size];
@@ -51,7 +51,7 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 }
 
 void Utils::print_logs() {
-#if _DEBUG
+#if DEBUG_ENABLED
 	while (log_buffer.size()) {
 		auto &l = log_buffer.front();
 		if (l.repeat > 1) {

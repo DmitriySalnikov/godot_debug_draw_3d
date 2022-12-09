@@ -1,13 +1,14 @@
 #pragma once
 
 #include "colors.h"
+#include "data_graphs.h"
 #include "debug_geometry_container.h"
 #include "geometry_generators.h"
-#include "data_graphs.h"
 #include "grouped_text.h"
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -22,10 +23,10 @@ class DebugDraw : public Object {
 
 public:
 	enum BlockPosition : int {
-		LeftTop = 0,
-		RightTop = 1,
-		LeftBottom = 2,
-		RightBottom = 3,
+		POSITION_LEFT_TOP = 0,
+		POSITION_RIGHT_TOP = 1,
+		POSITION_LEFT_BOTTOM = 2,
+		POSITION_RIGHT_BOTTOM = 3,
 	};
 
 private:
@@ -88,7 +89,7 @@ private:
 	// TEXT
 
 	/// Position of text block
-	BlockPosition text_block_position = BlockPosition::LeftTop;
+	BlockPosition text_block_position = BlockPosition::POSITION_LEFT_TOP;
 	/// Offset from the corner selected in 'text_block_position'
 	Vector2 text_block_offset = Vector2(8, 8);
 	/// Text padding for each line
@@ -505,4 +506,13 @@ public:
 #pragma endregion // Exposed Draw Functions
 };
 
-VARIANT_ENUM_CAST(DebugDraw, DebugDraw::BlockPosition);
+VARIANT_ENUM_CAST(DebugDraw::BlockPosition);
+
+class DebugDrawSceneManager : public Node {
+	GDCLASS(DebugDrawSceneManager, Node)
+protected:
+	static void _bind_methods(){};
+	void _notification(int what);
+
+public:
+};

@@ -36,11 +36,10 @@ void DebugDraw::_bind_methods() {
 
 #pragma region Constants
 
-	// TODO actually must be BIND_ENUM_CONSTANT
-	BIND_ENUM_CONSTANT(LeftTop);
-	BIND_ENUM_CONSTANT(RightTop);
-	BIND_ENUM_CONSTANT(LeftBottom);
-	BIND_ENUM_CONSTANT(RightBottom);
+	BIND_ENUM_CONSTANT(POSITION_LEFT_TOP);
+	BIND_ENUM_CONSTANT(POSITION_RIGHT_TOP);
+	BIND_ENUM_CONSTANT(POSITION_LEFT_BOTTOM);
+	BIND_ENUM_CONSTANT(POSITION_RIGHT_BOTTOM);
 
 #pragma region Parameters
 
@@ -61,10 +60,8 @@ void DebugDraw::_bind_methods() {
 	REG_PROP(line_hit_color, Variant::COLOR);
 	REG_PROP(line_after_hit_color, Variant::COLOR);
 
-	/* TODO pointers is not available..
 	REG_PROP(custom_viewport, Variant::OBJECT);
 	REG_PROP(custom_canvas, Variant::OBJECT);
-	*/
 
 #pragma endregion
 
@@ -136,6 +133,7 @@ void DebugDraw::_bind_methods() {
 }
 
 DebugDraw::DebugDraw() {
+	PRINT(SCENE_TREE());
 }
 
 // TODO SOMEHOW NEED TO BE CALLED
@@ -153,7 +151,7 @@ void DebugDraw::_enter_tree() {
 	}
 
 	if (IS_EDITOR_HINT()) {
-		text_block_position = BlockPosition::LeftBottom;
+		text_block_position = BlockPosition::POSITION_LEFT_BOTTOM;
 		text_block_offset = Vector2(24, 24);
 		graphs_base_offset = Vector2(12, 72);
 	}
@@ -684,3 +682,12 @@ PackedStringArray DebugDraw::get_graph_names() {
 #pragma endregion // 2D
 
 #pragma endregion // Draw Functions
+
+void DebugDrawSceneManager::_notification(int what) {
+	switch (what) {
+		case NOTIFICATION_PROCESS: {
+
+			break;
+		}
+	}
+}

@@ -8,6 +8,7 @@
 
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/classes/editor_interface.hpp>
 
 using namespace godot;
 
@@ -21,9 +22,12 @@ extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 
 	ClassDB::register_class<DebugDraw>();
 	ClassDB::register_class<GraphParameters>();
+	ClassDB::register_class<DebugDraw3DEditorPlugin>();
 
 	debug_draw_3d_singleton = memnew(DebugDraw);
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
+	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
+	
 	// TODO EditorPlugin's is not available in GDExtensions...
 	/*
 #ifdef TOOLS_ENABLED
@@ -36,6 +40,7 @@ extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 extern "C" void GDN_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw3D));
+		Engine::get_singleton()->unregister_singleton("Dbg3");
 		memfree(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;
 	}

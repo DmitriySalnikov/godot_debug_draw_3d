@@ -19,19 +19,18 @@ class GraphParameters : public RefCounted {
 	GDCLASS(GraphParameters, RefCounted);
 
 	enum GraphPosition : int {
-		LeftTop = 0,
-		RightTop = 1,
-		LeftBottom = 2,
-		RightBottom = 3,
+		POSITION_LEFT_TOP = 0,
+		POSITION_RIGHT_TOP = 1,
+		POSITION_LEFT_BOTTOM = 2,
+		POSITION_RIGHT_BOTTOM = 3,
 	};
 
-	enum GraphTextFlags : int {
-		None = 0,
-		Current = 1 << 0,
-		Avarage = 1 << 1,
-		Max = 1 << 2,
-		Min = 1 << 3,
-		All = Current | Avarage | Max | Min
+	enum TextFlags : int {
+		TEXT_CURRENT = 1 << 0,
+		TEXT_AVG = 1 << 1,
+		TEXT_MAX = 1 << 2,
+		TEXT_MIN = 1 << 3,
+		TEXT_ALL = TEXT_CURRENT | TEXT_AVG | TEXT_MAX | TEXT_MIN
 	};
 
 	/// Is Graph enabled
@@ -43,8 +42,8 @@ class GraphParameters : public RefCounted {
 	bool frametime_mode = true;
 	/// Draw a graph line aligned vertically in the center
 	bool centered_graph_line = true;
-	/// Sets the text visibility *GraphTextFlags*
-	GraphTextFlags show_text_flags = GraphTextFlags::All;
+	/// Sets the text visibility *TextFlags*
+	BitField<TextFlags> show_text_flags = TextFlags::TEXT_ALL;
 	/// The size of the graph.
 	Vector2 size = Vector2(256, 64);
 	/// The size of the buffer where the values are stored.
@@ -52,7 +51,7 @@ class GraphParameters : public RefCounted {
 	/// Offset from the corner selected in position
 	Vector2 offset = Vector2(0, 8);
 	/// FPS Graph position *GraphPosition*
-	GraphPosition position = GraphPosition::RightTop;
+	GraphPosition position = GraphPosition::POSITION_RIGHT_TOP;
 	/// Graph line color
 	Color line_color = Colors::orange_red;
 	/// Color of the info text
@@ -80,16 +79,16 @@ public:
 	bool is_frame_time_mode();
 	void set_centered_graph_line(bool state);
 	bool is_centered_graph_line();
-	void set_show_text_flags(int /*GraphTextFlags*/ flags);
-	int /*GraphTextFlags*/ get_show_text_flags();
+	void set_show_text_flags(BitField<TextFlags> flags);
+	BitField<TextFlags> get_show_text_flags();
 	void set_size(Vector2 size);
 	Vector2 get_size();
 	void set_buffer_size(int buf_size);
 	int get_buffer_size();
 	void set_offset(Vector2 offset);
 	Vector2 get_offset();
-	void set_position(int /*GraphPosition*/ position);
-	int /*GraphPosition*/ get_position();
+	void set_position(GraphPosition position);
+	GraphPosition get_position();
 	void set_line_color(Color new_color);
 	Color get_line_color();
 	void set_text_color(Color new_color);
@@ -104,8 +103,8 @@ public:
 	Ref<Font> get_custom_font();
 };
 
-VARIANT_ENUM_CAST(GraphParameters, GraphParameters::GraphPosition);
-VARIANT_BITFIELD_CAST(GraphParameters, GraphParameters::GraphTextFlags);
+VARIANT_ENUM_CAST(GraphParameters::GraphPosition);
+VARIANT_BITFIELD_CAST(GraphParameters::TextFlags);
 
 class DataGraph {
 public:
@@ -169,3 +168,4 @@ public:
 	Ref<GraphParameters> get_graph_config(String title);
 	PackedStringArray get_graph_names();
 };
+

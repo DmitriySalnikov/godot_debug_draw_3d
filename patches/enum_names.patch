@@ -1,0 +1,315 @@
+From 775b7fe026fe5de753dc15e56ccc4b2d7e98c903 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?=D0=94=D0=BC=D0=B8=D1=82=D1=80=D0=B8=D0=B9=20=D0=A1=D0=B0?=
+ =?UTF-8?q?=D0=BB=D1=8C=D0=BD=D0=B8=D0=BA=D0=BE=D0=B2?=
+ <salnikov.mine@yandex.ru>
+Date: Thu, 8 Dec 2022 08:34:19 +0300
+Subject: [PATCH] Fixed variant casting for enum and bitfield
+
+---
+ binding_generator.py                     |  8 +--
+ include/godot_cpp/core/binder_common.hpp | 76 ++++++++++++------------
+ include/godot_cpp/core/type_info.hpp     | 51 +++++++++-------
+ test/demo/main.gd                        |  6 ++
+ test/src/example.cpp                     | 10 ++++
+ test/src/example.h                       | 10 +++-
+ 6 files changed, 97 insertions(+), 64 deletions(-)
+
+diff --git a/binding_generator.py b/binding_generator.py
+index aac51fa..e808568 100644
+--- a/binding_generator.py
++++ b/binding_generator.py
+@@ -334,7 +334,7 @@ def generate_builtin_bindings(api, output_dir, build_config):
+             if is_included_type(builtin_api["name"]):
+                 if "enums" in builtin_api:
+                     for enum_api in builtin_api["enums"]:
+-                        builtin_binds.append(f"VARIANT_ENUM_CAST({builtin_api['name']}, {enum_api['name']});")
++                        builtin_binds.append(f"VARIANT_ENUM_CAST({builtin_api['name']}::{enum_api['name']});")
+ 
+         builtin_binds.append("")
+         builtin_binds.append("#endif // ! GODOT_CPP_BUILTIN_BINDS_HPP")
+@@ -1275,9 +1275,9 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+     if "enums" in class_api and class_name != "Object":
+         for enum_api in class_api["enums"]:
+             if enum_api["is_bitfield"]:
+-                result.append(f'VARIANT_BITFIELD_CAST({class_name}, {class_name}::{enum_api["name"]});')
++                result.append(f'VARIANT_BITFIELD_CAST({class_name}::{enum_api["name"]});')
+             else:
+-                result.append(f'VARIANT_ENUM_CAST({class_name}, {class_name}::{enum_api["name"]});')
++                result.append(f'VARIANT_ENUM_CAST({class_name}::{enum_api["name"]});')
+         result.append("")
+ 
+     result.append(f"#endif // ! {header_guard}")
+@@ -1510,7 +1510,7 @@ def generate_global_constant_binds(api, output_dir):
+         if enum_def["name"].startswith("Variant."):
+             continue
+ 
+-        header.append(f'VARIANT_ENUM_CAST(, godot::{enum_def["name"]});')
++        header.append(f'VARIANT_ENUM_CAST(godot::{enum_def["name"]});')
+ 
+     header.append("")
+ 
+diff --git a/include/godot_cpp/core/binder_common.hpp b/include/godot_cpp/core/binder_common.hpp
+index 93b21ca..de71bdf 100644
+--- a/include/godot_cpp/core/binder_common.hpp
++++ b/include/godot_cpp/core/binder_common.hpp
+@@ -41,46 +41,46 @@
+ 
+ namespace godot {
+ 
+-#define VARIANT_ENUM_CAST(m_class, m_enum)                                      \
+-	namespace godot {                                                           \
+-	MAKE_ENUM_TYPE_INFO(m_class, m_enum)                                        \
+-	template <>                                                                 \
+-	struct VariantCaster<m_class::m_enum> {                                     \
+-		static _FORCE_INLINE_ m_class::m_enum cast(const Variant &p_variant) {  \
+-			return (m_class::m_enum)p_variant.operator int64_t();               \
+-		}                                                                       \
+-	};                                                                          \
+-	template <>                                                                 \
+-	struct PtrToArg<m_class::m_enum> {                                          \
+-		_FORCE_INLINE_ static m_class::m_enum convert(const void *p_ptr) {      \
+-			return m_class::m_enum(*reinterpret_cast<const int64_t *>(p_ptr));  \
+-		}                                                                       \
+-		typedef int64_t EncodeT;                                                \
+-		_FORCE_INLINE_ static void encode(m_class::m_enum p_val, void *p_ptr) { \
+-			*reinterpret_cast<int64_t *>(p_ptr) = p_val;                        \
+-		}                                                                       \
+-	};                                                                          \
++#define VARIANT_ENUM_CAST(m_enum)                                      \
++	namespace godot {                                                  \
++	MAKE_ENUM_TYPE_INFO(m_enum)                                        \
++	template <>                                                        \
++	struct VariantCaster<m_enum> {                                     \
++		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {  \
++			return (m_enum)p_variant.operator int64_t();               \
++		}                                                              \
++	};                                                                 \
++	template <>                                                        \
++	struct PtrToArg<m_enum> {                                          \
++		_FORCE_INLINE_ static m_enum convert(const void *p_ptr) {      \
++			return m_enum(*reinterpret_cast<const int64_t *>(p_ptr));  \
++		}                                                              \
++		typedef int64_t EncodeT;                                       \
++		_FORCE_INLINE_ static void encode(m_enum p_val, void *p_ptr) { \
++			*reinterpret_cast<int64_t *>(p_ptr) = p_val;               \
++		}                                                              \
++	};                                                                 \
+ 	}
+ 
+-#define VARIANT_BITFIELD_CAST(m_class, m_enum)                                            \
+-	namespace godot {                                                                     \
+-	MAKE_BITFIELD_TYPE_INFO(m_class, m_enum)                                              \
+-	template <>                                                                           \
+-	struct VariantCaster<BitField<m_class::m_enum>> {                                     \
+-		static _FORCE_INLINE_ BitField<m_class::m_enum> cast(const Variant &p_variant) {  \
+-			return BitField<m_class::m_enum>(p_variant.operator int64_t());               \
+-		}                                                                                 \
+-	};                                                                                    \
+-	template <>                                                                           \
+-	struct PtrToArg<BitField<m_class::m_enum>> {                                          \
+-		_FORCE_INLINE_ static BitField<m_class::m_enum> convert(const void *p_ptr) {      \
+-			return BitField<m_class::m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));  \
+-		}                                                                                 \
+-		typedef int64_t EncodeT;                                                          \
+-		_FORCE_INLINE_ static void encode(BitField<m_class::m_enum> p_val, void *p_ptr) { \
+-			*reinterpret_cast<int64_t *>(p_ptr) = p_val;                                  \
+-		}                                                                                 \
+-	};                                                                                    \
++#define VARIANT_BITFIELD_CAST(m_enum)                                            \
++	namespace godot {                                                            \
++	MAKE_BITFIELD_TYPE_INFO(m_enum)                                              \
++	template <>                                                                  \
++	struct VariantCaster<BitField<m_enum>> {                                     \
++		static _FORCE_INLINE_ BitField<m_enum> cast(const Variant &p_variant) {  \
++			return BitField<m_enum>(p_variant.operator int64_t());               \
++		}                                                                        \
++	};                                                                           \
++	template <>                                                                  \
++	struct PtrToArg<BitField<m_enum>> {                                          \
++		_FORCE_INLINE_ static BitField<m_enum> convert(const void *p_ptr) {      \
++			return BitField<m_enum>(*reinterpret_cast<const int64_t *>(p_ptr));  \
++		}                                                                        \
++		typedef int64_t EncodeT;                                                 \
++		_FORCE_INLINE_ static void encode(BitField<m_enum> p_val, void *p_ptr) { \
++			*reinterpret_cast<int64_t *>(p_ptr) = p_val;                         \
++		}                                                                        \
++	};                                                                           \
+ 	}
+ 
+ template <class T>
+diff --git a/include/godot_cpp/core/type_info.hpp b/include/godot_cpp/core/type_info.hpp
+index 329231a..4bb5305 100644
+--- a/include/godot_cpp/core/type_info.hpp
++++ b/include/godot_cpp/core/type_info.hpp
+@@ -214,21 +214,30 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
+ 	}
+ };
+ 
+-#define TEMPL_MAKE_ENUM_TYPE_INFO(m_class, m_enum, m_impl)                                                                                                          \
+-	template <>                                                                                                                                                     \
+-	struct GetTypeInfo<m_impl> {                                                                                                                                    \
+-		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                                     \
+-		static const GDNativeExtensionClassMethodArgumentMetadata METADATA = GDNATIVE_EXTENSION_METHOD_ARGUMENT_METADATA_NONE;                                      \
+-		static inline PropertyInfo get_class_info() {                                                                                                               \
+-			return make_property_info(Variant::Type::INT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, #m_class "." #m_enum); \
+-		}                                                                                                                                                           \
++inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
++	PackedStringArray parts = p_qualified_name.split("::", false);
++	if (parts.size() <= 2) {
++		return String(".").join(parts);
++	}
++	// Contains namespace. We only want the class and enum names.
++	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
++}
++
++#define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                                                                              \
++	template <>                                                                                                                                                                                \
++	struct GetTypeInfo<m_impl> {                                                                                                                                                               \
++		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                                                                \
++		static const GDNativeExtensionClassMethodArgumentMetadata METADATA = GDNATIVE_EXTENSION_METHOD_ARGUMENT_METADATA_NONE;                                                                 \
++		static inline PropertyInfo get_class_info() {                                                                                                                                          \
++			return make_property_info(Variant::Type::INT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, enum_qualified_name_to_class_info_name(#m_enum)); \
++		}                                                                                                                                                                                      \
+ 	};
+ 
+-#define MAKE_ENUM_TYPE_INFO(m_class, m_enum)                          \
+-	TEMPL_MAKE_ENUM_TYPE_INFO(m_class, m_enum, m_class::m_enum)       \
+-	TEMPL_MAKE_ENUM_TYPE_INFO(m_class, m_enum, m_class::m_enum const) \
+-	TEMPL_MAKE_ENUM_TYPE_INFO(m_class, m_enum, m_class::m_enum &)     \
+-	TEMPL_MAKE_ENUM_TYPE_INFO(m_class, m_enum, const m_class::m_enum &)
++#define MAKE_ENUM_TYPE_INFO(m_enum)                 \
++	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum)       \
++	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum const) \
++	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_enum &)     \
++	TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, const m_enum &)
+ 
+ template <typename T>
+ inline StringName __constant_get_enum_name(T param, StringName p_constant) {
+@@ -251,14 +260,14 @@ public:
+ 	_FORCE_INLINE_ operator Variant() const { return value; }
+ };
+ 
+-#define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_class, m_enum, m_impl)                                                                                   \
++#define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
+ 	template <>                                                                                                                                  \
+ 	struct GetTypeInfo<m_impl> {                                                                                                                 \
+ 		static const Variant::Type VARIANT_TYPE = Variant::INT;                                                                                  \
+ 		static const GDNativeExtensionClassMethodArgumentMetadata METADATA = GDNATIVE_EXTENSION_METHOD_ARGUMENT_METADATA_NONE;                   \
+ 		static inline PropertyInfo get_class_info() {                                                                                            \
+ 			return make_property_info(Variant::Type::INT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
+-					#m_class "." #m_enum);                                                                                                       \
++					enum_qualified_name_to_class_info_name(#m_enum));                                                                            \
+ 		}                                                                                                                                        \
+ 	};                                                                                                                                           \
+ 	template <>                                                                                                                                  \
+@@ -267,15 +276,15 @@ public:
+ 		static const GDNativeExtensionClassMethodArgumentMetadata METADATA = GDNATIVE_EXTENSION_METHOD_ARGUMENT_METADATA_NONE;                   \
+ 		static inline PropertyInfo get_class_info() {                                                                                            \
+ 			return make_property_info(Variant::Type::INT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
+-					#m_class "." #m_enum);                                                                                                       \
++					enum_qualified_name_to_class_info_name(#m_enum));                                                                            \
+ 		}                                                                                                                                        \
+ 	};
+ 
+-#define MAKE_BITFIELD_TYPE_INFO(m_class, m_enum)                 \
+-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_class, m_enum, m_enum)       \
+-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_class, m_enum, m_enum const) \
+-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_class, m_enum, m_enum &)     \
+-	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_class, m_enum, const m_enum &)
++#define MAKE_BITFIELD_TYPE_INFO(m_enum)                 \
++	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum)       \
++	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum const) \
++	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_enum &)     \
++	TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, const m_enum &)
+ 
+ template <typename T>
+ inline StringName __constant_get_bitfield_name(T param, StringName p_constant) {
+diff --git a/test/demo/main.gd b/test/demo/main.gd
+index 7d36ef1..d3cc6b1 100644
+--- a/test/demo/main.gd
++++ b/test/demo/main.gd
+@@ -60,5 +60,11 @@ func _ready():
+ 	prints("  ANSWER_TO_EVERYTHING", $Example.ANSWER_TO_EVERYTHING)
+ 	prints("  CONSTANT_WITHOUT_ENUM", $Example.CONSTANT_WITHOUT_ENUM)
+ 
++	prints("BitFields")
++	prints("  FLAG_ONE", Example.FLAG_ONE)
++	prints("  FLAG_TWO", Example.FLAG_TWO)
++	prints("  returned BitField", $Example.test_bitfield(0))
++	prints("  returned BitField", $Example.test_bitfield(Example.FLAG_ONE | Example.FLAG_TWO))
++
+ func _on_Example_custom_signal(signal_name, value):
+ 	prints("Example emitted:", signal_name, value)
+diff --git a/test/src/example.cpp b/test/src/example.cpp
+index 3e10f32..35df4b5 100644
+--- a/test/src/example.cpp
++++ b/test/src/example.cpp
+@@ -107,6 +107,8 @@ void Example::_bind_methods() {
+ 	ClassDB::bind_method(D_METHOD("test_tarray"), &Example::test_tarray);
+ 	ClassDB::bind_method(D_METHOD("test_dictionary"), &Example::test_dictionary);
+ 
++	ClassDB::bind_method(D_METHOD("test_bitfield", "flags"), &Example::test_bitfield);
++
+ 	ClassDB::bind_method(D_METHOD("def_args", "a", "b"), &Example::def_args, DEFVAL(100), DEFVAL(200));
+ 
+ 	ClassDB::bind_static_method("Example", D_METHOD("test_static", "a", "b"), &Example::test_static);
+@@ -150,6 +152,9 @@ void Example::_bind_methods() {
+ 	BIND_ENUM_CONSTANT(FIRST);
+ 	BIND_ENUM_CONSTANT(ANSWER_TO_EVERYTHING);
+ 
++	BIND_BITFIELD_FLAG(FLAG_ONE);
++	BIND_BITFIELD_FLAG(FLAG_TWO);
++
+ 	BIND_CONSTANT(CONSTANT_WITHOUT_ENUM);
+ }
+ 
+@@ -250,6 +255,11 @@ Dictionary Example::test_dictionary() const {
+ 	return dict;
+ }
+ 
++BitField<Example::Flags> Example::test_bitfield(BitField<Flags> flags) {
++	UtilityFunctions::print("  Got BitField: ", String::num(flags));
++	return flags;
++}
++
+ // Properties.
+ void Example::set_custom_position(const Vector2 &pos) {
+ 	custom_position = pos;
+diff --git a/test/src/example.h b/test/src/example.h
+index 44c1531..4ac62f9 100644
+--- a/test/src/example.h
++++ b/test/src/example.h
+@@ -67,6 +67,11 @@ public:
+ 		ANSWER_TO_EVERYTHING = 42,
+ 	};
+ 
++	enum Flags {
++		FLAG_ONE = 1,
++		FLAG_TWO = 2,
++	};
++
+ 	enum {
+ 		CONSTANT_WITHOUT_ENUM = 314,
+ 	};
+@@ -92,6 +97,8 @@ public:
+ 	TypedArray<Vector2> test_tarray() const;
+ 	Dictionary test_dictionary() const;
+ 
++	BitField<Flags> test_bitfield(BitField<Flags> flags);
++
+ 	// Property.
+ 	void set_custom_position(const Vector2 &pos);
+ 	Vector2 get_custom_position() const;
+@@ -105,7 +112,8 @@ public:
+ 	virtual bool _has_point(const Vector2 &point) const override;
+ };
+ 
+-VARIANT_ENUM_CAST(Example, Constants);
++VARIANT_ENUM_CAST(Example::Constants);
++VARIANT_BITFIELD_CAST(Example::Flags);
+ 
+ class ExampleVirtual : public Object {
+ 	GDCLASS(ExampleVirtual, Object);
+-- 
+2.33.0.windows.2
+
