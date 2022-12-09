@@ -12,7 +12,7 @@ index 880d19c..2439f7b 100644
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index aac51fa..6097004 100644
+index aac51fa..64aa426 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
 @@ -5,6 +5,78 @@ import re
@@ -20,13 +20,14 @@ index aac51fa..6097004 100644
  from pathlib import Path
  
 +# This patch does not affect the size of the library, but speeds up the build time.
-+# Pass the argument `exclude_unused_classes=no` to generate all classes
++# Use the argument `exclude_unused_classes=no` to generate all classes
++# Use the `folder_to_include_classes=path/` argument to scan classes in a specific directory
 +
 +EXCLUDE_CLASSES = True
 +SOURCES_FOLDER = ""
 +USED_CLASSES = []
-+DEPENDENCIES = []
-+TEMP_ENGINE_CLASS_NAMES = []
++DEPENDENCIES = set()
++TEMP_ENGINE_CLASS_NAMES = set()
 +
 +def SCAN_DEPENDENCIES(api):
 +    global EXCLUDE_CLASSES
@@ -34,7 +35,6 @@ index aac51fa..6097004 100644
 +        return
 +
 +    global USED_CLASSES
-+    global DEPENDENCIES
 +
 +    used_classes_file = "../patches/used_classes.json"
 +    import sys
@@ -45,52 +45,52 @@ index aac51fa..6097004 100644
 +    with open(used_classes_file, "r") as uc_file:
 +        USED_CLASSES = json.load(uc_file)
 +    for class_api in api["classes"]:
-+        TEMP_ENGINE_CLASS_NAMES.append(class_api["name"])
++        TEMP_ENGINE_CLASS_NAMES.add(class_api["name"])
 +    for name in USED_CLASSES:
 +        _GET_DEPS(api, name)
-+    print("Explicit classes: " + str(USED_CLASSES))
-+    print("Implicit classes: " + str(DEPENDENCIES))
++
++    print("Provided", len(USED_CLASSES), "explicit classes:", str(sorted(USED_CLASSES)))
++    print()
++    print("Detected", len(DEPENDENCIES), "implicit classes:", str(sorted(DEPENDENCIES)))
++
++    TEMP_ENGINE_CLASS_NAMES.clear()
 +
 +def _GET_DEPS(api, name):
-+    def _ADD_UNIQUE_ENGINE_CLASS(_class, _to_add):
-+        class_name = _class
++    def _ADD_DEPENDENCY_ENGINE_CLASS(_class, _to_scan):
 +        for start in ["enum::", "typedarray::", "bitfield::"]:
 +            if _class.startswith(start):
-+                class_name = _class[len(start):].partition(".")[0]
++                _class = _class[len(start):].partition(".")[0]
 +                break
 +
-+        if class_name in TEMP_ENGINE_CLASS_NAMES and class_name not in _to_add:
-+            _to_add.append(class_name)
++        if _class in TEMP_ENGINE_CLASS_NAMES:
++            _to_scan.add(_class)
 +
 +    for class_api in api["classes"]:
 +        if not (class_api["name"] == name or class_api["name"].lower() == name.lower()):
 +            continue
 +
-+        need_to_add = []
-+
 +        if class_api["name"] == "Object":
 +            break
 +
-+        if class_api["inherits"] not in DEPENDENCIES:
-+            need_to_add.append(class_api["inherits"])
++        need_to_scan = set()
++        need_to_scan.add(class_api["name"])
++        need_to_scan.add(class_api["inherits"])
 +
 +        for method in class_api.get("methods", []):
 +            if "return_value" in method:
-+                _ADD_UNIQUE_ENGINE_CLASS(method["return_value"]["type"], need_to_add)
++                _ADD_DEPENDENCY_ENGINE_CLASS(method["return_value"]["type"], need_to_scan)
 +
-+            if "arguments" in method:
-+                for arg in method["arguments"]:
-+                    _ADD_UNIQUE_ENGINE_CLASS(arg["type"], need_to_add)
++            for arg in method.get("arguments", []):
++                _ADD_DEPENDENCY_ENGINE_CLASS(arg["type"], need_to_scan)
 +
-+        for c in need_to_add:
++        for c in need_to_scan:
 +            if c not in DEPENDENCIES:
-+                DEPENDENCIES.append(c)
++                DEPENDENCIES.add(c)
 +                _GET_DEPS(api, c)
-+
 +        break
 +
 +def NEED_TO_EXCLUDE(name):
-+    return len(USED_CLASSES) > 0 and name not in USED_CLASSES and name not in DEPENDENCIES
++    return len(DEPENDENCIES) > 0 and name not in DEPENDENCIES
  
  def generate_mod_version(argcount, const=False, returns=False):
      s = """
@@ -102,16 +102,18 @@ index aac51fa..6097004 100644
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
      include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
      source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -101,6 +174,8 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
-         # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
-         if engine_class["name"] == "ClassDB":
+@@ -103,6 +176,10 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
              continue
-+        if NEED_TO_EXCLUDE(engine_class["name"]):
-+            continue
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
++
++        if NEED_TO_EXCLUDE(engine_class["name"]):
++            continue
++
          if headers:
-@@ -140,6 +215,11 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+             files.append(str(header_filename.as_posix()))
+         if sources:
+@@ -140,6 +217,11 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
  
  
  def scons_emit_files(target, source, env):
@@ -123,12 +125,13 @@ index aac51fa..6097004 100644
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(files, target)
      return [target[0]] + files, source
-@@ -962,6 +1042,8 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
-         # TODO: Properly setup this singleton since it conflicts with ClassDB in the bindings.
-         if class_api["name"] == "ClassDB":
-             continue
+@@ -971,6 +1053,9 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+         header_filename = include_gen_folder / (camel_to_snake(class_api["name"]) + ".hpp")
+         source_filename = source_gen_folder / (camel_to_snake(class_api["name"]) + ".cpp")
+ 
 +        if NEED_TO_EXCLUDE(class_api["name"]):
 +            continue
-         # Check used classes for header include.
-         used_classes = set()
-         fully_used_classes = set()
++
+         if "methods" in class_api:
+             for method in class_api["methods"]:
+                 if "arguments" in method:
