@@ -57,7 +57,7 @@ func _process(delta: float) -> void:
 	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Enable FPSGraph if not exists
-	var g = _create_graph("FPS", true, false, DebugDraw.BlockPosition_LeftTop if Engine.editor_hint else DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current | DebugDraw.GraphTextFlags_Avarage | DebugDraw.GraphTextFlags_Max | DebugDraw.GraphTextFlags_Min, Vector2(200, 80), custom_font)
+	var g = _create_graph("FPS", true, false, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT | GraphParameters.TEXT_AVG | GraphParameters.TEXT_MAX | GraphParameters.TEXT_MIN, Vector2(200, 80), custom_font)
 	if g:
 		g.buffer_size = 300
 	
@@ -82,12 +82,12 @@ func _process(delta: float) -> void:
 	
 	# Cylinders
 	DebugDraw.draw_cylinder($Cylinder1.global_transform, Color.CRIMSON)
-	DebugDraw.draw_cylinder(Transform(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.RED)
+	DebugDraw.draw_cylinder(Transform3D(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.RED)
 	
 	# Boxes
 	DebugDraw.draw_box_xf($Box1.global_transform, Color.MEDIUM_PURPLE)
 	DebugDraw.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
-	DebugDraw.draw_box_xf(Transform(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
+	DebugDraw.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
 	
 	DebugDraw.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
 	DebugDraw.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
@@ -108,7 +108,7 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.BLUE, 0.5, true)
 	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.LAVENDER, 0.5, true)
 	
-	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(OS.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
+	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
 	
 	# Path
 	
@@ -149,10 +149,10 @@ func _process(delta: float) -> void:
 	
 	var tg = $Misc/Grids/Grid.global_transform
 	var tn = $Misc/Grids/Grid/Subdivision.transform.origin
-	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2(tn.x*10, tn.z*10), Color.LIGHT_CORAL, false)
+	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2i(tn.x*10, tn.z*10), Color.LIGHT_CORAL, false)
 	
 	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
-	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2(tn1.x*10, tn1.z*10))
+	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
 	# Text
 	DebugDraw.text_custom_font = custom_font
@@ -188,7 +188,7 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("Right: draw bounds for culling", DebugDraw.visible_instance_bounds, 6)
 	
 	# Lag Test
-	$LagTest.translation = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0).origin + Vector3(sin(OS.get_ticks_msec() / 100.0) * 2.5, 0, 0)
+	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
 	DebugDraw.draw_box($LagTest.global_transform.origin, Vector3.ONE * 2.01, DebugDraw.empty_color, true)
 	
 	if more_test_cases:
@@ -207,10 +207,10 @@ func _more_tests():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast3D:
-			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.cast_to).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
+			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.target_position).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
 		# Delayed line render
-	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(OS.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
+	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
 
 func _draw_array_of_boxes():
 	# Lots of boxes to check performance.. I guess..
@@ -263,7 +263,7 @@ func _graph_test():
 	# Just sending random data to the graph
 	DebugDraw.graph_update_data("randf", randf())
 
-func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> DebugDraw.GraphParameters:
+func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> GraphParameters:
 	var graph = DebugDraw.get_graph_config(title)
 	if !graph:
 		if is_fps:
@@ -277,6 +277,6 @@ func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60
 			graph.position = pos
 			graph.show_title = show_title
 			graph.show_text_flags = flags
-			graph.custom_font = font
+			#graph.custom_font = font
 	
 	return graph

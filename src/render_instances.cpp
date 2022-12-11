@@ -78,7 +78,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 	res.resize((int)((instances[type].used_instant + instances[type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT));
 
 	size_t last_added = 0;
-	{
+	if (res.size() > 0) {
 		auto w = res.ptrw();
 
 		auto write_data = [&last_added, &w](DelayedRendererInstance &o) {
@@ -128,6 +128,9 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 }
 
 void GeometryPool::fill_lines_data(Ref<ImmediateMesh> ig) {
+	if (lines.used_instant == 0 && lines.delayed.size() == 0)
+		return;
+
 	ig->surface_begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
 
 	for (size_t i = 0; i < lines.used_instant; i++) {

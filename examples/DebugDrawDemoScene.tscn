@@ -168,14 +168,14 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:transform")
+tracks/0/path = NodePath(".:position")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473)]
+"values": [Vector3(10.4482, -1.49353, -0.450473)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a7f1a"]
@@ -188,12 +188,12 @@ _data = {
 [sub_resource type="GDScript" id="2"]
 script/source = "extends Control
 
-export var switch_to_scene = \"\"
+@export var switch_to_scene = \"\"
 
 func _ready() -> void:
 	$VB/H/Button.disabled = true
-	yield(get_tree(), \"idle_frame\")
-	yield(get_tree(), \"idle_frame\")
+	await get_tree().process_frame
+	await get_tree().process_frame
 	
 	var test = DebugDraw.get_graph_config(\"FPS\")
 	if test:
@@ -201,7 +201,7 @@ func _ready() -> void:
 		$VB/FPSMS.pressed = test.frame_time_mode
 		$VB/HSlider.value = test.size.x
 		$VB/HSlider2.value = test.buffer_size
-	yield(get_tree().create_timer(0.2), \"timeout\")
+	await get_tree().create_timer(0.2).timeout
 	$VB/H/Button.disabled = false
 
 
@@ -234,16 +234,6 @@ func _on_Button_pressed() -> void:
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
-custom_font = null
-")[nodename" = "Camera"
-type = "Camera"
-parent = "."
-"]transform" = Transform3D(1, 0, 0, 0, 0.953032, 0.302869, 0, -0.302869, 0.953032, -3.98764, 13.5247, 37.2096)
-cull_mask = 1048557
-current = true
-fov = 38.8
-near = 2.63
-far = 52.5
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -255,8 +245,7 @@ offset_right = 172.0
 grow_vertical = 0
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="Panel"]
-offset_right = 172.0
-offset_bottom = 172.0
+layout_mode = 2
 stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
@@ -271,6 +260,9 @@ current = true
 fov = 38.8
 near = 2.63
 far = 52.5
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.972096, 0.234582, 0, -0.234582, 0.972096, 0, 4.69047, 18.5342)
 
 [node name="Zones" type="Node3D" parent="."]
 
@@ -484,6 +476,7 @@ script = SubResource("2")
 switch_to_scene = "res://debug_draw_examples/DebugDrawDemoSceneCS.tscn"
 
 [node name="VB" type="VBoxContainer" parent="Settings"]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -491,39 +484,29 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="H" type="HBoxContainer" parent="Settings/VB"]
-offset_right = 354.0
-offset_bottom = 31.0
+layout_mode = 2
 
 [node name="FPSEnabled" type="CheckBox" parent="Settings/VB/H"]
-offset_right = 246.0
-offset_bottom = 31.0
+layout_mode = 2
 size_flags_horizontal = 3
 text = "FPS Graph enabled"
 
 [node name="Button" type="Button" parent="Settings/VB/H"]
-offset_left = 250.0
-offset_right = 354.0
-offset_bottom = 31.0
+layout_mode = 2
 text = "Switch to C#"
 
 [node name="FPSMS" type="CheckBox" parent="Settings/VB"]
-offset_top = 35.0
-offset_right = 354.0
-offset_bottom = 66.0
+layout_mode = 2
 text = "FPS Graph ms or FPS"
 
 [node name="HSlider" type="HSlider" parent="Settings/VB"]
-offset_top = 70.0
-offset_right = 354.0
-offset_bottom = 86.0
+layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
 value = 50.0
 
 [node name="HSlider2" type="HSlider" parent="Settings/VB"]
-offset_top = 90.0
-offset_right = 354.0
-offset_bottom = 106.0
+layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
 value = 50.0

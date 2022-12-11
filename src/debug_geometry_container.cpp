@@ -12,10 +12,11 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 	RenderingServer *rs = RS();
 
 	// Create wireframe mesh drawer
-	_immediate_mesh.instantiate();
-	_immediate_instance = rs->instance_create();
-
 	{
+		Ref<ImmediateMesh> _immediate_mesh;
+		_immediate_mesh.instantiate();
+		RID _immediate_instance = rs->instance_create();
+
 		rs->instance_set_base(_immediate_instance, _immediate_mesh->get_rid());
 		rs->instance_geometry_set_cast_shadows_setting(_immediate_instance, RenderingServer::SHADOW_CASTING_SETTING_OFF);
 		rs->instance_geometry_set_flag(_immediate_instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
@@ -27,27 +28,24 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 		mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		rs->instance_geometry_set_material_override(_immediate_instance, mat->get_rid());
+
+		immediate_mesh_storage.instance = _immediate_instance;
+		immediate_mesh_storage.material = mat;
+		immediate_mesh_storage.mesh = _immediate_mesh;
 	}
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
-		RID mmi_cubes = CreateMMI(InstanceType::CUBES, TEXT(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, C_ARR_SIZE(GeometryGenerator::CubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
-		RID mmi_cubes_centered = CreateMMI(InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, C_ARR_SIZE(GeometryGenerator::CenteredCubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
-		RID mmi_arrowheads = CreateMMI(InstanceType::ARROWHEADS, TEXT(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, C_ARR_SIZE(GeometryGenerator::ArrowheadVertices), GeometryGenerator::ArrowheadIndices, C_ARR_SIZE(GeometryGenerator::ArrowheadIndices)));
-		RID mmi_billboard_squares = CreateMMI(InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, C_ARR_SIZE(GeometryGenerator::CenteredSquareVertices), GeometryGenerator::SquareIndices, C_ARR_SIZE(GeometryGenerator::SquareIndices)));
-		RID mmi_positions = CreateMMI(InstanceType::POSITIONS, TEXT(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, C_ARR_SIZE(GeometryGenerator::PositionVertices), GeometryGenerator::PositionIndices, C_ARR_SIZE(GeometryGenerator::PositionIndices)));
-		RID mmi_spheres = CreateMMI(InstanceType::SPHERES, TEXT(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
-		RID mmi_spheres_hd = CreateMMI(InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
-		RID mmi_cylinders = CreateMMI(InstanceType::CYLINDERS, TEXT(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
+		CreateMMI(InstanceType::CUBES, TEXT(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, C_ARR_SIZE(GeometryGenerator::CubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
+		CreateMMI(InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, C_ARR_SIZE(GeometryGenerator::CenteredCubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
+		CreateMMI(InstanceType::ARROWHEADS, TEXT(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, C_ARR_SIZE(GeometryGenerator::ArrowheadVertices), GeometryGenerator::ArrowheadIndices, C_ARR_SIZE(GeometryGenerator::ArrowheadIndices)));
+		CreateMMI(InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, C_ARR_SIZE(GeometryGenerator::CenteredSquareVertices), GeometryGenerator::SquareIndices, C_ARR_SIZE(GeometryGenerator::SquareIndices)));
+		CreateMMI(InstanceType::POSITIONS, TEXT(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, C_ARR_SIZE(GeometryGenerator::PositionVertices), GeometryGenerator::PositionIndices, C_ARR_SIZE(GeometryGenerator::PositionIndices)));
+		CreateMMI(InstanceType::SPHERES, TEXT(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::CYLINDERS, TEXT(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
 
 		set_render_layer_mask(1);
-
-		// Customize parameters
-		RID sq_mat;
-		rs->instance_geometry_set_material_override(mmi_billboard_squares, sq_mat);
-
-		rs->material_set_param(sq_mat, "billboard_mode", StandardMaterial3D::BillboardMode::BILLBOARD_ENABLED);
-		rs->material_set_param(sq_mat, "billboard_keep_scale", true);
 	}
 }
 
@@ -58,19 +56,10 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 	geometry_pool.clear_pool();
 }
 
-RID DebugGeometryContainer::CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh) {
+void DebugGeometryContainer::CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh) {
 	RenderingServer *rs = RS();
-	RID mmi = rs->multimesh_create();
-	rs->instance_geometry_set_cast_shadows_setting(mmi, RenderingServer::SHADOW_CASTING_SETTING_OFF);
-	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
-	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	Ref<StandardMaterial3D> new_mat;
-	new_mat.instantiate();
-	new_mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
-	new_mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-
-	rs->instance_geometry_set_material_override(mmi, new_mat->get_rid());
+	RID mmi = rs->instance_create();
 
 	Ref<MultiMesh> new_mm;
 	new_mm.instantiate();
@@ -80,15 +69,28 @@ RID DebugGeometryContainer::CreateMMI(InstanceType type, String name, Ref<ArrayM
 	new_mm->set_use_colors(true);
 	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	new_mm->set_use_custom_data(false);
+	new_mm->set_mesh(mesh);
 
 	rs->instance_set_base(mmi, new_mm->get_rid());
 
-	MultiMeshStorage mms;
-	mms.instance = mmi;
-	mms.mesh = new_mm;
-	mms.material = new_mat;
-	multi_mesh_storage[type] = mms;
-	return mmi;
+	Ref<StandardMaterial3D> new_mat;
+	new_mat.instantiate();
+	new_mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
+	new_mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+
+	if (type == InstanceType::BILLBOARD_SQUARES) {
+		new_mat->set_billboard_mode(StandardMaterial3D::BillboardMode::BILLBOARD_ENABLED);
+		new_mat->set_flag(StandardMaterial3D::Flags::FLAG_BILLBOARD_KEEP_SCALE, true);
+	}
+
+	mesh->surface_set_material(0, new_mat);
+
+	rs->instance_geometry_set_cast_shadows_setting(mmi, RenderingServer::SHADOW_CASTING_SETTING_OFF);
+	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+
+	multi_mesh_storage[type].instance = mmi;
+	multi_mesh_storage[type].mesh = new_mm;
 }
 
 Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices, const size_t indices_size, const Color *colors, const size_t colors_size) {
@@ -129,7 +131,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	if (owner->is_freeze_3d_render())
 		return;
 
-	_immediate_mesh->clear_surfaces();
+	immediate_mesh_storage.mesh->clear_surfaces();
 
 	// Return if nothing to do
 	if (!owner->is_debug_enabled()) {
@@ -229,7 +231,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 	}
 
 	// Draw immediate lines
-	geometry_pool.fill_lines_data(_immediate_mesh);
+	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
 
 	// Update MultiMeshInstances
 	for (int i = 0; i < InstanceType::ALL; i++) {
@@ -267,7 +269,7 @@ void DebugGeometryContainer::set_render_layer_mask(int64_t layers) {
 	for (auto &mmi : multi_mesh_storage)
 		rs->instance_set_layer_mask(mmi.instance, layers);
 
-	rs->instance_set_layer_mask(_immediate_instance, layers);
+	rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
 }
 
 void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
@@ -296,7 +298,7 @@ void DebugGeometryContainer::clear_3d_objects() {
 	for (auto s : multi_mesh_storage) {
 		s.mesh->set_instance_count(0);
 	}
-	_immediate_mesh->clear_surfaces();
+	immediate_mesh_storage.mesh->clear_surfaces();
 
 	geometry_pool.clear_pool();
 }
@@ -525,6 +527,7 @@ void DebugGeometryContainer::draw_points(PackedVector3Array points, real_t size,
 #pragma region Camera Frustum
 
 void DebugGeometryContainer::draw_camera_frustum(Camera3D *camera, Color color, real_t duration) {
+	ERR_FAIL_COND(!camera);
 	draw_camera_frustum_planes(camera->get_frustum(), color, duration);
 }
 
@@ -594,6 +597,8 @@ void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y
 }
 
 void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
+	ERR_FAIL_COND(subdivision.x > 1024 * 1024);
+	ERR_FAIL_COND(subdivision.y > 1024 * 1024);
 	LOCK_GUARD(datalock);
 
 	subdivision = subdivision.abs();

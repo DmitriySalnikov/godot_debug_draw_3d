@@ -15,11 +15,13 @@
 
 using namespace godot;
 
+class DebugDrawSceneManager;
+
 class DebugDraw : public Object {
 	GDCLASS(DebugDraw, Object)
 
+	friend DebugDrawSceneManager;
 	static DebugDraw *singleton;
-	static int instance_counter;
 
 public:
 	enum BlockPosition : int {
@@ -31,6 +33,7 @@ public:
 
 private:
 	std::vector<Viewport *> custom_editor_viewports;
+	DebugDrawSceneManager *base_node = nullptr;
 
 	// Logs
 	real_t log_flush_time = 0;
@@ -64,6 +67,13 @@ private:
 	// TODO use pointer to CanvasItem from Callable::bind
 	// void _on_canvas_item_draw(CanvasItem *ci);
 	void _on_canvas_item_draw();
+
+	void enter_tree();
+	void exit_tree();
+	void ready();
+	void process(real_t delta);
+
+	void _scene_tree_found();
 
 #pragma region Exposed Parameter Values
 
@@ -123,6 +133,7 @@ protected:
 
 public:
 	DebugDraw();
+	~DebugDraw();
 
 	static DebugDraw *get_singleton() {
 		return singleton;
@@ -132,12 +143,10 @@ public:
 	void set_custom_editor_viewport(std::vector<Viewport *> viewports);
 	std::vector<Viewport *> get_custom_editor_viewport();
 
-	void _enter_tree();
-	void _exit_tree();
-	void _ready();
-	void _process(real_t delta);
-
 #pragma region Exposed Parameters
+	void set_empty_color(Color col);
+	Color get_empty_color();
+
 	void set_debug_enabled(bool state);
 	bool is_debug_enabled();
 
@@ -508,11 +517,16 @@ public:
 
 VARIANT_ENUM_CAST(DebugDraw::BlockPosition);
 
-class DebugDrawSceneManager : public Node {
-	GDCLASS(DebugDrawSceneManager, Node)
+class DebugDrawSceneManager : public CanvasLayer {
+	GDCLASS(DebugDrawSceneManager, CanvasLayer)
 protected:
 	static void _bind_methods(){};
 	void _notification(int what);
-
+	
 public:
+	DebugDrawSceneManager(){};
+	virtual void _ready() override;
+	virtual void _enter_tree() override;
+	virtual void _exit_tree() override;
+	virtual void _process(double delta) override;
 };

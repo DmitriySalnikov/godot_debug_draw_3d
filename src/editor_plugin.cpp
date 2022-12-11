@@ -29,12 +29,14 @@ DebugDraw3DEditorPlugin::DebugDraw3DEditorPlugin() {
 }
 
 void DebugDraw3DEditorPlugin::_on_scene_changed(Node *node) {
+	PRINT(TEXT(_on_scene_changed));
 	if (!node) return;
 
 	create_new_node(node);
 }
 
 void DebugDraw3DEditorPlugin::remove_prev_node() {
+	PRINT(TEXT(remove_prev_node));
 	DebugDraw *dbg3d = DebugDraw::get_singleton();
 	if (dbg3d && !dbg3d->is_queued_for_deletion()) {
 		memfree(dbg3d);
@@ -42,6 +44,7 @@ void DebugDraw3DEditorPlugin::remove_prev_node() {
 }
 
 void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
+	PRINT(TEXT(create_new_node));
 	remove_prev_node();
 	if (!DebugDraw::get_singleton()) {
 		find_viewport_control();
@@ -65,6 +68,7 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 }
 
 void DebugDraw3DEditorPlugin::create_auto_find() {
+	PRINT(TEXT(create_auto_find));
 	remove_prev_node();
 	Node *node = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())->get_edited_scene_root();
 	if (node) {
@@ -74,6 +78,7 @@ void DebugDraw3DEditorPlugin::create_auto_find() {
 
 // HACK For finding canvas and drawing on it
 void DebugDraw3DEditorPlugin::find_viewport_control() {
+	PRINT(TEXT(find_viewport_control));
 	// Create temp control to get spatial viewport
 	Control *ctrl = memnew(Control);
 	ctrl->set_name("MY_BEST_CONTROL_NODE!");
@@ -149,15 +154,18 @@ CanvasItem *DebugDraw3DEditorPlugin::get_custom_canvas() {
 }
 
 void DebugDraw3DEditorPlugin::_enter_tree() {
+	PRINT(TEXT(_enter_tree));
 	connect("scene_changed", Callable(this, TEXT(_on_scene_changed)));
 }
 
 void DebugDraw3DEditorPlugin::_exit_tree() {
+	PRINT(TEXT(_exit_tree));
 	disconnect("scene_changed", Callable(this, TEXT(_on_scene_changed)));
 
 	remove_prev_node();
 }
 
 void DebugDraw3DEditorPlugin::disable_plugin() {
+	PRINT(TEXT(disable_plugin));
 	DEBUG_PRINT(TEXT(DebugDraw3DEditorPlugin) " disabled");
 }

@@ -6,7 +6,7 @@
 using namespace godot;
 
 TextGroupItem::TextGroupItem(real_t expirationTime, String key, String text, int priority, Color color) {
-	DEBUG_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", key.utf8(), text.utf8());
+	DEBUG_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", key.utf8().get_data(), text.utf8().get_data());
 
 	expiration_time = expirationTime;
 	Key = key;

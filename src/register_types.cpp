@@ -22,7 +22,7 @@ extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 
 	ClassDB::register_class<DebugDraw>();
 	ClassDB::register_class<GraphParameters>();
-	ClassDB::register_class<DebugDraw3DEditorPlugin>();
+	ClassDB::register_class<DebugDrawSceneManager>();
 
 	debug_draw_3d_singleton = memnew(DebugDraw);
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);

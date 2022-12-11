@@ -360,6 +360,8 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instantiate();
+	// TODO test
+	//config->reference();
 
 	LOCK_GUARD(datalock);
 	graphs[title] = std::make_shared<FPSGraph>(config);

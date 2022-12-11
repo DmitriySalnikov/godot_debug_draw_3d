@@ -12,6 +12,7 @@
 #include <godot_cpp/classes/label.hpp>
 #include <godot_cpp/classes/main_loop.hpp>
 #include <godot_cpp/classes/node2d.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
@@ -25,7 +26,6 @@
 #define NEED_LEAVE (!debug_enabled || !is_ready)
 
 DebugDraw *DebugDraw::singleton = nullptr;
-int DebugDraw::instance_counter = 0;
 
 void DebugDraw::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw
@@ -33,6 +33,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw::get_singleton_gdscript);
 
 	REG_METHOD(_on_canvas_item_draw);
+	REG_METHOD(_scene_tree_found);
 
 #pragma region Constants
 
@@ -43,6 +44,7 @@ void DebugDraw::_bind_methods() {
 
 #pragma region Parameters
 
+	REG_PROP(empty_color, Variant::COLOR);
 	REG_PROP_BOOL(debug_enabled);
 	REG_PROP_BOOL(freeze_3d_render);
 	REG_PROP_BOOL(visible_instance_bounds);
@@ -71,60 +73,58 @@ void DebugDraw::_bind_methods() {
 
 	REG_METHOD(clear_all);
 
-	REG_METHOD_ARGS(draw_sphere, "position", "radius", "color", "duration");
-	REG_METHOD_ARGS(draw_sphere_xf, "transform", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere, 0.5f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_xf, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_sphere_hd, "position", "radius", "color", "duration");
-	REG_METHOD_ARGS(draw_sphere_hd_xf, "transform", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_hd), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere_hd, 0.5f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_hd_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_hd_xf, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_cylinder, "transform", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_cylinder), "transform", "color", "duration"), &DebugDraw::draw_cylinder, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_box, "position", "size", "color", "is_box_centered", "duration");
-	REG_METHOD_ARGS(draw_box_xf, "transform", "color", "is_box_centered", "duration");
-	REG_METHOD_ARGS(draw_aabb, "aabb", "color", "duration");
-	REG_METHOD_ARGS(draw_aabb_ab, "a", "b", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw::draw_box, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw::draw_box_xf, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb), "aabb", "color", "duration"), &DebugDraw::draw_aabb, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb_ab), "a", "b", "color", "duration"), &DebugDraw::draw_aabb_ab, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_line_hit, "start", "end", "hit", "is_hit", "hit_size", "hit_color", "after_hit_color", "duration");
-	REG_METHOD_ARGS(draw_line_hit_offset, "start", "end", "is_hit", "unit_offset_of_hit", "hit_size", "hit_color", "after_hit_color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_line_hit), "start", "end", "hit", "is_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit, 0.25f, Colors::empty_color, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_line_hit_offset), "start", "end", "is_hit", "unit_offset_of_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit_offset, 0.5f, 0.25f, Colors::empty_color, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_line, "a", "b", "color", "duration");
-	REG_METHOD_ARGS(draw_lines, "lines", "color", "duration");
-	REG_METHOD_ARGS(draw_ray, "origin", "direction", "length", "color", "duration");
-	REG_METHOD_ARGS(draw_line_path, "path", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_line), "a", "b", "color", "duration"), &DebugDraw::draw_line, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_lines), "lines", "color", "duration"), &DebugDraw::draw_lines, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_ray), "origin", "direction", "length", "color", "duration"), &DebugDraw::draw_ray, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_line_path), "path", "color", "duration"), &DebugDraw::draw_line_path, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_arrow, "transform", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow), "transform", "color", "duration"), &DebugDraw::draw_arrow, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_arrow_line, "a", "b", "color", "arrow_size", "is_absolute_size", "duration");
-	REG_METHOD_ARGS(draw_arrow_ray, "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration");
-	REG_METHOD_ARGS(draw_arrow_path, "path", "color", "arrow_size", "is_absolute_size", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_line), "a", "b", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_line, Colors::empty_color, 0.5f, false, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_ray), "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_ray, Colors::empty_color, 0.5f, false, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_path), "path", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_path, Colors::empty_color, 0.75f, true, 0);
 
-	REG_METHOD_ARGS(draw_point_path, "path", "size", "points_color", "lines_color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_point_path), "path", "size", "points_color", "lines_color", "duration"), &DebugDraw::draw_point_path, 0.25f, Colors::empty_color, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_square, "position", "size", "color", "duration");
-	REG_METHOD_ARGS(draw_points, "points", "size", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_square), "position", "size", "color", "duration"), &DebugDraw::draw_square, 0.2f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_points), "points", "size", "color", "duration"), &DebugDraw::draw_points, 0.2f, Colors::empty_color, 0);
 
-	/* TODO pointers is not available..
-	REG_METHOD_ARGS(draw_camera_frustum, "camera", "color", "duration");
-	*/
-	REG_METHOD_ARGS(draw_camera_frustum_planes, "camera_frustum", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_camera_frustum), "camera", "color", "duration"), &DebugDraw::draw_camera_frustum, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_camera_frustum_planes), "camera_frustum", "color", "duration"), &DebugDraw::draw_camera_frustum_planes, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_position, "transform", "color", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_position), "transform", "color", "duration"), &DebugDraw::draw_position, Colors::empty_color, 0);
 
-	REG_METHOD_ARGS(draw_gizmo, "transform", "color", "is_centered", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_gizmo), "transform", "color", "is_centered", "duration"), &DebugDraw::draw_gizmo, Colors::empty_color, false, 0);
 
-	REG_METHOD_ARGS(draw_grid, "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration");
-	REG_METHOD_ARGS(draw_grid_xf, "transform", "subdivision", "color", "is_centered", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid, Colors::empty_color, true, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
 
-	REG_METHOD_ARGS(begin_text_group, "group_title", "group_priority", "group_color", "show_title");
+	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true);
 	REG_METHOD(end_text_group);
-	REG_METHOD_ARGS(set_text, "key", "value", "priority", "color_of_value", "duration");
+	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1);
 
-	REG_METHOD_ARGS(create_graph, "title");
-	REG_METHOD_ARGS(create_fps_graph, "title");
-	REG_METHOD_ARGS(graph_update_data, "title", "data");
-	REG_METHOD_ARGS(remove_graph, "title");
+	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
+	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
+	ClassDB::bind_method(D_METHOD(TEXT(graph_update_data), "title", "data"), &DebugDraw::graph_update_data);
+	ClassDB::bind_method(D_METHOD(TEXT(remove_graph), "title"), &DebugDraw::remove_graph);
 	REG_METHOD(clear_graphs);
-	REG_METHOD_ARGS(get_graph_config, "title");
+	ClassDB::bind_method(D_METHOD(TEXT(get_graph_config), "title"), &DebugDraw::get_graph_config);
 	REG_METHOD(get_graph_names);
 
 #pragma endregion // Draw Functions
@@ -133,48 +133,47 @@ void DebugDraw::_bind_methods() {
 }
 
 DebugDraw::DebugDraw() {
-	PRINT(SCENE_TREE());
-}
-
-// TODO SOMEHOW NEED TO BE CALLED
-void DebugDraw::_enter_tree() {
-	instance_counter++;
-
-	if (instance_counter > (IS_EDITOR_HINT() ? 2 : 1)) {
-		PRINT_WARNING("Too many " TEXT(DebugDraw) " instances entered tree: " + String::num_int64(instance_counter));
-	}
-
 	if (!singleton) {
 		singleton = this;
 	} else {
 		PRINT_ERROR("Only 1 instance of " TEXT(DebugDraw) " is allowed");
 	}
 
+	call_deferred(TEXT(_scene_tree_found));
+}
+
+DebugDraw::~DebugDraw() {
+	if (singleton && singleton == this) {
+		singleton = nullptr;
+	} else {
+		PRINT_ERROR("More than 1 " TEXT(DebugDraw) " instance was created");
+	}
+}
+
+void DebugDraw::_scene_tree_found() {
+	PRINT(SCENE_TREE());
+	PRINT(SCENE_ROOT());
+
+	base_node = memnew(DebugDrawSceneManager);
+	SCENE_ROOT()->add_child(base_node);
+}
+
+void DebugDraw::enter_tree() {
 	if (IS_EDITOR_HINT()) {
 		text_block_position = BlockPosition::POSITION_LEFT_BOTTOM;
 		text_block_offset = Vector2(24, 24);
 		graphs_base_offset = Vector2(12, 72);
 	}
 
-	// set_process_priority(INT32_MAX); // TODO need alternative
+	base_node->set_process_priority(INT32_MAX);
 
-	grouped_text = std::make_unique<GroupedText>();
-	grouped_text->init_group(this);
+	// TODO grouped_text = std::make_unique<GroupedText>();
+	// TODO grouped_text->init_group(this);
 	data_graphs = std::make_unique<DataGraphManager>(this);
 	dgc = std::make_unique<DebugGeometryContainer>(this);
 }
 
-void DebugDraw::_exit_tree() {
-	instance_counter--;
-
-	if (instance_counter < 0) {
-		PRINT_WARNING("Too many " TEXT(DebugDraw) " instances exited tree: " + String::num_int64(instance_counter));
-	}
-
-	if (singleton && singleton == this) {
-		singleton = nullptr;
-	}
-
+void DebugDraw::exit_tree() {
 	_font.unref();
 
 	if (default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
@@ -191,7 +190,7 @@ void DebugDraw::_exit_tree() {
 		custom_canvas->queue_redraw();
 }
 
-void DebugDraw::_ready() {
+void DebugDraw::ready() {
 	is_ready = true;
 
 	// Funny hack to get default font
@@ -203,7 +202,7 @@ void DebugDraw::_ready() {
 	}
 
 	// Setup default text group
-	grouped_text->end_text_group();
+	// TODO grouped_text->end_text_group();
 
 	// Create canvas item and canvas layer
 	_canvasLayer = memnew(CanvasLayer);
@@ -219,9 +218,9 @@ void DebugDraw::_ready() {
 	_canvasLayer->add_child(default_canvas);
 }
 
-void DebugDraw::_process(real_t delta) {
+void DebugDraw::process(real_t delta) {
 	// Clean texts
-	grouped_text->cleanup_text(delta);
+	// TODO grouped_text->cleanup_text(delta);
 
 	// FPS Graph
 	data_graphs->_update_fps(delta);
@@ -235,7 +234,7 @@ void DebugDraw::_process(real_t delta) {
 
 		// reset some values
 		_canvasNeedUpdate = false;
-		grouped_text->end_text_group();
+		// TODO grouped_text->end_text_group();
 	}
 
 	// Update 3D debug
@@ -257,7 +256,7 @@ void DebugDraw::_on_canvas_item_draw() {
 
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
-	grouped_text->draw(ci, _font, vp_size);
+	// TODO grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size);
 }
 
@@ -271,6 +270,13 @@ void DebugDraw::set_custom_editor_viewport(std::vector<Viewport *> viewports) {
 
 std::vector<Viewport *> DebugDraw::get_custom_editor_viewport() {
 	return custom_editor_viewports;
+}
+
+void DebugDraw::set_empty_color(Color col) {
+}
+
+Color DebugDraw::get_empty_color() {
+	return Colors::empty_color;
 }
 
 #pragma region Exposed Parameters
@@ -466,7 +472,7 @@ void DebugDraw::clear_3d_objects() {
 
 void DebugDraw::clear_2d_objects() {
 	if (!is_ready) return;
-	grouped_text->clear_text();
+	// TODO grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_needs_update();
 }
@@ -636,15 +642,15 @@ void DebugDraw::draw_camera_frustum_planes(Array cameraFrustum, Color color, rea
 	return obj->func(__VA_ARGS__)
 
 void DebugDraw::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title) {
-	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
+	// TODO CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
 }
 
 void DebugDraw::end_text_group() {
-	CALL_TO_2D(grouped_text, end_text_group);
+	// TODO CALL_TO_2D(grouped_text, end_text_group);
 }
 
 void DebugDraw::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
-	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
+	// TODO CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
 }
 
 #pragma endregion // Text
@@ -690,4 +696,20 @@ void DebugDrawSceneManager::_notification(int what) {
 			break;
 		}
 	}
+}
+
+void DebugDrawSceneManager::_ready() {
+	DebugDraw::get_singleton()->ready();
+}
+
+void DebugDrawSceneManager::_enter_tree() {
+	DebugDraw::get_singleton()->enter_tree();
+}
+
+void DebugDrawSceneManager::_exit_tree() {
+	DebugDraw::get_singleton()->exit_tree();
+}
+
+void DebugDrawSceneManager::_process(double delta) {
+	DebugDraw::get_singleton()->process(delta);
 }

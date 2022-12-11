@@ -15,8 +15,8 @@
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/multi_mesh_instance3d.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>
 
 #include <map>
 
@@ -28,19 +28,27 @@ class DebugGeometryContainer {
 	struct MultiMeshStorage {
 		RID instance;
 		Ref<MultiMesh> mesh;
-		Ref<Material> material;
-		
+
 		~MultiMeshStorage() {
 			RS()->free_rid(instance);
 		}
 	};
-	MultiMeshStorage multi_mesh_storage[InstanceType::ALL];
+	MultiMeshStorage multi_mesh_storage[InstanceType::ALL] = {};
 
-	RID _immediate_instance;
-	Ref<ImmediateMesh> _immediate_mesh;
+	struct ImmediateMeshStorage {
+		RID instance;
+		Ref<ImmediateMesh> mesh;
+		Ref<StandardMaterial3D> material;
+
+		~ImmediateMeshStorage() {
+			RS()->free_rid(instance);
+		}
+	};
+	ImmediateMeshStorage immediate_mesh_storage;
+
 	GeometryPool geometry_pool;
 
-	RID CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh);
+	void CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh);
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices = nullptr, const size_t indices_size = 0, const Color *colors = nullptr, const size_t colors_size = 0);
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const std::vector<Vector3> vertices, const std::vector<int> indices = {}, const std::vector<Color> colors = {});
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {});
