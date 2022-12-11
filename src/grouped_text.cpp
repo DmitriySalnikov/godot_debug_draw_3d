@@ -34,7 +34,7 @@ bool TextGroupItem::is_expired() {
 }
 
 TextGroup::TextGroup(String title, int priority, bool showTitle, Color groupColor) {
-	DEBUG_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", title.utf8());
+	DEBUG_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", title.utf8().get_data());
 
 	Title = title;
 	GroupPriority = priority;
