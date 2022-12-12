@@ -55,6 +55,7 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/typed_ptr.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/enum_names.patch
+        git apply --ignore-space-change --ignore-whitespace ../patches/ref_patch.patch
         cd ..
         scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
         echo "::endgroup::"

@@ -121,7 +121,7 @@
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>

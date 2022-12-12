@@ -2,17 +2,20 @@
 
 #include "circular_buffer.h"
 
+#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include <algorithm>
+#include <format>
 #include <functional>
 #include <map>
 #include <memory>
 #include <queue>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 
@@ -108,6 +111,7 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #define SCENE_TREE() cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())
 #define RS() RenderingServer::get_singleton()
+#define ENGINE() Engine::get_singleton()
 
 #define C_ARR_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
@@ -127,19 +131,8 @@ class Utils {
 public:
 	static void logv(const char *p_format, bool p_err, bool p_force_print, ...);
 	static void print_logs();
-
-	// https://stackoverflow.com/a/26221725/8980874
-	template <typename... Args>
-	static godot::String string_format(const char *format, Args... args) {
-		int size_s = std::snprintf(nullptr, 0, format, args...) + 1; // Extra space for '\0'
-		if (size_s <= 0) {
-			PRINT_ERROR("Error during formatting.");
-			return "{FORMAT FAILED}";
-		}
-		std::unique_ptr<char[]> buf(new char[(size_t)size_s]);
-		std::snprintf(buf.get(), (size_t)size_s, format, args...);
-		return godot::String(buf.get());
-	}
+	static godot::Node *find_node_by_class(godot::Node *start_node, godot::String *class_name);
+	static godot::String get_scene_tree_as_string(godot::Node *start);
 
 	template <class TPool, class TContainer>
 	static TPool convert_to_pool_array(TContainer arr) {

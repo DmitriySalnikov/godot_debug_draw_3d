@@ -151,9 +151,6 @@ DebugDraw::~DebugDraw() {
 }
 
 void DebugDraw::_scene_tree_found() {
-	PRINT(SCENE_TREE());
-	PRINT(SCENE_ROOT());
-
 	base_node = memnew(DebugDrawSceneManager);
 	SCENE_ROOT()->add_child(base_node);
 }
@@ -167,8 +164,8 @@ void DebugDraw::enter_tree() {
 
 	base_node->set_process_priority(INT32_MAX);
 
-	// TODO grouped_text = std::make_unique<GroupedText>();
-	// TODO grouped_text->init_group(this);
+	grouped_text = std::make_unique<GroupedText>();
+	grouped_text->init_group(this);
 	data_graphs = std::make_unique<DataGraphManager>(this);
 	dgc = std::make_unique<DebugGeometryContainer>(this);
 }
@@ -193,6 +190,12 @@ void DebugDraw::exit_tree() {
 void DebugDraw::ready() {
 	is_ready = true;
 
+	// Usefull nodes and names:
+	// CanvasItemEditor - probobly 2D editor viewport
+	// Node3DEditorViewportContainer - base 3D viewport
+	// Node3DEditorViewportContainer/Node3DEditorViewport - base of 1 of 4 viewports
+	// Node3DEditorViewportContainer/Node3DEditorViewport/SubViewportContainer/SubViewport/Camera3D
+
 	// Funny hack to get default font
 	{
 		Control *c = memnew(Control);
@@ -202,25 +205,47 @@ void DebugDraw::ready() {
 	}
 
 	// Setup default text group
-	// TODO grouped_text->end_text_group();
+	grouped_text->end_text_group();
 
-	// Create canvas item and canvas layer
-	_canvasLayer = memnew(CanvasLayer);
-	_canvasLayer->set_layer(64);
-	default_canvas = memnew(Node2D);
+	if (IS_EDITOR_HINT()) {
+		String editor3d = "Node3DEditorViewportContainer";
+		Node *res = Utils::find_node_by_class(SCENE_ROOT(), &editor3d);
+		// Node *res = SCENE_ROOT()->find_child("MainScreen", true, false);
 
-	if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
-		default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
-		current_draw_canvas = default_canvas;
+		Node *n = res->get_child(0)->get_child(0);
+		n->set_meta("UseParentSize", true);
+		set_custom_canvas((CanvasItem *)n);
+		// if (res) {
+		//	res->add_child(_canvasLayer);
+		//	_canvasLayer->add_child(default_canvas);
+		// } else {
+		//	ERR_FAIL_MSG("\"Node3DEditorViewportContainer\" not found in editor tree!");
+		// }
+
+		auto f = FileAccess::open("user://tree.txt", FileAccess::WRITE);
+		f->store_string(Utils::get_scene_tree_as_string(res->get_parent()->get_parent()));
+	} else {
+		// Create canvas item and canvas layer
+		_canvasLayer = memnew(CanvasLayer);
+		_canvasLayer->set_layer(64);
+		default_canvas = memnew(Control);
+		default_canvas->set_name("DebugDrawDefaultCanvas");
+		((Control *)default_canvas)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+
+		SCENE_ROOT()->add_child(_canvasLayer);
+		_canvasLayer->add_child(default_canvas);
+
+		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			current_draw_canvas = default_canvas;
+		}
 	}
-
-	SCENE_ROOT()->add_child(_canvasLayer);
-	_canvasLayer->add_child(default_canvas);
 }
 
 void DebugDraw::process(real_t delta) {
 	// Clean texts
-	// TODO grouped_text->cleanup_text(delta);
+	grouped_text->cleanup_text(delta);
 
 	// FPS Graph
 	data_graphs->_update_fps(delta);
@@ -234,7 +259,7 @@ void DebugDraw::process(real_t delta) {
 
 		// reset some values
 		_canvasNeedUpdate = false;
-		// TODO grouped_text->end_text_group();
+		grouped_text->end_text_group();
 	}
 
 	// Update 3D debug
@@ -256,7 +281,7 @@ void DebugDraw::_on_canvas_item_draw() {
 
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
-	// TODO grouped_text->draw(ci, _font, vp_size);
+	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size);
 }
 
@@ -461,18 +486,18 @@ CanvasItem *DebugDraw::get_custom_canvas() {
 #pragma region Draw Functions
 
 Dictionary DebugDraw::get_render_stats() {
-	if (!is_ready) return Dictionary();
+	if (!dgc || !is_ready) return Dictionary();
 	return dgc->get_render_stats();
 }
 
 void DebugDraw::clear_3d_objects() {
-	if (!is_ready) return;
+	if (!dgc || !is_ready) return;
 	dgc->clear_3d_objects();
 }
 
 void DebugDraw::clear_2d_objects() {
-	if (!is_ready) return;
-	// TODO grouped_text->clear_text();
+	if (!grouped_text || !data_graphs || !is_ready) return;
+	grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_needs_update();
 }
@@ -485,8 +510,8 @@ void DebugDraw::clear_all() {
 
 #pragma region 3D
 
-#define CALL_TO_DGC(func, ...)                  \
-	if (NEED_LEAVE || freeze_3d_render) return; \
+#define CALL_TO_DGC(func, ...)                          \
+	if (!dgc || NEED_LEAVE || freeze_3d_render) return; \
 	dgc->func(__VA_ARGS__)
 
 #pragma region Spheres
@@ -633,24 +658,24 @@ void DebugDraw::draw_camera_frustum_planes(Array cameraFrustum, Color color, rea
 #pragma region 2D
 #pragma region Text
 
-#define CALL_TO_2D(obj, func, ...) \
-	if (NEED_LEAVE) return;        \
+#define CALL_TO_2D(obj, func, ...)  \
+	if (!obj || NEED_LEAVE) return; \
 	obj->func(__VA_ARGS__)
 
 #define CALL_TO_2D_RET(obj, func, def, ...) \
-	if (NEED_LEAVE) return def;             \
+	if (!obj || NEED_LEAVE) return def;     \
 	return obj->func(__VA_ARGS__)
 
 void DebugDraw::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title) {
-	// TODO CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
+	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
 }
 
 void DebugDraw::end_text_group() {
-	// TODO CALL_TO_2D(grouped_text, end_text_group);
+	CALL_TO_2D(grouped_text, end_text_group);
 }
 
 void DebugDraw::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
-	// TODO CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
+	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
 }
 
 #pragma endregion // Text
@@ -692,24 +717,21 @@ PackedStringArray DebugDraw::get_graph_names() {
 void DebugDrawSceneManager::_notification(int what) {
 	switch (what) {
 		case NOTIFICATION_PROCESS: {
-
+			DebugDraw::get_singleton()->process(get_process_delta_time());
+			break;
+		}
+		case NOTIFICATION_READY: {
+			DebugDraw::get_singleton()->ready();
+			set_process(true);
+			break;
+		}
+		case NOTIFICATION_ENTER_TREE: {
+			DebugDraw::get_singleton()->enter_tree();
+			break;
+		}
+		case NOTIFICATION_EXIT_TREE: {
+			DebugDraw::get_singleton()->exit_tree();
 			break;
 		}
 	}
-}
-
-void DebugDrawSceneManager::_ready() {
-	DebugDraw::get_singleton()->ready();
-}
-
-void DebugDrawSceneManager::_enter_tree() {
-	DebugDraw::get_singleton()->enter_tree();
-}
-
-void DebugDrawSceneManager::_exit_tree() {
-	DebugDraw::get_singleton()->exit_tree();
-}
-
-void DebugDrawSceneManager::_process(double delta) {
-	DebugDraw::get_singleton()->process(delta);
 }

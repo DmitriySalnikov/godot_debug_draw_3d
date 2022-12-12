@@ -8,7 +8,6 @@
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
-#include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -525,8 +524,4 @@ protected:
 	
 public:
 	DebugDrawSceneManager(){};
-	virtual void _ready() override;
-	virtual void _enter_tree() override;
-	virtual void _exit_tree() override;
-	virtual void _process(double delta) override;
 };

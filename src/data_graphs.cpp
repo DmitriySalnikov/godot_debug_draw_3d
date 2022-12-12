@@ -27,6 +27,8 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
 
+	REG_PROP(custom_font, Variant::OBJECT);
+
 	BIND_ENUM_CONSTANT(POSITION_LEFT_TOP);
 	BIND_ENUM_CONSTANT(POSITION_RIGHT_TOP);
 	BIND_ENUM_CONSTANT(POSITION_LEFT_BOTTOM);
@@ -37,10 +39,6 @@ void GraphParameters::_bind_methods() {
 	BIND_BITFIELD_FLAG(TEXT_MAX);
 	BIND_BITFIELD_FLAG(TEXT_MIN);
 	BIND_BITFIELD_FLAG(TEXT_ALL);
-
-	/* TODO pointers is not available..
-	REG_PROP(custom_font, Variant::OBJECT);
-	*/
 }
 
 GraphParameters::GraphParameters() {
@@ -53,7 +51,7 @@ void GraphParameters::set_enabled(bool _state) {
 	enabled = _state;
 }
 
-bool GraphParameters::is_enabled() {
+bool GraphParameters::is_enabled() const {
 	return enabled;
 }
 
@@ -61,7 +59,7 @@ void GraphParameters::set_show_title(bool _state) {
 	show_title = _state;
 }
 
-bool GraphParameters::is_show_title() {
+bool GraphParameters::is_show_title() const {
 	return show_title;
 }
 
@@ -69,7 +67,7 @@ void GraphParameters::set_frame_time_mode(bool _state) {
 	frametime_mode = _state;
 }
 
-bool GraphParameters::is_frame_time_mode() {
+bool GraphParameters::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
@@ -77,7 +75,7 @@ void GraphParameters::set_centered_graph_line(bool _state) {
 	centered_graph_line = _state;
 }
 
-bool GraphParameters::is_centered_graph_line() {
+bool GraphParameters::is_centered_graph_line() const {
 	return centered_graph_line;
 }
 
@@ -85,7 +83,7 @@ void GraphParameters::set_show_text_flags(BitField<TextFlags> _flags) {
 	show_text_flags = _flags;
 }
 
-BitField<GraphParameters::TextFlags> GraphParameters::get_show_text_flags() {
+BitField<GraphParameters::TextFlags> GraphParameters::get_show_text_flags() const {
 	return show_text_flags;
 }
 
@@ -93,15 +91,15 @@ void GraphParameters::set_size(Vector2 _size) {
 	size = _size;
 }
 
-Vector2 GraphParameters::get_size() {
+Vector2 GraphParameters::get_size() const {
 	return size;
 }
 
 void GraphParameters::set_buffer_size(int _buf_size) {
-	buffer_size = Math::clamp(_buf_size, 1, INT32_MAX);
+	buffer_size = Math::clamp(_buf_size, 3, INT32_MAX);
 }
 
-int GraphParameters::get_buffer_size() {
+int GraphParameters::get_buffer_size() const {
 	return buffer_size;
 }
 
@@ -109,7 +107,7 @@ void GraphParameters::set_offset(Vector2 _offset) {
 	offset = _offset;
 }
 
-Vector2 GraphParameters::get_offset() {
+Vector2 GraphParameters::get_offset() const {
 	return offset;
 }
 
@@ -117,7 +115,7 @@ void GraphParameters::set_position(GraphPosition _position) {
 	position = (GraphPosition)_position;
 }
 
-GraphParameters::GraphPosition GraphParameters::get_position() {
+GraphParameters::GraphPosition GraphParameters::get_position() const {
 	return position;
 }
 
@@ -125,7 +123,7 @@ void GraphParameters::set_line_color(Color _new_color) {
 	line_color = _new_color;
 }
 
-Color GraphParameters::get_line_color() {
+Color GraphParameters::get_line_color() const {
 	return line_color;
 }
 
@@ -133,7 +131,7 @@ void GraphParameters::set_text_color(Color _new_color) {
 	text_color = _new_color;
 }
 
-Color GraphParameters::get_text_color() {
+Color GraphParameters::get_text_color() const {
 	return text_color;
 }
 
@@ -141,7 +139,7 @@ void GraphParameters::set_background_color(Color _new_color) {
 	background_color = _new_color;
 }
 
-Color GraphParameters::get_background_color() {
+Color GraphParameters::get_background_color() const {
 	return background_color;
 }
 
@@ -149,7 +147,7 @@ void GraphParameters::set_border_color(Color _new_color) {
 	border_color = _new_color;
 }
 
-Color GraphParameters::get_border_color() {
+Color GraphParameters::get_border_color() const {
 	return border_color;
 }
 
@@ -157,7 +155,7 @@ void GraphParameters::set_text_suffix(String _suffix) {
 	text_suffix = _suffix;
 }
 
-String GraphParameters::get_text_suffix() {
+String GraphParameters::get_text_suffix() const {
 	return text_suffix;
 }
 
@@ -165,7 +163,7 @@ void GraphParameters::set_custom_font(Ref<Font> _custom_font) {
 	custom_font = _custom_font;
 }
 
-Ref<Font> GraphParameters::get_custom_font() {
+Ref<Font> GraphParameters::get_custom_font() const {
 	return custom_font;
 }
 
@@ -178,11 +176,11 @@ DataGraph::DataGraph(Ref<GraphParameters> _owner) :
 		type(Type::Custom) {
 }
 
-DataGraph::Type DataGraph::get_type() {
+DataGraph::Type DataGraph::get_type() const {
 	return type;
 }
 
-Ref<GraphParameters> DataGraph::get_config() {
+Ref<GraphParameters> DataGraph::get_config() const {
 	return config;
 }
 
@@ -199,7 +197,7 @@ void DataGraph::_update_added(real_t value) {
 	data->add(value);
 }
 
-Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) {
+Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;
 
@@ -269,48 +267,51 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		const int offset = (int)data->is_filled();
 		double points_interval = (double)config->get_size().x / ((int64_t)config->get_buffer_size() - 1 - offset);
 
-		line_points.resize((int)data->size() - offset);
+		line_points.resize((data->size() - offset) * 2);
 		{
 			auto w = line_points.ptrw();
-			for (size_t i = 0; i < data->size() - offset; i++) {
-				w[(int)i] = pos + Vector2((real_t)(i * points_interval), graphSize.y - data->get(i) * height_multiplier + center_offset);
+			for (size_t i = 1; i < data->size() - offset; i++) {
+				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graphSize.y - data->get(i) * height_multiplier + center_offset);
+				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graphSize.y - data->get(i - 1) * height_multiplier + center_offset);
 			}
 		}
-		ci->draw_polyline(line_points, config->get_line_color());
+		// ci->draw_polyline(line_points, config->get_line_color(), 1, true);
+		ci->draw_multiline(line_points, config->get_line_color(), 1);
 	}
 
 	// Draw border
 	ci->draw_rect(border_size, config->get_border_color(), false);
 
 	// Draw text
-	auto suffix = config->get_text_suffix().is_empty() ? "" : config->get_text_suffix().utf8().get_data();
+	std::wstring suffix = std::wstring(config->get_text_suffix().wide_string().get_data());
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
-		String max_text = Utils::string_format("max: %.2f %s", max, suffix);
+		// String max_text = Utils::string_format("max: %.2f %s", max, suffix);
+		String text = std::format(L"max: {:.2f} {}", max, suffix).c_str();
 		real_t max_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, max_height - 1);
-		ci->draw_string(draw_font, text_pos.floor(), max_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
-		String avg_text = Utils::string_format("avg: %.2f %s", avg, suffix);
+		String text = std::format(L"avg: {:.2f} {}", avg, suffix).c_str();
 		real_t avg_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
-		ci->draw_string(draw_font, text_pos.floor(), avg_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
-		String min_text = Utils::string_format("min: %.2f %s", min, suffix);
+		String text = std::format(L"min: {:.2f} {}", min, suffix).c_str();
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
-		ci->draw_string(draw_font, text_pos.floor(), min_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of line for offset from border
-		String cur_text = Utils::string_format("%.2f %s ", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix);
-		Vector2 cur_size = draw_font->get_string_size(cur_text);
+		String text = std::format(L"{:.2f} {}", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix).c_str();
+		Vector2 cur_size = draw_font->get_string_size(text);
 		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2);
-		ci->draw_string(draw_font, text_pos.floor(), cur_text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	switch (config->get_position()) {
@@ -353,23 +354,21 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	config.instantiate();
 
 	LOCK_GUARD(datalock);
-	graphs[title] = std::make_shared<DataGraph>(config);
+	graphs[title] = std::make_unique<DataGraph>(config);
 	return config;
 }
 
 Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	Ref<GraphParameters> config;
 	config.instantiate();
-	// TODO test
-	//config->reference();
 
 	LOCK_GUARD(datalock);
-	graphs[title] = std::make_shared<FPSGraph>(config);
+	graphs[title] = std::make_unique<FPSGraph>(config);
 	return config;
 }
 
 void DataGraphManager::_update_fps(real_t delta) {
-	for (auto i : graphs) {
+	for (auto &i : graphs) {
 		if (i.second->get_type() == DataGraph::Type::FPS) {
 			i.second->update(delta);
 			owner->mark_canvas_needs_update();
@@ -377,10 +376,10 @@ void DataGraphManager::_update_fps(real_t delta) {
 	}
 }
 
-void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) {
+void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) const {
 	Vector2 base_offset = owner->get_graphs_base_offset();
 	Vector2 prev_offset[] = { base_offset, Vector2(base_offset.x, base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y) };
-	for (auto i : graphs) {
+	for (auto &i : graphs) {
 		int pos = i.second->get_config()->get_position();
 		prev_offset[pos] = i.second->draw(ci, font, vp_size, i.first, prev_offset[pos]);
 	}
@@ -411,18 +410,18 @@ void DataGraphManager::clear_graphs() {
 	graphs.clear();
 }
 
-Ref<GraphParameters> DataGraphManager::get_graph_config(String title) {
+Ref<GraphParameters> DataGraphManager::get_graph_config(const String &title) const {
 	if (graphs.count(title)) {
-		return graphs[title]->get_config();
+		return graphs.find(title)->second->get_config();
 	}
 	return Ref<GraphParameters>();
 }
 
-PackedStringArray DataGraphManager::get_graph_names() {
+PackedStringArray DataGraphManager::get_graph_names() const {
 	LOCK_GUARD(datalock);
 
 	PackedStringArray res;
-	for (auto i : graphs) {
+	for (auto &i : graphs) {
 		res.append(i.first);
 	}
 	return res;

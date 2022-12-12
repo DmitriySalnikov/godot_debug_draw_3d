@@ -73,3 +73,30 @@ void Utils::print_logs() {
 	}
 #endif
 }
+
+Node *Utils::find_node_by_class(Node *start_node, String *class_name) {
+	for (int i = 0; i < start_node->get_child_count(); i++) {
+		auto c = start_node->get_child(i);
+		if (c->get_class() == *class_name)
+			return c;
+		auto nc = find_node_by_class(c, class_name);
+		if (nc)
+			return nc;
+	}
+	return nullptr;
+}
+
+godot::String Utils::get_scene_tree_as_string(godot::Node *start) {
+	String output = "";
+	std::function<void(Node *, int)> get_node_tree;
+	get_node_tree = [&output, &get_node_tree](Node *node, int depth) {
+		for (int i = 0; i < node->get_child_count(); i++) {
+			auto c = node->get_child(i);
+			output = output + String("\t").repeat(depth) + String::num_int64(i) + ". " + c->get_class() + ":" + c->get_name() + "\n";
+			get_node_tree(c, depth + 1);
+		}
+	};
+
+	get_node_tree(start, 0);
+	return output;
+};

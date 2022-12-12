@@ -115,42 +115,27 @@ tracks/1/keys = PackedFloat32Array(0, 1, -1.03574, 2.47907, -0.819963, 0.5, 1, 0
 
 [sub_resource type="Animation" id="7"]
 length = 0.001
-tracks/0/type = "value"
+tracks/0/type = "position_3d"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("RayEmitter:translation")
+tracks/0/path = NodePath("RayEmitter")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 2.44568, 0)]
-}
-tracks/1/type = "value"
+tracks/0/keys = PackedFloat32Array(0, 1, -1.03574, 2.47907, -0.819963)
+tracks/1/type = "rotation_3d"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath("RayEmitter:rotation_degrees")
+tracks/1/path = NodePath("RayEmitter")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0, 0)]
-}
-tracks/2/type = "value"
+tracks/1/keys = PackedFloat32Array(0, 1, 0, 0, 0, 1)
+tracks/2/type = "scale_3d"
 tracks/2/imported = false
 tracks/2/enabled = true
-tracks/2/path = NodePath("RayEmitter:scale")
+tracks/2/path = NodePath("RayEmitter")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
-tracks/2/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(1, 1, 1)]
-}
+tracks/2/keys = PackedFloat32Array(0, 1, 1, 1, 1)
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vh8ml"]
 _data = {
@@ -195,10 +180,10 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	var test = DebugDraw.get_graph_config(\"FPS\")
+	var test := DebugDraw.get_graph_config(\"FPS\")
 	if test:
-		$VB/H/FPSEnabled.pressed = test.enabled
-		$VB/FPSMS.pressed = test.frame_time_mode
+		$VB/H/FPSEnabled.button_pressed = test.enabled
+		$VB/FPSMS.button_pressed = test.frame_time_mode
 		$VB/HSlider.value = test.size.x
 		$VB/HSlider2.value = test.buffer_size
 	await get_tree().create_timer(0.2).timeout
@@ -223,7 +208,7 @@ func _on_HSlider_value_changed(value: float) -> void:
 func _on_HSlider2_value_changed(value: float) -> void:
 	var cfg = DebugDraw.get_graph_config(\"FPS\")
 	if cfg:
-		cfg.buffer_size = value
+		cfg.buffer_size = int(value)
 
 
 func _on_Button_pressed() -> void:
@@ -234,6 +219,7 @@ func _on_Button_pressed() -> void:
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
+test_graphs = true
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false

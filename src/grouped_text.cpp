@@ -64,8 +64,8 @@ void TextGroup::cleanup_texts(std::function<void()> update, real_t delta) {
 void GroupedText::_create_new_default_groupd_if_needed() {
 	LOCK_GUARD(datalock);
 	if (!_currentTextGroup) {
-		// TODO		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
-		// TODO		_textGroups.insert(_currentTextGroup);
+		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
+		_textGroups.insert(_currentTextGroup);
 	}
 }
 
@@ -86,8 +86,8 @@ void GroupedText::cleanup_text(real_t delta) {
 	Utils::remove_where(&_textGroups, [](auto g) { return g->Texts.size() == 0; });
 
 	for (const TextGroup_ptr &g : _textGroups) {
-		// TODO		std::function<void()> upd_txt([this] { owner->mark_canvas_needs_update(); });
-		// TODO		g->cleanup_texts(upd_txt, delta);
+		std::function<void()> upd_txt([this] { owner->mark_canvas_needs_update(); });
+		g->cleanup_texts(upd_txt, delta);
 	}
 }
 
@@ -121,7 +121,7 @@ void GroupedText::end_text_group() {
 	for (const TextGroup_ptr &g : _textGroups) {
 		if (g->Title == "") {
 			_currentTextGroup = g;
-			// TODO			_currentTextGroup->GroupColor = owner->get_text_foreground_color();
+			_currentTextGroup->GroupColor = owner->get_text_foreground_color();
 			_currentTextGroup->GroupPriority = 0;
 			_currentTextGroup->ShowTitle = false;
 			break;
@@ -131,12 +131,12 @@ void GroupedText::end_text_group() {
 
 void GroupedText::set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration) {
 	if (duration < 0) {
-		// TODO		duration = owner->get_text_default_duration();
+		duration = owner->get_text_default_duration();
 	}
 
 	String _strVal;
 	if (value.get_type() != Variant::NIL)
-		_strVal = value.operator godot::String();
+		_strVal = value.stringify();
 
 	bool need_update_canvas = false;
 
@@ -154,21 +154,20 @@ void GroupedText::set_text(String &key, Variant &value, int &priority, Color &co
 			}
 		}
 
-		// TODO		if (item.get()) {
-		// TODO			if (_strVal != item->Text)
-		// TODO				owner->mark_canvas_needs_update();
-		// TODO
-		// TODO			item->update(duration, key, _strVal, priority, colorOfValue);
-		// TODO		} else {
-		// TODO			_currentTextGroup->Texts.insert(std::make_shared<TextGroupItem>(duration, key, _strVal, priority, colorOfValue));
-		// TODO			owner->mark_canvas_needs_update();
-		// TODO		}
+		if (item.get()) {
+			if (_strVal != item->Text)
+				owner->mark_canvas_needs_update();
+		
+			item->update(duration, key, _strVal, priority, colorOfValue);
+		} else {
+			_currentTextGroup->Texts.insert(std::make_shared<TextGroupItem>(duration, key, _strVal, priority, colorOfValue));
+			owner->mark_canvas_needs_update();
+		}
 	}
 }
 
 void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 	LOCK_GUARD(datalock);
-	/*
 	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->ShowTitle ? 1 : 0); });
 
 	static const String separator = " : ";
@@ -184,23 +183,23 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
 	switch (owner->get_text_block_position()) {
-		case DebugDraw3D::BlockPosition::LeftTop :
+		case DebugDraw::BlockPosition::POSITION_LEFT_TOP :
 			pos = text_block_offset;
 			size_mul = 0;
 			break;
-		case DebugDraw3D::BlockPosition::RightTop:
+		case DebugDraw::BlockPosition::POSITION_RIGHT_TOP:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
 					text_block_offset.y);
 			size_mul = -1;
 			break;
-		case DebugDraw3D::BlockPosition::LeftBottom:
+		case DebugDraw::BlockPosition::POSITION_LEFT_BOTTOM:
 			pos = Vector2(
 					text_block_offset.x,
 					vp_size.y - text_block_offset.y - line_height * count);
 			size_mul = 0;
 			break;
-		case DebugDraw3D::BlockPosition::RightBottom:
+		case DebugDraw::BlockPosition::POSITION_RIGHT_BOTTOM:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
 					vp_size.y - text_block_offset.y - line_height * count);
@@ -253,5 +252,4 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 			pos.y += line_height;
 		}
 	}
-	*/
 }

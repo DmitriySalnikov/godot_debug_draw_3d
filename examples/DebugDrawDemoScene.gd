@@ -57,9 +57,7 @@ func _process(delta: float) -> void:
 	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Enable FPSGraph if not exists
-	var g = _create_graph("FPS", true, false, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT | GraphParameters.TEXT_AVG | GraphParameters.TEXT_MAX | GraphParameters.TEXT_MIN, Vector2(200, 80), custom_font)
-	if g:
-		g.buffer_size = 300
+	_create_graph("FPS", true, false, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT | GraphParameters.TEXT_AVG | GraphParameters.TEXT_MAX | GraphParameters.TEXT_MIN, Vector2(200, 80), custom_font)
 	
 	# Adding more graphs
 	if test_graphs:
@@ -224,34 +222,34 @@ func _draw_array_of_boxes():
 
 func _graph_test():
 # warning-ignore:return_value_discarded
-	_create_graph("fps", true, true, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
+	_create_graph("fps", true, true, DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT)
 # warning-ignore:return_value_discarded
-	_create_graph("fps2", true, false, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
+	_create_graph("fps2", true, false, DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT)
 # warning-ignore:return_value_discarded
-	_create_graph("fps3", true, true, DebugDraw.BlockPosition_RightTop, DebugDraw.GraphTextFlags_Current)
+	_create_graph("fps3", true, true, DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT)
 	
 # warning-ignore:return_value_discarded
-	_create_graph("randf", false, true, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_Avarage, Vector2(256, 60), custom_font)
+	_create_graph("randf", false, true, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_AVG, Vector2(256, 60), custom_font)
 # warning-ignore:return_value_discarded
-	_create_graph("fps5", true, false, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps5", true, false, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_ALL)
 # warning-ignore:return_value_discarded
-	_create_graph("fps6", true, true, DebugDraw.BlockPosition_RightBottom, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps6", true, true, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_ALL)
 	
 # warning-ignore:return_value_discarded
-	_create_graph("fps7", true, false, DebugDraw.BlockPosition_LeftTop, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps7", true, false, DebugDraw.POSITION_LEFT_TOP, GraphParameters.TEXT_ALL)
 # warning-ignore:return_value_discarded
-	_create_graph("fps8", true, true, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps8", true, true, DebugDraw.POSITION_LEFT_BOTTOM, GraphParameters.TEXT_ALL)
 # warning-ignore:return_value_discarded
-	_create_graph("fps9", true, true, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps9", true, true, DebugDraw.POSITION_LEFT_BOTTOM, GraphParameters.TEXT_ALL)
 # warning-ignore:return_value_discarded
-	_create_graph("fps10", true, false, DebugDraw.BlockPosition_LeftBottom, DebugDraw.GraphTextFlags_All)
+	_create_graph("fps10", true, false, DebugDraw.POSITION_LEFT_BOTTOM, GraphParameters.TEXT_ALL)
 	
 	# If graphs exists, then more tests are done
 	if DebugDraw.get_graph_config("randf"):
 		DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
 		DebugDraw.get_graph_config("fps9").centered_graph_line = false
 		
-		if Engine.editor_hint:
+		if Engine.is_editor_hint():
 			DebugDraw.get_graph_config("fps5").offset = Vector2(0, -30)
 			DebugDraw.get_graph_config("fps8").offset = Vector2(280, -60)
 			DebugDraw.get_graph_config("fps9").offset = Vector2(0, -75)

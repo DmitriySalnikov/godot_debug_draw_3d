@@ -72,35 +72,35 @@ public:
 	GraphParameters();
 
 	void set_enabled(bool state);
-	bool is_enabled();
+	bool is_enabled() const;
 	void set_show_title(bool state);
-	bool is_show_title();
+	bool is_show_title() const;
 	void set_frame_time_mode(bool state);
-	bool is_frame_time_mode();
+	bool is_frame_time_mode() const;
 	void set_centered_graph_line(bool state);
-	bool is_centered_graph_line();
+	bool is_centered_graph_line() const;
 	void set_show_text_flags(BitField<TextFlags> flags);
-	BitField<TextFlags> get_show_text_flags();
+	BitField<TextFlags> get_show_text_flags() const;
 	void set_size(Vector2 size);
-	Vector2 get_size();
+	Vector2 get_size() const;
 	void set_buffer_size(int buf_size);
-	int get_buffer_size();
+	int get_buffer_size() const;
 	void set_offset(Vector2 offset);
-	Vector2 get_offset();
+	Vector2 get_offset() const;
 	void set_position(GraphPosition position);
-	GraphPosition get_position();
+	GraphPosition get_position() const;
 	void set_line_color(Color new_color);
-	Color get_line_color();
+	Color get_line_color() const;
 	void set_text_color(Color new_color);
-	Color get_text_color();
+	Color get_text_color() const;
 	void set_background_color(Color new_color);
-	Color get_background_color();
+	Color get_background_color() const;
 	void set_border_color(Color new_color);
-	Color get_border_color();
+	Color get_border_color() const;
 	void set_text_suffix(String suffix);
-	String get_text_suffix();
+	String get_text_suffix() const;
 	void set_custom_font(Ref<Font> _custom_font);
-	Ref<Font> get_custom_font();
+	Ref<Font> get_custom_font() const;
 };
 
 VARIANT_ENUM_CAST(GraphParameters::GraphPosition);
@@ -116,7 +116,7 @@ public:
 protected:
 	Ref<GraphParameters> config;
 	std::shared_ptr<CircularBuffer<real_t> > data;
-	std::recursive_mutex datalock;
+	mutable std::recursive_mutex datalock;
 	Type type;
 
 	virtual void _update_added(real_t value);
@@ -124,12 +124,12 @@ protected:
 public:
 	DataGraph(Ref<GraphParameters> _owner);
 
-	Type get_type();
-	Ref<GraphParameters> get_config();
+	Type get_type() const;
+	Ref<GraphParameters> get_config() const;
 	void update(real_t value);
 
 	// Must return edge Y to render next graph with this offset
-	Vector2 draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset);
+	Vector2 draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) const;
 };
 
 class FPSGraph : public DataGraph {
@@ -150,8 +150,8 @@ class DataGraphManager {
 			return a.naturalnocasecmp_to(b) < 0;
 		}
 	};
-	std::map<String, std::shared_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
-	std::recursive_mutex datalock;
+	std::map<String, std::unique_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
+	mutable std::recursive_mutex datalock;
 	class DebugDraw *owner;
 
 public:
@@ -161,11 +161,11 @@ public:
 	Ref<GraphParameters> create_graph(String title);
 	Ref<GraphParameters> create_fps_graph(String title);
 	void _update_fps(real_t delta);
-	void draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size);
+	void draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) const;
 	void graph_update_data(String title, real_t data);
 	void remove_graph(String title);
 	void clear_graphs();
-	Ref<GraphParameters> get_graph_config(String title);
-	PackedStringArray get_graph_names();
+	Ref<GraphParameters> get_graph_config(const String &title) const;
+	PackedStringArray get_graph_names() const;
 };
 

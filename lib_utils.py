@@ -27,12 +27,21 @@ def gdnative_get_sources(src):
     return [src_folder + "/" + file for file in src]
 
 
+def gdnative_replace_flag(arr, flag, new_flag):
+    if flag in arr:
+        arr.remove(flag)
+    arr.append(new_flag)
+
+
 def gdnative_get_library_object(env, arguments=None, gen_help=None):
     if arguments != None and gen_help:
         setup_options(env, arguments, gen_help)
     gdnative_setup_default_cpp_defines(env)
 
     env.Append(CPPPATH=[src_folder])
+
+    gdnative_replace_flag(env["CXXFLAGS"], "/std:c++17" if env.get("is_msvc", False) else "-std=c++17",
+                          "/std:c++20" if env.get("is_msvc", False) else "-std=c++20")
 
     src = []
     with open(src_folder + "/default_sources.json") as f:
