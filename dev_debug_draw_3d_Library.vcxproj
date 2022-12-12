@@ -86,7 +86,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;TOOLS_ENABLED;TYPED_METHOD_BIND;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TOOLS_ENABLED;TYPED_METHOD_BIND;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -115,13 +115,13 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;TOOLS_ENABLED;TYPED_METHOD_BIND;_DEBUG;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TOOLS_ENABLED;TYPED_METHOD_BIND;_DEBUG;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
@@ -144,7 +144,7 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;TYPED_METHOD_BIND;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>

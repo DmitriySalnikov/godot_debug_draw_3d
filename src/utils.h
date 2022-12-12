@@ -9,7 +9,6 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #include <algorithm>
-#include <format>
 #include <functional>
 #include <map>
 #include <memory>

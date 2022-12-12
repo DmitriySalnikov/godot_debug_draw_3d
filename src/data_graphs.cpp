@@ -282,33 +282,43 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 	// Draw border
 	ci->draw_rect(border_size, config->get_border_color(), false);
 
-	// Draw text
-	std::wstring suffix = std::wstring(config->get_text_suffix().wide_string().get_data());
+	auto format_arg = [](const char *format, auto arg) -> String {
+		int size_s = std::snprintf(nullptr, 0, format, arg) + 1; // Extra space for '\0'
+		if (size_s <= 0) {
+			PRINT_ERROR("Error during formatting.");
+			return "{FORMAT FAILED}";
+		}
+		std::unique_ptr<char[]> buf(new char[(size_t)size_s]);
+		buf[size_s - 1] = '\0';
+		std::snprintf(buf.get(), (size_t)size_s, format, arg);
+		return String(buf.get());
+	};
 
+	// Draw text
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
 		// String max_text = Utils::string_format("max: %.2f %s", max, suffix);
-		String text = std::format(L"max: {:.2f} {}", max, suffix).c_str();
+		String text = String("max: {0} {1}").format(Array::make(format_arg("%.2f", max), config->get_text_suffix()));
 		real_t max_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, max_height - 1);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
-		String text = std::format(L"avg: {:.2f} {}", avg, suffix).c_str();
+		String text = String("avg: {0} {1}").format(Array::make(format_arg("%.2f", avg), config->get_text_suffix()));
 		real_t avg_height = draw_font->get_height();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
-		String text = std::format(L"min: {:.2f} {}", min, suffix).c_str();
+		String text = String("min: {0} {1}").format(Array::make(format_arg("%.2f", min), config->get_text_suffix()));
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of line for offset from border
-		String text = std::format(L"{:.2f} {}", (data->size() > 1 ? data->get(data->size() - 2) : 0), suffix).c_str();
+		String text = String("{0} {1}").format(Array::make(format_arg("%.2f", (data->size() > 1 ? data->get(data->size() - 2) : 0)), config->get_text_suffix()));
 		Vector2 cur_size = draw_font->get_string_size(text);
 		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
