@@ -1,10 +1,10 @@
-diff --git a/godot-headers/godot/gdnative_interface.h b/godot-headers/godot/gdnative_interface.h
+diff --git a/godot-headers/godot/gdextension_interface.h b/godot-headers/godot/gdextension_interface.h
 index 486f5be..e4fcc9c 100644
---- a/godot-headers/godot/gdnative_interface.h
-+++ b/godot-headers/godot/gdnative_interface.h
+--- a/godot-headers/godot/gdextension_interface.h
++++ b/godot-headers/godot/gdextension_interface.h
 @@ -154,6 +154,8 @@ typedef const void *GDNativeMethodBindPtr;
- typedef int64_t GDNativeInt;
- typedef uint8_t GDNativeBool;
+ typedef int64_t GDExtensionInt;
+ typedef uint8_t GDExtensionBool;
  typedef uint64_t GDObjectInstanceID;
 +typedef void *GDExtensionRefPtr;
 +typedef const void *GDExtensionConstRefPtr;
@@ -12,16 +12,16 @@ index 486f5be..e4fcc9c 100644
  /* VARIANT DATA I/O */
  
 @@ -551,6 +553,10 @@ typedef struct {
- 	GDNativeObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
- 	GDObjectInstanceID (*object_get_instance_id)(GDNativeConstObjectPtr p_object);
+ 	GDExtensionObjectPtr (*object_get_instance_from_id)(GDObjectInstanceID p_instance_id);
+ 	GDObjectInstanceID (*object_get_instance_id)(GDExtensionConstObjectPtr p_object);
  
 +	/* REFERENCE */
-+	GDNativeObjectPtr (*ref_get_object)(GDExtensionConstRefPtr p_ref);
-+	void (*ref_set_object)(GDExtensionRefPtr p_ref, GDNativeObjectPtr p_object);
++	GDExtensionObjectPtr (*ref_get_object)(GDExtensionConstRefPtr p_ref);
++	void (*ref_set_object)(GDExtensionRefPtr p_ref, GDExtensionObjectPtr p_object);
 +
  	/* SCRIPT INSTANCE */
  
- 	GDNativeScriptInstancePtr (*script_instance_create)(const GDNativeExtensionScriptInstanceInfo *p_info, GDNativeExtensionScriptInstanceDataPtr p_instance_data);
+ 	GDExtensionScriptInstancePtr (*script_instance_create)(const GDExtensionScriptInstanceInfo *p_info, GDExtensionScriptInstanceDataPtr p_instance_data);
 diff --git a/include/godot_cpp/classes/ref.hpp b/include/godot_cpp/classes/ref.hpp
 index cc7f2d6..470aa83 100644
 --- a/include/godot_cpp/classes/ref.hpp
@@ -30,11 +30,11 @@ index cc7f2d6..470aa83 100644
  template <class T>
  struct PtrToArg<Ref<T>> {
  	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
--		return Ref<T>(reinterpret_cast<T *>(godot::internal::gdn_interface->object_get_instance_binding(*reinterpret_cast<GDNativeObjectPtr *>(const_cast<void *>(p_ptr)), godot::internal::token, &T::___binding_callbacks)));
+-		return Ref<T>(reinterpret_cast<T *>(godot::internal::gde_interface->object_get_instance_binding(*reinterpret_cast<GDExtensionObjectPtr *>(const_cast<void *>(p_ptr)), godot::internal::token, &T::___binding_callbacks)));
 +		GDExtensionRefPtr ref = (GDExtensionRefPtr)p_ptr;
 +		ERR_FAIL_NULL_V(ref, Ref<T>());
 +
-+		T *obj = reinterpret_cast<T *>(godot::internal::gdn_interface->object_get_instance_binding(godot::internal::gdn_interface->ref_get_object(ref), godot::internal::token, &T::___binding_callbacks));
++		T *obj = reinterpret_cast<T *>(godot::internal::gde_interface->object_get_instance_binding(godot::internal::gde_interface->ref_get_object(ref), godot::internal::token, &T::___binding_callbacks));
 +		return Ref<T>(obj);
  	}
  
@@ -48,7 +48,7 @@ index cc7f2d6..470aa83 100644
 +		// This code assumes that p_ptr points to an unset Ref<T> variable on the Godot side
 +		// so we only set it if we have an object to set.
 +		if (p_val.is_valid()) {
-+			godot::internal::gdn_interface->ref_set_object(ref, p_val->_owner);
++			godot::internal::gde_interface->ref_set_object(ref, p_val->_owner);
 +		}
  	}
  };

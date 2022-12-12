@@ -14,8 +14,8 @@ using namespace godot;
 
 DebugDraw *debug_draw_3d_singleton = nullptr;
 
-/** GDNative Initialize **/
-extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+/** GDExtension Initialize **/
+extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -36,8 +36,8 @@ extern "C" void GDN_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	*/
 }
 
-/** GDNative Uninitialize **/
-extern "C" void GDN_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+/** GDExtension Uninitialize **/
+extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw3D));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
@@ -46,9 +46,9 @@ extern "C" void GDN_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializatio
 	}
 }
 
-/** GDNative Initialize **/
+/** GDExtension Initialize **/
 extern "C" {
-GDNativeBool GDN_EXPORT debug_draw_3d_library_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
+GDExtensionBool GDE_EXPORT debug_draw_3d_library_init(const GDExtensionInterface *p_interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
 	godot::GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
 
 	init_obj.register_initializer(initialize_debug_draw_3d_module);
