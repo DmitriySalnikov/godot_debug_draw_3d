@@ -1,26 +1,24 @@
 #include "editor_plugin.h"
 
+/*
 #include "debug_draw.h"
 #include "utils.h"
 
 #include <functional>
 
-#include <godot_cpp/classes/config_file.hpp>
-#include <godot_cpp/classes/control.hpp>
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/core/class_db.hpp>
+#include //<godot_cpp/classes/config_file.hpp>
+#include //<godot_cpp/classes/control.hpp>
+#include //<godot_cpp/classes/dir_access.hpp>
+#include //<godot_cpp/classes/file_access.hpp>
+#include //<godot_cpp/classes/global_constants.hpp>
+#include //<godot_cpp/classes/project_settings.hpp>
+#include //<godot_cpp/classes/scene_tree.hpp>
 
 using namespace godot;
 
 void DebugDraw3DEditorPlugin::_bind_methods() {
-	/* TODO pointers is not available..
-	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw3DEditorPlugin::_on_scene_changed);
-	*/
+	// TODO pointers is not available..
+	// ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw3DEditorPlugin::_on_scene_changed);
 
 	ClassDB::bind_method(D_METHOD(TEXT(disable_plugin)), &DebugDraw3DEditorPlugin::disable_plugin);
 }
@@ -49,21 +47,20 @@ void DebugDraw3DEditorPlugin::create_new_node(Node *parent) {
 	if (!DebugDraw::get_singleton()) {
 		find_viewport_control();
 
-		/* DebugDraw *d = memnew(DebugDraw); TODO move to DebugDraw
-		parent->add_child(d);
-
-		if (spatial_viewport_container) {
-			d->set_custom_editor_viewport(get_custom_viewports());
-
-			auto canvas = get_custom_canvas();
-			d->set_custom_canvas(canvas);
-
-			if (canvas) {
-				canvas->set_meta("UseParentSize", true);
-				canvas->queue_redraw();
-			}
-		}
-		*/
+		// DebugDraw *d = memnew(DebugDraw); TODO move to DebugDraw
+		// parent->add_child(d);
+		//
+		// if (spatial_viewport_container) {
+		// 	d->set_custom_editor_viewport(get_custom_viewports());
+		//
+		// 	auto canvas = get_custom_canvas();
+		// 	d->set_custom_canvas(canvas);
+		//
+		// 	if (canvas) {
+		// 		canvas->set_meta("UseParentSize", true);
+		// 		canvas->queue_redraw();
+		// 	}
+		// }
 	}
 }
 
@@ -169,3 +166,4 @@ void DebugDraw3DEditorPlugin::disable_plugin() {
 	PRINT(TEXT(disable_plugin));
 	DEBUG_PRINT(TEXT(DebugDraw3DEditorPlugin) " disabled");
 }
+*/

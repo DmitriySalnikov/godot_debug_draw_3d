@@ -60,7 +60,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows</OutDir>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
@@ -68,7 +68,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows</OutDir>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.template_debug.$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
@@ -77,7 +77,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows</OutDir>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
   </PropertyGroup>

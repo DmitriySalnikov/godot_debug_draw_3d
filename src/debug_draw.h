@@ -1,20 +1,30 @@
 #pragma once
 
 #include "colors.h"
-#include "data_graphs.h"
-#include "debug_geometry_container.h"
 #include "geometry_generators.h"
-#include "grouped_text.h"
+
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
+
+#include <mutex>
 
 using namespace godot;
 
+class DataGraphManager;
 class DebugDrawSceneManager;
+class DebugGeometryContainer;
+class GraphParameters;
+class GroupedText;
 
 class DebugDraw : public Object {
 	GDCLASS(DebugDraw, Object)
@@ -35,7 +45,7 @@ private:
 	DebugDrawSceneManager *base_node = nullptr;
 
 	// Logs
-	real_t log_flush_time = 0;
+	double log_flush_time = 0;
 
 	// 2d
 	CanvasLayer *_canvasLayer = nullptr;
@@ -48,10 +58,10 @@ private:
 	CanvasItem *current_draw_canvas = nullptr;
 
 	// Text
-	std::unique_ptr<class GroupedText> grouped_text;
+	std::unique_ptr<GroupedText> grouped_text;
 
 	// Graphs
-	std::unique_ptr<class DataGraphManager> data_graphs;
+	std::unique_ptr<DataGraphManager> data_graphs;
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
@@ -70,7 +80,7 @@ private:
 	void enter_tree();
 	void exit_tree();
 	void ready();
-	void process(real_t delta);
+	void process(double delta);
 
 	void _scene_tree_found();
 
@@ -93,7 +103,7 @@ private:
 	/// Base offset for all graphs
 	Vector2 graphs_base_offset = Vector2(8, 8);
 	/// Layers on which the geometry will be displayed
-	int64_t geometry_render_layers = 1;
+	int32_t geometry_render_layers = 1;
 
 	// TEXT
 
@@ -164,8 +174,8 @@ public:
 	void set_graphs_base_offset(Vector2 offset);
 	Vector2 get_graphs_base_offset();
 
-	void set_geometry_render_layers(int64_t layers);
-	int64_t get_geometry_render_layers();
+	void set_geometry_render_layers(int32_t layers);
+	int32_t get_geometry_render_layers();
 
 	void set_text_block_position(BlockPosition position);
 	BlockPosition get_text_block_position();
@@ -521,7 +531,7 @@ class DebugDrawSceneManager : public CanvasLayer {
 protected:
 	static void _bind_methods(){};
 	void _notification(int what);
-	
+
 public:
 	DebugDrawSceneManager(){};
 };

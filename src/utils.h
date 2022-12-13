@@ -2,16 +2,28 @@
 
 #include "circular_buffer.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/core/binder_common.hpp>
+#include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
+
 #include <algorithm>
 #include <functional>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <string_view>
@@ -58,7 +70,7 @@ typedef godot::PackedFloat32Array PackedRealArray;
 namespace godot {
 static String get_file_name_in_repository(String name) {
 	if (name != "") {
-		int idx = name.find("src");
+		int64_t idx = name.find("src");
 		if (idx != -1)
 			name = name.substr(name.find("src"), name.length());
 	}

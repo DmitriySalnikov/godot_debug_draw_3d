@@ -2,9 +2,6 @@
 #include "debug_draw.h"
 #include "utils.h"
 
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/texture.hpp>
-
 using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
@@ -124,7 +121,7 @@ Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, cons
 	return mesh;
 }
 
-void DebugGeometryContainer::update_geometry(real_t delta) {
+void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(datalock);
 
 	// Don't clear geometry if freezed
@@ -239,7 +236,7 @@ void DebugGeometryContainer::update_geometry(real_t delta) {
 		mm->set_visible_instance_count(-1);
 
 		auto a = geometry_pool.get_raw_data((InstanceType)i);
-		mm->set_instance_count(a.size() / INSTANCE_DATA_FLOAT_COUNT);
+		mm->set_instance_count((int)(a.size() / INSTANCE_DATA_FLOAT_COUNT));
 		if (a.size()) {
 			mm->set_buffer(a);
 		}
@@ -264,7 +261,7 @@ Dictionary DebugGeometryContainer::get_render_stats() {
 			"total_visible", (int64_t)geometry_pool.get_visible_instances() + geometry_pool.get_visible_lines());
 }
 
-void DebugGeometryContainer::set_render_layer_mask(int64_t layers) {
+void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
 	RenderingServer *rs = RS();
 	for (auto &mmi : multi_mesh_storage)
 		rs->instance_set_layer_mask(mmi.instance, layers);
@@ -602,12 +599,12 @@ void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdiv
 	LOCK_GUARD(datalock);
 
 	subdivision = subdivision.abs();
-	subdivision = Vector2((real_t)Math::clamp(subdivision.x, 1, INT32_MAX), (real_t)Math::clamp(subdivision.y, 1, INT32_MAX));
-	Vector3 x_d = transform.basis.rows[0] / subdivision.x;
-	Vector3 z_d = transform.basis.rows[2] / subdivision.y;
+	subdivision = Vector2i(Math::clamp(subdivision.x, 1, INT32_MAX), Math::clamp(subdivision.y, 1, INT32_MAX));
+	Vector3 x_d = transform.basis.rows[0] / (real_t)subdivision.x;
+	Vector3 z_d = transform.basis.rows[2] / (real_t)subdivision.y;
 
 	Vector3 origin = is_centered ?
-							 transform.origin - x_d * subdivision.x * 0.5 - z_d * subdivision.y * 0.5 :
+							 transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 :
 							 transform.origin;
 
 	std::vector<Vector3> lines;

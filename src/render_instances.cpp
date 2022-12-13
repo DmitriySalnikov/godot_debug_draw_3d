@@ -1,8 +1,16 @@
 #include "render_instances.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/texture.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
@@ -163,7 +171,7 @@ void GeometryPool::fill_lines_data(Ref<ImmediateMesh> ig) {
 	ig->surface_end();
 }
 
-void GeometryPool::reset_counter(real_t delta) {
+void GeometryPool::reset_counter(double delta) {
 	lines.reset_counter(delta);
 
 	for (int i = 0; i < InstanceType::ALL; i++) {
@@ -264,7 +272,7 @@ void GeometryPool::update_visibility(std::vector<std::vector<Plane> > frustums) 
 		lines.delayed[i].update_visibility(frustums, false);
 }
 
-void GeometryPool::update_expiration(real_t delta) {
+void GeometryPool::update_expiration(double delta) {
 	for (auto &t : instances)
 		for (size_t i = 0; i < t.delayed.size(); i++)
 			t.delayed[i].update_expiration(delta);

@@ -3,9 +3,6 @@
 #include "math_utils.h"
 #include "utils.h"
 
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/core/class_db.hpp>
-
 using namespace godot;
 
 void GraphParameters::_bind_methods() {
@@ -172,7 +169,7 @@ Ref<Font> GraphParameters::get_custom_font() const {
 
 DataGraph::DataGraph(Ref<GraphParameters> _owner) :
 		config(_owner),
-		data(std::make_shared<CircularBuffer<real_t> >(_owner->get_buffer_size())),
+		data(std::make_shared<CircularBuffer<double> >(_owner->get_buffer_size())),
 		type(Type::Custom) {
 }
 
@@ -184,16 +181,16 @@ Ref<GraphParameters> DataGraph::get_config() const {
 	return config;
 }
 
-void DataGraph::update(real_t value) {
+void DataGraph::update(double value) {
 	LOCK_GUARD(datalock);
 
 	if (config->get_buffer_size() != data->buffer_size())
-		data = std::make_shared<CircularBuffer<real_t> >(config->get_buffer_size());
+		data = std::make_shared<CircularBuffer<double> >(config->get_buffer_size());
 
 	_update_added(value);
 }
 
-void DataGraph::_update_added(real_t value) {
+void DataGraph::_update_added(double value) {
 	data->add(value);
 }
 
@@ -205,7 +202,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 
 	Ref<Font> draw_font = config->get_custom_font().is_null() ? font : config->get_custom_font();
 
-	real_t min, max, avg;
+	double min, max, avg;
 	data->get_min_max_avg(&min, &max, &avg);
 
 	// Truncate for pixel perfect render
@@ -243,7 +240,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 				break;
 		}
 
-		real_t max_height = draw_font->get_ascent();
+		real_t max_height = (real_t)draw_font->get_ascent();
 		Rect2 border_size(title_pos + Vector2(0, -4), title_size + Vector2(8, 0));
 		// Draw background
 		ci->draw_rect(border_size, config->get_background_color(), true);
@@ -252,8 +249,8 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		pos += Vector2(0, max_height);
 	}
 
-	real_t height_multiplier = graphSize.y / max;
-	real_t center_offset = config->is_centered_graph_line() ? (graphSize.y - height_multiplier * (max - min)) * 0.5f : 0;
+	double height_multiplier = graphSize.y / max;
+	double center_offset = config->is_centered_graph_line() ? (graphSize.y - height_multiplier * (max - min)) * 0.5f : 0;
 
 	Rect2 border_size(pos + Vector2_UP, graphSize + Vector2_DOWN);
 
@@ -271,8 +268,8 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 		{
 			auto w = line_points.ptrw();
 			for (size_t i = 1; i < data->size() - offset; i++) {
-				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graphSize.y - data->get(i) * height_multiplier + center_offset);
-				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graphSize.y - data->get(i - 1) * height_multiplier + center_offset);
+				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graphSize.y - (real_t)(data->get(i) * height_multiplier) + (real_t)center_offset);
+				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graphSize.y - (real_t)(data->get(i - 1) * height_multiplier) + (real_t)center_offset);
 			}
 		}
 		// ci->draw_polyline(line_points, config->get_line_color(), 1, true);
@@ -296,17 +293,16 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 
 	// Draw text
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
-		// String max_text = Utils::string_format("max: %.2f %s", max, suffix);
 		String text = String("max: {0} {1}").format(Array::make(format_arg("%.2f", max), config->get_text_suffix()));
-		real_t max_height = draw_font->get_height();
-		Vector2 text_pos = pos + Vector2(4, max_height - 1);
+		real_t height = (real_t)draw_font->get_height();
+		Vector2 text_pos = pos + Vector2(4, height - 1);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
 		String text = String("avg: {0} {1}").format(Array::make(format_arg("%.2f", avg), config->get_text_suffix()));
-		real_t avg_height = draw_font->get_height();
-		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + avg_height * 0.5f - 2));
+		real_t height = (real_t)draw_font->get_height();
+		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + height * 0.5f - 2));
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
 	}
 
@@ -339,7 +335,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 ////////////////////////////////////
 // FPSGraph
 
-void FPSGraph::_update_added(real_t value) {
+void FPSGraph::_update_added(double value) {
 	if (is_ms != config->is_frame_time_mode()) {
 		data->reset();
 		is_ms = config->is_frame_time_mode();
@@ -377,7 +373,7 @@ Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
 	return config;
 }
 
-void DataGraphManager::_update_fps(real_t delta) {
+void DataGraphManager::_update_fps(double delta) {
 	for (auto &i : graphs) {
 		if (i.second->get_type() == DataGraph::Type::FPS) {
 			i.second->update(delta);
@@ -395,7 +391,7 @@ void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) con
 	}
 }
 
-void DataGraphManager::graph_update_data(String title, real_t data) {
+void DataGraphManager::graph_update_data(String title, double data) {
 	if (graphs.count(title)) {
 		if (graphs[title]->get_type() != DataGraph::Type::FPS) {
 			graphs[title]->update(data);

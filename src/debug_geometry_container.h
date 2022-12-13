@@ -5,6 +5,10 @@
 #include "math_utils.h"
 #include "render_instances.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -17,6 +21,11 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/texture.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 #include <map>
 
@@ -59,8 +68,8 @@ public:
 	DebugGeometryContainer(class DebugDraw *root);
 	~DebugGeometryContainer();
 
-	void update_geometry(real_t delta);
-	void set_render_layer_mask(int64_t layers);
+	void update_geometry(double delta);
+	void set_render_layer_mask(int32_t layers);
 
 	Dictionary get_render_stats();
 	void create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, real_t duration = 0);

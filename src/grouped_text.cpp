@@ -5,7 +5,7 @@
 
 using namespace godot;
 
-TextGroupItem::TextGroupItem(real_t expirationTime, String key, String text, int priority, Color color) {
+TextGroupItem::TextGroupItem(double expirationTime, String key, String text, int priority, Color color) {
 	DEBUG_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", key.utf8().get_data(), text.utf8().get_data());
 
 	expiration_time = expirationTime;
@@ -16,7 +16,7 @@ TextGroupItem::TextGroupItem(real_t expirationTime, String key, String text, int
 	second_chance = true;
 }
 
-void TextGroupItem::update(real_t &expirationTime, String &key, String &text, int &priority, Color &color) {
+void TextGroupItem::update(double &expirationTime, String &key, String &text, int &priority, Color &color) {
 	expiration_time = expirationTime;
 	Key = key;
 	Text = text;
@@ -42,7 +42,7 @@ TextGroup::TextGroup(String title, int priority, bool showTitle, Color groupColo
 	GroupColor = groupColor;
 }
 
-void TextGroup::cleanup_texts(std::function<void()> update, real_t delta) {
+void TextGroup::cleanup_texts(std::function<void()> update, double delta) {
 	std::unordered_set<TextGroupItem_ptr> keysToRemove;
 	keysToRemove.reserve(Texts.size() / 2);
 
@@ -80,7 +80,7 @@ void GroupedText::clear_text() {
 	_textGroups.clear();
 }
 
-void GroupedText::cleanup_text(real_t delta) {
+void GroupedText::cleanup_text(double delta) {
 	LOCK_GUARD(datalock);
 	// Clean texts
 	Utils::remove_where(&_textGroups, [](auto g) { return g->Texts.size() == 0; });
@@ -129,7 +129,7 @@ void GroupedText::end_text_group() {
 	}
 }
 
-void GroupedText::set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration) {
+void GroupedText::set_text(String &key, Variant &value, int &priority, Color &colorOfValue, double duration) {
 	if (duration < 0) {
 		duration = owner->get_text_default_duration();
 	}
@@ -157,7 +157,7 @@ void GroupedText::set_text(String &key, Variant &value, int &priority, Color &co
 		if (item.get()) {
 			if (_strVal != item->Text)
 				owner->mark_canvas_needs_update();
-		
+
 			item->update(duration, key, _strVal, priority, colorOfValue);
 		} else {
 			_currentTextGroup->Texts.insert(std::make_shared<TextGroupItem>(duration, key, _strVal, priority, colorOfValue));
@@ -174,16 +174,16 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 
 	Ref<Font> draw_font = owner->get_text_custom_font().is_null() ? _font : owner->get_text_custom_font();
 
-	Vector2 ascent = Vector2(0, draw_font->get_ascent());
+	Vector2 ascent = Vector2(0, (real_t)draw_font->get_ascent());
 	Vector2 text_padding = owner->get_text_padding();
 	Vector2 font_offset = ascent + text_padding;
-	float line_height = draw_font->get_height() + text_padding.y * 2;
+	real_t line_height = (real_t)draw_font->get_height() + text_padding.y * 2;
 	Vector2 pos = Vector2_ZERO;
-	float size_mul = 0;
+	real_t size_mul = 0;
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
 	switch (owner->get_text_block_position()) {
-		case DebugDraw::BlockPosition::POSITION_LEFT_TOP :
+		case DebugDraw::BlockPosition::POSITION_LEFT_TOP:
 			pos = text_block_offset;
 			size_mul = 0;
 			break;
@@ -241,7 +241,7 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 			} else {
 				// Both parts with different colors
 				String textSep = keyText + separator;
-				int _keyLength = textSep.length();
+				int64_t _keyLength = textSep.length();
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
 						text.substr(0, _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, g->GroupColor); // TODO font size must be in cofig, not in font

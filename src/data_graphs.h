@@ -3,13 +3,17 @@
 #include "circular_buffer.h"
 #include "colors.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
-#include <godot_cpp/core/binder_common.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 #include <map>
 
@@ -25,12 +29,12 @@ class GraphParameters : public RefCounted {
 		POSITION_RIGHT_BOTTOM = 3,
 	};
 
-	enum TextFlags : int {
+	enum TextFlags : int64_t {
 		TEXT_CURRENT = 1 << 0,
 		TEXT_AVG = 1 << 1,
 		TEXT_MAX = 1 << 2,
 		TEXT_MIN = 1 << 3,
-		TEXT_ALL = TEXT_CURRENT | TEXT_AVG | TEXT_MAX | TEXT_MIN
+		TEXT_ALL = TEXT_CURRENT | TEXT_AVG | TEXT_MAX | TEXT_MIN,
 	};
 
 	/// Is Graph enabled
@@ -115,18 +119,18 @@ public:
 
 protected:
 	Ref<GraphParameters> config;
-	std::shared_ptr<CircularBuffer<real_t> > data;
+	std::shared_ptr<CircularBuffer<double> > data;
 	mutable std::recursive_mutex datalock;
 	Type type;
 
-	virtual void _update_added(real_t value);
+	virtual void _update_added(double value);
 
 public:
 	DataGraph(Ref<GraphParameters> _owner);
 
 	Type get_type() const;
 	Ref<GraphParameters> get_config() const;
-	void update(real_t value);
+	void update(double value);
 
 	// Must return edge Y to render next graph with this offset
 	Vector2 draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) const;
@@ -134,7 +138,7 @@ public:
 
 class FPSGraph : public DataGraph {
 protected:
-	virtual void _update_added(real_t value) override;
+	virtual void _update_added(double value) override;
 	bool is_ms = false;
 
 public:
@@ -160,12 +164,11 @@ public:
 
 	Ref<GraphParameters> create_graph(String title);
 	Ref<GraphParameters> create_fps_graph(String title);
-	void _update_fps(real_t delta);
+	void _update_fps(double delta);
 	void draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) const;
-	void graph_update_data(String title, real_t data);
+	void graph_update_data(String title, double data);
 	void remove_graph(String title);
 	void clear_graphs();
 	Ref<GraphParameters> get_graph_config(const String &title) const;
 	PackedStringArray get_graph_names() const;
 };
-

@@ -3,7 +3,15 @@
 #include "math_utils.h"
 #include "utils.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/immediate_mesh.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 #define INSTANCE_DATA_SIZE (sizeof(Transform3D) + sizeof(Color))
 #define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color)) / sizeof(real_t))
@@ -25,14 +33,14 @@ enum InstanceType : char {
 template <class TBounds>
 class DelayedRenderer {
 protected:
-	void _update(real_t exp_time, bool is_vis) {
+	void _update(double exp_time, bool is_vis) {
 		expiration_time = exp_time;
 		is_used_one_time = false;
 		is_visible = is_vis;
 	}
 
 public:
-	real_t expiration_time = 0;
+	double expiration_time = 0;
 	bool is_used_one_time = false;
 	bool is_visible = true;
 	TBounds bounds;
@@ -67,7 +75,7 @@ public:
 		return is_visible = false;
 	}
 
-	void update_expiration(real_t delta) {
+	void update_expiration(double delta) {
 		if (!is_expired()) {
 			expiration_time -= delta;
 		}
@@ -110,8 +118,8 @@ private:
 		size_t _prev_used_instant = 0;
 		size_t _prev_not_expired_delayed = 0;
 		size_t used_delayed = 0;
-		real_t time_used_less_then_half_of_instant_pool = 0;
-		real_t time_used_less_then_quarter_of_delayed_pool = 0;
+		double time_used_less_then_half_of_instant_pool = 0;
+		double time_used_less_then_quarter_of_delayed_pool = 0;
 
 		ObjectsPool() {
 			time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
@@ -139,7 +147,7 @@ private:
 			return &(*objs)[(*used)++];
 		}
 
-		void reset_counter(real_t delta, int custom_type_of_buffer = 0) {
+		void reset_counter(double delta, int custom_type_of_buffer = 0) {
 			if (instant.size() && used_instant < (instant.size() * 0.5)) {
 				time_used_less_then_half_of_instant_pool -= delta;
 				if (time_used_less_then_half_of_instant_pool <= 0) {
@@ -199,7 +207,7 @@ public:
 
 	PackedFloat32Array get_raw_data(InstanceType type);
 	void fill_lines_data(Ref<ImmediateMesh> ig);
-	void reset_counter(real_t delta);
+	void reset_counter(double delta);
 	void reset_visible_objects();
 	size_t get_visible_instances();
 	size_t get_visible_lines();
@@ -213,7 +221,7 @@ public:
 	void for_each_instance(std::function<void(DelayedRendererInstance *)> func);
 	void for_each_line(std::function<void(DelayedRendererLine *)> func);
 	void update_visibility(std::vector<std::vector<Plane> > frustums);
-	void update_expiration(real_t delta);
+	void update_expiration(double delta);
 	void scan_visible_instances();
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);

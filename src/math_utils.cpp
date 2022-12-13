@@ -1,5 +1,4 @@
 #include "math_utils.h"
-#include "utils.h"
 
 const float MathUtils::CubeRadiusForSphere = 0.8660253882f; // "%.10f" % (Vector3.ONE * 0.5).length()
 const float MathUtils::CylinderRadiusForSphere = 0.5590170026f; // "%.10f" % (Vector3(1,0.5,0) * 0.5).length()
@@ -7,8 +6,8 @@ const float MathUtils::AxisRadiusForSphere = 0.5000000000f; // "%.10f" % (Vector
 const float MathUtils::ArrowRadiusForSphere = 0.5153881907f; // "%.10f" % (Vector3(1,0.25,0) * 0.5).length()
 
 void MathUtils::get_diagonal_vectors(Vector3 a, Vector3 b, Vector3 &bottom, Vector3 &top, Vector3 &diag) {
-	bottom = Vector3_ZERO;
-	top = Vector3_ZERO;
+	bottom = Vector3();
+	top = Vector3();
 
 	if (a.x > b.x) {
 		top.x = a.x;

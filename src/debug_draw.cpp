@@ -3,10 +3,14 @@
 
 #include "data_graphs.h"
 #include "grouped_text.h"
+#include "debug_geometry_container.h"
+
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
 
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/label.hpp>
@@ -16,8 +20,11 @@
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
-#include <godot_cpp/classes/viewport.hpp>
 #include <godot_cpp/classes/window.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 #include <algorithm>
 #include <chrono>
@@ -243,7 +250,7 @@ void DebugDraw::ready() {
 	}
 }
 
-void DebugDraw::process(real_t delta) {
+void DebugDraw::process(double delta) {
 	// Clean texts
 	grouped_text->cleanup_text(delta);
 
@@ -358,14 +365,14 @@ Vector2 DebugDraw::get_graphs_base_offset() {
 	return graphs_base_offset;
 }
 
-void DebugDraw::set_geometry_render_layers(int64_t layers) {
+void DebugDraw::set_geometry_render_layers(int32_t layers) {
 	if (geometry_render_layers != layers) {
 		dgc->set_render_layer_mask(layers);
 		geometry_render_layers = layers;
 	}
 }
 
-int64_t DebugDraw::get_geometry_render_layers() {
+int32_t DebugDraw::get_geometry_render_layers() {
 	return geometry_render_layers;
 }
 

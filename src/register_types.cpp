@@ -5,10 +5,18 @@
 #endif
 #include "data_graphs.h"
 #include "debug_draw.h"
+#include "utils.h"
 
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/core/class_db.hpp>
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/editor_interface.hpp>
+#include <godot_cpp/core/class_db.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 using namespace godot;
 
@@ -27,7 +35,7 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	debug_draw_3d_singleton = memnew(DebugDraw);
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
 	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
-	
+
 	// TODO EditorPlugin's is not available in GDExtensions...
 	/*
 #ifdef TOOLS_ENABLED

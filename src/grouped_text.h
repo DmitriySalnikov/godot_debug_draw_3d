@@ -1,8 +1,16 @@
 #pragma once
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
 
 #include <functional>
 #include <memory>
@@ -16,7 +24,7 @@ public:
 	String Key;
 	String Text;
 	int Priority;
-	real_t expiration_time;
+	double expiration_time;
 
 	Color ValueColor;
 
@@ -24,9 +32,9 @@ public:
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(real_t expirationTime, String key, String text, int priority, Color color);
+	TextGroupItem(double expirationTime, String key, String text, int priority, Color color);
 
-	void update(real_t &expirationTime, String &key, String &text, int &priority, Color &color);
+	void update(double &expirationTime, String &key, String &text, int &priority, Color &color);
 	bool is_expired();
 };
 
@@ -48,7 +56,7 @@ public:
 
 			};
 	TextGroup(String title, int priority, bool showTitle, Color groupColor);
-	void cleanup_texts(std::function<void()> update, real_t delta);
+	void cleanup_texts(std::function<void()> update, double delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
@@ -66,9 +74,9 @@ class GroupedText {
 public:
 	void init_group(class DebugDraw *p_owner);
 	void clear_text();
-	void cleanup_text(real_t delta);
+	void cleanup_text(double delta);
 	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle);
 	void end_text_group();
-	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, real_t duration);
+	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, double duration);
 	void draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size);
 };

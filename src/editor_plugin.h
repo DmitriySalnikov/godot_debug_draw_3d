@@ -1,10 +1,10 @@
 #pragma once
-
+/*
 #include <vector>
 
-#include <godot_cpp/classes/editor_plugin.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/classes/canvas_item.hpp>
+#include //<godot_cpp/classes/canvas_item.hpp>
+#include //<godot_cpp/classes/editor_plugin.hpp>
+#include //<godot_cpp/classes/node.hpp>
 
 using namespace godot;
 
@@ -42,3 +42,4 @@ public:
 	void _exit_tree();
 	void disable_plugin();
 };
+*/
