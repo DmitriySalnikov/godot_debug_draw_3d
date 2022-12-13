@@ -56,6 +56,7 @@ class DebugGeometryContainer {
 	ImmediateMeshStorage immediate_mesh_storage;
 
 	GeometryPool geometry_pool;
+	Node *scene_world_node = nullptr;
 
 	void CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh);
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices = nullptr, const size_t indices_size = 0, const Color *colors = nullptr, const size_t colors_size = 0);
@@ -67,6 +68,9 @@ class DebugGeometryContainer {
 public:
 	DebugGeometryContainer(class DebugDraw *root);
 	~DebugGeometryContainer();
+
+	void set_world(Node *new_world);
+	Node *get_world();
 
 	void update_geometry(double delta);
 	void set_render_layer_mask(int32_t layers);

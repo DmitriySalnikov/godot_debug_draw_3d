@@ -88,6 +88,7 @@ _data = {
 }
 
 [sub_resource type="SphereShape3D" id="4"]
+radius = 1.0
 
 [sub_resource type="StandardMaterial3D" id="5"]
 transparency = 1
@@ -98,6 +99,7 @@ emission = Color(0.752941, 0.741176, 0.862745, 1)
 [sub_resource type="Animation" id="6"]
 resource_name = "New Anim"
 length = 3.0
+loop_mode = 1
 tracks/0/type = "rotation_3d"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -219,7 +221,6 @@ func _on_Button_pressed() -> void:
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
-test_graphs = true
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -248,7 +249,10 @@ near = 2.63
 far = 52.5
 
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.972096, 0.234582, 0, -0.234582, 0.972096, 0, 4.69047, 18.5342)
+transform = Transform3D(1, 0, 0, 0, 0.95319, 0.30237, 0, -0.30237, 0.95319, -3.988, 13.525, 37.21)
+fov = 38.8
+near = 2.63
+far = 52.5
 
 [node name="Zones" type="Node3D" parent="."]
 
@@ -404,6 +408,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.48967, -1.03227, 9.524)
 shape = SubResource("4")
 
 [node name="CSGSphere" type="CSGSphere3D" parent="HitTest/StaticBody"]
+radius = 1.0
 radial_segments = 16
 rings = 10
 material = SubResource("5")
@@ -413,21 +418,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.03574, 2.47907, -0.819963)
 
 [node name="RayCast" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761)
+target_position = Vector3(0, -2, 0)
 
 [node name="RayCast2" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145)
+target_position = Vector3(0, -2, 0)
 
 [node name="RayCast3" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175)
+target_position = Vector3(0, -2, 0)
 
 [node name="RayCast4" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791)
+target_position = Vector3(0, -2, 0)
 
 [node name="RayCast5" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778)
+target_position = Vector3(0, -2, 0)
 
 [node name="RayCast6" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
+target_position = Vector3(0, -2, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
 autoplay = "New Anim"
@@ -439,6 +450,7 @@ libraries = {
 
 [node name="LagTest" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473)
+size = Vector3(2, 2, 2)
 material = SubResource("1")
 
 [node name="RESET" type="AnimationPlayer" parent="LagTest"]

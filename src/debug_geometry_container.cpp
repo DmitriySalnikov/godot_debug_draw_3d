@@ -2,6 +2,17 @@
 #include "debug_draw.h"
 #include "utils.h"
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 4244)
+#endif
+
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/world3d.hpp>
+
+#if defined(_MSC_VER)
+#pragma warning(default : 4244)
+#endif
+
 using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
@@ -121,6 +132,27 @@ Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, cons
 	return mesh;
 }
 
+void DebugGeometryContainer::set_world(Node *new_world) {
+	scene_world_node = new_world;
+	RenderingServer *rs = RS();
+	RID scenario;
+	Viewport *viewport = Object::cast_to<Viewport>(new_world);
+	if (viewport) {
+		scenario = viewport->get_world_3d()->get_scenario();
+	} else {
+		scenario = new_world->get_viewport()->get_world_3d()->get_scenario();
+	}
+
+	for (auto &s : multi_mesh_storage) {
+		rs->instance_set_scenario(s.instance, scenario);
+	}
+	rs->instance_set_scenario(immediate_mesh_storage.instance, scenario);
+}
+
+Node *DebugGeometryContainer::get_world() {
+	return scene_world_node;
+}
+
 void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(datalock);
 
@@ -132,7 +164,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 
 	// Return if nothing to do
 	if (!owner->is_debug_enabled()) {
-		for (auto item : multi_mesh_storage) {
+		for (auto &item : multi_mesh_storage) {
 			item.mesh->set_visible_instance_count(0);
 		}
 		geometry_pool.reset_counter(delta);
@@ -232,7 +264,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 
 	// Update MultiMeshInstances
 	for (int i = 0; i < InstanceType::ALL; i++) {
-		Ref<MultiMesh> mm = multi_mesh_storage[i].mesh;
+		Ref<MultiMesh> &mm = multi_mesh_storage[i].mesh;
 		mm->set_visible_instance_count(-1);
 
 		auto a = geometry_pool.get_raw_data((InstanceType)i);
@@ -292,7 +324,7 @@ void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, rea
 #pragma region Draw Functions
 
 void DebugGeometryContainer::clear_3d_objects() {
-	for (auto s : multi_mesh_storage) {
+	for (auto &s : multi_mesh_storage) {
 		s.mesh->set_instance_count(0);
 	}
 	immediate_mesh_storage.mesh->clear_surfaces();
@@ -585,12 +617,9 @@ void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool
 }
 
 void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
-	Basis b;
 	// TODO need testing
-	b.set_column(0, x_size);
-	b.set_column(1, y_size.cross(x_size).normalized());
-	b.set_column(2, y_size);
-	draw_grid_xf(Transform3D(b, origin), subdivision, color, is_centered, duration);
+	draw_grid_xf(Transform3D(Basis(x_size, y_size.cross(x_size).normalized(), y_size), origin),
+			subdivision, color, is_centered, duration);
 }
 
 void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {

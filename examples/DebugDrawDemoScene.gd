@@ -24,9 +24,9 @@ func _input(event: InputEvent) -> void:
 		if event.pressed:
 			
 			# Some property toggles
-			if event.scancode == KEY_F1:
+			if event.keycode == KEY_F1:
 				zylann_example = !zylann_example
-			if event.scancode == KEY_LEFT:
+			if event.keycode == KEY_LEFT:
 				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
 
 func _process(delta: float) -> void:
@@ -205,7 +205,7 @@ func _more_tests():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast3D:
-			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.global_transform.translated(ray.target_position).origin, ray.get_collision_point(), ray.is_colliding(), 0.15)
+			DebugDraw.draw_line_hit(ray.global_transform.origin, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
 		# Delayed line render
 	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
@@ -275,6 +275,6 @@ func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60
 			graph.position = pos
 			graph.show_title = show_title
 			graph.show_text_flags = flags
-			#graph.custom_font = font
+			graph.custom_font = font
 	
 	return graph

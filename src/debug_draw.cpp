@@ -26,10 +26,6 @@
 #pragma warning(default : 4244)
 #endif
 
-#include <algorithm>
-#include <chrono>
-#include <functional>
-
 #define NEED_LEAVE (!debug_enabled || !is_ready)
 
 DebugDraw *DebugDraw::singleton = nullptr;
@@ -160,6 +156,7 @@ DebugDraw::~DebugDraw() {
 void DebugDraw::_scene_tree_found() {
 	base_node = memnew(DebugDrawSceneManager);
 	SCENE_ROOT()->add_child(base_node);
+	SCENE_ROOT()->move_child(base_node, 0);
 }
 
 void DebugDraw::enter_tree() {
@@ -242,12 +239,14 @@ void DebugDraw::ready() {
 
 		SCENE_ROOT()->add_child(_canvasLayer);
 		_canvasLayer->add_child(default_canvas);
+		SCENE_ROOT()->move_child(_canvasLayer, 0);
 
 		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
 			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
 			current_draw_canvas = default_canvas;
 		}
 	}
+	_set_base_world_node(SCENE_ROOT());
 }
 
 void DebugDraw::process(double delta) {
@@ -290,6 +289,10 @@ void DebugDraw::_on_canvas_item_draw() {
 
 	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size);
+}
+
+void DebugDraw::_set_base_world_node(Node *world_base) {
+	dgc->set_world(world_base);
 }
 
 void DebugDraw::mark_canvas_needs_update() {

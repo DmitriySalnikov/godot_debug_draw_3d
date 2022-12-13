@@ -45,6 +45,7 @@ class GraphParameters : public RefCounted {
 	/// Only for FPS Graphs
 	bool frametime_mode = true;
 	/// Draw a graph line aligned vertically in the center
+	// TODO replace by Enum::top, center, bottom
 	bool centered_graph_line = true;
 	/// Sets the text visibility *TextFlags*
 	BitField<TextFlags> show_text_flags = TextFlags::TEXT_ALL;

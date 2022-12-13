@@ -18,7 +18,6 @@
 #endif
 
 #include <memory>
-#include <mutex>
 
 using namespace godot;
 
@@ -68,7 +67,6 @@ private:
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
-	std::recursive_mutex datalock;
 	// TODO bool is_ready = false;
 	bool is_ready = true;
 
@@ -78,6 +76,8 @@ private:
 	// TODO use pointer to CanvasItem from Callable::bind
 	// void _on_canvas_item_draw(CanvasItem *ci);
 	void _on_canvas_item_draw();
+
+	void _set_base_world_node(Node *world_base);
 
 	void enter_tree();
 	void exit_tree();
