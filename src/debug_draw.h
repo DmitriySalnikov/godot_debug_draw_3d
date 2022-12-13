@@ -9,6 +9,7 @@
 
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
 
@@ -16,6 +17,7 @@
 #pragma warning(default : 4244)
 #endif
 
+#include <memory>
 #include <mutex>
 
 using namespace godot;

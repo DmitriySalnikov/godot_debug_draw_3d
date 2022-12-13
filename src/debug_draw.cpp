@@ -2,8 +2,8 @@
 #include "utils.h"
 
 #include "data_graphs.h"
-#include "grouped_text.h"
 #include "debug_geometry_container.h"
+#include "grouped_text.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244)
