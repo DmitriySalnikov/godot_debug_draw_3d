@@ -134,7 +134,7 @@ public:
 	void update(double value);
 
 	// Must return edge Y to render next graph with this offset
-	Vector2 draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) const;
+	Vector2 draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const;
 };
 
 class FPSGraph : public DataGraph {
@@ -150,12 +150,7 @@ public:
 };
 
 class DataGraphManager {
-	struct _data_graph_manager_graphs_comp {
-		bool operator()(const String &a, const String &b) const {
-			return a.naturalnocasecmp_to(b) < 0;
-		}
-	};
-	std::map<String, std::unique_ptr<DataGraph>, _data_graph_manager_graphs_comp> graphs;
+	std::map<StringName, std::unique_ptr<DataGraph>> graphs;
 	mutable std::recursive_mutex datalock;
 	class DebugDraw *owner;
 
@@ -163,13 +158,13 @@ public:
 	DataGraphManager(class DebugDraw *root);
 	~DataGraphManager();
 
-	Ref<GraphParameters> create_graph(String title);
-	Ref<GraphParameters> create_fps_graph(String title);
+	Ref<GraphParameters> create_graph(const StringName &title);
+	Ref<GraphParameters> create_fps_graph(const StringName &title);
 	void _update_fps(double delta);
 	void draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) const;
-	void graph_update_data(String title, double data);
-	void remove_graph(String title);
+	void graph_update_data(const StringName &title, double data);
+	void remove_graph(const StringName &title);
 	void clear_graphs();
-	Ref<GraphParameters> get_graph_config(const String &title) const;
+	Ref<GraphParameters> get_graph_config(const StringName &title) const;
 	PackedStringArray get_graph_names() const;
 };

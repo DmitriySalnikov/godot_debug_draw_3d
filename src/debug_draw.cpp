@@ -85,7 +85,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(draw_cylinder), "transform", "color", "duration"), &DebugDraw::draw_cylinder, Colors::empty_color, 0);
 
 	ClassDB::bind_method(D_METHOD(TEXT(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw::draw_box, Colors::empty_color, false, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw::draw_box_xf, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(TEXT(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw::draw_box_xf, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb), "aabb", "color", "duration"), &DebugDraw::draw_aabb, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb_ab), "a", "b", "color", "duration"), &DebugDraw::draw_aabb_ab, Colors::empty_color, 0);
 
@@ -120,7 +120,7 @@ void DebugDraw::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true);
 	REG_METHOD(end_text_group);
-	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1);
+	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO must be explicitly double. Need fix for Variant converter
 
 	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);

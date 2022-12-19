@@ -24,17 +24,17 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 	int len = vsnprintf(buf, static_buf_size, p_format, p_list);
 	va_end(p_list);
 
+	std::string s;
+
 	if (len >= static_buf_size) {
-		buf = (char *)malloc((size_t)len + 1);
-		vsnprintf(buf, (size_t)len + 1, p_format, list_copy);
+		char *buf_alloc = (char *)malloc((size_t)len + 1);
+		vsnprintf(buf_alloc, (size_t)len + 1, p_format, list_copy);
+		s = buf_alloc;
+		free(buf_alloc);
+	} else {
+		s = buf;
 	}
 	va_end(list_copy);
-
-	std::string s = buf;
-
-	if (len >= static_buf_size) {
-		free(buf);
-	}
 
 	size_t hsh = std::hash<std::string>()(s);
 

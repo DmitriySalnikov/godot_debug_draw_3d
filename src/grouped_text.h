@@ -32,9 +32,9 @@ public:
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(double expirationTime, String key, String text, int priority, Color color);
+	TextGroupItem(double _expirationTime, const String &key, const String &text, const int &priority, const Color &color);
 
-	void update(double &expirationTime, String &key, String &text, int &priority, Color &color);
+	void update(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color);
 	bool is_expired();
 };
 

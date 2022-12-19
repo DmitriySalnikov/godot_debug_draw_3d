@@ -58,7 +58,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
-    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
@@ -66,7 +66,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'">
-    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.template_debug.$(LlvmPlatformName)</TargetName>
@@ -75,7 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\godot-headers;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
     <TargetName>debug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>

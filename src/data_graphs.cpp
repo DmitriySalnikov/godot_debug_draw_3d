@@ -194,7 +194,7 @@ void DataGraph::_update_added(double value) {
 	data->add(value);
 }
 
-Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String title, Vector2 base_offset) const {
+Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;
 
@@ -230,6 +230,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size, String 
 			break;
 	}
 
+	// Draw title
 	if (config->is_show_title()) {
 		Vector2 title_pos = pos;
 
@@ -355,7 +356,7 @@ DataGraphManager::DataGraphManager(DebugDraw *root) {
 DataGraphManager::~DataGraphManager() {
 }
 
-Ref<GraphParameters> DataGraphManager::create_graph(String title) {
+Ref<GraphParameters> DataGraphManager::create_graph(const StringName &title) {
 	Ref<GraphParameters> config;
 	config.instantiate();
 
@@ -364,7 +365,7 @@ Ref<GraphParameters> DataGraphManager::create_graph(String title) {
 	return config;
 }
 
-Ref<GraphParameters> DataGraphManager::create_fps_graph(String title) {
+Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &title) {
 	Ref<GraphParameters> config;
 	config.instantiate();
 
@@ -391,7 +392,7 @@ void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) con
 	}
 }
 
-void DataGraphManager::graph_update_data(String title, double data) {
+void DataGraphManager::graph_update_data(const StringName &title, double data) {
 	if (graphs.count(title)) {
 		if (graphs[title]->get_type() != DataGraph::Type::FPS) {
 			graphs[title]->update(data);
@@ -404,7 +405,7 @@ void DataGraphManager::graph_update_data(String title, double data) {
 	}
 }
 
-void DataGraphManager::remove_graph(String title) {
+void DataGraphManager::remove_graph(const StringName &title) {
 	LOCK_GUARD(datalock);
 	if (graphs.count(title)) {
 		graphs.erase(title);
@@ -416,7 +417,7 @@ void DataGraphManager::clear_graphs() {
 	graphs.clear();
 }
 
-Ref<GraphParameters> DataGraphManager::get_graph_config(const String &title) const {
+Ref<GraphParameters> DataGraphManager::get_graph_config(const StringName &title) const {
 	if (graphs.count(title)) {
 		return graphs.find(title)->second->get_config();
 	}

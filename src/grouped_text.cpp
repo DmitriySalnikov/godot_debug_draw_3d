@@ -5,10 +5,10 @@
 
 using namespace godot;
 
-TextGroupItem::TextGroupItem(double expirationTime, String key, String text, int priority, Color color) {
+TextGroupItem::TextGroupItem(double _expirationTime, const String &key, const String &text, const int &priority, const Color &color) {
 	DEBUG_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", key.utf8().get_data(), text.utf8().get_data());
 
-	expiration_time = expirationTime;
+	expiration_time = _expirationTime;
 	Key = key;
 	Text = text;
 	Priority = priority;
@@ -16,8 +16,8 @@ TextGroupItem::TextGroupItem(double expirationTime, String key, String text, int
 	second_chance = true;
 }
 
-void TextGroupItem::update(double &expirationTime, String &key, String &text, int &priority, Color &color) {
-	expiration_time = expirationTime;
+void TextGroupItem::update(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color) {
+	expiration_time = _expirationTime;
 	Key = key;
 	Text = text;
 	Priority = priority;

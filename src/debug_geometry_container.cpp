@@ -623,12 +623,13 @@ void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y
 }
 
 void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
-	ERR_FAIL_COND(subdivision.x > 1024 * 1024);
-	ERR_FAIL_COND(subdivision.y > 1024 * 1024);
+#define MAX_SUBDIVISIONS 1024 * 1024
+	ERR_FAIL_COND(subdivision.x > MAX_SUBDIVISIONS);
+	ERR_FAIL_COND(subdivision.y > MAX_SUBDIVISIONS);
 	LOCK_GUARD(datalock);
 
 	subdivision = subdivision.abs();
-	subdivision = Vector2i(Math::clamp(subdivision.x, 1, INT32_MAX), Math::clamp(subdivision.y, 1, INT32_MAX));
+	subdivision = Vector2i(Math::clamp(subdivision.x, 1, MAX_SUBDIVISIONS), Math::clamp(subdivision.y, 1, MAX_SUBDIVISIONS));
 	Vector3 x_d = transform.basis.rows[0] / (real_t)subdivision.x;
 	Vector3 z_d = transform.basis.rows[2] / (real_t)subdivision.y;
 

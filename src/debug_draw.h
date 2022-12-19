@@ -492,12 +492,10 @@ public:
 #pragma region Graphs
 
 	/// Create new graph with custom data.
-	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> create_graph(String title);
 
 	/// Create new graph with custom data.
-	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> create_fps_graph(String title);
 
@@ -514,7 +512,6 @@ public:
 	void clear_graphs();
 
 	/// Get config for graph.
-	/// To get more information about the returned class, please see the documentation.
 	/// title: Title of the graph
 	Ref<GraphParameters> get_graph_config(String title);
 
