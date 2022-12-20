@@ -194,6 +194,7 @@ void DataGraph::_update_added(double value) {
 	data->add(value);
 }
 
+// TODO sometimes the graphs are drawn in the wrong places
 Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;

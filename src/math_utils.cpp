@@ -70,9 +70,8 @@ real_t MathUtils::get_max_vector_length(Vector3 &a, Vector3 &b, Vector3 &c) {
 }
 
 real_t MathUtils::get_max_basis_length(Basis &b) {
-	// TODO need testing
-	real_t a_l = b.rows[0].length();
-	real_t b_l = b.rows[1].length();
-	real_t c_l = b.rows[2].length();
+	real_t a_l = b.get_column(0).length();
+	real_t b_l = b.get_column(1).length();
+	real_t c_l = b.get_column(2).length();
 	return Math::max(a_l, Math::max(b_l, c_l));
 }

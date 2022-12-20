@@ -46,6 +46,8 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("delta", delta)
 		return
 	
+	# TODO: Godot Issue!: a hidden camera inside the GUI viewport changes the Frustum of the camera in a 3d scene
+	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
@@ -62,6 +64,8 @@ func _process(delta: float) -> void:
 	# Adding more graphs
 	if test_graphs:
 		_graph_test()
+	else:
+		_remove_graphs()
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -73,8 +77,8 @@ func _process(delta: float) -> void:
 	
 	# Delayed spheres
 	if time <= 0:
-		DebugDraw.draw_sphere($SpherePosition.global_transform.origin, 2, Color.BLUE_VIOLET, 2)
-		DebugDraw.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2, Color.CORNFLOWER_BLUE, 2)
+		DebugDraw.draw_sphere($SpherePosition.global_transform.origin, 2.0, Color.BLUE_VIOLET, 2.0)
+		DebugDraw.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		time = 2
 	time -= delta
 	
@@ -95,16 +99,16 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_square(target.global_transform.origin, 0.5, Color.RED)
 	
 	DebugDraw.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.FUCHSIA)
-	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3, Color.CRIMSON)
+	DebugDraw.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3.0, Color.CRIMSON)
 	
 	if time3 <= 0:
-		DebugDraw.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2)
+		DebugDraw.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2.0)
 		time3 = 2
 	time3 -= delta
 	
 	# Lines with Arrow
 	DebugDraw.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.BLUE, 0.5, true)
-	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8, Color.LAVENDER, 0.5, true)
+	DebugDraw.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8.0, Color.LAVENDER, 0.5, true)
 	
 	DebugDraw.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
 	
@@ -145,9 +149,9 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw.empty_color, false)
 	DebugDraw.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.BROWN, true)
 	
-	var tg = $Misc/Grids/Grid.global_transform
-	var tn = $Misc/Grids/Grid/Subdivision.transform.origin
-	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2i(tn.x*10, tn.z*10), Color.LIGHT_CORAL, false)
+	var tg : Transform3D = $Misc/Grids/Grid.global_transform
+	var tn : Vector3 = $Misc/Grids/Grid/Subdivision.transform.origin
+	DebugDraw.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2i(int(tn.x*10), int(tn.z*10)), Color.LIGHT_CORAL, false)
 	
 	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
 	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
@@ -260,6 +264,18 @@ func _graph_test():
 	
 	# Just sending random data to the graph
 	DebugDraw.graph_update_data("randf", randf())
+
+func _remove_graphs():
+	DebugDraw.remove_graph("randf")
+	DebugDraw.remove_graph("fps")
+	DebugDraw.remove_graph("fps2")
+	DebugDraw.remove_graph("fps3")
+	DebugDraw.remove_graph("fps5")
+	DebugDraw.remove_graph("fps6")
+	DebugDraw.remove_graph("fps7")
+	DebugDraw.remove_graph("fps8")
+	DebugDraw.remove_graph("fps9")
+	DebugDraw.remove_graph("fps10")
 
 func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> GraphParameters:
 	var graph = DebugDraw.get_graph_config(title)

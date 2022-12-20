@@ -35,8 +35,8 @@ void DebugDraw::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw::get_singleton_gdscript);
 
-	REG_METHOD(_on_canvas_item_draw);
-	REG_METHOD(_scene_tree_found);
+	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
+	ClassDB::bind_method(D_METHOD(TEXT(_scene_tree_found)), &DebugDraw::_scene_tree_found);
 
 #pragma region Constants
 
@@ -71,10 +71,10 @@ void DebugDraw::_bind_methods() {
 #pragma endregion
 
 #pragma region Draw Functions
-	REG_METHOD(clear_3d_objects);
-	REG_METHOD(clear_2d_objects);
+	ClassDB::bind_method(D_METHOD(TEXT(clear_3d_objects)), &DebugDraw::clear_3d_objects);
+	ClassDB::bind_method(D_METHOD(TEXT(clear_2d_objects)), &DebugDraw::clear_2d_objects);
 
-	REG_METHOD(clear_all);
+	ClassDB::bind_method(D_METHOD(TEXT(clear_all)), &DebugDraw::clear_all);
 
 	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere, 0.5f, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_xf, Colors::empty_color, 0);
@@ -119,20 +119,20 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
 
 	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true);
-	REG_METHOD(end_text_group);
+	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
 	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO must be explicitly double. Need fix for Variant converter
 
 	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(graph_update_data), "title", "data"), &DebugDraw::graph_update_data);
 	ClassDB::bind_method(D_METHOD(TEXT(remove_graph), "title"), &DebugDraw::remove_graph);
-	REG_METHOD(clear_graphs);
+	ClassDB::bind_method(D_METHOD(TEXT(clear_graphs)), &DebugDraw::clear_graphs);
 	ClassDB::bind_method(D_METHOD(TEXT(get_graph_config), "title"), &DebugDraw::get_graph_config);
-	REG_METHOD(get_graph_names);
+	ClassDB::bind_method(D_METHOD(TEXT(get_graph_names)), &DebugDraw::get_graph_names);
 
 #pragma endregion // Draw Functions
 
-	REG_METHOD(get_render_stats);
+	ClassDB::bind_method(D_METHOD(TEXT(get_render_stats)), &DebugDraw::get_render_stats);
 }
 
 DebugDraw::DebugDraw() {
@@ -152,6 +152,10 @@ DebugDraw::~DebugDraw() {
 		PRINT_ERROR("More than 1 " TEXT(DebugDraw) " instance was created");
 	}
 }
+
+// TODO clear geometry on scene switch
+// 
+// TODO restore animation for lines in example scene
 
 void DebugDraw::_scene_tree_found() {
 	base_node = memnew(DebugDrawSceneManager);

@@ -83,7 +83,7 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 	PackedFloat32Array res;
-	res.resize((int)((instances[type].used_instant + instances[type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT));
+	res.resize((instances[type].used_instant + instances[type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT);
 
 	size_t last_added = 0;
 	if (res.size() > 0) {
@@ -96,7 +96,6 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 			if (o.is_visible) {
 				last_added++;
 
-				// TODO need testing
 				w[id + 0] = o.transform.basis.rows[0][0];
 				w[id + 1] = o.transform.basis.rows[0][1];
 				w[id + 2] = o.transform.basis.rows[0][2];
@@ -130,7 +129,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 			}
 		}
 	}
-	res.resize((int)(last_added * INSTANCE_DATA_FLOAT_COUNT));
+	res.resize(last_added * INSTANCE_DATA_FLOAT_COUNT);
 
 	return res;
 }

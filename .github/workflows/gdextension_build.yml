@@ -23,7 +23,7 @@ env:
 
 jobs:
   windows-gdextension:
-    name: 🪟 Windows
+    name: 🏁 Windows
     runs-on: "windows-latest"
 
     strategy:

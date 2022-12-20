@@ -318,7 +318,7 @@ void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, rea
 			duration,
 			t,
 			color == Colors::empty_color ? Colors::light_green : color,
-			SphereBounds(t.origin - t.basis.rows[2] * 0.5f, MathUtils::ArrowRadiusForSphere * size));
+			SphereBounds(t.origin - t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 
 #pragma region Draw Functions
@@ -498,7 +498,7 @@ void DebugGeometryContainer::draw_arrow(Transform3D transform, Color color, real
 			duration,
 			transform,
 			color == Colors::empty_color ? Colors::light_green : color,
-			SphereBounds(transform.origin - transform.basis.rows[2] * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
+			SphereBounds(transform.origin - transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
 void DebugGeometryContainer::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
@@ -598,17 +598,17 @@ void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool
 
 	bool is_color_empty = color == Colors::empty_color;
 #define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
-#define MINUS(axis) transform.origin - transform.basis axis
-#define PLUS(axis) transform.origin + transform.basis axis
+#define MINUS(axis) transform.origin - transform.basis.get_column(axis)
+#define PLUS(axis) transform.origin + transform.basis.get_column(axis)
 
 	if (is_centered) {
-		draw_arrow_line(MINUS([0] /** 0.5f*/), PLUS([0] /** 0.5f*/), COLOR(x), 0.1f, true, duration);
-		draw_arrow_line(MINUS([1] /** 0.5f*/), PLUS([1] /** 0.5f*/), COLOR(y), 0.1f, true, duration);
-		draw_arrow_line(MINUS([2] /** 0.5f*/), PLUS([2] /** 0.5f*/), COLOR(z), 0.1f, true, duration);
+		draw_arrow_line(MINUS(0 /** 0.5f*/), PLUS(0 /** 0.5f*/), COLOR(x), 0.1f, true, duration);
+		draw_arrow_line(MINUS(1 /** 0.5f*/), PLUS(1 /** 0.5f*/), COLOR(y), 0.1f, true, duration);
+		draw_arrow_line(MINUS(2 /** 0.5f*/), PLUS(2 /** 0.5f*/), COLOR(z), 0.1f, true, duration);
 	} else {
-		draw_arrow_line(transform.origin, PLUS([0]), COLOR(x), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS([1]), COLOR(y), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS([2]), COLOR(z), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(0), COLOR(x), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(1), COLOR(y), 0.15f, true, duration);
+		draw_arrow_line(transform.origin, PLUS(2), COLOR(z), 0.15f, true, duration);
 	}
 
 #undef COLOR
@@ -617,7 +617,6 @@ void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool
 }
 
 void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
-	// TODO need testing
 	draw_grid_xf(Transform3D(Basis(x_size, y_size.cross(x_size).normalized(), y_size), origin),
 			subdivision, color, is_centered, duration);
 }
@@ -630,8 +629,10 @@ void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdiv
 
 	subdivision = subdivision.abs();
 	subdivision = Vector2i(Math::clamp(subdivision.x, 1, MAX_SUBDIVISIONS), Math::clamp(subdivision.y, 1, MAX_SUBDIVISIONS));
-	Vector3 x_d = transform.basis.rows[0] / (real_t)subdivision.x;
-	Vector3 z_d = transform.basis.rows[2] / (real_t)subdivision.y;
+	Vector3 x_axis = transform.basis.get_column(0);
+	Vector3 z_axis = transform.basis.get_column(2);
+	Vector3 x_d = x_axis / (real_t)subdivision.x;
+	Vector3 z_d = z_axis / (real_t)subdivision.y;
 
 	Vector3 origin = is_centered ?
 							 transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 :
@@ -640,12 +641,12 @@ void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdiv
 	std::vector<Vector3> lines;
 	for (int x = 0; x < subdivision.x + 1; x++) {
 		lines.push_back(origin + x_d * (real_t)x);
-		lines.push_back(origin + x_d * (real_t)x + transform.basis.rows[2]);
+		lines.push_back(origin + x_d * (real_t)x + z_axis);
 	}
 
 	for (int y = 0; y < subdivision.y + 1; y++) {
 		lines.push_back(origin + z_d * (real_t)y);
-		lines.push_back(origin + z_d * (real_t)y + transform.basis.rows[0]);
+		lines.push_back(origin + z_d * (real_t)y + x_axis);
 	}
 
 	draw_lines_c(lines, color == Colors::empty_color ? Colors::white : color, duration);

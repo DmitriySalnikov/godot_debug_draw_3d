@@ -178,18 +178,18 @@ script/source = "extends Control
 @export var switch_to_scene = \"\"
 
 func _ready() -> void:
-	$VB/H/Button.disabled = true
+	$GC/VB/H/Button.disabled = true
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
 	var test := DebugDraw.get_graph_config(\"FPS\")
 	if test:
-		$VB/H/FPSEnabled.button_pressed = test.enabled
-		$VB/FPSMS.button_pressed = test.frame_time_mode
-		$VB/HSlider.value = test.size.x
-		$VB/HSlider2.value = test.buffer_size
+		$GC/VB/H/FPSEnabled.button_pressed = test.enabled
+		$GC/VB/FPSMS.button_pressed = test.frame_time_mode
+		$GC/VB/HSlider.value = test.size.x
+		$GC/VB/HSlider2.value = test.buffer_size
 	await get_tree().create_timer(0.2).timeout
-	$VB/H/Button.disabled = false
+	$GC/VB/H/Button.disabled = false
 
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
@@ -222,6 +222,13 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
+current = true
+fov = 38.8
+near = 2.63
+far = 52.5
+
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
 anchors_preset = 2
@@ -243,13 +250,6 @@ render_target_update_mode = 0
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]
 transform = Transform3D(1, 0, 0, 0, 0.34202, 0.939693, 0, -0.939693, 0.34202, -3.988, 39.474, 14.053)
 cull_mask = 18
-current = true
-fov = 38.8
-near = 2.63
-far = 52.5
-
-[node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.95319, 0.30237, 0, -0.30237, 0.95319, -3.988, 13.525, 37.21)
 fov = 38.8
 near = 2.63
 far = 52.5
@@ -335,7 +335,7 @@ transform = Transform3D(-0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0
 transform = Transform3D(1, -1.53668e-08, 1.86265e-08, 1.76951e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707)
 
 [node name="b" type="Node3D" parent="AABB"]
-transform = Transform3D(1, -1.53668e-08, 1.11759e-08, -1.18744e-08, 1, 7.45058e-09, -7.45058e-09, 0, 1, 0.821057, 1.16918, 2.89658)
+transform = Transform3D(1, -1.53668e-08, 1.86265e-08, -1.18744e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, 0.821057, 1.16918, 2.89658)
 
 [node name="AABB_fixed" type="Node3D" parent="."]
 transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -16.8188, -1.788, 7.05104)
@@ -364,10 +364,11 @@ transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.07
 transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 7.45433, -2.5, 5.15179)
 
 [node name="GridCentered" type="Node3D" parent="Misc/Grids"]
-transform = Transform3D(1.76557, 0.707108, -1.76557, -1.28311, -3.70671e-07, -1.28311, -1.76558, 0.707106, 1.76557, 1.76593, -0.0010004, 1.7714)
+transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
+rotation_edit_mode = 2
 
 [node name="Subdivision" type="Node3D" parent="Misc/Grids/GridCentered"]
-transform = Transform3D(1, -5.86198e-14, -2.98023e-07, 3.41061e-13, 1, 0, -1.78814e-07, 1.13687e-13, 1, -0.2, 0, 0.4)
+transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
 
 [node name="Grid" type="Node3D" parent="Misc/Grids"]
 transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
@@ -379,13 +380,13 @@ transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661
 transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326)
 
 [node name="1" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, -0.960337, -1.53755, -0.24448)
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.46213, -4.03317, 0.61692)
 
 [node name="2" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, -0.21726, -0.347845, -0.0553098)
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.01875, -1.79584, -0.163045)
 
 [node name="3" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 0.538932, 0.862856, 0.1372)
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 6.87561e-07, 1, 0, -2.87275e-08, -1.49012e-08, 1, -0.1559, -0.407045, 0.0523388)
 
 [node name="4" type="Node3D" parent="Lines"]
 transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906)
@@ -418,27 +419,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.03574, 2.47907, -0.819963)
 
 [node name="RayCast" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast2" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast3" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast4" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast5" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast6" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
-target_position = Vector3(0, -2, 0)
+target_position = Vector3(0, -3.464, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
 autoplay = "New Anim"
@@ -460,12 +461,9 @@ libraries = {
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -177.0
-offset_right = 177.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -473,47 +471,57 @@ theme = SubResource("3")
 script = SubResource("2")
 switch_to_scene = "res://debug_draw_examples/DebugDrawDemoSceneCS.tscn"
 
-[node name="VB" type="VBoxContainer" parent="Settings"]
+[node name="GC" type="GridContainer" parent="Settings"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+columns = 3
 
-[node name="H" type="HBoxContainer" parent="Settings/VB"]
+[node name="Label" type="Label" parent="Settings/GC"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+text = "GDScript example"
+horizontal_alignment = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="VB" type="VBoxContainer" parent="Settings/GC"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="H" type="HBoxContainer" parent="Settings/GC/VB"]
 layout_mode = 2
 
-[node name="FPSEnabled" type="CheckBox" parent="Settings/VB/H"]
+[node name="FPSEnabled" type="CheckBox" parent="Settings/GC/VB/H"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "FPS Graph enabled"
 
-[node name="Button" type="Button" parent="Settings/VB/H"]
+[node name="Button" type="Button" parent="Settings/GC/VB/H"]
 layout_mode = 2
 text = "Switch to C#"
 
-[node name="FPSMS" type="CheckBox" parent="Settings/VB"]
+[node name="FPSMS" type="CheckBox" parent="Settings/GC/VB"]
 layout_mode = 2
 text = "FPS Graph ms or FPS"
 
-[node name="HSlider" type="HSlider" parent="Settings/VB"]
+[node name="HSlider" type="HSlider" parent="Settings/GC/VB"]
 layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
 value = 50.0
 
-[node name="HSlider2" type="HSlider" parent="Settings/VB"]
+[node name="HSlider2" type="HSlider" parent="Settings/GC/VB"]
 layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
 value = 50.0
 
-[node name="Label" type="Label" parent="."]
-text = "GDScript example"
-
-[connection signal="toggled" from="Settings/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
-[connection signal="pressed" from="Settings/VB/H/Button" to="Settings" method="_on_Button_pressed"]
-[connection signal="toggled" from="Settings/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
-[connection signal="value_changed" from="Settings/VB/HSlider" to="Settings" method="_on_HSlider_value_changed"]
-[connection signal="value_changed" from="Settings/VB/HSlider2" to="Settings" method="_on_HSlider2_value_changed"]
+[connection signal="toggled" from="Settings/GC/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
+[connection signal="pressed" from="Settings/GC/VB/H/Button" to="Settings" method="_on_Button_pressed"]
+[connection signal="toggled" from="Settings/GC/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
+[connection signal="value_changed" from="Settings/GC/VB/HSlider" to="Settings" method="_on_HSlider_value_changed"]
+[connection signal="value_changed" from="Settings/GC/VB/HSlider2" to="Settings" method="_on_HSlider2_value_changed"]
