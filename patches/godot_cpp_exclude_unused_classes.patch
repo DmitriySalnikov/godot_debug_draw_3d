@@ -1,5 +1,4 @@
 diff --git a/SConstruct b/SConstruct
-index 880d19c..2439f7b 100644
 --- a/SConstruct
 +++ b/SConstruct
 @@ -88,6 +88,8 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
@@ -123,8 +122,8 @@ index aac51fa..64aa426 100644
 +    SOURCES_FOLDER = env.get("folder_to_include_classes", "../src")
 +
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
-     env.Clean(files, target)
-     return [target[0]] + files, source
+     env.Clean(target, files)
+     env["godot_cpp_gen_dir"] = target[0].abspath
 @@ -971,6 +1053,9 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
          header_filename = include_gen_folder / (camel_to_snake(class_api["name"]) + ".hpp")
          source_filename = source_gen_folder / (camel_to_snake(class_api["name"]) + ".cpp")

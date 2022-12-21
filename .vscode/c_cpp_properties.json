@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "DefaultCPP",
+            "includePath": [
+                "${workspaceFolder}/src/**",
+                "${workspaceFolder}/godot-cpp/gdextension/**",
+                "${workspaceFolder}/godot-cpp/include",
+                "${workspaceFolder}/godot-cpp/gen/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "DEBUG_ENABLED",
+                "UNICODE",
+                "_UNICODE",
+                "GDEXTENSION_LIBRARY",
+                "NOMINMAX",
+                "TYPED_METHOD_BIND"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
