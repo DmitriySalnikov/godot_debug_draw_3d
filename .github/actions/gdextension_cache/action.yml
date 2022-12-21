@@ -1,0 +1,32 @@
+name: Setup build cache
+description: Setup build cache.
+inputs:
+  cache-name:
+    description: The cache base name (job name by default).
+    default: "${{github.job}}"
+  scons-cache:
+    description: The scons cache path.
+    default: "${{github.workspace}}/.scons-cache/"
+  config:
+    description: Config name.
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    # Get godot-cpp first
+    - name: Get godot-cpp SHA
+      shell: bash
+      id: get_godot_cpp_sha
+      run: |
+        echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
+
+    # Upload cache on completion and check it out now
+    - name: Load .scons_cache directory
+      uses: actions/cache@v3
+      with:
+        path: ${{inputs.scons-cache}}
+        key: ${{inputs.cache-name}}-${{inputs.config}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+        restore-keys: |
+          ${{inputs.cache-name}}-${{inputs.config}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+          ${{inputs.cache-name}}-${{inputs.config}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
+          ${{inputs.cache-name}}-${{inputs.config}}-${{steps.get_godot_cpp_sha.outputs.sha}}

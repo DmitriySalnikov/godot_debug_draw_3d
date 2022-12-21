@@ -1,0 +1,43 @@
+[configuration]
+
+entry_symbol = "debug_draw_3d_library_init"
+
+[dependencies]
+
+# example.x86_64 = { "relative or absolute path to the dependency" : "the path relative to the exported project", }
+
+macos = { }
+macos.template_release = { }
+windows.x86_64 = { }
+windows.template_release.x86_64 = { }
+linux.x86_64 = { }
+linux.template_release.x86_64 = { }
+
+android.arm32 = { }
+android.arm64 = { }
+android.x86_32 = { }
+android.x86_64 = { }
+
+android.template_release.arm32 = { }
+android.template_release.arm64 = { }
+android.template_release.x86_32 = { }
+android.template_release.x86_64 = { }
+
+[libraries]
+
+macos = "libs/macos/libdebug_draw_3d.macos.template_debug.universal.dylib"
+macos.template_release = "libs/macos/libdebug_draw_3d.macos.template_release.universal.dylib"
+windows.x86_64 = "libs/windows/debug_draw_3d.windows.template_debug.x86_64.dll"
+windows.template_release.x86_64 = "libs/windows/debug_draw_3d.windows.template_release.x86_64.dll"
+linux.x86_64 = "libs/linux/libdebug_draw_3d.linux.template_debug.x86_64.so"
+linux.template_release.x86_64 = "libs/linux/libdebug_draw_3d.linux.template_release.x86_64.so"
+
+android.arm32 = "libs/android/libdebug_draw_3d.android.template_debug.arm32.so"
+android.arm64 = "libs/android/libdebug_draw_3d.android.template_debug.arm64.so"
+android.x86_32 = "libs/android/libdebug_draw_3d.android.template_debug.x86_32.so"
+android.x86_64 = "libs/android/libdebug_draw_3d.android.template_debug.x86_64.so"
+
+android.template_release.arm32 = "libs/android/libdebug_draw_3d.android.template_release.arm32.so"
+android.template_release.arm64 = "libs/android/libdebug_draw_3d.android.template_release.arm64.so"
+android.template_release.x86_32 = "libs/android/libdebug_draw_3d.android.template_release.x86_32.so"
+android.template_release.x86_64 = "libs/android/libdebug_draw_3d.android.template_release.x86_64.so"

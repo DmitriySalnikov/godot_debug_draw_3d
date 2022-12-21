@@ -1,0 +1,102 @@
+diff --git a/include/godot_cpp/classes/ref.hpp b/include/godot_cpp/classes/ref.hpp
+index cc7f2d6..fef0fe4 100644
+--- a/include/godot_cpp/classes/ref.hpp
++++ b/include/godot_cpp/classes/ref.hpp
+@@ -276,7 +276,7 @@ struct GetTypeInfo<Ref<T>, typename EnableIf<TypeInherits<RefCounted, T>::value>
+ 	static const GDExtensionClassMethodArgumentMetadata METADATA = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
+ 
+ 	static inline PropertyInfo get_class_info() {
+-		return make_property_info(Variant::Type::OBJECT, T::get_class_static());
++		return make_property_info(Variant::Type::OBJECT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, T::get_class_static());
+ 	}
+ };
+ 
+@@ -286,7 +286,7 @@ struct GetTypeInfo<const Ref<T> &, typename EnableIf<TypeInherits<RefCounted, T>
+ 	static const GDExtensionClassMethodArgumentMetadata METADATA = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
+ 
+ 	static inline PropertyInfo get_class_info() {
+-		return make_property_info(Variant::Type::OBJECT, T::get_class_static());
++		return make_property_info(Variant::Type::OBJECT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, T::get_class_static());
+ 	}
+ };
+ 
+diff --git a/include/godot_cpp/core/binder_common.hpp b/include/godot_cpp/core/binder_common.hpp
+index 93b21ca..cbad53f 100644
+--- a/include/godot_cpp/core/binder_common.hpp
++++ b/include/godot_cpp/core/binder_common.hpp
+@@ -86,28 +86,49 @@ namespace godot {
+ template <class T>
+ struct VariantCaster {
+ 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
+-		return p_variant;
++		using TStripped = std::remove_pointer_t<T>;
++		if constexpr (std::is_base_of<Object, TStripped>::value) {
++			return Object::cast_to<TStripped>(p_variant);
++		} else {
++			return p_variant;
++		}
+ 	}
+ };
+ 
+ template <class T>
+ struct VariantCaster<T &> {
+ 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
+-		return p_variant;
++		using TStripped = std::remove_pointer_t<T>;
++		if constexpr (std::is_base_of<Object, TStripped>::value) {
++			return Object::cast_to<TStripped>(p_variant);
++		} else {
++			return p_variant;
++		}
+ 	}
+ };
+ 
+ template <class T>
+ struct VariantCaster<const T &> {
+ 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
+-		return p_variant;
++		using TStripped = std::remove_pointer_t<T>;
++		if constexpr (std::is_base_of<Object, TStripped>::value) {
++			return Object::cast_to<TStripped>(p_variant);
++		} else {
++			return p_variant;
++		}
+ 	}
+ };
+ 
+ template <typename T>
+ struct VariantObjectClassChecker {
+ 	static _FORCE_INLINE_ bool check(const Variant &p_variant) {
+-		return true;
++		using TStripped = std::remove_pointer_t<T>;
++		if constexpr (std::is_base_of<Object, TStripped>::value) {
++			Object *obj = p_variant;
++			return Object::cast_to<TStripped>(p_variant) || !obj;
++		} else {
++			return true;
++		}
+ 	}
+ };
+ 
+diff --git a/include/godot_cpp/core/type_info.hpp b/include/godot_cpp/core/type_info.hpp
+index 329231a..a2d3836 100644
+--- a/include/godot_cpp/core/type_info.hpp
++++ b/include/godot_cpp/core/type_info.hpp
+@@ -201,7 +201,7 @@ struct GetTypeInfo<T *, typename EnableIf<TypeInherits<Object, T>::value>::type>
+ 	static const GDExtensionVariantType VARIANT_TYPE = GDEXTENSION_VARIANT_TYPE_OBJECT;
+ 	static const GDExtensionClassMethodArgumentMetadata METADATA = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
+ 	static inline PropertyInfo get_class_info() {
+-		return make_property_info(Variant::Type::OBJECT, T::get_class_static());
++		return make_property_info(Variant::Type::OBJECT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, T::get_class_static());
+ 	}
+ };
+ 
+@@ -210,7 +210,7 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
+ 	static const GDExtensionVariantType VARIANT_TYPE = GDEXTENSION_VARIANT_TYPE_OBJECT;
+ 	static const GDExtensionClassMethodArgumentMetadata METADATA = GDEXTENSION_METHOD_ARGUMENT_METADATA_NONE;
+ 	static inline PropertyInfo get_class_info() {
+-		return make_property_info(Variant::Type::OBJECT, T::get_class_static());
++		return make_property_info(Variant::Type::OBJECT, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, T::get_class_static());
+ 	}
+ };
+ 

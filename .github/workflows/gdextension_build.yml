@@ -1,0 +1,164 @@
+name: 🛠️ GDExtension Build
+on:
+  push:
+    paths:
+      [
+        src/**,
+        .github/**,
+        "!.github/**/util_*",
+        "patches/**",
+        lib_utils.py,
+        SConstruct,
+      ]
+  repository_dispatch:
+
+# Stop the same workflow actions
+concurrency:
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.run_id}}
+  cancel-in-progress: true
+
+env:
+  SCONS_CACHE: ${{github.workspace}}/.scons-cache/
+  OUTPUT_LIBS_PATH: bin
+
+jobs:
+  windows-gdextension:
+    name: 🏁 Windows
+    runs-on: "windows-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64]
+        target: [template_debug, template_release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Setup build cache
+        uses: ./.github/actions/gdextension_cache
+        with:
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
+        continue-on-error: true
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: windows
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          artifact: windows
+
+  # ============================================
+
+  linux-gdextension:
+    name: 🐧 Linux
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64]
+        target: [template_debug, template_release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Setup build cache
+        uses: ./.github/actions/gdextension_cache
+        with:
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
+        continue-on-error: true
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: linux
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          artifact: linux
+
+  # ============================================
+
+  macos-gdextension:
+    name: 🍏 MacOS
+    runs-on: "macos-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [universal]
+        target: [template_debug, template_release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Setup build cache
+        uses: ./.github/actions/gdextension_cache
+        with:
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
+        continue-on-error: true
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: macos
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          artifact: macos
+
+  # ============================================
+
+  android-gdextension:
+    name: 🤖 Android
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm32, arm64, x86_32, x86_64]
+        target: [template_debug, template_release]
+
+    env:
+      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/23.2.8568313
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Setup build cache
+        uses: ./.github/actions/gdextension_cache
+        with:
+          config: ${{matrix.arch}}_${{matrix.target}}
+          scons-cache: ${{env.SCONS_CACHE}}
+        continue-on-error: true
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: android
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          artifact: android

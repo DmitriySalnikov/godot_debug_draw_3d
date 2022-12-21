@@ -30,6 +30,8 @@ __pycache__
 *.os
 *.out
 
+used_classes.json
+
 .import/
 .mono/
 obj/
