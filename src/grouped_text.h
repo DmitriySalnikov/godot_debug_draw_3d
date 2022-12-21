@@ -25,6 +25,7 @@ public:
 	String Text;
 	int Priority;
 	double expiration_time;
+	bool is_group_title = false;
 
 	Color ValueColor;
 
@@ -42,20 +43,24 @@ typedef std::shared_ptr<TextGroupItem> TextGroupItem_ptr;
 
 class TextGroup {
 public:
-	String Title;
-	int GroupPriority;
-	bool ShowTitle;
-	Color GroupColor;
+	String title;
+	int group_priority;
+	bool show_title;
+	Color group_color;
+	int title_size;
+	int text_size;
 	std::unordered_set<TextGroupItem_ptr> Texts;
 
 	TextGroup() :
-			Title(""),
-			GroupPriority(0),
-			ShowTitle(true),
-			GroupColor(Color()){
+			title(""),
+			group_priority(0),
+			show_title(true),
+			group_color(Color()),
+			title_size(14),
+			text_size(12){
 
 			};
-	TextGroup(String title, int priority, bool showTitle, Color groupColor);
+	TextGroup(String _title, int priority, bool showTitle, Color groupColor, int titleSize, int textSize);
 	void cleanup_texts(std::function<void()> update, double delta);
 };
 
@@ -75,7 +80,7 @@ public:
 	void init_group(class DebugDraw *p_owner);
 	void clear_text();
 	void cleanup_text(double delta);
-	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle);
+	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle, int titleSize, int textSize);
 	void end_text_group();
 	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, double duration);
 	void draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size);

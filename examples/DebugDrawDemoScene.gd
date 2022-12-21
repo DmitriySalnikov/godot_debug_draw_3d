@@ -7,6 +7,10 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
+@export_range(1, 100) var group_title_font_height := 14
+@export_range(1, 100) var group_text_font_height := 12
+@export_range(1, 100) var title_font_height := 14
+@export_range(1, 100) var text_font_height := 12
 
 var time := 0.0
 var time2 := 0.0
@@ -30,6 +34,12 @@ func _input(event: InputEvent) -> void:
 				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
 
 func _process(delta: float) -> void:
+	if DebugDraw.get_graph_config("FPS"):
+		DebugDraw.get_graph_config("FPS").title_size = title_font_height
+		DebugDraw.get_graph_config("FPS").text_size = text_font_height
+	DebugDraw.text_block_position = DebugDraw.POSITION_RIGHT_TOP
+	
+	
 	# Zylann's example :D
 	if zylann_example:
 		DebugDraw.clear_graphs()
@@ -160,7 +170,7 @@ func _process(delta: float) -> void:
 	DebugDraw.text_custom_font = custom_font
 	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
-	DebugDraw.begin_text_group("-- First Group --", 2, Color.FOREST_GREEN)
+	DebugDraw.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, group_title_font_height, group_text_font_height)
 	DebugDraw.set_text("Simple text")
 	DebugDraw.set_text("Text", "Value", 0, Color.AQUAMARINE)
 	DebugDraw.set_text("Text out of order", null, -1, Color.SILVER)
@@ -172,7 +182,7 @@ func _process(delta: float) -> void:
 	
 	var RenderCount = DebugDraw.get_render_stats()
 	if RenderCount.size():
-		DebugDraw.set_text("Total", RenderCount.total, 0)
+		DebugDraw.set_text("Total", RenderCount.total)
 		DebugDraw.set_text("Instances", RenderCount.instances, 1)
 		DebugDraw.set_text("Wireframes", RenderCount.wireframes, 2)
 		DebugDraw.set_text("Total Visible", RenderCount.total_visible, 3)
@@ -251,7 +261,8 @@ func _graph_test():
 	# If graphs exists, then more tests are done
 	if DebugDraw.get_graph_config("randf"):
 		DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
-		DebugDraw.get_graph_config("fps9").centered_graph_line = false
+		DebugDraw.get_graph_config("fps9").line_position = GraphParameters.LINE_TOP
+		DebugDraw.get_graph_config("fps10").line_position = GraphParameters.LINE_BOTTOM
 		
 		if Engine.is_editor_hint():
 			DebugDraw.get_graph_config("fps5").offset = Vector2(0, -30)
@@ -289,7 +300,7 @@ func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60
 			graph.size = size
 			graph.buffer_size = 50
 			graph.position = pos
-			graph.show_title = show_title
+			graph.show_title = true #show_title
 			graph.show_text_flags = flags
 			graph.custom_font = font
 	

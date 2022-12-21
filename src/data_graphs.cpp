@@ -11,7 +11,6 @@ void GraphParameters::_bind_methods() {
 	REG_PROP_BOOL(enabled);
 	REG_PROP_BOOL(show_title);
 	REG_PROP_BOOL(frame_time_mode);
-	REG_PROP_BOOL(centered_graph_line);
 
 	REG_PROP(show_text_flags, Variant::INT);
 	REG_PROP(size, Variant::VECTOR2);
@@ -19,12 +18,20 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(offset, Variant::VECTOR2);
 	REG_PROP(position, Variant::INT);
 	REG_PROP(line_color, Variant::COLOR);
-	REG_PROP(text_color, Variant::COLOR);
+	REG_PROP(line_position, Variant::INT);
 	REG_PROP(background_color, Variant::COLOR);
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
 
 	REG_PROP(custom_font, Variant::OBJECT);
+	REG_PROP(title_size, Variant::FLOAT);
+	REG_PROP(text_size, Variant::INT);
+	REG_PROP(title_color, Variant::COLOR);
+	REG_PROP(text_color, Variant::COLOR);
+
+	BIND_ENUM_CONSTANT(LINE_TOP);
+	BIND_ENUM_CONSTANT(LINE_CENTER);
+	BIND_ENUM_CONSTANT(LINE_BOTTOM);
 
 	BIND_ENUM_CONSTANT(POSITION_LEFT_TOP);
 	BIND_ENUM_CONSTANT(POSITION_RIGHT_TOP);
@@ -68,12 +75,12 @@ bool GraphParameters::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
-void GraphParameters::set_centered_graph_line(bool _state) {
-	centered_graph_line = _state;
+void GraphParameters::set_line_position(GraphLinePosition position) {
+	line_position = position;
 }
 
-bool GraphParameters::is_centered_graph_line() const {
-	return centered_graph_line;
+GraphParameters::GraphLinePosition GraphParameters::get_line_position() const {
+	return line_position;
 }
 
 void GraphParameters::set_show_text_flags(BitField<TextFlags> _flags) {
@@ -124,14 +131,6 @@ Color GraphParameters::get_line_color() const {
 	return line_color;
 }
 
-void GraphParameters::set_text_color(Color _new_color) {
-	text_color = _new_color;
-}
-
-Color GraphParameters::get_text_color() const {
-	return text_color;
-}
-
 void GraphParameters::set_background_color(Color _new_color) {
 	background_color = _new_color;
 }
@@ -162,6 +161,38 @@ void GraphParameters::set_custom_font(Ref<Font> _custom_font) {
 
 Ref<Font> GraphParameters::get_custom_font() const {
 	return custom_font;
+}
+
+void GraphParameters::set_title_size(int size) {
+	title_size = size;
+}
+
+int GraphParameters::get_title_size() const {
+	return title_size;
+}
+
+void GraphParameters::set_text_size(int size) {
+	text_size = size;
+}
+
+int GraphParameters::get_text_size() const {
+	return text_size;
+}
+
+void GraphParameters::set_title_color(Color new_color) {
+	title_color = new_color;
+}
+
+Color GraphParameters::get_title_color() const {
+	return title_color;
+}
+
+void GraphParameters::set_text_color(Color _new_color) {
+	text_color = _new_color;
+}
+
+Color GraphParameters::get_text_color() const {
+	return text_color;
 }
 
 ////////////////////////////////////
@@ -195,6 +226,7 @@ void DataGraph::_update_added(double value) {
 }
 
 // TODO sometimes the graphs are drawn in the wrong places
+// TODO title size incorrect
 Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;
@@ -210,7 +242,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 	Vector2 graphSize(Vector2((real_t)(int)config->get_size().x, (real_t)(int)config->get_size().y));
 	Vector2 graphOffset(Vector2((real_t)(int)config->get_offset().x, (real_t)(int)config->get_offset().y));
 	Vector2 pos = graphOffset;
-	Vector2 title_size = draw_font->get_string_size(title);
+	Vector2 title_size = draw_font->get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size());
 
 	switch (config->get_position()) {
 		case GraphParameters::GraphPosition::POSITION_LEFT_TOP:
@@ -238,22 +270,36 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 		switch (config->get_position()) {
 			case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
 			case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-				title_pos.x = title_pos.x + graphSize.x - title_size.x - 8;
+				title_pos.x = title_pos.x + graphSize.x - title_size.x - 4;
 				break;
 		}
 
-		real_t max_height = (real_t)draw_font->get_ascent();
-		Rect2 border_size(title_pos + Vector2(0, -4), title_size + Vector2(8, 0));
+		real_t max_height = (real_t)config->get_title_size();
+		Rect2 border_size(title_pos + Vector2(0, -4), Vector2(title_size.x + 4, max_height));
 		// Draw background
 		ci->draw_rect(border_size, config->get_background_color(), true);
-		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height - 3)).floor(), title, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height * 0.5f)).floor(), title, godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size(), config->get_title_color());
 
 		pos += Vector2(0, max_height);
 	}
 
 	double height_multiplier = graphSize.y / max;
-	double center_offset = config->is_centered_graph_line() ? (graphSize.y - height_multiplier * (max - min)) * 0.5f : 0;
-
+	double center_offset = 0;
+	switch (config->get_line_position()) {
+		case GraphParameters::LINE_TOP: {
+			center_offset = 0;
+			break;
+		}
+		case GraphParameters::LINE_CENTER: {
+			center_offset = (graphSize.y - height_multiplier * (max - min)) * 0.5;
+			break;
+		}
+		case GraphParameters::LINE_BOTTOM: {
+			center_offset = graphSize.y - height_multiplier * (max - min) - 1;
+			break;
+		}
+	}
+	
 	Rect2 border_size(pos + Vector2_UP, graphSize + Vector2_DOWN);
 
 	// Draw background
@@ -296,30 +342,30 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 	// Draw text
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
 		String text = String("max: {0} {1}").format(Array::make(format_arg("%.2f", max), config->get_text_suffix()));
-		real_t height = (real_t)draw_font->get_height();
+		real_t height = (real_t)config->get_text_size();
 		Vector2 text_pos = pos + Vector2(4, height - 1);
-		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
 		String text = String("avg: {0} {1}").format(Array::make(format_arg("%.2f", avg), config->get_text_suffix()));
-		real_t height = (real_t)draw_font->get_height();
+		real_t height = (real_t)config->get_text_size();
 		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + height * 0.5f - 2));
-		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
 		String text = String("min: {0} {1}").format(Array::make(format_arg("%.2f", min), config->get_text_suffix()));
 		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
-		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of line for offset from border
 		String text = String("{0} {1}").format(Array::make(format_arg("%.2f", (data->size() > 1 ? data->get(data->size() - 2) : 0)), config->get_text_suffix()));
-		Vector2 cur_size = draw_font->get_string_size(text);
-		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + cur_size.y * 0.5f - 2);
-		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 16, config->get_text_color()); // TODO font size must be in cofig, not in font
+		Vector2 cur_size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_text_size());
+		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + config->get_text_size() * 0.5f - 2);
+		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
 	switch (config->get_position()) {

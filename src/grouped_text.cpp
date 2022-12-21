@@ -33,13 +33,15 @@ bool TextGroupItem::is_expired() {
 	return expiration_time > 0;
 }
 
-TextGroup::TextGroup(String title, int priority, bool showTitle, Color groupColor) {
-	DEBUG_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", title.utf8().get_data());
+TextGroup::TextGroup(String _title, int priority, bool showTitle, Color groupColor, int titleSize, int textSize) {
+	DEBUG_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", _title.utf8().get_data());
 
-	Title = title;
-	GroupPriority = priority;
-	ShowTitle = showTitle;
-	GroupColor = groupColor;
+	title = _title;
+	group_priority = priority;
+	show_title = showTitle;
+	group_color = groupColor;
+	title_size = titleSize;
+	text_size = textSize;
 }
 
 void TextGroup::cleanup_texts(std::function<void()> update, double delta) {
@@ -64,7 +66,7 @@ void TextGroup::cleanup_texts(std::function<void()> update, double delta) {
 void GroupedText::_create_new_default_groupd_if_needed() {
 	LOCK_GUARD(datalock);
 	if (!_currentTextGroup) {
-		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color());
+		_currentTextGroup = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color(), 0, owner->get_text_default_size());
 		_textGroups.insert(_currentTextGroup);
 	}
 }
@@ -73,6 +75,7 @@ void GroupedText::init_group(DebugDraw *p_owner) {
 	owner = p_owner;
 	_currentTextGroup = nullptr;
 	item_for_title_of_groups = std::make_shared<TextGroupItem>(0.0f, "", "", 0, Colors::empty_color);
+	item_for_title_of_groups->is_group_title = true;
 }
 
 void GroupedText::clear_text() {
@@ -91,23 +94,25 @@ void GroupedText::cleanup_text(double delta) {
 	}
 }
 
-void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle) {
+void GroupedText::begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle, int titleSize, int textSize) {
 	LOCK_GUARD(datalock);
 
 	TextGroup_ptr newGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
-		if (g->Title == groupTitle) {
+		if (g->title == groupTitle) {
 			newGroup = g;
 			break;
 		}
 	}
 
 	if (newGroup) {
-		newGroup->ShowTitle = showTitle;
-		newGroup->GroupPriority = groupPriority;
-		newGroup->GroupColor = groupColor;
+		newGroup->show_title = showTitle;
+		newGroup->group_priority = groupPriority;
+		newGroup->group_color = groupColor;
+		newGroup->title_size = titleSize;
+		newGroup->text_size= textSize;
 	} else {
-		newGroup = std::make_shared<TextGroup>(groupTitle, groupPriority, showTitle, groupColor);
+		newGroup = std::make_shared<TextGroup>(groupTitle, groupPriority, showTitle, groupColor, titleSize, textSize);
 		_textGroups.insert(newGroup);
 	}
 
@@ -119,11 +124,11 @@ void GroupedText::end_text_group() {
 
 	_currentTextGroup = nullptr;
 	for (const TextGroup_ptr &g : _textGroups) {
-		if (g->Title == "") {
+		if (g->title == "") {
 			_currentTextGroup = g;
-			_currentTextGroup->GroupColor = owner->get_text_foreground_color();
-			_currentTextGroup->GroupPriority = 0;
-			_currentTextGroup->ShowTitle = false;
+			_currentTextGroup->group_color = owner->get_text_foreground_color();
+			_currentTextGroup->group_priority = 0;
+			_currentTextGroup->show_title = false;
 			break;
 		}
 	}
@@ -168,18 +173,17 @@ void GroupedText::set_text(String &key, Variant &value, int &priority, Color &co
 
 void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 	LOCK_GUARD(datalock);
-	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->ShowTitle ? 1 : 0); });
+	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->show_title ? 1 : 0); });
 
 	static const String separator = " : ";
 
 	Ref<Font> draw_font = owner->get_text_custom_font().is_null() ? _font : owner->get_text_custom_font();
 
-	Vector2 ascent = Vector2(0, (real_t)draw_font->get_ascent());
-	Vector2 text_padding = owner->get_text_padding();
-	Vector2 font_offset = ascent + text_padding;
-	real_t line_height = (real_t)draw_font->get_height() + text_padding.y * 2;
 	Vector2 pos = Vector2_ZERO;
 	real_t size_mul = 0;
+
+	// TODO bottom position is broken
+	// TODO add buffering to accumulate first and then draw
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
 	switch (owner->get_text_block_position()) {
@@ -196,27 +200,30 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 		case DebugDraw::BlockPosition::POSITION_LEFT_BOTTOM:
 			pos = Vector2(
 					text_block_offset.x,
-					vp_size.y - text_block_offset.y - line_height * count);
+					vp_size.y - text_block_offset.y);
+			// vp_size.y - text_block_offset.y - line_height * count);
 			size_mul = 0;
 			break;
 		case DebugDraw::BlockPosition::POSITION_RIGHT_BOTTOM:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
-					vp_size.y - text_block_offset.y - line_height * count);
+					vp_size.y - text_block_offset.y);
+			// vp_size.y - text_block_offset.y - line_height * count);
 			size_mul = -1;
 			break;
 	}
 
 	std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_textGroups,
-			[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->GroupPriority < b->GroupPriority; });
+			[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->group_priority < b->group_priority; });
 
 	for (const TextGroup_ptr &g : ordered_groups) {
 		auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
 			return a->Priority < b->Priority || (a->Priority == b->Priority && a->Key.naturalnocasecmp_to(b->Key) < 0);
 		});
 
-		if (g->ShowTitle) {
-			item_for_title_of_groups->Key = g->Title;
+		// Add title to the list
+		if (g->show_title) {
+			item_for_title_of_groups->Key = g->title;
 			group_items.insert(group_items.begin(), item_for_title_of_groups);
 		}
 
@@ -224,7 +231,13 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 			String keyText = t->Key;
 			bool is_title_only = !t.get() || t->Text == "";
 			String text = is_title_only ? keyText : keyText + separator + t->Text;
-			Vector2 size = draw_font->get_string_size(text);
+
+			int font_size = t->is_group_title ? g->title_size : g->text_size;
+			Vector2 size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+			Vector2 ascent = Vector2(0, (real_t)draw_font->get_ascent(font_size));
+			Vector2 text_padding = owner->get_text_padding();
+			Vector2 font_offset = ascent + text_padding;
+			real_t line_height = (real_t)draw_font->get_height(font_size) + text_padding.y * 2;
 
 			float size_right_revert = (size.x + text_padding.x * 2) * size_mul;
 			ci->draw_rect(
@@ -237,17 +250,17 @@ void GroupedText::draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size) {
 				// Both parts with same color
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text, godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, g->GroupColor); // TODO font size must be in cofig, not in font
+						text, godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, g->group_color);
 			} else {
 				// Both parts with different colors
 				String textSep = keyText + separator;
 				int64_t _keyLength = textSep.length();
 				ci->draw_string(draw_font,
 						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text.substr(0, _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, g->GroupColor); // TODO font size must be in cofig, not in font
+						text.substr(0, _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, g->group_color);
 				ci->draw_string(draw_font,
-						Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep).x, pos.y + font_offset.y).floor(),
-						text.substr(_keyLength, text.length() - _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, 16, t->ValueColor); // TODO font size must be in cofig, not in font
+						Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
+						text.substr(_keyLength, text.length() - _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, t->ValueColor);
 			}
 			pos.y += line_height;
 		}

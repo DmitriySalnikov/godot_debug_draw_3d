@@ -221,6 +221,10 @@ func _on_Button_pressed() -> void:
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
+group_title_font_height = 40
+group_text_font_height = 17
+title_font_height = 46
+text_font_height = 20
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)

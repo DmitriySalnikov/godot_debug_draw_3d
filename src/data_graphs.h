@@ -22,6 +22,13 @@ using namespace godot;
 class GraphParameters : public RefCounted {
 	GDCLASS(GraphParameters, RefCounted);
 
+public:
+	enum GraphLinePosition : int {
+		LINE_TOP = 0,
+		LINE_CENTER = 1,
+		LINE_BOTTOM = 2,
+	};
+
 	enum GraphPosition : int {
 		POSITION_LEFT_TOP = 0,
 		POSITION_RIGHT_TOP = 1,
@@ -37,6 +44,7 @@ class GraphParameters : public RefCounted {
 		TEXT_ALL = TEXT_CURRENT | TEXT_AVG | TEXT_MAX | TEXT_MIN,
 	};
 
+private:
 	/// Is Graph enabled
 	bool enabled = true;
 	/// Draw Graph title
@@ -45,8 +53,7 @@ class GraphParameters : public RefCounted {
 	/// Only for FPS Graphs
 	bool frametime_mode = true;
 	/// Draw a graph line aligned vertically in the center
-	// TODO replace by Enum::top, center, bottom
-	bool centered_graph_line = true;
+	GraphLinePosition line_position = GraphLinePosition::LINE_CENTER;
 	/// Sets the text visibility *TextFlags*
 	BitField<TextFlags> show_text_flags = TextFlags::TEXT_ALL;
 	/// The size of the graph.
@@ -59,16 +66,23 @@ class GraphParameters : public RefCounted {
 	GraphPosition position = GraphPosition::POSITION_RIGHT_TOP;
 	/// Graph line color
 	Color line_color = Colors::orange_red;
-	/// Color of the info text
-	Color text_color = Colors::white_smoke;
 	/// Background color
 	Color background_color = Colors::gray_graph_bg;
 	/// Border color
 	Color border_color = Colors::black;
-	/// Border color
+
+	/// Text suffix
 	String text_suffix = "";
 	/// Custom Font
 	Ref<Font> custom_font = Ref<Font>();
+	/// Title Size
+	int title_size = 14;
+	/// Text Size
+	int text_size = 12;
+	/// Color of the info title
+	Color title_color = Colors::white_smoke;
+	/// Color of the info text
+	Color text_color = Colors::white_smoke;
 
 protected:
 	static void _bind_methods();
@@ -82,8 +96,8 @@ public:
 	bool is_show_title() const;
 	void set_frame_time_mode(bool state);
 	bool is_frame_time_mode() const;
-	void set_centered_graph_line(bool state);
-	bool is_centered_graph_line() const;
+	void set_line_position(GraphLinePosition position);
+	GraphLinePosition get_line_position() const;
 	void set_show_text_flags(BitField<TextFlags> flags);
 	BitField<TextFlags> get_show_text_flags() const;
 	void set_size(Vector2 size);
@@ -96,8 +110,6 @@ public:
 	GraphPosition get_position() const;
 	void set_line_color(Color new_color);
 	Color get_line_color() const;
-	void set_text_color(Color new_color);
-	Color get_text_color() const;
 	void set_background_color(Color new_color);
 	Color get_background_color() const;
 	void set_border_color(Color new_color);
@@ -106,9 +118,18 @@ public:
 	String get_text_suffix() const;
 	void set_custom_font(Ref<Font> _custom_font);
 	Ref<Font> get_custom_font() const;
+	void set_title_size(int size);
+	int get_title_size() const;
+	void set_text_size(int size);
+	int get_text_size() const;
+	void set_title_color(Color new_color);
+	Color get_title_color() const;
+	void set_text_color(Color new_color);
+	Color get_text_color() const;
 };
 
 VARIANT_ENUM_CAST(GraphParameters::GraphPosition);
+VARIANT_ENUM_CAST(GraphParameters::GraphLinePosition);
 VARIANT_BITFIELD_CAST(GraphParameters::TextFlags);
 
 class DataGraph {
@@ -150,7 +171,7 @@ public:
 };
 
 class DataGraphManager {
-	std::map<StringName, std::unique_ptr<DataGraph>> graphs;
+	std::map<StringName, std::unique_ptr<DataGraph> > graphs;
 	mutable std::recursive_mutex datalock;
 	class DebugDraw *owner;
 

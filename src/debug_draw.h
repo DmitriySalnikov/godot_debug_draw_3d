@@ -117,6 +117,8 @@ private:
 	Vector2 text_padding = Vector2(2, 1);
 	/// How long text remain shown after being invoked.
 	real_t text_default_duration = 0.5f;
+	/// Default text size
+	int text_default_size = 12;
 	/// Default color of the text
 	Color text_foreground_color = Colors::white;
 	/// Background color of the text
@@ -190,6 +192,9 @@ public:
 
 	void set_text_default_duration(real_t duration);
 	real_t get_text_default_duration();
+	
+	void set_text_default_size(int size);
+	int get_text_default_size();
 
 	void set_text_foreground_color(Color new_color);
 	Color get_text_foreground_color();
@@ -474,7 +479,7 @@ public:
 	/// group_priority: Group priority
 	/// group_color: Group color
 	/// show_title: Whether to show the title
-	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true);
+	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true, int title_size = 14, int text_size = 12);
 
 	/// End text group. Should be called after 'begin_text_group' if you don't need more than one group.
 	/// If you need to create 2+ groups just call again 'begin_text_group' and this function in the end.

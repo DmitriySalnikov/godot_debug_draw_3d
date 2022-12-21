@@ -59,6 +59,7 @@ void DebugDraw::_bind_methods() {
 	REG_PROP(text_block_offset, Variant::VECTOR2);
 	REG_PROP(text_padding, Variant::VECTOR2);
 	REG_PROP(text_default_duration, Variant::FLOAT);
+	REG_PROP(text_default_size, Variant::INT);
 	REG_PROP(text_foreground_color, Variant::COLOR);
 	REG_PROP(text_background_color, Variant::COLOR);
 	REG_PROP(text_custom_font, Variant::OBJECT);
@@ -118,7 +119,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(TEXT(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true);
+	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, 14, 12);
 	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
 	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO must be explicitly double. Need fix for Variant converter
 
@@ -415,6 +416,14 @@ real_t DebugDraw::get_text_default_duration() {
 	return text_default_duration;
 }
 
+void DebugDraw::set_text_default_size(int size) {
+	text_default_size = size;
+}
+
+int DebugDraw::get_text_default_size() {
+	return text_default_size;
+}
+
 void DebugDraw::set_text_foreground_color(Color new_color) {
 	text_foreground_color = new_color;
 }
@@ -680,8 +689,8 @@ void DebugDraw::draw_camera_frustum_planes(Array cameraFrustum, Color color, rea
 	if (!obj || NEED_LEAVE) return def;     \
 	return obj->func(__VA_ARGS__)
 
-void DebugDraw::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title) {
-	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title);
+void DebugDraw::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title, int title_size, int text_size) {
+	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title, title_size, text_size);
 }
 
 void DebugDraw::end_text_group() {
