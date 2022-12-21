@@ -10,7 +10,7 @@
 /LICENSE				export-ignore
 /SConstruct				export-ignore
 /*.*					export-ignore
-/debug_draw_3d			export-ignore
+/src	        		export-ignore
 /godot-cpp				export-ignore
 /images					export-ignore
 /jni					export-ignore
