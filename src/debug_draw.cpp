@@ -26,6 +26,8 @@
 #pragma warning(default : 4244)
 #endif
 
+#include <limits.h>
+
 #define NEED_LEAVE (!debug_enabled || !is_ready)
 
 DebugDraw *DebugDraw::singleton = nullptr;
