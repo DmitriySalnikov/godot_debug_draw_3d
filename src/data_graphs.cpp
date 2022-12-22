@@ -270,17 +270,21 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 		switch (config->get_position()) {
 			case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
 			case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-				title_pos.x = title_pos.x + graphSize.x - title_size.x - 4;
+				title_pos.x = title_pos.x + graphSize.x - title_size.x;
 				break;
 		}
 
-		real_t max_height = (real_t)config->get_title_size();
-		Rect2 border_size(title_pos + Vector2(0, -4), Vector2(title_size.x + 4, max_height));
+		Rect2 border_rect(title_pos, title_size);
+		border_rect.size.height -= 1;
 		// Draw background
-		ci->draw_rect(border_size, config->get_background_color(), true);
-		ci->draw_string(draw_font, (title_pos + Vector2(4, max_height * 0.5f)).floor(), title, godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size(), config->get_title_color());
+		ci->draw_rect(border_rect, config->get_background_color(), true);
+		ci->draw_string(
+				draw_font,
+				(title_pos + Vector2(0, draw_font->get_ascent(config->get_title_size()))).floor(),
+				title,
+				godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size(), config->get_title_color());
 
-		pos += Vector2(0, max_height);
+		pos += Vector2(0, title_size.y);
 	}
 
 	double height_multiplier = graphSize.y / max;
@@ -299,7 +303,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 			break;
 		}
 	}
-	
+
 	Rect2 border_size(pos + Vector2_UP, graphSize + Vector2_DOWN);
 
 	// Draw background
@@ -342,7 +346,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 	// Draw text
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
 		String text = String("max: {0} {1}").format(Array::make(format_arg("%.2f", max), config->get_text_suffix()));
-		real_t height = (real_t)config->get_text_size();
+		real_t height = (real_t)draw_font->get_ascent(config->get_text_size());
 		Vector2 text_pos = pos + Vector2(4, height - 1);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}

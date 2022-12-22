@@ -1,6 +1,7 @@
-[gd_scene load_steps=15 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=16 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples/DebugDrawDemoScene.gd" id="1"]
+[ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples/Roboto-Bold.ttf" id="2_aedbq"]
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
@@ -221,10 +222,12 @@ func _on_Button_pressed() -> void:
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
-group_title_font_height = 40
-group_text_font_height = 17
-title_font_height = 46
-text_font_height = 20
+custom_font = ExtResource("2_aedbq")
+text_groups_default_font_size = 15
+text_groups_title_font_size = 21
+text_groups_text_font_size = 17
+graph_title_font_size = 30
+graph_text_font_size = 15
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
@@ -336,7 +339,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 10.5182)
 transform = Transform3D(-0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.0121951, -0.0566928, -0.0370723, -0.997703, -11.4765, -4.76837e-07, 7.18889)
 
 [node name="a" type="Node3D" parent="AABB"]
-transform = Transform3D(1, -1.53668e-08, 1.86265e-08, 1.76951e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707)
+transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.7928e-08, 1, 1.11759e-08, -1.49012e-08, 0, 1, -0.5468, -2.45083, -0.991707)
 
 [node name="b" type="Node3D" parent="AABB"]
 transform = Transform3D(1, -1.53668e-08, 1.86265e-08, -1.18744e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, 0.821057, 1.16918, 2.89658)

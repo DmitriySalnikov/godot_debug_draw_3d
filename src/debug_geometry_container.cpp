@@ -44,11 +44,11 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
-		CreateMMI(InstanceType::CUBES, TEXT(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, C_ARR_SIZE(GeometryGenerator::CubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
-		CreateMMI(InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, C_ARR_SIZE(GeometryGenerator::CenteredCubeVertices), GeometryGenerator::CubeIndices, C_ARR_SIZE(GeometryGenerator::CubeIndices)));
-		CreateMMI(InstanceType::ARROWHEADS, TEXT(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, C_ARR_SIZE(GeometryGenerator::ArrowheadVertices), GeometryGenerator::ArrowheadIndices, C_ARR_SIZE(GeometryGenerator::ArrowheadIndices)));
-		CreateMMI(InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, C_ARR_SIZE(GeometryGenerator::CenteredSquareVertices), GeometryGenerator::SquareIndices, C_ARR_SIZE(GeometryGenerator::SquareIndices)));
-		CreateMMI(InstanceType::POSITIONS, TEXT(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, C_ARR_SIZE(GeometryGenerator::PositionVertices), GeometryGenerator::PositionIndices, C_ARR_SIZE(GeometryGenerator::PositionIndices)));
+		CreateMMI(InstanceType::CUBES, TEXT(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::ARROWHEADS, TEXT(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices));
+		CreateMMI(InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices));
+		CreateMMI(InstanceType::POSITIONS, TEXT(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices));
 		CreateMMI(InstanceType::SPHERES, TEXT(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
 		CreateMMI(InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
 		CreateMMI(InstanceType::CYLINDERS, TEXT(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
@@ -99,20 +99,6 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, String name, Ref<Array
 
 	multi_mesh_storage[type].instance = mmi;
 	multi_mesh_storage[type].mesh = new_mm;
-}
-
-Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices, const size_t indices_size, const Color *colors, const size_t colors_size) {
-	PackedVector3Array pool_vertices = Utils::convert_to_pool_array<PackedVector3Array>(vertices, vertices_size);
-	PackedInt32Array pool_indices = Utils::convert_to_pool_array<PackedInt32Array>(indices, indices_size);
-	PackedColorArray pool_colors = Utils::convert_to_pool_array<PackedColorArray>(colors, colors_size);
-	return CreateMesh(type, pool_vertices, pool_indices, pool_colors);
-}
-
-Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const std::vector<Vector3> vertices, const std::vector<int> indices, const std::vector<Color> colors) {
-	PackedVector3Array pool_vertices = Utils::convert_to_pool_array<PackedVector3Array>(vertices);
-	PackedInt32Array pool_indices = Utils::convert_to_pool_array<PackedInt32Array>(indices);
-	PackedColorArray pool_colors = Utils::convert_to_pool_array<PackedColorArray>(colors);
-	return CreateMesh(type, pool_vertices, pool_indices, pool_colors);
 }
 
 Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices, const PackedColorArray &colors) {
@@ -561,7 +547,7 @@ void DebugGeometryContainer::draw_camera_frustum(Camera3D *camera, Color color, 
 }
 
 void DebugGeometryContainer::draw_camera_frustum_planes(Array camera_frustum, Color color, real_t duration) {
-	Plane planes[6] = { Plane() };
+	std::array<Plane, 6> planes = { Plane() };
 
 	if (camera_frustum.size() == 6) {
 		for (int i = 0; i < camera_frustum.size(); i++) {
@@ -574,7 +560,7 @@ void DebugGeometryContainer::draw_camera_frustum_planes(Array camera_frustum, Co
 	draw_camera_frustum_planes_c(planes, color, duration);
 }
 
-void DebugGeometryContainer::draw_camera_frustum_planes_c(Plane planes[6], Color color, real_t duration) {
+void DebugGeometryContainer::draw_camera_frustum_planes_c(std::array<Plane, 6> planes, Color color, real_t duration) {
 	auto lines = GeometryGenerator::CreateCameraFrustumLines(planes);
 
 	LOCK_GUARD(datalock);

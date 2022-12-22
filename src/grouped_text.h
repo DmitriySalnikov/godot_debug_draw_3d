@@ -33,7 +33,7 @@ public:
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(double _expirationTime, const String &key, const String &text, const int &priority, const Color &color);
+	TextGroupItem(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color);
 
 	void update(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color);
 	bool is_expired();
@@ -60,8 +60,8 @@ public:
 			text_size(12){
 
 			};
-	TextGroup(String _title, int priority, bool showTitle, Color groupColor, int titleSize, int textSize);
-	void cleanup_texts(std::function<void()> update, double delta);
+	TextGroup(const String &_title, const int &priority, const bool &showTitle, const Color &groupColor, const int &titleSize, const int &textSize);
+	void cleanup_texts(const std::function<void()> &update, const double &delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
@@ -79,9 +79,9 @@ class GroupedText {
 public:
 	void init_group(class DebugDraw *p_owner);
 	void clear_text();
-	void cleanup_text(double delta);
-	void begin_text_group(String groupTitle, int groupPriority, Color groupColor, bool showTitle, int titleSize, int textSize);
+	void cleanup_text(const double &delta);
+	void begin_text_group(const String &groupTitle, const int &groupPriority, const Color &groupColor, const bool &showTitle, const int &titleSize, const int &textSize);
 	void end_text_group();
-	void set_text(String &key, Variant &value, int &priority, Color &colorOfValue, double duration);
-	void draw(CanvasItem *ci, Ref<Font> _font, Vector2 vp_size);
+	void set_text(const String &key, const Variant &value, const int &priority, const Color &colorOfValue, const double &duration);
+	void draw(CanvasItem *ci, const Ref<Font> &_font, const Vector2 &vp_size);
 };

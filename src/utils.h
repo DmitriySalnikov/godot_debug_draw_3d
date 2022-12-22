@@ -68,11 +68,11 @@ typedef godot::PackedFloat32Array PackedRealArray;
 #define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), true)
 
 namespace godot {
-static String get_file_name_in_repository(String name) {
+static String get_file_name_in_repository(const String &name) {
 	if (name != "") {
 		int64_t idx = name.find("src");
 		if (idx != -1)
-			name = name.substr(name.find("src"), name.length());
+			return name.substr(idx, name.length());
 	}
 	return name;
 }
@@ -124,7 +124,6 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #define RS() RenderingServer::get_singleton()
 #define ENGINE() Engine::get_singleton()
 
-#define C_ARR_SIZE(arr) (sizeof(arr) / sizeof(*arr))
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
 
 class Utils {
@@ -146,7 +145,7 @@ public:
 	static godot::String get_scene_tree_as_string(godot::Node *start);
 
 	template <class TPool, class TContainer>
-	static TPool convert_to_pool_array(TContainer arr) {
+	static TPool convert_to_pool_array(TContainer &arr) {
 		TPool p;
 		if (arr.size() > 0) {
 			p.resize((int)arr.size());
@@ -156,7 +155,7 @@ public:
 	}
 
 	template <class TPool, class TVal>
-	static TPool convert_to_pool_array(const TVal *arr, size_t size) {
+	static TPool convert_to_pool_array(const TVal *arr, const size_t &size) {
 		TPool p;
 		if (size > 0) {
 			p.resize((int)size);
@@ -166,7 +165,7 @@ public:
 	}
 
 	template <class TVal, class TFun>
-	static void remove_where(std::unordered_set<TVal> *set, TFun checker_bool_val, std::function<void(TVal)> deleter = nullptr) {
+	static void remove_where(std::unordered_set<TVal> *set, const TFun &checker_bool_val, const std::function<void(TVal)> &deleter = nullptr) {
 		std::unordered_set<TVal> to_remove;
 		for (const TVal &t : *set) {
 			if (checker_bool_val(t)) {
@@ -182,7 +181,7 @@ public:
 	}
 
 	template <class TVal, class TFun>
-	static int sum(std::unordered_set<TVal> *set, TFun getter_int_val) {
+	static int sum(const std::unordered_set<TVal> *set, TFun getter_int_val) {
 		int res = 0;
 		for (const TVal &t : *set) {
 			res += getter_int_val(t);
@@ -191,7 +190,7 @@ public:
 	}
 
 	template <class TVal, class TFun>
-	inline static std::vector<TVal> order_by(std::unordered_set<TVal> *set, TFun comparator_bool_tval_tval) {
+	inline static std::vector<TVal> order_by(const std::unordered_set<TVal> *set, const TFun &comparator_bool_tval_tval) {
 		std::vector<TVal> ordered((*set).begin(), (*set).end());
 
 		std::sort(ordered.begin(), ordered.end(), comparator_bool_tval_tval);

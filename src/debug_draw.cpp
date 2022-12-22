@@ -119,7 +119,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(TEXT(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, 14, 12);
+	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
 	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO must be explicitly double. Need fix for Variant converter
 

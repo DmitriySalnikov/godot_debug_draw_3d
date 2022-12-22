@@ -59,8 +59,15 @@ class DebugGeometryContainer {
 	Node *scene_world_node = nullptr;
 
 	void CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh);
-	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const Vector3 *vertices, const size_t vertices_size, const int *indices = nullptr, const size_t indices_size = 0, const Color *colors = nullptr, const size_t colors_size = 0);
-	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const std::vector<Vector3> vertices, const std::vector<int> indices = {}, const std::vector<Color> colors = {});
+
+	template <class TVertices, class TIndices = std::array<int, 0>, class TColors = std::array<Color, 0> >
+	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const TVertices &vertices, const TIndices &indices = {}, const TColors &colors = {}) {
+		return CreateMesh(type,
+				Utils::convert_to_pool_array<PackedVector3Array>(vertices),
+				Utils::convert_to_pool_array<PackedInt32Array>(indices),
+				Utils::convert_to_pool_array<PackedColorArray>(colors));
+	}
+
 	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {});
 
 	std::recursive_mutex datalock;
@@ -142,7 +149,7 @@ public:
 #pragma region Camera Frustum
 	void draw_camera_frustum(Camera3D *camera, Color color = Colors::empty_color, real_t duration = 0);
 	void draw_camera_frustum_planes(Array camera_frustum, Color color = Colors::empty_color, real_t duration = 0);
-	void draw_camera_frustum_planes_c(Plane planes[6], Color color = Colors::empty_color, real_t duration = 0);
+	void draw_camera_frustum_planes_c(std::array<Plane, 6> planes, Color color = Colors::empty_color, real_t duration = 0);
 #pragma endregion // Camera Frustum
 
 #pragma endregion // Misc

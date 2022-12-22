@@ -7,10 +7,11 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
-@export_range(1, 100) var group_title_font_height := 14
-@export_range(1, 100) var group_text_font_height := 12
-@export_range(1, 100) var title_font_height := 14
-@export_range(1, 100) var text_font_height := 12
+@export_range(1, 100) var text_groups_default_font_size := 12
+@export_range(1, 100) var text_groups_title_font_size := 14
+@export_range(1, 100) var text_groups_text_font_size := 12
+@export_range(1, 100) var graph_title_font_size := 14
+@export_range(1, 100) var graph_text_font_size := 12
 
 var time := 0.0
 var time2 := 0.0
@@ -34,11 +35,8 @@ func _input(event: InputEvent) -> void:
 				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
 
 func _process(delta: float) -> void:
-	if DebugDraw.get_graph_config("FPS"):
-		DebugDraw.get_graph_config("FPS").title_size = title_font_height
-		DebugDraw.get_graph_config("FPS").text_size = text_font_height
+	# TODO temp
 	DebugDraw.text_block_position = DebugDraw.POSITION_RIGHT_TOP
-	
 	
 	# Zylann's example :D
 	if zylann_example:
@@ -55,8 +53,6 @@ func _process(delta: float) -> void:
 		DebugDraw.set_text("FPS", Engine.get_frames_per_second())
 		DebugDraw.set_text("delta", delta)
 		return
-	
-	# TODO: Godot Issue!: a hidden camera inside the GUI viewport changes the Frustum of the camera in a 3d scene
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
@@ -167,10 +163,15 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
 	# Text
+	if DebugDraw.get_graph_config("FPS"):
+		DebugDraw.get_graph_config("FPS").title_size = graph_title_font_size
+		DebugDraw.get_graph_config("FPS").text_size = graph_text_font_size
+	DebugDraw.text_default_size = text_groups_default_font_size
+	
 	DebugDraw.text_custom_font = custom_font
 	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
-	DebugDraw.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, group_title_font_height, group_text_font_height)
+	DebugDraw.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, text_groups_title_font_size, text_groups_text_font_size)
 	DebugDraw.set_text("Simple text")
 	DebugDraw.set_text("Text", "Value", 0, Color.AQUAMARINE)
 	DebugDraw.set_text("Text out of order", null, -1, Color.SILVER)
@@ -295,13 +296,13 @@ func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60
 			graph = DebugDraw.create_fps_graph(title)
 		else:
 			graph = DebugDraw.create_graph(title)
-		
-		if graph:
-			graph.size = size
-			graph.buffer_size = 50
-			graph.position = pos
-			graph.show_title = true #show_title
-			graph.show_text_flags = flags
-			graph.custom_font = font
+	
+	if graph:
+		graph.size = size
+		graph.buffer_size = 50
+		graph.position = pos
+		graph.show_title = true #show_title
+		graph.show_text_flags = flags
+		graph.custom_font = font
 	
 	return graph

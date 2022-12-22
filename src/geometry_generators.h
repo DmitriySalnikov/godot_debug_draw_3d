@@ -11,6 +11,7 @@
 #pragma warning(default : 4244)
 #endif
 
+#include <array>
 #include <vector>
 
 using namespace godot;
@@ -19,20 +20,20 @@ class GeometryGenerator {
 public:
 #pragma region Predefined Geometry Parts
 
-	const static Vector3 CenteredCubeVertices[8];
-	const static Vector3 CubeVertices[8];
-	const static int CubeIndices[24];
-	const static int CubeWithDiagonalsIndices[36];
-	const static Vector3 ArrowheadVertices[6];
-	const static int ArrowheadIndices[18];
-	const static Vector3 CenteredSquareVertices[4];
-	const static int SquareIndices[6];
-	const static Vector3 PositionVertices[6];
-	const static int PositionIndices[6];
+	const static std::array<Vector3, 8> CenteredCubeVertices;
+	const static std::array<Vector3, 8> CubeVertices;
+	const static std::array<int, 24> CubeIndices;
+	const static std::array<int, 36> CubeWithDiagonalsIndices;
+	const static std::array<Vector3, 6> ArrowheadVertices;
+	const static std::array<int, 18> ArrowheadIndices;
+	const static std::array<Vector3, 4> CenteredSquareVertices;
+	const static std::array<int, 6> SquareIndices;
+	const static std::array<Vector3, 6> PositionVertices;
+	const static std::array<int, 6> PositionIndices;
 
 #pragma endregion
 
-	static std::vector<Vector3> CreateCameraFrustumLines(Plane frustum[6]);
+	static std::vector<Vector3> CreateCameraFrustumLines(std::array<Plane, 6> frustum);
 	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
 	static std::vector<Vector3> CreateSphereLines(int lats, int lons, float radius, Vector3 position);
 	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);

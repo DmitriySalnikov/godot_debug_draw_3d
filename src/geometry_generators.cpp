@@ -5,7 +5,7 @@
 
 #pragma region Predefined Geometry Parts
 
-const Vector3 GeometryGenerator::CenteredCubeVertices[]{
+const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertices{
 	Vector3(-0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, 0.5f),
@@ -16,7 +16,7 @@ const Vector3 GeometryGenerator::CenteredCubeVertices[]{
 	Vector3(-0.5f, 0.5f, 0.5f)
 };
 
-const Vector3 GeometryGenerator::CubeVertices[]{
+const std::array<Vector3, 8> GeometryGenerator::CubeVertices{
 	Vector3(0, 0, 0),
 	Vector3(1, 0, 0),
 	Vector3(1, 0, 1),
@@ -27,7 +27,7 @@ const Vector3 GeometryGenerator::CubeVertices[]{
 	Vector3(0, 1, 1)
 };
 
-const int GeometryGenerator::CubeIndices[]{
+const std::array<int, 24> GeometryGenerator::CubeIndices{
 	0,
 	1,
 	1,
@@ -56,7 +56,7 @@ const int GeometryGenerator::CubeIndices[]{
 	7,
 };
 
-const int GeometryGenerator::CubeWithDiagonalsIndices[]{
+const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndices{
 	0, 1,
 	1, 2,
 	2, 3,
@@ -93,7 +93,7 @@ const int GeometryGenerator::CubeWithDiagonalsIndices[]{
 	// 2, 5,
 };
 
-const Vector3 GeometryGenerator::ArrowheadVertices[]{
+const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertices{
 	Vector3(0, 0, -1),
 	Vector3(0, 0.25f, 0),
 	Vector3(0, -0.25f, 0),
@@ -103,7 +103,7 @@ const Vector3 GeometryGenerator::ArrowheadVertices[]{
 	Vector3(0, 0, -0.2f),
 };
 
-const int GeometryGenerator::ArrowheadIndices[]{
+const std::array<int, 18> GeometryGenerator::ArrowheadIndices{
 	0,
 	1,
 	0,
@@ -129,14 +129,14 @@ const int GeometryGenerator::ArrowheadIndices[]{
 	4,
 };
 
-const Vector3 GeometryGenerator::CenteredSquareVertices[]{
+const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertices{
 	Vector3(0.5f, 0.5f, 0),
 	Vector3(0.5f, -0.5f, 0),
 	Vector3(-0.5f, -0.5f, 0),
 	Vector3(-0.5f, 0.5f, 0),
 };
 
-const int GeometryGenerator::SquareIndices[]{
+const std::array<int, 6> GeometryGenerator::SquareIndices{
 	0,
 	1,
 	2,
@@ -145,7 +145,7 @@ const int GeometryGenerator::SquareIndices[]{
 	0,
 };
 
-const Vector3 GeometryGenerator::PositionVertices[]{
+const std::array<Vector3, 6> GeometryGenerator::PositionVertices{
 	Vector3(0.5f, 0, 0),
 	Vector3(-0.5f, 0, 0),
 	Vector3(0, 0.5f, 0),
@@ -154,7 +154,7 @@ const Vector3 GeometryGenerator::PositionVertices[]{
 	Vector3(0, 0, -0.5f),
 };
 
-const int GeometryGenerator::PositionIndices[]{
+const std::array<int, 6> GeometryGenerator::PositionIndices{
 	0,
 	1,
 	2,
@@ -165,9 +165,9 @@ const int GeometryGenerator::PositionIndices[]{
 
 #pragma endregion
 
-std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(Plane frustum[6]) {
+std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(std::array<Plane, 6> frustum) {
 	std::vector<Vector3> res;
-	res.resize(C_ARR_SIZE(CubeIndices));
+	res.resize(CubeIndices.size());
 
 	std::function<Vector3(Plane &, Plane &, Plane &)> intersect_planes = [&](Plane &a, Plane &b, Plane &c) {
 		Vector3 intersec_result;
@@ -198,9 +198,9 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(Plane frustum[6
 std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox, bool withDiagonals) {
 	Vector3 scaled[8];
 	std::vector<Vector3> res_with_diags;
-	res_with_diags.resize(C_ARR_SIZE(CubeWithDiagonalsIndices));
+	res_with_diags.resize(CubeWithDiagonalsIndices.size());
 	std::vector<Vector3> res;
-	res.resize(C_ARR_SIZE(CubeIndices));
+	res.resize(CubeIndices.size());
 
 	bool dont_rot = rotation == Quaternion_IDENTITY;
 
@@ -222,13 +222,13 @@ std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quater
 
 	if (withDiagonals) {
 		{
-			for (int i = 0; i < C_ARR_SIZE(CubeWithDiagonalsIndices); i++)
+			for (int i = 0; i < CubeWithDiagonalsIndices.size(); i++)
 				res_with_diags[i] = scaled[CubeWithDiagonalsIndices[i]];
 		}
 		return res_with_diags;
 	} else {
 		{
-			for (int i = 0; i < C_ARR_SIZE(CubeIndices); i++)
+			for (int i = 0; i < CubeIndices.size(); i++)
 				res[i] = scaled[CubeIndices[i]];
 		}
 		return res;
