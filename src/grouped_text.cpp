@@ -178,96 +178,129 @@ void GroupedText::set_text(const String &key, const Variant &value, const int &p
 
 void GroupedText::draw(CanvasItem *ci, const Ref<Font> &_font, const Vector2 &vp_size) {
 	LOCK_GUARD(datalock);
-	int count = Utils::sum(&_textGroups, [](TextGroup_ptr g) { return (int)g->Texts.size() + (g->show_title ? 1 : 0); });
-
 	static const String separator = " : ";
 
-	Ref<Font> draw_font = owner->get_text_custom_font().is_null() ? _font : owner->get_text_custom_font();
+	struct Background {
+		Rect2 rect;
+		Color color;
+		Background(const Rect2 &_rect, const Color &_col) :
+				rect(_rect),
+				color(_col){};
+	};
+	std::vector<Background> backgrounds;
+	struct TextPart {
+		String text;
+		Ref<Font> font;
+		int font_size;
+		Vector2 position;
+		Color color;
+		TextPart(const String &_text, const Ref<Font> &_font, const int &_font_size, const Vector2 &_pos, const Color &_col) :
+				text(_text),
+				font(_font),
+				font_size(_font_size),
+				position(_pos),
+				color(_col){};
+	};
+	std::vector<TextPart> text_parts;
 
-	Vector2 pos = Vector2_ZERO;
-	real_t size_mul = 0;
+	real_t groups_height = 0;
+	{
+		Ref<Font> draw_font = owner->get_text_custom_font().is_null() ? _font : owner->get_text_custom_font();
+		Vector2 pos;
+		real_t right_side_multiplier = 0;
 
-	// TODO bottom position is broken
-	// TODO add buffering to accumulate first and then draw
+		switch (owner->get_text_block_position()) {
+			case DebugDraw::BlockPosition::POSITION_RIGHT_TOP:
+			case DebugDraw::BlockPosition::POSITION_RIGHT_BOTTOM:
+				right_side_multiplier = -1;
+				break;
+		}
+
+		std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_textGroups,
+				[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->group_priority < b->group_priority; });
+
+		for (const TextGroup_ptr &g : ordered_groups) {
+			auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
+				return a->Priority < b->Priority || (a->Priority == b->Priority && a->Key.naturalnocasecmp_to(b->Key) < 0);
+			});
+
+			// Add title to the list
+			if (g->show_title) {
+				item_for_title_of_groups->Key = g->title;
+				group_items.insert(group_items.begin(), item_for_title_of_groups);
+			}
+
+			for (const TextGroupItem_ptr &t : group_items) {
+				const String keyText = t->Key;
+				const bool is_title_only = !t.get() || t->Text == "";
+				const String text = is_title_only ? keyText : keyText + separator + t->Text;
+
+				const int font_size = t->is_group_title ? g->title_size : g->text_size;
+				const Vector2 size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
+				const Vector2 text_padding = owner->get_text_padding();
+				const Vector2 font_offset = Vector2(0, (real_t)draw_font->get_ascent(font_size)) + text_padding;
+
+				float size_right_revert = (size.x + text_padding.x * 2) * right_side_multiplier;
+				backgrounds.push_back(Background(
+						Rect2(Vector2(pos.x + size_right_revert, pos.y).floor(), Vector2(size.x + text_padding.x * 2, size.y + text_padding.y * 2).floor()),
+						owner->get_text_background_color()));
+
+				// Draw colored string
+				if ((t.get() && t->ValueColor == Colors::empty_color) || is_title_only) {
+					// Both parts with same color
+					text_parts.push_back(TextPart(text, draw_font, font_size,
+							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
+							g->group_color));
+				} else {
+					// Both parts with different colors
+					String textSep = keyText + separator;
+					int64_t _keyLength = textSep.length();
+
+					text_parts.push_back(TextPart(text.substr(0, _keyLength), draw_font, font_size,
+							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
+							g->group_color));
+
+					text_parts.push_back(TextPart(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
+							Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
+							g->group_color));
+				}
+				pos.y += size.y + text_padding.y * 2;
+			}
+		}
+
+		groups_height = pos.y;
+	}
 
 	Vector2 text_block_offset = owner->get_text_block_offset();
+	Vector2 pos;
 	switch (owner->get_text_block_position()) {
 		case DebugDraw::BlockPosition::POSITION_LEFT_TOP:
 			pos = text_block_offset;
-			size_mul = 0;
 			break;
 		case DebugDraw::BlockPosition::POSITION_RIGHT_TOP:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
 					text_block_offset.y);
-			size_mul = -1;
 			break;
 		case DebugDraw::BlockPosition::POSITION_LEFT_BOTTOM:
 			pos = Vector2(
 					text_block_offset.x,
-					vp_size.y - text_block_offset.y);
-			// vp_size.y - text_block_offset.y - line_height * count);
-			size_mul = 0;
+					vp_size.y - text_block_offset.y - groups_height);
 			break;
 		case DebugDraw::BlockPosition::POSITION_RIGHT_BOTTOM:
 			pos = Vector2(
 					vp_size.x - text_block_offset.x,
-					vp_size.y - text_block_offset.y);
-			// vp_size.y - text_block_offset.y - line_height * count);
-			size_mul = -1;
+					vp_size.y - text_block_offset.y - groups_height);
 			break;
 	}
 
-	std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_textGroups,
-			[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->group_priority < b->group_priority; });
+	for (auto &bg : backgrounds) {
+		bg.rect.position += pos;
+		ci->draw_rect(bg.rect, bg.color);
+	}
 
-	for (const TextGroup_ptr &g : ordered_groups) {
-		auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
-			return a->Priority < b->Priority || (a->Priority == b->Priority && a->Key.naturalnocasecmp_to(b->Key) < 0);
-		});
-
-		// Add title to the list
-		if (g->show_title) {
-			item_for_title_of_groups->Key = g->title;
-			group_items.insert(group_items.begin(), item_for_title_of_groups);
-		}
-
-		for (const TextGroupItem_ptr &t : group_items) {
-			String keyText = t->Key;
-			bool is_title_only = !t.get() || t->Text == "";
-			String text = is_title_only ? keyText : keyText + separator + t->Text;
-
-			int font_size = t->is_group_title ? g->title_size : g->text_size;
-			Vector2 size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-			Vector2 ascent = Vector2(0, (real_t)draw_font->get_ascent(font_size));
-			Vector2 text_padding = owner->get_text_padding();
-			Vector2 font_offset = ascent + text_padding;
-			real_t line_height = (real_t)draw_font->get_height(font_size) + text_padding.y * 2;
-
-			float size_right_revert = (size.x + text_padding.x * 2) * size_mul;
-			ci->draw_rect(
-					Rect2(Vector2(pos.x + size_right_revert, pos.y).floor(),
-							Vector2(size.x + text_padding.x * 2, line_height).floor()),
-					owner->get_text_background_color());
-
-			// Draw colored string
-			if ((t.get() && t->ValueColor == Colors::empty_color) || is_title_only) {
-				// Both parts with same color
-				ci->draw_string(draw_font,
-						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text, godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, g->group_color);
-			} else {
-				// Both parts with different colors
-				String textSep = keyText + separator;
-				int64_t _keyLength = textSep.length();
-				ci->draw_string(draw_font,
-						Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-						text.substr(0, _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, g->group_color);
-				ci->draw_string(draw_font,
-						Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
-						text.substr(_keyLength, text.length() - _keyLength), godot::HORIZONTAL_ALIGNMENT_CENTER, -1, font_size, t->ValueColor);
-			}
-			pos.y += line_height;
-		}
+	for (auto &tp : text_parts) {
+		tp.position += pos;
+		ci->draw_string(tp.font, tp.position, tp.text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, tp.font_size, tp.color);
 	}
 }

@@ -56,8 +56,8 @@ void DebugDraw::_bind_methods() {
 	REG_PROP(graphs_base_offset, Variant::VECTOR2);
 	REG_PROP(geometry_render_layers, Variant::INT);
 	REG_PROP(text_block_position, Variant::INT);
-	REG_PROP(text_block_offset, Variant::VECTOR2);
-	REG_PROP(text_padding, Variant::VECTOR2);
+	REG_PROP(text_block_offset, Variant::VECTOR2I);
+	REG_PROP(text_padding, Variant::VECTOR2I);
 	REG_PROP(text_default_duration, Variant::FLOAT);
 	REG_PROP(text_default_size, Variant::INT);
 	REG_PROP(text_foreground_color, Variant::COLOR);
@@ -155,7 +155,7 @@ DebugDraw::~DebugDraw() {
 }
 
 // TODO clear geometry on scene switch
-// 
+//
 // TODO restore animation for lines in example scene
 
 void DebugDraw::_scene_tree_found() {
@@ -392,19 +392,21 @@ DebugDraw::BlockPosition DebugDraw::get_text_block_position() {
 	return (BlockPosition)text_block_position;
 }
 
-void DebugDraw::set_text_block_offset(Vector2 offset) {
+void DebugDraw::set_text_block_offset(Vector2i offset) {
 	text_block_offset = offset;
 }
 
-Vector2 DebugDraw::get_text_block_offset() {
+Vector2i DebugDraw::get_text_block_offset() {
 	return text_block_offset;
 }
 
-void DebugDraw::set_text_padding(Vector2 padding) {
+void DebugDraw::set_text_padding(Vector2i padding) {
 	text_padding = padding;
+	text_padding.x = Math::clamp(text_padding.x, 0, INT_MAX);
+	text_padding.y = Math::clamp(text_padding.y, 0, INT_MAX);
 }
 
-Vector2 DebugDraw::get_text_padding() {
+Vector2i DebugDraw::get_text_padding() {
 	return text_padding;
 }
 

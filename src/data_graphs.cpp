@@ -226,7 +226,6 @@ void DataGraph::_update_added(double value) {
 }
 
 // TODO sometimes the graphs are drawn in the wrong places
-// TODO title size incorrect
 Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;
@@ -436,7 +435,7 @@ void DataGraphManager::_update_fps(double delta) {
 
 void DataGraphManager::draw(CanvasItem *ci, Ref<Font> font, Vector2 vp_size) const {
 	Vector2 base_offset = owner->get_graphs_base_offset();
-	Vector2 prev_offset[] = { base_offset, Vector2(base_offset.x, base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y) };
+	Vector2 prev_offset[GraphParameters::POSITION_MAX] = { base_offset, Vector2(base_offset.x, base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y), Vector2(base_offset.x, vp_size.y - base_offset.y) };
 	for (auto &i : graphs) {
 		int pos = i.second->get_config()->get_position();
 		prev_offset[pos] = i.second->draw(ci, font, vp_size, i.first, prev_offset[pos]);

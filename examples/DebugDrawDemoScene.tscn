@@ -223,8 +223,9 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+text_groups_position = 2
 text_groups_default_font_size = 15
-text_groups_title_font_size = 21
+text_groups_title_font_size = 20
 text_groups_text_font_size = 17
 graph_title_font_size = 30
 graph_text_font_size = 15

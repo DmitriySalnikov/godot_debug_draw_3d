@@ -34,6 +34,7 @@ public:
 		POSITION_RIGHT_TOP = 1,
 		POSITION_LEFT_BOTTOM = 2,
 		POSITION_RIGHT_BOTTOM = 3,
+		POSITION_MAX
 	};
 
 	enum TextFlags : int64_t {

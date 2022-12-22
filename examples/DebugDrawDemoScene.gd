@@ -7,9 +7,16 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
+
+@export_category("Text groups")
+@export_enum("LEFT_TOP", "RIGHT_TOP", "LEFT_BOTTOM", "RIGHT_BOTTOM") var text_groups_position := DebugDraw.POSITION_LEFT_TOP
+@export var text_groups_offset := Vector2i(8, 8)
+@export var text_groups_padding := Vector2i(3, 1)
 @export_range(1, 100) var text_groups_default_font_size := 12
 @export_range(1, 100) var text_groups_title_font_size := 14
 @export_range(1, 100) var text_groups_text_font_size := 12
+
+@export_category("Graphs")
 @export_range(1, 100) var graph_title_font_size := 14
 @export_range(1, 100) var graph_text_font_size := 12
 
@@ -36,7 +43,7 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	# TODO temp
-	DebugDraw.text_block_position = DebugDraw.POSITION_RIGHT_TOP
+	DebugDraw.text_block_position = DebugDraw.POSITION_LEFT_BOTTOM
 	
 	# Zylann's example :D
 	if zylann_example:
@@ -167,6 +174,9 @@ func _process(delta: float) -> void:
 		DebugDraw.get_graph_config("FPS").title_size = graph_title_font_size
 		DebugDraw.get_graph_config("FPS").text_size = graph_text_font_size
 	DebugDraw.text_default_size = text_groups_default_font_size
+	DebugDraw.text_block_offset = text_groups_offset
+	DebugDraw.text_block_position = text_groups_position
+	DebugDraw.text_padding = text_groups_padding
 	
 	DebugDraw.text_custom_font = custom_font
 	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)

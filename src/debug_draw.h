@@ -112,9 +112,9 @@ private:
 	/// Position of text block
 	BlockPosition text_block_position = BlockPosition::POSITION_LEFT_TOP;
 	/// Offset from the corner selected in 'text_block_position'
-	Vector2 text_block_offset = Vector2(8, 8);
+	Vector2i text_block_offset = Vector2i(8, 8);
 	/// Text padding for each line
-	Vector2 text_padding = Vector2(2, 1);
+	Vector2i text_padding = Vector2i(3, 1);
 	/// How long text remain shown after being invoked.
 	real_t text_default_duration = 0.5f;
 	/// Default text size
@@ -184,11 +184,11 @@ public:
 	void set_text_block_position(BlockPosition position);
 	BlockPosition get_text_block_position();
 
-	void set_text_block_offset(Vector2 offset);
-	Vector2 get_text_block_offset();
+	void set_text_block_offset(Vector2i offset);
+	Vector2i get_text_block_offset();
 
-	void set_text_padding(Vector2 padding);
-	Vector2 get_text_padding();
+	void set_text_padding(Vector2i padding);
+	Vector2i get_text_padding();
 
 	void set_text_default_duration(real_t duration);
 	real_t get_text_default_duration();
