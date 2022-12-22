@@ -1,4 +1,5 @@
 name: 1. 📦 Collect binaries from artifacts
+run-name: "Collect '${{github.ref_name}}' #${{github.run_number}}"
 
 on:
   workflow_dispatch:
@@ -6,6 +7,7 @@ on:
 
 jobs:
   collect:
+    name: Collect GDExtension binaries
     runs-on: ubuntu-latest
 
     steps:

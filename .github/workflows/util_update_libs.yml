@@ -1,4 +1,5 @@
 name: 2. ↗️ Update GDExtension binaries from collected artifacts
+run-name: "Update on '${{github.ref_name}}' '${{github.sha}}' #${{github.run_number}}"
 
 on:
   workflow_dispatch:
@@ -37,6 +38,8 @@ jobs:
           git config --global user.name 'Auto Updater'
           git config --global user.email 'auto-updater@users.noreply.github.com'
           git diff
+          echo "# Changed files:" >> $GITHUB_STEP_SUMMARY
+          git diff --name-only >> $GITHUB_STEP_SUMMARY
           git add -A
           git commit -am "[CI] ↗️ Updated Binaries"
           git push
