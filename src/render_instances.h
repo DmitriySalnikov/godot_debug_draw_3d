@@ -61,7 +61,7 @@ public:
 	}
 
 	bool update_visibility(std::vector<std::vector<Plane> > &_frustums, bool _skip_expiration_check) {
-		if (skip_expiration_check || !is_expired()) {
+		if (_skip_expiration_check || !is_expired()) {
 			if (_frustums.size()) {
 				is_visible = false;
 				for (auto &frustum : _frustums)
