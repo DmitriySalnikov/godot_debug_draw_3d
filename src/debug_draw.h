@@ -49,8 +49,8 @@ private:
 	double log_flush_time = 0;
 
 	// 2d
-	CanvasLayer *_canvasLayer = nullptr;
-	bool _canvasNeedUpdate = true;
+	CanvasLayer *_canvas_layer = nullptr;
+	bool _canvas_need_update = true;
 	Ref<Font> _font;
 
 	CanvasItem *default_canvas = nullptr;
@@ -153,68 +153,68 @@ public:
 	};
 	void mark_canvas_needs_update();
 
-	void set_custom_editor_viewport(std::vector<Viewport *> viewports);
+	void set_custom_editor_viewport(std::vector<Viewport *> _viewports);
 	std::vector<Viewport *> get_custom_editor_viewport();
 
 #pragma region Exposed Parameters
-	void set_empty_color(Color col);
+	void set_empty_color(Color _col);
 	Color get_empty_color();
 
-	void set_debug_enabled(bool state);
+	void set_debug_enabled(bool _state);
 	bool is_debug_enabled();
 
-	void set_freeze_3d_render(bool state);
+	void set_freeze_3d_render(bool _state);
 	bool is_freeze_3d_render();
 
-	void set_visible_instance_bounds(bool state);
+	void set_visible_instance_bounds(bool _state);
 	bool is_visible_instance_bounds();
 
-	void set_use_frustum_culling(bool state);
+	void set_use_frustum_culling(bool _state);
 	bool is_use_frustum_culling();
 
-	void set_force_use_camera_from_scene(bool state);
+	void set_force_use_camera_from_scene(bool _state);
 	bool is_force_use_camera_from_scene();
 
-	void set_graphs_base_offset(Vector2 offset);
+	void set_graphs_base_offset(Vector2 _offset);
 	Vector2 get_graphs_base_offset();
 
-	void set_geometry_render_layers(int32_t layers);
+	void set_geometry_render_layers(int32_t _layers);
 	int32_t get_geometry_render_layers();
 
-	void set_text_block_position(BlockPosition position);
+	void set_text_block_position(BlockPosition _position);
 	BlockPosition get_text_block_position();
 
-	void set_text_block_offset(Vector2i offset);
+	void set_text_block_offset(Vector2i _offset);
 	Vector2i get_text_block_offset();
 
-	void set_text_padding(Vector2i padding);
+	void set_text_padding(Vector2i _padding);
 	Vector2i get_text_padding();
 
-	void set_text_default_duration(real_t duration);
+	void set_text_default_duration(real_t _duration);
 	real_t get_text_default_duration();
 	
-	void set_text_default_size(int size);
+	void set_text_default_size(int _size);
 	int get_text_default_size();
 
-	void set_text_foreground_color(Color new_color);
+	void set_text_foreground_color(Color _new_color);
 	Color get_text_foreground_color();
 
-	void set_text_background_color(Color new_color);
+	void set_text_background_color(Color _new_color);
 	Color get_text_background_color();
 
-	void set_text_custom_font(Ref<Font> custom_font);
+	void set_text_custom_font(Ref<Font> _custom_font);
 	Ref<Font> get_text_custom_font();
 
-	void set_line_hit_color(Color new_color);
+	void set_line_hit_color(Color _new_color);
 	Color get_line_hit_color();
 
-	void set_line_after_hit_color(Color new_color);
+	void set_line_after_hit_color(Color _new_color);
 	Color get_line_after_hit_color();
 
-	void set_custom_viewport(Viewport *viewport);
+	void set_custom_viewport(Viewport *_viewport);
 	Viewport *get_custom_viewport();
 
-	void set_custom_canvas(CanvasItem *canvas);
+	void set_custom_canvas(CanvasItem *_canvas);
 	CanvasItem *get_custom_canvas();
 #pragma endregion // Exposed Parametes
 

@@ -31,29 +31,29 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEBUG_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &lines, Color col) {
+void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col) {
 	_update(_exp_time, true);
 
 	set_lines(lines);
-	color = col;
+	color = _col;
 }
 
-void DelayedRendererLine::set_lines(std::vector<Vector3> lines) {
-	_lines = lines;
-	bounds = calculate_bounds_based_on_lines(_lines);
+void DelayedRendererLine::set_lines(std::vector<Vector3> _lines) {
+	lines = _lines;
+	bounds = calculate_bounds_based_on_lines(lines);
 }
 
 std::vector<Vector3> DelayedRendererLine::get_lines() {
-	return _lines;
+	return lines;
 }
 
-AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &lines) {
-	if (lines.size() > 0) {
+AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &_lines) {
+	if (_lines.size() > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
-		Vector3 begin = lines[0];
-		Vector3 end = lines[0] + Vector3_ZERO;
+		Vector3 begin = _lines[0];
+		Vector3 end = _lines[0] + Vector3_ZERO;
 
-		for (Vector3 v : lines) {
+		for (Vector3 v : _lines) {
 			if (v.x < begin.x) {
 				begin.x = v.x;
 			}
@@ -81,9 +81,9 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &
 	}
 }
 
-PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
+PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 	PackedFloat32Array res;
-	res.resize((instances[type].used_instant + instances[type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT);
+	res.resize((instances[_type].used_instant + instances[_type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT);
 
 	size_t last_added = 0;
 	if (res.size() > 0) {
@@ -115,16 +115,16 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 			}
 		};
 
-		for (size_t i = 0; i < instances[type].used_instant; i++) {
-			write_data(instances[type].instant[i]);
+		for (size_t i = 0; i < instances[_type].used_instant; i++) {
+			write_data(instances[_type].instant[i]);
 		}
-		instances[type]._prev_used_instant = instances[type].used_instant;
+		instances[_type]._prev_used_instant = instances[_type].used_instant;
 
-		instances[type].used_delayed = 0;
-		for (size_t i = 0; i < instances[type].delayed.size(); i++) {
-			auto &o = instances[type].delayed[i];
+		instances[_type].used_delayed = 0;
+		for (size_t i = 0; i < instances[_type].delayed.size(); i++) {
+			auto &o = instances[_type].delayed[i];
 			if (!o.is_expired()) {
-				instances[type].used_delayed++;
+				instances[_type].used_delayed++;
 				write_data(o);
 			}
 		}
@@ -134,18 +134,18 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType type) {
 	return res;
 }
 
-void GeometryPool::fill_lines_data(Ref<ImmediateMesh> ig) {
+void GeometryPool::fill_lines_data(Ref<ImmediateMesh> _ig) {
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;
 
-	ig->surface_begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
+	_ig->surface_begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
 
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		auto &o = lines.instant[i];
 		if (o.is_visible) {
-			ig->surface_set_color(o.color);
+			_ig->surface_set_color(o.color);
 			for (auto &l : o.get_lines()) {
-				ig->surface_add_vertex(l);
+				_ig->surface_add_vertex(l);
 			};
 		}
 		o.is_used_one_time = true;
@@ -158,23 +158,23 @@ void GeometryPool::fill_lines_data(Ref<ImmediateMesh> ig) {
 		if (!o.is_expired()) {
 			lines.used_delayed++;
 			if (o.is_visible) {
-				ig->surface_set_color(o.color);
+				_ig->surface_set_color(o.color);
 				for (auto &l : o.get_lines()) {
-					ig->surface_add_vertex(l);
+					_ig->surface_add_vertex(l);
 				};
 			}
 		}
 		o.is_used_one_time = true;
 	}
 
-	ig->surface_end();
+	_ig->surface_end();
 }
 
-void GeometryPool::reset_counter(double delta) {
-	lines.reset_counter(delta);
+void GeometryPool::reset_counter(double _delta) {
+	lines.reset_counter(_delta);
 
 	for (int i = 0; i < InstanceType::ALL; i++) {
-		instances[i].reset_counter(delta, i);
+		instances[i].reset_counter(_delta, i);
 	}
 }
 
@@ -197,12 +197,12 @@ void GeometryPool::reset_visible_objects() {
 	lines.reset_visible_counter();
 }
 
-size_t GeometryPool::get_used_instances_instant(InstanceType type) {
-	return instances[type]._prev_used_instant;
+size_t GeometryPool::get_used_instances_instant(InstanceType _type) {
+	return instances[_type]._prev_used_instant;
 }
 
-size_t GeometryPool::get_used_instances_delayed(InstanceType type) {
-	return instances[type].used_delayed;
+size_t GeometryPool::get_used_instances_delayed(InstanceType _type) {
+	return instances[_type].used_delayed;
 }
 
 size_t GeometryPool::get_used_instances_total() {
@@ -233,51 +233,51 @@ void GeometryPool::clear_pool() {
 	lines.clear_pools();
 }
 
-void GeometryPool::for_each_instance(std::function<void(DelayedRendererInstance *)> func) {
+void GeometryPool::for_each_instance(std::function<void(DelayedRendererInstance *)> _func) {
 	for (auto &inst : instances) {
 		for (size_t i = 0; i < inst.used_instant; i++) {
-			func(&inst.instant[i]);
+			_func(&inst.instant[i]);
 		}
 		for (size_t i = 0; i < inst.delayed.size(); i++) {
 			if (!inst.delayed[i].is_expired())
-				func(&inst.delayed[i]);
+				_func(&inst.delayed[i]);
 		}
 	}
 }
 
-void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> func) {
+void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> _func) {
 	for (size_t i = 0; i < lines.used_instant; i++) {
-		func(&lines.instant[i]);
+		_func(&lines.instant[i]);
 	}
 	for (size_t i = 0; i < lines.delayed.size(); i++) {
 		if (!lines.delayed[i].is_expired())
-			func(&lines.delayed[i]);
+			_func(&lines.delayed[i]);
 	}
 }
 
-void GeometryPool::update_visibility(std::vector<std::vector<Plane> > frustums) {
+void GeometryPool::update_visibility(std::vector<std::vector<Plane> > _frustums) {
 	for (auto &t : instances) {
 		for (size_t i = 0; i < t.used_instant; i++)
-			t.instant[i].update_visibility(frustums, true);
+			t.instant[i].update_visibility(_frustums, true);
 
 		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_visibility(frustums, false);
+			t.delayed[i].update_visibility(_frustums, false);
 	}
 
 	for (size_t i = 0; i < lines.used_instant; i++)
-		lines.instant[i].update_visibility(frustums, true);
+		lines.instant[i].update_visibility(_frustums, true);
 
 	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_visibility(frustums, false);
+		lines.delayed[i].update_visibility(_frustums, false);
 }
 
-void GeometryPool::update_expiration(double delta) {
+void GeometryPool::update_expiration(double _delta) {
 	for (auto &t : instances)
 		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_expiration(delta);
+			t.delayed[i].update_expiration(_delta);
 
 	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_expiration(delta);
+		lines.delayed[i].update_expiration(_delta);
 }
 
 void GeometryPool::scan_visible_instances() {
@@ -305,16 +305,16 @@ void GeometryPool::scan_visible_instances() {
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd) {
+void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> _custom_upd) {
 	DelayedRendererInstance *inst = instances[_type].get(_exp_time > 0);
 	inst->update(_exp_time, _type, _transform, _col, _bounds);
-	if (custom_upd)
-		custom_upd(inst);
+	if (_custom_upd)
+		_custom_upd(inst);
 }
 
-void GeometryPool::add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd) {
+void GeometryPool::add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> _custom_upd) {
 	DelayedRendererLine *inst = lines.get(_exp_time > 0);
 	inst->update(_exp_time, _lines, _col);
-	if (custom_upd)
-		custom_upd(inst);
+	if (_custom_upd)
+		_custom_upd(inst);
 }

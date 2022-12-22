@@ -58,13 +58,15 @@ private:
 	/// Sets the text visibility *TextFlags*
 	BitField<TextFlags> show_text_flags = TextFlags::TEXT_ALL;
 	/// The size of the graph.
-	Vector2 size = Vector2(256, 64);
+	Vector2i size = Vector2i(256, 64);
 	/// The size of the buffer where the values are stored.
 	int buffer_size = 256;
 	/// Offset from the corner selected in position
-	Vector2 offset = Vector2(0, 8);
+	Vector2i offset = Vector2i(0, 8);
 	/// FPS Graph position *GraphPosition*
 	GraphPosition position = GraphPosition::POSITION_RIGHT_TOP;
+	/// Graph line width
+	real_t line_width = 1.0;
 	/// Graph line color
 	Color line_color = Colors::orange_red;
 	/// Background color
@@ -91,41 +93,43 @@ protected:
 public:
 	GraphParameters();
 
-	void set_enabled(bool state);
+	void set_enabled(bool _state);
 	bool is_enabled() const;
-	void set_show_title(bool state);
+	void set_show_title(bool _state);
 	bool is_show_title() const;
-	void set_frame_time_mode(bool state);
+	void set_frame_time_mode(bool _state);
 	bool is_frame_time_mode() const;
-	void set_line_position(GraphLinePosition position);
+	void set_line_position(GraphLinePosition _position);
 	GraphLinePosition get_line_position() const;
-	void set_show_text_flags(BitField<TextFlags> flags);
+	void set_show_text_flags(BitField<TextFlags> _flags);
 	BitField<TextFlags> get_show_text_flags() const;
-	void set_size(Vector2 size);
-	Vector2 get_size() const;
-	void set_buffer_size(int buf_size);
+	void set_size(Vector2i _size);
+	Vector2i get_size() const;
+	void set_buffer_size(int _buf_size);
 	int get_buffer_size() const;
-	void set_offset(Vector2 offset);
-	Vector2 get_offset() const;
-	void set_position(GraphPosition position);
+	void set_offset(Vector2i _offset);
+	Vector2i get_offset() const;
+	void set_position(GraphPosition _position);
 	GraphPosition get_position() const;
-	void set_line_color(Color new_color);
+	void set_line_width(real_t _width);
+	real_t get_line_width() const;
+	void set_line_color(Color _new_color);
 	Color get_line_color() const;
-	void set_background_color(Color new_color);
+	void set_background_color(Color _new_color);
 	Color get_background_color() const;
-	void set_border_color(Color new_color);
+	void set_border_color(Color _new_color);
 	Color get_border_color() const;
-	void set_text_suffix(String suffix);
+	void set_text_suffix(String _suffix);
 	String get_text_suffix() const;
 	void set_custom_font(Ref<Font> _custom_font);
 	Ref<Font> get_custom_font() const;
-	void set_title_size(int size);
+	void set_title_size(int _size);
 	int get_title_size() const;
-	void set_text_size(int size);
+	void set_text_size(int _size);
 	int get_text_size() const;
-	void set_title_color(Color new_color);
+	void set_title_color(Color _new_color);
 	Color get_title_color() const;
-	void set_text_color(Color new_color);
+	void set_text_color(Color _new_color);
 	Color get_text_color() const;
 };
 
@@ -156,7 +160,7 @@ public:
 	void update(double value);
 
 	// Must return edge Y to render next graph with this offset
-	Vector2 draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const;
+	Vector2 draw(CanvasItem *ci, const Ref<Font> &font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const;
 };
 
 class FPSGraph : public DataGraph {

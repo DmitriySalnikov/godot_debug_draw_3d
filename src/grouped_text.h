@@ -21,21 +21,21 @@ using namespace godot;
 
 class TextGroupItem {
 public:
-	String Key;
-	String Text;
-	int Priority;
+	String key;
+	String text;
+	int priority;
 	double expiration_time;
 	bool is_group_title = false;
 
-	Color ValueColor;
+	Color value_color;
 
 	// Just to show the text once and not delete it until the next frame ends.
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color);
+	TextGroupItem(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
 
-	void update(const double &_expirationTime, const String &key, const String &text, const int &priority, const Color &color);
+	void update(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
 	bool is_expired();
 };
 
@@ -60,8 +60,8 @@ public:
 			text_size(12){
 
 			};
-	TextGroup(const String &_title, const int &priority, const bool &showTitle, const Color &groupColor, const int &titleSize, const int &textSize);
-	void cleanup_texts(const std::function<void()> &update, const double &delta);
+	TextGroup(const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
+	void cleanup_texts(const std::function<void()> &_update, const double &_delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
@@ -69,8 +69,8 @@ typedef std::shared_ptr<TextGroup> TextGroup_ptr;
 class GroupedText {
 
 	TextGroupItem_ptr item_for_title_of_groups;
-	std::unordered_set<TextGroup_ptr> _textGroups;
-	TextGroup_ptr _currentTextGroup;
+	std::unordered_set<TextGroup_ptr> _text_groups;
+	TextGroup_ptr _current_text_group;
 	class DebugDraw *owner;
 	std::recursive_mutex datalock;
 
@@ -79,9 +79,9 @@ class GroupedText {
 public:
 	void init_group(class DebugDraw *p_owner);
 	void clear_text();
-	void cleanup_text(const double &delta);
-	void begin_text_group(const String &groupTitle, const int &groupPriority, const Color &groupColor, const bool &showTitle, const int &titleSize, const int &textSize);
+	void cleanup_text(const double &_delta);
+	void begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size);
 	void end_text_group();
-	void set_text(const String &key, const Variant &value, const int &priority, const Color &colorOfValue, const double &duration);
-	void draw(CanvasItem *ci, const Ref<Font> &_font, const Vector2 &vp_size);
+	void set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration);
+	void draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size);
 };

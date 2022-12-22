@@ -195,7 +195,7 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(std::array<Plan
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox, bool withDiagonals) {
+std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centered_box, bool with_diagonals) {
 	Vector3 scaled[8];
 	std::vector<Vector3> res_with_diags;
 	res_with_diags.resize(CubeWithDiagonalsIndices.size());
@@ -205,7 +205,7 @@ std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quater
 	bool dont_rot = rotation == Quaternion_IDENTITY;
 
 	std::function<Vector3(int)> get;
-	if (centeredBox) {
+	if (centered_box) {
 		if (dont_rot)
 			get = [&size, &position](int idx) { return CenteredCubeVertices[idx] * size + position; };
 		else
@@ -220,7 +220,7 @@ std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quater
 	for (int i = 0; i < 8; i++)
 		scaled[i] = get(i);
 
-	if (withDiagonals) {
+	if (with_diagonals) {
 		{
 			for (int i = 0; i < CubeWithDiagonalsIndices.size(); i++)
 				res_with_diags[i] = scaled[CubeWithDiagonalsIndices[i]];
@@ -282,11 +282,11 @@ std::vector<Vector3> GeometryGenerator::CreateSphereLines(int lats, int lons, fl
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep) {
+std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float radius, float height, Vector3 position, int draw_edge_each_n_step) {
 	real_t angle = 360.f / edges;
 
 	std::vector<Vector3> points;
-	points.reserve(size_t(4 * edges + ((edges / drawEdgeEachNStep) * 2)));
+	points.reserve(size_t(4 * edges + ((edges / draw_edge_each_n_step) * 2)));
 
 	Vector3 d = Vector3(0, height, 0);
 	for (int i = 0; i < edges; i++) {
@@ -304,7 +304,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float rad
 		points.push_back(b - d);
 
 		// Edge
-		if (i % drawEdgeEachNStep == 0) {
+		if (i % draw_edge_each_n_step == 0) {
 			points.push_back(a + d);
 			points.push_back(a - d);
 		}

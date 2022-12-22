@@ -34,8 +34,8 @@ public:
 #pragma endregion
 
 	static std::vector<Vector3> CreateCameraFrustumLines(std::array<Plane, 6> frustum);
-	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centeredBox = true, bool withDiagonals = false);
+	static std::vector<Vector3> CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centered_box = true, bool with_diagonals = false);
 	static std::vector<Vector3> CreateSphereLines(int lats, int lons, float radius, Vector3 position);
-	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int drawEdgeEachNStep = 1);
+	static std::vector<Vector3> CreateCylinderLines(int edges, float radius, float height, Vector3 position, int draw_edge_each_n_step = 1);
 	static std::vector<Vector3> CreateLinesFromPath(PackedVector3Array path);
 };

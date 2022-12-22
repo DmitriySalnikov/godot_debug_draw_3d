@@ -237,16 +237,16 @@ void DebugDraw::ready() {
 		f->store_string(Utils::get_scene_tree_as_string(res->get_parent()->get_parent()));
 	} else {
 		// Create canvas item and canvas layer
-		_canvasLayer = memnew(CanvasLayer);
-		_canvasLayer->set_layer(64);
+		_canvas_layer = memnew(CanvasLayer);
+		_canvas_layer->set_layer(64);
 		default_canvas = memnew(Control);
 		default_canvas->set_name("DebugDrawDefaultCanvas");
 		((Control *)default_canvas)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-		SCENE_ROOT()->add_child(_canvasLayer);
-		_canvasLayer->add_child(default_canvas);
-		SCENE_ROOT()->move_child(_canvasLayer, 0);
+		SCENE_ROOT()->add_child(_canvas_layer);
+		_canvas_layer->add_child(default_canvas);
+		SCENE_ROOT()->move_child(_canvas_layer, 0);
 
 		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
 			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
@@ -264,14 +264,14 @@ void DebugDraw::process(double delta) {
 	data_graphs->_update_fps(delta);
 
 	// Update overlay
-	if (_canvasNeedUpdate) {
+	if (_canvas_need_update) {
 		if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
 			default_canvas->queue_redraw();
 		else
 			custom_canvas->queue_redraw();
 
 		// reset some values
-		_canvasNeedUpdate = false;
+		_canvas_need_update = false;
 		grouped_text->end_text_group();
 	}
 
@@ -298,23 +298,23 @@ void DebugDraw::_on_canvas_item_draw() {
 	data_graphs->draw(ci, _font, vp_size);
 }
 
-void DebugDraw::_set_base_world_node(Node *world_base) {
-	dgc->set_world(world_base);
+void DebugDraw::_set_base_world_node(Node *_world_base) {
+	dgc->set_world(_world_base);
 }
 
 void DebugDraw::mark_canvas_needs_update() {
-	_canvasNeedUpdate = true;
+	_canvas_need_update = true;
 }
 
-void DebugDraw::set_custom_editor_viewport(std::vector<Viewport *> viewports) {
-	custom_editor_viewports = viewports;
+void DebugDraw::set_custom_editor_viewport(std::vector<Viewport *> _viewports) {
+	custom_editor_viewports = _viewports;
 }
 
 std::vector<Viewport *> DebugDraw::get_custom_editor_viewport() {
 	return custom_editor_viewports;
 }
 
-void DebugDraw::set_empty_color(Color col) {
+void DebugDraw::set_empty_color(Color _col) {
 }
 
 Color DebugDraw::get_empty_color() {
@@ -323,10 +323,10 @@ Color DebugDraw::get_empty_color() {
 
 #pragma region Exposed Parameters
 
-void DebugDraw::set_debug_enabled(bool state) {
-	debug_enabled = state;
+void DebugDraw::set_debug_enabled(bool _state) {
+	debug_enabled = _state;
 
-	if (!state) {
+	if (!_state) {
 		clear_all();
 	}
 }
@@ -335,50 +335,50 @@ bool DebugDraw::is_debug_enabled() {
 	return debug_enabled;
 }
 
-void DebugDraw::set_freeze_3d_render(bool state) {
-	freeze_3d_render = state;
+void DebugDraw::set_freeze_3d_render(bool _state) {
+	freeze_3d_render = _state;
 }
 
 bool DebugDraw::is_freeze_3d_render() {
 	return freeze_3d_render;
 }
 
-void DebugDraw::set_visible_instance_bounds(bool state) {
-	visible_instance_bounds = state;
+void DebugDraw::set_visible_instance_bounds(bool _state) {
+	visible_instance_bounds = _state;
 }
 
 bool DebugDraw::is_visible_instance_bounds() {
 	return visible_instance_bounds;
 }
 
-void DebugDraw::set_use_frustum_culling(bool state) {
-	use_frustum_culling = state;
+void DebugDraw::set_use_frustum_culling(bool _state) {
+	use_frustum_culling = _state;
 }
 
 bool DebugDraw::is_use_frustum_culling() {
 	return use_frustum_culling;
 }
 
-void DebugDraw::set_force_use_camera_from_scene(bool state) {
-	force_use_camera_from_scene = state;
+void DebugDraw::set_force_use_camera_from_scene(bool _state) {
+	force_use_camera_from_scene = _state;
 }
 
 bool DebugDraw::is_force_use_camera_from_scene() {
 	return force_use_camera_from_scene;
 }
 
-void DebugDraw::set_graphs_base_offset(Vector2 offset) {
-	graphs_base_offset = offset;
+void DebugDraw::set_graphs_base_offset(Vector2 _offset) {
+	graphs_base_offset = _offset;
 }
 
 Vector2 DebugDraw::get_graphs_base_offset() {
 	return graphs_base_offset;
 }
 
-void DebugDraw::set_geometry_render_layers(int32_t layers) {
-	if (geometry_render_layers != layers) {
-		dgc->set_render_layer_mask(layers);
-		geometry_render_layers = layers;
+void DebugDraw::set_geometry_render_layers(int32_t _layers) {
+	if (geometry_render_layers != _layers) {
+		dgc->set_render_layer_mask(_layers);
+		geometry_render_layers = _layers;
 	}
 }
 
@@ -386,24 +386,24 @@ int32_t DebugDraw::get_geometry_render_layers() {
 	return geometry_render_layers;
 }
 
-void DebugDraw::set_text_block_position(BlockPosition position) {
-	text_block_position = (BlockPosition)position;
+void DebugDraw::set_text_block_position(BlockPosition _position) {
+	text_block_position = (BlockPosition)_position;
 }
 
 DebugDraw::BlockPosition DebugDraw::get_text_block_position() {
 	return (BlockPosition)text_block_position;
 }
 
-void DebugDraw::set_text_block_offset(Vector2i offset) {
-	text_block_offset = offset;
+void DebugDraw::set_text_block_offset(Vector2i _offset) {
+	text_block_offset = _offset;
 }
 
 Vector2i DebugDraw::get_text_block_offset() {
 	return text_block_offset;
 }
 
-void DebugDraw::set_text_padding(Vector2i padding) {
-	text_padding = padding;
+void DebugDraw::set_text_padding(Vector2i _padding) {
+	text_padding = _padding;
 	text_padding.x = Math::clamp(text_padding.x, 0, INT_MAX);
 	text_padding.y = Math::clamp(text_padding.y, 0, INT_MAX);
 }
@@ -412,76 +412,76 @@ Vector2i DebugDraw::get_text_padding() {
 	return text_padding;
 }
 
-void DebugDraw::set_text_default_duration(real_t duration) {
-	text_default_duration = duration;
+void DebugDraw::set_text_default_duration(real_t _duration) {
+	text_default_duration = _duration;
 }
 
 real_t DebugDraw::get_text_default_duration() {
 	return text_default_duration;
 }
 
-void DebugDraw::set_text_default_size(int size) {
-	text_default_size = size;
+void DebugDraw::set_text_default_size(int _size) {
+	text_default_size = Math::clamp(_size, 1, INT_MAX);
 }
 
 int DebugDraw::get_text_default_size() {
 	return text_default_size;
 }
 
-void DebugDraw::set_text_foreground_color(Color new_color) {
-	text_foreground_color = new_color;
+void DebugDraw::set_text_foreground_color(Color _new_color) {
+	text_foreground_color = _new_color;
 }
 
 Color DebugDraw::get_text_foreground_color() {
 	return text_foreground_color;
 }
 
-void DebugDraw::set_text_background_color(Color new_color) {
-	text_background_color = new_color;
+void DebugDraw::set_text_background_color(Color _new_color) {
+	text_background_color = _new_color;
 }
 
 Color DebugDraw::get_text_background_color() {
 	return text_background_color;
 }
 
-void DebugDraw::set_text_custom_font(Ref<Font> custom_font) {
-	text_custom_font = custom_font;
+void DebugDraw::set_text_custom_font(Ref<Font> _custom_font) {
+	text_custom_font = _custom_font;
 }
 
 Ref<Font> DebugDraw::get_text_custom_font() {
 	return text_custom_font;
 }
 
-void DebugDraw::set_line_hit_color(Color new_color) {
-	line_hit_color = new_color;
+void DebugDraw::set_line_hit_color(Color _new_color) {
+	line_hit_color = _new_color;
 }
 
 Color DebugDraw::get_line_hit_color() {
 	return line_hit_color;
 }
 
-void DebugDraw::set_line_after_hit_color(Color new_color) {
-	line_after_hit_color = new_color;
+void DebugDraw::set_line_after_hit_color(Color _new_color) {
+	line_after_hit_color = _new_color;
 }
 
 Color DebugDraw::get_line_after_hit_color() {
 	return line_after_hit_color;
 }
 
-void DebugDraw::set_custom_viewport(Viewport *viewport) {
-	custom_viewport = viewport;
+void DebugDraw::set_custom_viewport(Viewport *_viewport) {
+	custom_viewport = _viewport;
 }
 
 Viewport *DebugDraw::get_custom_viewport() {
 	return custom_viewport;
 }
 
-void DebugDraw::set_custom_canvas(CanvasItem *canvas) {
+void DebugDraw::set_custom_canvas(CanvasItem *_canvas) {
 
 	bool connected_internal = default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
-	if (!canvas) {
+	if (!_canvas) {
 		if (!connected_internal) {
 			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
 			current_draw_canvas = default_canvas;
@@ -496,12 +496,12 @@ void DebugDraw::set_custom_canvas(CanvasItem *canvas) {
 			current_draw_canvas = nullptr;
 		}
 		if (!connected_custom) {
-			canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
-			current_draw_canvas = canvas;
+			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			current_draw_canvas = _canvas;
 		}
 	}
 
-	custom_canvas = canvas;
+	custom_canvas = _canvas;
 }
 
 CanvasItem *DebugDraw::get_custom_canvas() {

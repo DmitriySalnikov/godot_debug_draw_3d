@@ -223,12 +223,14 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+test_graphs = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
 text_groups_text_font_size = 17
 graph_title_font_size = 30
-graph_text_font_size = 15
+graph_text_font_size = 13
+graph_line_width = 0.1
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)

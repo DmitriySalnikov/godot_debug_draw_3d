@@ -3,6 +3,8 @@
 #include "math_utils.h"
 #include "utils.h"
 
+#include <limits.h>
+
 using namespace godot;
 
 void GraphParameters::_bind_methods() {
@@ -13,10 +15,11 @@ void GraphParameters::_bind_methods() {
 	REG_PROP_BOOL(frame_time_mode);
 
 	REG_PROP(show_text_flags, Variant::INT);
-	REG_PROP(size, Variant::VECTOR2);
+	REG_PROP(size, Variant::VECTOR2I);
 	REG_PROP(buffer_size, Variant::INT);
-	REG_PROP(offset, Variant::VECTOR2);
+	REG_PROP(offset, Variant::VECTOR2I);
 	REG_PROP(position, Variant::INT);
+	REG_PROP(line_width, Variant::FLOAT);
 	REG_PROP(line_color, Variant::COLOR);
 	REG_PROP(line_position, Variant::INT);
 	REG_PROP(background_color, Variant::COLOR);
@@ -75,8 +78,8 @@ bool GraphParameters::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
-void GraphParameters::set_line_position(GraphLinePosition position) {
-	line_position = position;
+void GraphParameters::set_line_position(GraphLinePosition _position) {
+	line_position = _position;
 }
 
 GraphParameters::GraphLinePosition GraphParameters::get_line_position() const {
@@ -91,11 +94,13 @@ BitField<GraphParameters::TextFlags> GraphParameters::get_show_text_flags() cons
 	return show_text_flags;
 }
 
-void GraphParameters::set_size(Vector2 _size) {
+void GraphParameters::set_size(Vector2i _size) {
 	size = _size;
+	size.x = Math::clamp(size.x, 1, INT32_MAX);
+	size.y = Math::clamp(size.y, 1, INT32_MAX);
 }
 
-Vector2 GraphParameters::get_size() const {
+Vector2i GraphParameters::get_size() const {
 	return size;
 }
 
@@ -107,11 +112,11 @@ int GraphParameters::get_buffer_size() const {
 	return buffer_size;
 }
 
-void GraphParameters::set_offset(Vector2 _offset) {
+void GraphParameters::set_offset(Vector2i _offset) {
 	offset = _offset;
 }
 
-Vector2 GraphParameters::get_offset() const {
+Vector2i GraphParameters::get_offset() const {
 	return offset;
 }
 
@@ -121,6 +126,14 @@ void GraphParameters::set_position(GraphPosition _position) {
 
 GraphParameters::GraphPosition GraphParameters::get_position() const {
 	return position;
+}
+
+void GraphParameters::set_line_width(real_t _width) {
+	line_width = Math::clamp(_width, 1.0f, 32.0f);
+}
+
+real_t GraphParameters::get_line_width() const {
+	return line_width;
 }
 
 void GraphParameters::set_line_color(Color _new_color) {
@@ -163,24 +176,24 @@ Ref<Font> GraphParameters::get_custom_font() const {
 	return custom_font;
 }
 
-void GraphParameters::set_title_size(int size) {
-	title_size = size;
+void GraphParameters::set_title_size(int _size) {
+	title_size = Math::clamp(_size, 1, INT_MAX);
 }
 
 int GraphParameters::get_title_size() const {
 	return title_size;
 }
 
-void GraphParameters::set_text_size(int size) {
-	text_size = size;
+void GraphParameters::set_text_size(int _size) {
+	text_size = Math::clamp(_size, 1, INT_MAX);
 }
 
 int GraphParameters::get_text_size() const {
 	return text_size;
 }
 
-void GraphParameters::set_title_color(Color new_color) {
-	title_color = new_color;
+void GraphParameters::set_title_color(Color _new_color) {
+	title_color = _new_color;
 }
 
 Color GraphParameters::get_title_color() const {
@@ -226,7 +239,7 @@ void DataGraph::_update_added(double value) {
 }
 
 // TODO sometimes the graphs are drawn in the wrong places
-Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
+Vector2 DataGraph::draw(CanvasItem *ci, const Ref<Font> &font, const Vector2 &vp_size, const String &title, const Vector2 &base_offset) const {
 	if (!config->is_enabled())
 		return base_offset;
 
@@ -238,9 +251,9 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 	data->get_min_max_avg(&min, &max, &avg);
 
 	// Truncate for pixel perfect render
-	Vector2 graphSize(Vector2((real_t)(int)config->get_size().x, (real_t)(int)config->get_size().y));
-	Vector2 graphOffset(Vector2((real_t)(int)config->get_offset().x, (real_t)(int)config->get_offset().y));
-	Vector2 pos = graphOffset;
+	Vector2 graph_size = config->get_size();
+	Vector2 graph_offset = config->get_offset();
+	Vector2 pos = graph_offset;
 	Vector2 title_size = draw_font->get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size());
 
 	switch (config->get_position()) {
@@ -249,15 +262,15 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 			pos.x += base_offset.x;
 			break;
 		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, graphOffset.y + base_offset.y);
+			pos = Vector2(vp_size.x - graph_size.x - graph_offset.x + 1, graph_offset.y + base_offset.y);
 			pos.x -= base_offset.x;
 			break;
 		case GraphParameters::GraphPosition::POSITION_LEFT_BOTTOM:
-			pos = Vector2(graphOffset.x, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos = Vector2(graph_offset.x, base_offset.y - graph_size.y - graph_offset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x += base_offset.x;
 			break;
 		case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-			pos = Vector2(vp_size.x - graphSize.x - graphOffset.x + 1, base_offset.y - graphSize.y - graphOffset.y - (config->is_show_title() ? title_size.y - 3 : 0));
+			pos = Vector2(vp_size.x - graph_size.x - graph_offset.x + 1, base_offset.y - graph_size.y - graph_offset.y - (config->is_show_title() ? title_size.y - 3 : 0));
 			pos.x -= base_offset.x;
 			break;
 	}
@@ -269,24 +282,25 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 		switch (config->get_position()) {
 			case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
 			case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-				title_pos.x = title_pos.x + graphSize.x - title_size.x;
+				title_pos.x = title_pos.x + graph_size.x - title_size.x;
 				break;
 		}
 
-		Rect2 border_rect(title_pos, title_size);
+		// 4 for horizontal padding
+		Rect2 border_rect(title_pos, title_size + Vector2(4, 0));
 		border_rect.size.height -= 1;
 		// Draw background
 		ci->draw_rect(border_rect, config->get_background_color(), true);
 		ci->draw_string(
 				draw_font,
-				(title_pos + Vector2(0, draw_font->get_ascent(config->get_title_size()))).floor(),
+				(title_pos + Vector2(2, (real_t)draw_font->get_ascent(config->get_title_size()))).floor(),
 				title,
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_title_size(), config->get_title_color());
 
 		pos += Vector2(0, title_size.y);
 	}
 
-	double height_multiplier = graphSize.y / max;
+	double height_multiplier = graph_size.y / max;
 	double center_offset = 0;
 	switch (config->get_line_position()) {
 		case GraphParameters::LINE_TOP: {
@@ -294,16 +308,16 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 			break;
 		}
 		case GraphParameters::LINE_CENTER: {
-			center_offset = (graphSize.y - height_multiplier * (max - min)) * 0.5;
+			center_offset = (graph_size.y - height_multiplier * (max - min)) * 0.5;
 			break;
 		}
 		case GraphParameters::LINE_BOTTOM: {
-			center_offset = graphSize.y - height_multiplier * (max - min) - 1;
+			center_offset = graph_size.y - height_multiplier * (max - min) - 1;
 			break;
 		}
 	}
 
-	Rect2 border_size(pos + Vector2_UP, graphSize + Vector2_DOWN);
+	Rect2 border_size(pos + Vector2_UP, graph_size + Vector2_DOWN);
 
 	// Draw background
 	ci->draw_rect(border_size, config->get_background_color(), true);
@@ -319,12 +333,12 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 		{
 			auto w = line_points.ptrw();
 			for (size_t i = 1; i < data->size() - offset; i++) {
-				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graphSize.y - (real_t)(data->get(i) * height_multiplier) + (real_t)center_offset);
-				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graphSize.y - (real_t)(data->get(i - 1) * height_multiplier) + (real_t)center_offset);
+				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graph_size.y - (real_t)(data->get(i) * height_multiplier) + (real_t)center_offset);
+				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graph_size.y - (real_t)(data->get(i - 1) * height_multiplier) + (real_t)center_offset);
 			}
 		}
 		// ci->draw_polyline(line_points, config->get_line_color(), 1, true);
-		ci->draw_multiline(line_points, config->get_line_color(), 1);
+		ci->draw_multiline(line_points, config->get_line_color(), config->get_line_width());
 	}
 
 	// Draw border
@@ -353,13 +367,13 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
 		String text = String("avg: {0} {1}").format(Array::make(format_arg("%.2f", avg), config->get_text_suffix()));
 		real_t height = (real_t)config->get_text_size();
-		Vector2 text_pos = pos + Vector2(4, (graphSize.y * 0.5f + height * 0.5f - 2));
+		Vector2 text_pos = pos + Vector2(4, (graph_size.y * 0.5f + height * 0.5f - 2));
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
 	if (config->get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
 		String text = String("min: {0} {1}").format(Array::make(format_arg("%.2f", min), config->get_text_suffix()));
-		Vector2 text_pos = pos + Vector2(4, graphSize.y - 3);
+		Vector2 text_pos = pos + Vector2(4, graph_size.y - 3);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 
@@ -367,7 +381,7 @@ Vector2 DataGraph::draw(CanvasItem *ci, Ref<Font> font, const Vector2 &vp_size, 
 		// `space` at the end of line for offset from border
 		String text = String("{0} {1}").format(Array::make(format_arg("%.2f", (data->size() > 1 ? data->get(data->size() - 2) : 0)), config->get_text_suffix()));
 		Vector2 cur_size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, config->get_text_size());
-		Vector2 text_pos = pos + Vector2(graphSize.x - cur_size.x, graphSize.y * 0.5f + config->get_text_size() * 0.5f - 2);
+		Vector2 text_pos = pos + Vector2(graph_size.x - cur_size.x, graph_size.y * 0.5f + config->get_text_size() * 0.5f - 2);
 		ci->draw_string(draw_font, text_pos.floor(), text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, config->get_text_size(), config->get_text_color());
 	}
 

@@ -19,6 +19,7 @@ extends Node3D
 @export_category("Graphs")
 @export_range(1, 100) var graph_title_font_size := 14
 @export_range(1, 100) var graph_text_font_size := 12
+@export_range(1, 32) var graph_line_width := 1.0
 
 var time := 0.0
 var time2 := 0.0
@@ -171,8 +172,10 @@ func _process(delta: float) -> void:
 	
 	# Text
 	if DebugDraw.get_graph_config("FPS"):
-		DebugDraw.get_graph_config("FPS").title_size = graph_title_font_size
-		DebugDraw.get_graph_config("FPS").text_size = graph_text_font_size
+		var graph := DebugDraw.get_graph_config("FPS")
+		graph.title_size = graph_title_font_size
+		graph.text_size = graph_text_font_size
+		graph.line_width = graph_line_width
 	DebugDraw.text_default_size = text_groups_default_font_size
 	DebugDraw.text_block_offset = text_groups_offset
 	DebugDraw.text_block_position = text_groups_position
@@ -254,7 +257,7 @@ func _graph_test():
 	_create_graph("fps3", true, true, DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT)
 	
 # warning-ignore:return_value_discarded
-	_create_graph("randf", false, true, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_AVG, Vector2(256, 60), custom_font)
+	_create_graph("randf", false, true, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_AVG, Vector2i(256, 60), custom_font)
 # warning-ignore:return_value_discarded
 	_create_graph("fps5", true, false, DebugDraw.POSITION_RIGHT_BOTTOM, GraphParameters.TEXT_ALL)
 # warning-ignore:return_value_discarded
@@ -276,13 +279,13 @@ func _graph_test():
 		DebugDraw.get_graph_config("fps10").line_position = GraphParameters.LINE_BOTTOM
 		
 		if Engine.is_editor_hint():
-			DebugDraw.get_graph_config("fps5").offset = Vector2(0, -30)
-			DebugDraw.get_graph_config("fps8").offset = Vector2(280, -60)
-			DebugDraw.get_graph_config("fps9").offset = Vector2(0, -75)
+			DebugDraw.get_graph_config("fps5").offset = Vector2i(0, -30)
+			DebugDraw.get_graph_config("fps8").offset = Vector2i(280, -60)
+			DebugDraw.get_graph_config("fps9").offset = Vector2i(0, -75)
 		else:
-			DebugDraw.get_graph_config("fps5").offset = Vector2(0, 0)
-			DebugDraw.get_graph_config("fps8").offset = Vector2(280, 0)
-			DebugDraw.get_graph_config("fps9").offset = Vector2(0, -75)
+			DebugDraw.get_graph_config("fps5").offset = Vector2i(0, 0)
+			DebugDraw.get_graph_config("fps8").offset = Vector2i(280, 0)
+			DebugDraw.get_graph_config("fps9").offset = Vector2i(0, -75)
 	
 	# Just sending random data to the graph
 	DebugDraw.graph_update_data("randf", randf())
@@ -299,7 +302,7 @@ func _remove_graphs():
 	DebugDraw.remove_graph("fps9")
 	DebugDraw.remove_graph("fps10")
 
-func _create_graph(title, is_fps, show_title, pos, flags, size = Vector2(256, 60), font = null) -> GraphParameters:
+func _create_graph(title, is_fps, show_title, pos, flags, size := Vector2i(256, 60), font = null) -> GraphParameters:
 	var graph = DebugDraw.get_graph_config(title)
 	if !graph:
 		if is_fps:

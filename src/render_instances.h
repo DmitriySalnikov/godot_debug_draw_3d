@@ -60,11 +60,11 @@ public:
 		return is_used_one_time;
 	}
 
-	bool update_visibility(std::vector<std::vector<Plane> > &frustums, bool skip_expiration_check) {
+	bool update_visibility(std::vector<std::vector<Plane> > &_frustums, bool _skip_expiration_check) {
 		if (skip_expiration_check || !is_expired()) {
-			if (frustums.size()) {
+			if (_frustums.size()) {
 				is_visible = false;
-				for (auto &frustum : frustums)
+				for (auto &frustum : _frustums)
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum))
 						return is_visible = true;
 				return false;
@@ -92,15 +92,15 @@ public:
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
-	std::vector<Vector3> _lines;
+	std::vector<Vector3> lines;
 
 public:
 	DelayedRendererLine();
-	void update(real_t _exp_time, const std::vector<Vector3> &lines, Color col);
+	void update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col);
 
-	void set_lines(std::vector<Vector3> lines);
+	void set_lines(std::vector<Vector3> _lines);
 	std::vector<Vector3> get_lines();
-	AABB calculate_bounds_based_on_lines(std::vector<Vector3> &lines);
+	AABB calculate_bounds_based_on_lines(std::vector<Vector3> &_lines);
 };
 
 class GeometryPool {
@@ -205,24 +205,24 @@ public:
 	~GeometryPool() {
 	}
 
-	PackedFloat32Array get_raw_data(InstanceType type);
-	void fill_lines_data(Ref<ImmediateMesh> ig);
-	void reset_counter(double delta);
+	PackedFloat32Array get_raw_data(InstanceType _type);
+	void fill_lines_data(Ref<ImmediateMesh> _ig);
+	void reset_counter(double _delta);
 	void reset_visible_objects();
 	size_t get_visible_instances();
 	size_t get_visible_lines();
 	size_t get_used_instances_total();
-	size_t get_used_instances_instant(InstanceType type);
-	size_t get_used_instances_delayed(InstanceType type);
+	size_t get_used_instances_instant(InstanceType _type);
+	size_t get_used_instances_delayed(InstanceType _type);
 	size_t get_used_lines_total();
 	size_t get_used_lines_instant();
 	size_t get_used_lines_delayed();
 	void clear_pool();
-	void for_each_instance(std::function<void(DelayedRendererInstance *)> func);
-	void for_each_line(std::function<void(DelayedRendererLine *)> func);
-	void update_visibility(std::vector<std::vector<Plane> > frustums);
-	void update_expiration(double delta);
+	void for_each_instance(std::function<void(DelayedRendererInstance *)> _func);
+	void for_each_line(std::function<void(DelayedRendererLine *)> _func);
+	void update_visibility(std::vector<std::vector<Plane> > _frustums);
+	void update_expiration(double _delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> custom_upd = nullptr);
-	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> _custom_upd = nullptr);
+	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };

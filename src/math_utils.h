@@ -41,7 +41,7 @@ public:
 			Position(),
 			Radius() {}
 
-	SphereBounds(const Vector3 &pos, const real_t &radius) :
-			Position(pos),
-			Radius(radius) {}
+	SphereBounds(const Vector3 &_pos, const real_t &_radius) :
+			Position(_pos),
+			Radius(_radius) {}
 };
