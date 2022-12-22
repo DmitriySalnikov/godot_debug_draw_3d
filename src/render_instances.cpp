@@ -34,7 +34,7 @@ DelayedRendererLine::DelayedRendererLine() :
 void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col) {
 	_update(_exp_time, true);
 
-	set_lines(lines);
+	set_lines(_lines);
 	color = _col;
 }
 
