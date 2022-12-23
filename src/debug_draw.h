@@ -103,7 +103,7 @@ private:
 	/// Usable for editor.
 	bool force_use_camera_from_scene = false;
 	/// Base offset for all graphs
-	Vector2 graphs_base_offset = Vector2(8, 8);
+	Vector2i graphs_base_offset = Vector2i(8, 8);
 	/// Layers on which the geometry will be displayed
 	int32_t geometry_render_layers = 1;
 
@@ -175,8 +175,8 @@ public:
 	void set_force_use_camera_from_scene(bool _state);
 	bool is_force_use_camera_from_scene();
 
-	void set_graphs_base_offset(Vector2 _offset);
-	Vector2 get_graphs_base_offset();
+	void set_graphs_base_offset(Vector2i _offset);
+	Vector2i get_graphs_base_offset();
 
 	void set_geometry_render_layers(int32_t _layers);
 	int32_t get_geometry_render_layers();

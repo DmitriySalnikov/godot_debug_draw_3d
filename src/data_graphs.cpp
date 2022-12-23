@@ -11,6 +11,7 @@ void GraphParameters::_bind_methods() {
 #define REG_CLASS_NAME GraphParameters
 
 	ClassDB::bind_method(D_METHOD(TEXT(get_title)), &GraphParameters::get_title);
+	ClassDB::bind_method(D_METHOD(TEXT(set_parent), "parent", "side"), &GraphParameters::set_parent, GraphSide::SIDE_BOTTOM);
 
 	REG_PROP_BOOL(enabled);
 	REG_PROP_BOOL(show_title);
@@ -268,9 +269,9 @@ void GraphParameters::_update_received(double value) {
 }
 
 // TODO sometimes the graphs are drawn in the wrong places
-Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const Vector2 &_base_offset) const {
+GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const graph_rects &_prev_rects, const GraphPosition &_corner) const {
 	if (!is_enabled())
-		return _base_offset;
+		return _prev_rects;
 
 	LOCK_GUARD(datalock);
 
@@ -281,14 +282,14 @@ Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vec
 
 	bool is_on_right_side = false;
 	bool is_on_top_side = false;
-	switch (get_position()) {
+	switch (_corner) {
 		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
 		case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
 			is_on_right_side = true;
 			break;
 	}
 
-	switch (get_position()) {
+	switch (_corner) {
 		case GraphParameters::GraphPosition::POSITION_LEFT_TOP:
 		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
 			is_on_top_side = true;
@@ -298,44 +299,75 @@ Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vec
 	// Truncate for pixel perfect render
 	Vector2 graph_size = get_size();
 	Vector2 graph_offset = get_offset();
-	Vector2 pos = graph_offset;
-	Vector2 title_size = draw_font->get_string_size(get_title(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size());
+	Vector2 pos = _prev_rects.no_title_rect.position;
 
-	switch (get_position()) {
-		case GraphParameters::GraphPosition::POSITION_LEFT_TOP:
-			pos.y += _base_offset.y;
-			pos.x += _base_offset.x;
-			break;
-		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
-			pos = Vector2(_vp_size.x - graph_size.x - graph_offset.x + 1 - _base_offset.x, graph_offset.y + _base_offset.y);
-			break;
-		case GraphParameters::GraphPosition::POSITION_LEFT_BOTTOM:
-			pos = Vector2(graph_offset.x + _base_offset.x, _base_offset.y - graph_size.y - graph_offset.y - (is_show_title() ? title_size.y - 3 : 0));
-			break;
-		case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-			pos = Vector2(_vp_size.x - graph_size.x - graph_offset.x + 1 - _base_offset.x, _base_offset.y - graph_size.y - graph_offset.y - (is_show_title() ? title_size.y - 3 : 0));
-			break;
+	if (is_on_right_side) {
+		switch (get_parent_graph_side()) {
+			case GraphSide::SIDE_LEFT:
+				pos.x = pos.x - graph_size.x;
+				if (!is_on_top_side)
+					pos.y = pos.y - graph_size.y;
+				break;
+			case GraphSide::SIDE_TOP:
+				pos.x = pos.x + _prev_rects.no_title_rect.size.x - graph_size.x;
+				pos.y = _prev_rects.full_rect.position.y - graph_size.y;
+				break;
+			case GraphSide::SIDE_RIGHT:
+				pos.x = pos.x + _prev_rects.no_title_rect.size.x;
+				break;
+			case GraphSide::SIDE_BOTTOM:
+				pos.x = pos.x + _prev_rects.no_title_rect.size.x - graph_size.x;
+				pos.y = pos.y + _prev_rects.full_rect.size.y;
+				break;
+		}
+	} else {
+		switch (get_parent_graph_side()) {
+			case GraphSide::SIDE_LEFT:
+				pos.x = pos.x - graph_size.x;
+				break;
+			case GraphSide::SIDE_TOP:
+				pos.y = _prev_rects.full_rect.position.y - graph_size.y;
+				break;
+			case GraphSide::SIDE_RIGHT:
+				pos.x = pos.x + _prev_rects.no_title_rect.size.x;
+				break;
+			case GraphSide::SIDE_BOTTOM:
+				pos.y = pos.y + _prev_rects.full_rect.size.y;
+				break;
+		}
 	}
 
+	graph_rects rects = { Rect2i(pos, graph_size), Rect2i(pos, graph_size) };
+
 	// Draw title
+	// TODO random font glitches when changing title size
 	if (is_show_title()) {
+		Vector2 title_size = draw_font->get_string_size(get_title(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size());
+		if (!is_on_top_side)
+			pos.y -= title_size.y;
 		Vector2 title_pos = pos;
+
+		rects.full_rect.position = pos;
 
 		if (is_on_right_side)
 			title_pos.x = title_pos.x + graph_size.x - title_size.x - 4;
 
 		// 4 for horizontal padding
 		Rect2 border_rect(title_pos, title_size + Vector2(4, 0));
-		border_rect.size.height -= 1;
 		// Draw background
+
+		real_t a = (real_t)draw_font->get_ascent(get_title_size());
 		_ci->draw_rect(border_rect, get_background_color(), true);
 		_ci->draw_string(
 				draw_font,
-				(title_pos + Vector2(2, (real_t)draw_font->get_ascent(get_title_size()))).floor(),
+				(title_pos + Vector2(2, a)).floor(),
 				get_title(),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size(), get_title_color());
 
 		pos += Vector2(0, title_size.y);
+
+		rects.full_rect.size.x = rects.no_title_rect.size.x = Math::max(rects.full_rect.size.x, (int)border_rect.size.x);
+		rects.full_rect.size.y += (int)title_size.y;
 	}
 
 	double height_multiplier = graph_size.y / max;
@@ -355,12 +387,13 @@ Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vec
 		}
 	}
 
-	Rect2 border_rect(pos + Vector2(1, -1), graph_size + Vector2(-1, 1));
+	Rect2 border_rect_fixed = Rect2i(pos + Vector2(1, 1), graph_size - Vector2(1, 1));
 
 	// Draw background
-	_ci->draw_rect(border_rect, get_background_color(), true);
+	_ci->draw_rect(border_rect_fixed, get_background_color(), true);
 
 	// Draw graph line
+	// TODO not ideally located. can draw outside the rectangle or not occupy the entire rectangle
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
 		PackedVector2Array line_points;
 
@@ -379,7 +412,7 @@ Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vec
 	}
 
 	// Draw border
-	_ci->draw_rect(border_rect, get_border_color(), false);
+	_ci->draw_rect(border_rect_fixed, get_border_color(), false);
 
 	auto format_float = [](auto real_val, int precision = 2) -> String {
 		int size_s = std::snprintf(nullptr, 0, "%.*f", precision, real_val) + 1; // Extra space for '\0'
@@ -429,11 +462,7 @@ Vector2 GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vec
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
-	if (is_on_top_side) {
-		return Vector2(_base_offset.x, border_rect.position.y + border_rect.size.y + 0);
-	} else {
-		return Vector2(_base_offset.x, border_rect.position.y - (is_show_title() ? title_size.y : -1));
-	}
+	return rects;
 }
 
 ////////////////////////////////////
@@ -515,25 +544,56 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 	LOCK_GUARD(datalock);
 
 	struct GraphsNode {
-		const Ref<GraphParameters> node;
-		std::vector<Ref<GraphParameters> > children;
+		const Ref<GraphParameters> instance;
+		std::vector<GraphsNode> children;
 		GraphsNode(const Ref<GraphParameters> &_node) :
-				node(_node){};
+				instance(_node){};
 	};
 
 	std::vector<GraphsNode> root_graphs;
 
 	for (auto &p : graphs) {
-		if (p->get_title().is_empty()) {
+		if (p->get_parent_graph().is_empty()) {
 			root_graphs.push_back(p);
 		}
 	}
 
+	std::function<void(GraphsNode *)> populate_nodes;
+	populate_nodes = [&populate_nodes, this](GraphsNode *node) {
+		for (auto &g : graphs) {
+			if (g->get_parent_graph() == node->instance->get_title()) {
+				GraphsNode n = g;
+				populate_nodes(&n);
+				node->children.push_back(n);
+			}
+		}
+	};
+
+	for (auto &n : root_graphs) {
+		populate_nodes(&n);
+	}
+
 	Vector2 base_offset = owner->get_graphs_base_offset();
-	Vector2 prev_offset[GraphParameters::POSITION_MAX] = { base_offset, Vector2(base_offset.x, base_offset.y), Vector2(base_offset.x, _vp_size.y - base_offset.y), Vector2(base_offset.x, _vp_size.y - base_offset.y) };
-	for (auto &p : graphs) {
-		int pos = p->get_position();
-		prev_offset[pos] = p->draw(_ci, _font, _vp_size, prev_offset[pos]);
+	Rect2i base_rect[GraphParameters::POSITION_MAX] = {
+		Rect2i(base_offset, Vector2i()), // left_top
+		Rect2i(Vector2(_vp_size.x - base_offset.x, base_offset.y), Vector2i()), // right_top
+		Rect2i(Vector2(base_offset.x, _vp_size.y - base_offset.y), Vector2i()), // left_bottom
+		Rect2i(Vector2(_vp_size.x - base_offset.x, _vp_size.y - base_offset.y), Vector2i()) // right_bottom
+	};
+
+	// 'rect' is a parameter storing the rectangle of the parent node
+	// 'corner' is a parameter inherited from the root node
+	std::function<void(GraphsNode *, GraphParameters::graph_rects, GraphParameters::GraphPosition)> iterate_nodes;
+	iterate_nodes = [&, this](GraphsNode *node, GraphParameters::graph_rects rects, GraphParameters::GraphPosition corner) {
+		GraphParameters::graph_rects prev_rects = node->instance->draw(_ci, _font, _vp_size, rects, corner);
+
+		for (auto &g : node->children) {
+			iterate_nodes(&g, prev_rects, corner);
+		}
+	};
+
+	for (auto &n : root_graphs) {
+		iterate_nodes(&n, { base_rect[n.instance->get_position()], base_rect[n.instance->get_position()] }, n.instance->get_position());
 	}
 }
 

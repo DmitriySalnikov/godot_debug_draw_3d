@@ -165,13 +165,16 @@ public:
 	void set_parent_graph_side(const GraphSide _side);
 	GraphSide get_parent_graph_side() const;
 
-	void set_parent(const StringName &_name, const GraphSide _side);
+	void set_parent(const StringName &_name, const GraphSide _side = GraphSide::SIDE_BOTTOM);
 
 public:
 	void update(double value);
 
-	// Must return edge Y to render next graph with this offset
-	Vector2 draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const Vector2 &_base_offset) const;
+	struct graph_rects {
+		Rect2i full_rect;
+		Rect2i no_title_rect;
+	};
+	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const graph_rects &_prev_rects, const GraphPosition &_corner) const;
 };
 
 VARIANT_ENUM_CAST(GraphParameters::GraphPosition);

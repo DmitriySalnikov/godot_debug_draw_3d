@@ -55,7 +55,7 @@ void DebugDraw::_bind_methods() {
 	REG_PROP_BOOL(visible_instance_bounds);
 	REG_PROP_BOOL(use_frustum_culling);
 	REG_PROP_BOOL(force_use_camera_from_scene);
-	REG_PROP(graphs_base_offset, Variant::VECTOR2);
+	REG_PROP(graphs_base_offset, Variant::VECTOR2I);
 	REG_PROP(geometry_render_layers, Variant::INT);
 	REG_PROP(text_block_position, Variant::INT);
 	REG_PROP(text_block_offset, Variant::VECTOR2I);
@@ -367,11 +367,11 @@ bool DebugDraw::is_force_use_camera_from_scene() {
 	return force_use_camera_from_scene;
 }
 
-void DebugDraw::set_graphs_base_offset(Vector2 _offset) {
+void DebugDraw::set_graphs_base_offset(Vector2i _offset) {
 	graphs_base_offset = _offset;
 }
 
-Vector2 DebugDraw::get_graphs_base_offset() {
+Vector2i DebugDraw::get_graphs_base_offset() {
 	return graphs_base_offset;
 }
 
