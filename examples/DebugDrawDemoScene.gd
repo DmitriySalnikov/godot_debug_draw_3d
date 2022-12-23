@@ -17,8 +17,10 @@ extends Node3D
 @export_range(1, 100) var text_groups_text_font_size := 12
 
 @export_category("Graphs")
+@export var graph_size := Vector2i(200, 80)
 @export_range(1, 100) var graph_title_font_size := 14
 @export_range(1, 100) var graph_text_font_size := 12
+@export_range(0, 64) var graph_text_precision := 2
 @export_range(1, 32) var graph_line_width := 1.0
 
 var time := 0.0
@@ -73,7 +75,7 @@ func _process(delta: float) -> void:
 	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Enable FPSGraph if not exists
-	_create_graph("FPS", true, false, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT | GraphParameters.TEXT_AVG | GraphParameters.TEXT_MAX | GraphParameters.TEXT_MIN, Vector2(200, 80), custom_font)
+	_create_graph("FPS", true, false, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, GraphParameters.TEXT_CURRENT | GraphParameters.TEXT_AVG | GraphParameters.TEXT_MAX | GraphParameters.TEXT_MIN, Vector2i(200, 80), custom_font)
 	
 	# Adding more graphs
 	if test_graphs:
@@ -170,12 +172,16 @@ func _process(delta: float) -> void:
 	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
 	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
-	# Text
+	# 2D
 	if DebugDraw.get_graph_config("FPS"):
 		var graph := DebugDraw.get_graph_config("FPS")
-		graph.title_size = graph_title_font_size
-		graph.text_size = graph_text_font_size
-		graph.line_width = graph_line_width
+		if graph:
+			if Engine.is_editor_hint():
+				graph.size = graph_size
+			graph.title_size = graph_title_font_size
+			graph.text_size = graph_text_font_size
+			graph.line_width = graph_line_width
+			graph.text_precision = graph_text_precision
 	DebugDraw.text_default_size = text_groups_default_font_size
 	DebugDraw.text_block_offset = text_groups_offset
 	DebugDraw.text_block_position = text_groups_position
@@ -309,8 +315,7 @@ func _create_graph(title, is_fps, show_title, pos, flags, size := Vector2i(256, 
 			graph = DebugDraw.create_fps_graph(title)
 		else:
 			graph = DebugDraw.create_graph(title)
-	
-	if graph:
+		
 		graph.size = size
 		graph.buffer_size = 50
 		graph.position = pos

@@ -164,6 +164,15 @@ public:
 		return p;
 	}
 
+	template <class T>
+	static typename std::vector<T>::const_iterator find(const std::vector<T> &arr, std::function<bool(T)> search) {
+		for (auto it = arr.begin(); it != arr.end(); it++) {
+			if (search(*it))
+				return it;
+		}
+		return arr.end();
+	}
+
 	template <class TVal, class TFun>
 	static void remove_where(std::unordered_set<TVal> *set, const TFun &checker_bool_val, const std::function<void(TVal)> &deleter = nullptr) {
 		std::unordered_set<TVal> to_remove;

@@ -89,7 +89,7 @@ void GroupedText::cleanup_text(const double &delta) {
 	Utils::remove_where(&_text_groups, [](auto g) { return g->Texts.size() == 0; });
 
 	for (const TextGroup_ptr &g : _text_groups) {
-		std::function<void()> upd_txt([this] { owner->mark_canvas_needs_update(); });
+		std::function<void()> upd_txt([this] { owner->mark_canvas_dirty(); });
 		g->cleanup_texts(upd_txt, delta);
 	}
 }
@@ -166,12 +166,12 @@ void GroupedText::set_text(const String &_key, const Variant &_value, const int 
 
 		if (item.get()) {
 			if (_strVal != item->text)
-				owner->mark_canvas_needs_update();
+				owner->mark_canvas_dirty();
 
 			item->update(new_duration, _key, _strVal, _priority, _color_of_value);
 		} else {
 			_current_text_group->Texts.insert(std::make_shared<TextGroupItem>(new_duration, _key, _strVal, _priority, _color_of_value));
-			owner->mark_canvas_needs_update();
+			owner->mark_canvas_dirty();
 		}
 	}
 }

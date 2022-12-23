@@ -6,6 +6,7 @@
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
 length = 1.5
+loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -206,7 +207,7 @@ func _on_FPSMS_toggled(button_pressed: bool) -> void:
 func _on_HSlider_value_changed(value: float) -> void:
 	var cfg = DebugDraw.get_graph_config(\"FPS\")
 	if cfg:
-		cfg.size = Vector2(value, cfg.size.y)
+		cfg.size = Vector2i(int(value), cfg.size.y)
 
 func _on_HSlider2_value_changed(value: float) -> void:
 	var cfg = DebugDraw.get_graph_config(\"FPS\")
@@ -228,9 +229,10 @@ text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
 text_groups_text_font_size = 17
+graph_size = Vector2i(182, 80)
 graph_title_font_size = 30
-graph_text_font_size = 13
-graph_line_width = 0.1
+graph_text_font_size = 17
+graph_text_precision = 1
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)

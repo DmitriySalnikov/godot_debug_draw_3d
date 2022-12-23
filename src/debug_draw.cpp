@@ -302,7 +302,7 @@ void DebugDraw::_set_base_world_node(Node *_world_base) {
 	dgc->set_world(_world_base);
 }
 
-void DebugDraw::mark_canvas_needs_update() {
+void DebugDraw::mark_canvas_dirty() {
 	_canvas_need_update = true;
 }
 
@@ -477,7 +477,6 @@ Viewport *DebugDraw::get_custom_viewport() {
 }
 
 void DebugDraw::set_custom_canvas(CanvasItem *_canvas) {
-
 	bool connected_internal = default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
@@ -526,7 +525,7 @@ void DebugDraw::clear_2d_objects() {
 	if (!grouped_text || !data_graphs || !is_ready) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
-	mark_canvas_needs_update();
+	mark_canvas_dirty();
 }
 
 void DebugDraw::clear_all() {

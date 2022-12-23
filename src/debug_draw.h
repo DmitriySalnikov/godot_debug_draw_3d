@@ -151,7 +151,7 @@ public:
 	static DebugDraw *get_singleton() {
 		return singleton;
 	};
-	void mark_canvas_needs_update();
+	void mark_canvas_dirty();
 
 	void set_custom_editor_viewport(std::vector<Viewport *> _viewports);
 	std::vector<Viewport *> get_custom_editor_viewport();
