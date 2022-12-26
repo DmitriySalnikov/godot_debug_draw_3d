@@ -104,6 +104,8 @@ private:
 	StringName parent_graph;
 	/// Parent graph side to stack with
 	GraphSide parent_graph_side = GraphSide::SIDE_BOTTOM;
+	/// Callable for automatic updating of graph data
+	Callable data_getter;
 
 protected:
 	mutable std::recursive_mutex datalock;
@@ -164,6 +166,8 @@ public:
 	StringName get_parent_graph() const;
 	void set_parent_graph_side(const GraphSide _side);
 	GraphSide get_parent_graph_side() const;
+	virtual void set_data_getter(const Callable &_callable);
+	Callable get_data_getter() const;
 
 	void set_parent(const StringName &_name, const GraphSide _side = GraphSide::SIDE_BOTTOM);
 
@@ -205,6 +209,8 @@ public:
 	virtual GraphType get_type() override { return GraphType::GRAPH_FPS; };
 	void set_frame_time_mode(const bool _state);
 	bool is_frame_time_mode() const;
+	
+	virtual void set_data_getter(const Callable &_callable) override;
 };
 
 class DataGraphManager {
@@ -219,9 +225,7 @@ public:
 	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const;
 	Ref<GraphParameters> create_graph(const StringName &_title);
 	Ref<GraphParameters> create_fps_graph(const StringName &_title);
-	// TODO: add ability to just register callback to get data for graph.
-	// like: set_graph_data_callback("randf", Callable(this, &"_get_graph_data"))
-	void update_fps_graphs(double delta);
+	void auto_update_graphs(double delta);
 	void graph_update_data(const StringName &_title, const double &_data);
 	void remove_graph(const StringName &_title);
 	void clear_graphs();

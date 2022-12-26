@@ -189,7 +189,7 @@ func _process(delta: float) -> void:
 		_graph_test()
 	else:
 		_remove_graphs()
-	
+	_upd_graph_params()
 	
 	# Lag Test
 	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
@@ -264,7 +264,7 @@ func _graph_test():
 # warning-ignore:return_value_discarded
 	_create_graph("fps2", true, false, GraphParameters.TEXT_CURRENT, &"fps", GraphParameters.SIDE_BOTTOM, 0, Vector2i(200, 100))
 # warning-ignore:return_value_discarded
-	_create_graph("fps3", true, true, GraphParameters.TEXT_CURRENT, &"fps2", GraphParameters.SIDE_BOTTOM)
+	_create_graph("Sin Wave!", false, true, GraphParameters.TEXT_CURRENT, &"fps2", GraphParameters.SIDE_BOTTOM)
 	
 # warning-ignore:return_value_discarded
 	_create_graph("randf", false, true, GraphParameters.TEXT_AVG, &"", GraphParameters.SIDE_LEFT, DebugDraw.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
@@ -287,22 +287,26 @@ func _graph_test():
 	_create_graph("fps11", true, true, GraphParameters.TEXT_ALL, &"fps9", GraphParameters.SIDE_RIGHT)
 	
 	# If graphs exists, then more tests are done
-	if DebugDraw.get_graph_config("randf"):
-		DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
-		DebugDraw.get_graph_config("fps9").line_position = GraphParameters.LINE_TOP
-		DebugDraw.get_graph_config("fps9").offset = Vector2i(0, 0)
-		DebugDraw.get_graph_config("fps11").line_position = GraphParameters.LINE_BOTTOM
-		DebugDraw.get_graph_config("fps11").offset = Vector2i(16, 0)
-		DebugDraw.get_graph_config("fps6").offset = Vector2i(0, 32)
-		DebugDraw.get_graph_config("fps").offset = Vector2i(16, 32)
-		DebugDraw.get_graph_config("fps3").offset = Vector2i(0, 2)
-		
-		DebugDraw.get_graph_config("fps9").enabled = graph_is_enabled
-		if Engine.is_editor_hint():
-			DebugDraw.get_graph_config("FPS").offset = Vector2i(0, 64)
-		else:
-			DebugDraw.get_graph_config("fps").corner = GraphParameters.POSITION_LEFT_TOP
+	DebugDraw.get_graph_config("Sin Wave!").data_getter = Callable(self, &"_get_sin_wave_for_graph")
 	
+	DebugDraw.get_graph_config("randf").text_suffix = "utf8 ноль zéro"
+	DebugDraw.get_graph_config("fps9").line_position = GraphParameters.LINE_TOP
+	DebugDraw.get_graph_config("fps9").offset = Vector2i(0, 0)
+	DebugDraw.get_graph_config("fps11").line_position = GraphParameters.LINE_BOTTOM
+	DebugDraw.get_graph_config("fps11").offset = Vector2i(16, 0)
+	DebugDraw.get_graph_config("fps6").offset = Vector2i(0, 32)
+	DebugDraw.get_graph_config("fps").offset = Vector2i(16, 32)
+	
+	DebugDraw.get_graph_config("fps9").enabled = graph_is_enabled
+	if Engine.is_editor_hint():
+		DebugDraw.get_graph_config("FPS").offset = Vector2i(0, 64)
+	else:
+		DebugDraw.get_graph_config("fps").corner = GraphParameters.POSITION_LEFT_TOP
+	
+	# Just sending random data to the graph
+	DebugDraw.graph_update_data("randf", randf())
+
+func _upd_graph_params():
 	DebugDraw.graphs_base_offset = graph_offset
 	for g in ["FPS", "fps5", "fps8"]:
 		var graph := DebugDraw.get_graph_config(g)
@@ -313,15 +317,15 @@ func _graph_test():
 			graph.line_width = graph_line_width
 			graph.text_precision = graph_text_precision
 			graph.buffer_size = graph_buffer_size
-	
-	# Just sending random data to the graph
-	DebugDraw.graph_update_data("randf", randf())
+
+func _get_sin_wave_for_graph() -> float:
+	return sin(Engine.get_frames_drawn() * 0.5) * 2
 
 func _remove_graphs():
 	DebugDraw.remove_graph("randf")
 	DebugDraw.remove_graph("fps")
 	DebugDraw.remove_graph("fps2")
-	DebugDraw.remove_graph("fps3")
+	DebugDraw.remove_graph("Sin Wave!")
 	DebugDraw.remove_graph("fps5")
 	DebugDraw.remove_graph("fps6")
 	DebugDraw.remove_graph("fps7")

@@ -1,7 +1,7 @@
 [gd_scene load_steps=16 format=3 uid="uid://c3sccy6x0ht5j"]
 
-[ext_resource type="Script" path="res://examples/DebugDrawDemoScene.gd" id="1"]
-[ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples/Roboto-Bold.ttf" id="2_aedbq"]
+[ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
+[ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
@@ -219,6 +219,8 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+test_text = false
+test_graphs = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20

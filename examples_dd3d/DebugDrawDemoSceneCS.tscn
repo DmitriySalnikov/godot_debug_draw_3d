@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://debug_draw_examples/DebugDrawDemoSceneCS.cs" type="Script" id=1]
-[ext_resource path="res://debug_draw_examples/DebugDrawDemoScene.tscn" type="PackedScene" id=2]
+[ext_resource path="res://examples_dd3d/DebugDrawDemoSceneCS.cs" type="Script" id=1]
+[ext_resource path="res://examples_dd3d/DebugDrawDemoScene.tscn" type="PackedScene" id=2]
 
 [node name="DebugDrawDemoSceneCS" instance=ExtResource( 2 )]
 script = ExtResource( 1 )
@@ -10,7 +10,7 @@ script = ExtResource( 1 )
 transform = Transform( 1, -1.53668e-08, 2.23517e-08, 1.74623e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707 )
 
 [node name="Settings" parent="." index="19"]
-switch_to_scene = "res://debug_draw_examples/DebugDrawDemoScene.tscn"
+switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
 
 [node name="FPSEnabled" parent="Settings/VB/H" index="0"]
 margin_right = 288.0

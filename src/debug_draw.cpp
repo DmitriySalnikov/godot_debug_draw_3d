@@ -261,7 +261,7 @@ void DebugDraw::process(double delta) {
 	grouped_text->cleanup_text(delta);
 
 	// FPS Graph
-	data_graphs->update_fps_graphs(delta);
+	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
 	if (_canvas_need_update) {

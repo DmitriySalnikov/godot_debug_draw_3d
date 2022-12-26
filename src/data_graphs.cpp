@@ -37,6 +37,7 @@ void GraphParameters::_bind_methods() {
 
 	REG_PROP(parent_graph, Variant::STRING_NAME);
 	REG_PROP(parent_graph_side, Variant::INT);
+	REG_PROP(data_getter, Variant::CALLABLE);
 
 	BIND_ENUM_CONSTANT(LINE_TOP);
 	BIND_ENUM_CONSTANT(LINE_CENTER);
@@ -253,6 +254,15 @@ void GraphParameters::set_parent(const StringName &_name, const GraphSide _side)
 	set_parent_graph_side(_side);
 }
 
+void GraphParameters::set_data_getter(const Callable &_callable) {
+	if (data_getter != _callable)
+		data_getter = _callable;
+}
+
+Callable GraphParameters::get_data_getter() const {
+	return data_getter;
+}
+
 void GraphParameters::update(double _value) {
 	LOCK_GUARD(datalock);
 
@@ -378,10 +388,13 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	_ci->draw_rect(border_rect_fixed, get_background_color(), true);
 
 	// Draw graph line
+	// TODO: graphs is stretched over total graph size and not centered
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
 		Vector2 base_pos = border_rect_fixed.position + Vector2(0, 1);
-		double height = border_rect_fixed.size.y - 1;
-		double height_multiplier = height / max;
+		double height = border_rect_fixed.size.y - 2;
+		double difference = Math::max(max, min) - Math::min(max, min);
+		double height_multiplier = difference != 0 ? height / Math::abs(difference) : 0;
+
 		double center_offset = 0;
 		switch (get_line_position()) {
 			case GraphParameters::LINE_TOP: {
@@ -389,11 +402,11 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 				break;
 			}
 			case GraphParameters::LINE_CENTER: {
-				center_offset = (height - height_multiplier * (max - min)) * 0.5;
+				center_offset = difference * height_multiplier * 0.5;
 				break;
 			}
 			case GraphParameters::LINE_BOTTOM: {
-				center_offset = height - height_multiplier * (max - min) - 1;
+				center_offset = height - 1;
 				break;
 			}
 		}
@@ -407,8 +420,10 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 		{
 			auto w = line_points.ptrw();
 			for (size_t i = 1; i < buffer_data->size() - offset; i++) {
-				w[(int)i * 2] = base_pos + Vector2((real_t)(i * points_interval), (real_t)(height - (buffer_data->get(i) * height_multiplier) + center_offset));
-				w[(int)i * 2 + 1] = base_pos + Vector2((real_t)((i - 1) * points_interval), (real_t)(height - (buffer_data->get(i - 1) * height_multiplier) + center_offset));
+				double value = buffer_data->get(i) + (min * -1);
+				double value2 = buffer_data->get(i - 1) + (min * -1);
+				w[(int)i * 2] = base_pos + Vector2((real_t)(i * points_interval), (real_t)((value * height_multiplier)));
+				w[(int)i * 2 + 1] = base_pos + Vector2((real_t)((i - 1) * points_interval), (real_t)((value2 * height_multiplier)));
 			}
 		}
 
@@ -509,6 +524,10 @@ bool FPSGraphParameters::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
+void FPSGraphParameters::set_data_getter(const Callable &_callable) {
+	PRINT_WARNING("The FPS graph is already updated automatically");
+}
+
 ////////////////////////////////////
 // DataGraphManager
 
@@ -596,13 +615,22 @@ Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &_title
 	return config;
 }
 
-void DataGraphManager::update_fps_graphs(double _delta) {
+void DataGraphManager::auto_update_graphs(double _delta) {
 	LOCK_GUARD(datalock);
 	for (auto &i : graphs) {
 		Ref<GraphParameters> g = i;
 		if (g->get_type() == GraphParameters::GRAPH_FPS) {
 			g->update(_delta);
 			owner->mark_canvas_dirty();
+		} else if (g->get_type() == GraphParameters::GRAPH_NORMAL) {
+			Callable callable = g->get_data_getter();
+			if (callable.is_valid()) {
+				Variant res = callable.callv(Array());
+				if (res.get_type() == Variant::FLOAT || res.get_type() == Variant::INT) {
+					g->update(res);
+					owner->mark_canvas_dirty();
+				}
+			}
 		}
 	}
 }
