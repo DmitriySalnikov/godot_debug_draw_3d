@@ -41,8 +41,8 @@ public:
 
 	enum GraphSide : int {
 		SIDE_LEFT = 0,
-		SIDE_RIGHT = 1,
-		SIDE_TOP = 2,
+		SIDE_TOP = 1,
+		SIDE_RIGHT = 2,
 		SIDE_BOTTOM = 3,
 		SIDE_MAX
 	};
@@ -74,9 +74,9 @@ private:
 	/// The size of the buffer where the values are stored.
 	int buffer_size = 256;
 	/// Offset from the corner selected in position
-	Vector2i offset = Vector2i(0, 8);
+	Vector2i offset = Vector2i(8, 8);
 	/// FPS Graph position *GraphPosition*
-	GraphPosition position = GraphPosition::POSITION_RIGHT_TOP;
+	GraphPosition corner = GraphPosition::POSITION_RIGHT_TOP;
 	/// Graph line width
 	real_t line_width = 1.0f;
 	/// Graph line color
@@ -136,8 +136,8 @@ public:
 	int get_buffer_size() const;
 	void set_offset(const Vector2i &_offset);
 	Vector2i get_offset() const;
-	void set_position(const GraphPosition _position);
-	GraphPosition get_position() const;
+	void set_corner(const GraphPosition _position);
+	GraphPosition get_corner() const;
 	void set_line_width(const real_t _width);
 	real_t get_line_width() const;
 	void set_line_color(const Color &_new_color);
@@ -171,10 +171,12 @@ public:
 	void update(double value);
 
 	struct graph_rects {
-		Rect2i full_rect;
-		Rect2i no_title_rect;
+		Rect2i full;
+		Rect2i base;
 	};
-	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const graph_rects &_prev_rects, const GraphPosition &_corner) const;
+
+	Vector2i _get_graph_position(const bool &_is_root, const GraphParameters::GraphPosition &_corner, const GraphParameters::graph_rects &_rects) const;
+	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const;
 };
 
 VARIANT_ENUM_CAST(GraphParameters::GraphPosition);
@@ -208,16 +210,18 @@ public:
 class DataGraphManager {
 	std::vector<Ref<GraphParameters> > graphs;
 	mutable std::recursive_mutex datalock;
-	class DebugDraw *owner;
+	class DebugDraw *owner = nullptr;
 
 public:
 	DataGraphManager(class DebugDraw *root);
 	~DataGraphManager();
 
+	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const;
 	Ref<GraphParameters> create_graph(const StringName &_title);
 	Ref<GraphParameters> create_fps_graph(const StringName &_title);
-	void _update_fps(double delta);
-	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const;
+	// TODO: add ability to just register callback to get data for graph.
+	// like: set_graph_data_callback("randf", Callable(this, &"_get_graph_data"))
+	void update_fps_graphs(double delta);
 	void graph_update_data(const StringName &_title, const double &_data);
 	void remove_graph(const StringName &_title);
 	void clear_graphs();

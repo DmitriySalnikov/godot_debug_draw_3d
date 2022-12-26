@@ -20,7 +20,7 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(size, Variant::VECTOR2I);
 	REG_PROP(buffer_size, Variant::INT);
 	REG_PROP(offset, Variant::VECTOR2I);
-	REG_PROP(position, Variant::INT);
+	REG_PROP(corner, Variant::INT);
 	REG_PROP(line_width, Variant::FLOAT);
 	REG_PROP(line_color, Variant::COLOR);
 	REG_PROP(line_position, Variant::INT);
@@ -29,7 +29,7 @@ void GraphParameters::_bind_methods() {
 	REG_PROP(text_suffix, Variant::STRING);
 
 	REG_PROP(custom_font, Variant::OBJECT);
-	REG_PROP(title_size, Variant::FLOAT);
+	REG_PROP(title_size, Variant::INT);
 	REG_PROP(text_size, Variant::INT);
 	REG_PROP(title_color, Variant::COLOR);
 	REG_PROP(text_color, Variant::COLOR);
@@ -64,7 +64,7 @@ void GraphParameters::_bind_methods() {
 GraphParameters::GraphParameters(DataGraphManager *_owner, StringName _title) {
 	_init(_owner, _title);
 	if (IS_EDITOR_HINT()) {
-		position = GraphPosition::POSITION_LEFT_TOP;
+		corner = GraphPosition::POSITION_LEFT_TOP;
 	}
 }
 
@@ -136,12 +136,12 @@ Vector2i GraphParameters::get_offset() const {
 	return offset;
 }
 
-void GraphParameters::set_position(const GraphPosition _position) {
-	position = (GraphPosition)_position;
+void GraphParameters::set_corner(const GraphPosition _position) {
+	corner = (GraphPosition)_position;
 }
 
-GraphParameters::GraphPosition GraphParameters::get_position() const {
-	return position;
+GraphParameters::GraphPosition GraphParameters::get_corner() const {
+	return corner;
 }
 
 void GraphParameters::set_line_width(const real_t _width) {
@@ -268,8 +268,57 @@ void GraphParameters::_update_received(double value) {
 	buffer_data->add(value);
 }
 
-// TODO sometimes the graphs are drawn in the wrong places
-GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size, const graph_rects &_prev_rects, const GraphPosition &_corner) const {
+Vector2i GraphParameters::_get_graph_position(const bool &_is_root, const GraphParameters::GraphPosition &_corner, const GraphParameters::graph_rects &_rects) const {
+	Vector2i pos = _rects.base.position;
+
+	Vector2i graph_size = get_size();
+	Vector2i graph_offset = get_offset();
+
+	if (_is_root) {
+		switch (_corner) {
+			case GraphPosition::POSITION_LEFT_TOP:
+				pos.x = pos.x + graph_offset.x;
+				pos.y = pos.y + graph_offset.y;
+				break;
+			case GraphPosition::POSITION_RIGHT_TOP:
+				pos.x = pos.x - graph_size.x - graph_offset.x;
+				pos.y = pos.y + graph_offset.y;
+				break;
+			case GraphPosition::POSITION_LEFT_BOTTOM:
+				pos.x = pos.x + graph_offset.x;
+				pos.y = pos.y - graph_size.y - graph_offset.y;
+				break;
+			case GraphPosition::POSITION_RIGHT_BOTTOM:
+				pos.x = pos.x - graph_size.x - graph_offset.x;
+				pos.y = pos.y - graph_size.y - graph_offset.y;
+				break;
+		}
+	} else {
+		bool is_right = _corner == POSITION_RIGHT_TOP || _corner == POSITION_RIGHT_BOTTOM;
+		switch (get_parent_graph_side()) {
+			case GraphSide::SIDE_LEFT:
+				pos.x = _rects.full.position.x - graph_size.x - graph_offset.x;
+				break;
+			case GraphSide::SIDE_TOP:
+				if (is_right)
+					pos.x = _rects.full.position.x + _rects.full.size.x - graph_size.x;
+				pos.y = _rects.full.position.y - graph_size.y - graph_offset.y;
+				break;
+			case GraphSide::SIDE_RIGHT:
+				pos.x = _rects.full.position.x + _rects.full.size.x + graph_offset.x;
+				break;
+			case GraphSide::SIDE_BOTTOM:
+				if (is_right)
+					pos.x = _rects.full.position.x + _rects.full.size.x - graph_size.x;
+				pos.y = _rects.full.position.y + _rects.full.size.y + graph_offset.y;
+				break;
+		}
+	}
+
+	return pos;
+}
+
+GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const {
 	if (!is_enabled())
 		return _prev_rects;
 
@@ -280,74 +329,24 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	double min, max, avg;
 	buffer_data->get_min_max_avg(&min, &max, &avg);
 
-	bool is_on_right_side = false;
-	bool is_on_top_side = false;
-	switch (_corner) {
-		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
-		case GraphParameters::GraphPosition::POSITION_RIGHT_BOTTOM:
-			is_on_right_side = true;
-			break;
-	}
+	bool is_on_right_side = _corner == POSITION_RIGHT_TOP || _corner == POSITION_RIGHT_BOTTOM;
+	bool is_on_top_side = _corner == POSITION_LEFT_TOP || _corner == POSITION_RIGHT_TOP;
 
-	switch (_corner) {
-		case GraphParameters::GraphPosition::POSITION_LEFT_TOP:
-		case GraphParameters::GraphPosition::POSITION_RIGHT_TOP:
-			is_on_top_side = true;
-			break;
-	}
-
-	// Truncate for pixel perfect render
 	Vector2 graph_size = get_size();
 	Vector2 graph_offset = get_offset();
-	Vector2 pos = _prev_rects.no_title_rect.position;
-
-	if (is_on_right_side) {
-		switch (get_parent_graph_side()) {
-			case GraphSide::SIDE_LEFT:
-				pos.x = pos.x - graph_size.x;
-				if (!is_on_top_side)
-					pos.y = pos.y - graph_size.y;
-				break;
-			case GraphSide::SIDE_TOP:
-				pos.x = pos.x + _prev_rects.no_title_rect.size.x - graph_size.x;
-				pos.y = _prev_rects.full_rect.position.y - graph_size.y;
-				break;
-			case GraphSide::SIDE_RIGHT:
-				pos.x = pos.x + _prev_rects.no_title_rect.size.x;
-				break;
-			case GraphSide::SIDE_BOTTOM:
-				pos.x = pos.x + _prev_rects.no_title_rect.size.x - graph_size.x;
-				pos.y = pos.y + _prev_rects.full_rect.size.y;
-				break;
-		}
-	} else {
-		switch (get_parent_graph_side()) {
-			case GraphSide::SIDE_LEFT:
-				pos.x = pos.x - graph_size.x;
-				break;
-			case GraphSide::SIDE_TOP:
-				pos.y = _prev_rects.full_rect.position.y - graph_size.y;
-				break;
-			case GraphSide::SIDE_RIGHT:
-				pos.x = pos.x + _prev_rects.no_title_rect.size.x;
-				break;
-			case GraphSide::SIDE_BOTTOM:
-				pos.y = pos.y + _prev_rects.full_rect.size.y;
-				break;
-		}
-	}
+	Vector2 pos = _get_graph_position(_is_root, _corner, _prev_rects);
 
 	graph_rects rects = { Rect2i(pos, graph_size), Rect2i(pos, graph_size) };
 
 	// Draw title
-	// TODO random font glitches when changing title size
 	if (is_show_title()) {
-		Vector2 title_size = draw_font->get_string_size(get_title(), HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size());
-		if (!is_on_top_side)
-			pos.y -= title_size.y;
+		String str_title = get_title();
+		Vector2 title_size = draw_font->get_string_size(str_title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size());
 		Vector2 title_pos = pos;
-
-		rects.full_rect.position = pos;
+		if (is_on_top_side)
+			pos += Vector2(0, title_size.y);
+		else
+			title_pos.y -= title_size.y;
 
 		if (is_on_right_side)
 			title_pos.x = title_pos.x + graph_size.x - title_size.x - 4;
@@ -358,33 +357,19 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 
 		real_t a = (real_t)draw_font->get_ascent(get_title_size());
 		_ci->draw_rect(border_rect, get_background_color(), true);
-		_ci->draw_string(
-				draw_font,
+		_ci->draw_string(draw_font,
 				(title_pos + Vector2(2, a)).floor(),
-				get_title(),
-				godot::HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_title_size(), get_title_color());
+				str_title,
+				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_title_size(), get_title_color());
 
-		pos += Vector2(0, title_size.y);
-
-		rects.full_rect.size.x = rects.no_title_rect.size.x = Math::max(rects.full_rect.size.x, (int)border_rect.size.x);
-		rects.full_rect.size.y += (int)title_size.y;
-	}
-
-	double height_multiplier = graph_size.y / max;
-	double center_offset = 0;
-	switch (get_line_position()) {
-		case GraphParameters::LINE_TOP: {
-			center_offset = 0;
-			break;
-		}
-		case GraphParameters::LINE_CENTER: {
-			center_offset = (graph_size.y - height_multiplier * (max - min)) * 0.5;
-			break;
-		}
-		case GraphParameters::LINE_BOTTOM: {
-			center_offset = graph_size.y - height_multiplier * (max - min) - 1;
-			break;
-		}
+		if (is_on_right_side)
+			rects.full.position.x = rects.base.position.x = Math::min((int)pos.x, (int)title_pos.x);
+		rects.full.size.x = rects.base.size.x = Math::max(rects.full.size.x, (int)border_rect.size.x);
+		rects.full.size.y += (int)title_size.y;
+		if (is_on_top_side)
+			rects.base.position.y += (int)title_size.y;
+		else
+			rects.full.position.y -= (int)title_size.y;
 	}
 
 	Rect2 border_rect_fixed = Rect2i(pos + Vector2(1, 1), graph_size - Vector2(1, 1));
@@ -393,21 +378,40 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	_ci->draw_rect(border_rect_fixed, get_background_color(), true);
 
 	// Draw graph line
-	// TODO not ideally located. can draw outside the rectangle or not occupy the entire rectangle
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
+		Vector2 base_pos = border_rect_fixed.position + Vector2(0, 1);
+		double height = border_rect_fixed.size.y - 1;
+		double height_multiplier = height / max;
+		double center_offset = 0;
+		switch (get_line_position()) {
+			case GraphParameters::LINE_TOP: {
+				center_offset = 0;
+				break;
+			}
+			case GraphParameters::LINE_CENTER: {
+				center_offset = (height - height_multiplier * (max - min)) * 0.5;
+				break;
+			}
+			case GraphParameters::LINE_BOTTOM: {
+				center_offset = height - height_multiplier * (max - min) - 1;
+				break;
+			}
+		}
+
 		PackedVector2Array line_points;
 
 		const int offset = (int)buffer_data->is_filled();
-		double points_interval = (double)get_size().x / ((int64_t)get_buffer_size() - 1 - offset);
+		double points_interval = (double)border_rect_fixed.size.x / ((int64_t)get_buffer_size() - 1 - offset);
 
 		line_points.resize((buffer_data->size() - offset) * 2);
 		{
 			auto w = line_points.ptrw();
 			for (size_t i = 1; i < buffer_data->size() - offset; i++) {
-				w[(int)i * 2] = pos + Vector2((real_t)(i * points_interval), graph_size.y - (real_t)(buffer_data->get(i) * height_multiplier) + (real_t)center_offset);
-				w[(int)i * 2 + 1] = pos + Vector2((real_t)((i - 1) * points_interval), graph_size.y - (real_t)(buffer_data->get(i - 1) * height_multiplier) + (real_t)center_offset);
+				w[(int)i * 2] = base_pos + Vector2((real_t)(i * points_interval), (real_t)(height - (buffer_data->get(i) * height_multiplier) + center_offset));
+				w[(int)i * 2 + 1] = base_pos + Vector2((real_t)((i - 1) * points_interval), (real_t)(height - (buffer_data->get(i - 1) * height_multiplier) + center_offset));
 			}
 		}
+
 		_ci->draw_multiline(line_points, get_line_color(), get_line_width());
 	}
 
@@ -429,24 +433,21 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	// Draw text
 	int precision = get_text_precision();
 	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
-		_ci->draw_string(
-				draw_font,
+		_ci->draw_string(draw_font,
 				pos + Vector2(4, (real_t)draw_font->get_ascent(get_text_size()) - 1).floor(),
 				String("max: {0} {1}").format(Array::make(format_float(max, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
 	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
-		_ci->draw_string(
-				draw_font,
+		_ci->draw_string(draw_font,
 				(pos + Vector2(4, (graph_size.y * 0.5f + (real_t)get_text_size() * 0.5f - 2))).floor(),
 				String("avg: {0} {1}").format(Array::make(format_float(avg, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
 	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
-		_ci->draw_string(
-				draw_font,
+		_ci->draw_string(draw_font,
 				(pos + Vector2(4, graph_size.y - 3)).floor(),
 				String("min: {0} {1}").format(Array::make(format_float(min, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
@@ -455,12 +456,21 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of the line to offset from the border
 		String text = String("{0} {1} ").format(Array::make(format_float((buffer_data->size() > 1 ? buffer_data->get(buffer_data->size() - 2) : 0), precision), get_text_suffix()));
-		_ci->draw_string(
-				draw_font,
+		_ci->draw_string(draw_font,
 				(pos + Vector2(graph_size.x - draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_text_size()).x, graph_size.y * 0.5f + get_text_size() * 0.5f - 2)).floor(),
 				text,
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
+
+	// Debug outlines
+#if 0
+	Rect2i a = rects.base;
+	a.position += Vector2i(1, 1);
+	a.size -= Vector2i(2, 2);
+
+	_ci->draw_rect(a, Colors::orange, false);
+	_ci->draw_rect(rects.full, Colors::red, false);
+#endif
 
 	return rects;
 }
@@ -509,37 +519,6 @@ DataGraphManager::DataGraphManager(DebugDraw *root) {
 DataGraphManager::~DataGraphManager() {
 }
 
-Ref<GraphParameters> DataGraphManager::create_graph(const StringName &_title) {
-	ERR_FAIL_COND_V(_title.is_empty(), Ref<GraphParameters>());
-
-	Ref<GraphParameters> config = Ref<GraphParameters>(memnew(GraphParameters(this, _title)));
-
-	LOCK_GUARD(datalock);
-	graphs.push_back(config);
-	return config;
-}
-
-Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &_title) {
-	ERR_FAIL_COND_V(_title.is_empty(), Ref<FPSGraphParameters>());
-
-	Ref<FPSGraphParameters> config = Ref<FPSGraphParameters>(memnew(FPSGraphParameters(this, _title)));
-
-	LOCK_GUARD(datalock);
-	graphs.push_back(config);
-	return config;
-}
-
-void DataGraphManager::_update_fps(double _delta) {
-	LOCK_GUARD(datalock);
-	for (auto &i : graphs) {
-		Ref<GraphParameters> g = i;
-		if (g->get_type() == GraphParameters::GRAPH_FPS) {
-			g->update(_delta);
-			owner->mark_canvas_dirty();
-		}
-	}
-}
-
 void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const {
 	LOCK_GUARD(datalock);
 
@@ -583,17 +562,48 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 
 	// 'rect' is a parameter storing the rectangle of the parent node
 	// 'corner' is a parameter inherited from the root node
-	std::function<void(GraphsNode *, GraphParameters::graph_rects, GraphParameters::GraphPosition)> iterate_nodes;
-	iterate_nodes = [&, this](GraphsNode *node, GraphParameters::graph_rects rects, GraphParameters::GraphPosition corner) {
-		GraphParameters::graph_rects prev_rects = node->instance->draw(_ci, _font, _vp_size, rects, corner);
+	std::function<void(GraphsNode *, GraphParameters::graph_rects, GraphParameters::GraphPosition, bool)> iterate_nodes;
+	iterate_nodes = [&, this](GraphsNode *node, GraphParameters::graph_rects rects, GraphParameters::GraphPosition corner, bool is_root) {
+		GraphParameters::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root);
 
 		for (auto &g : node->children) {
-			iterate_nodes(&g, prev_rects, corner);
+			iterate_nodes(&g, prev_rects, corner, false);
 		}
 	};
 
 	for (auto &n : root_graphs) {
-		iterate_nodes(&n, { base_rect[n.instance->get_position()], base_rect[n.instance->get_position()] }, n.instance->get_position());
+		iterate_nodes(&n, { base_rect[n.instance->get_corner()], base_rect[n.instance->get_corner()] }, n.instance->get_corner(), true);
+	}
+}
+
+Ref<GraphParameters> DataGraphManager::create_graph(const StringName &_title) {
+	ERR_FAIL_COND_V(_title.is_empty(), Ref<GraphParameters>());
+
+	Ref<GraphParameters> config = Ref<GraphParameters>(memnew(GraphParameters(this, _title)));
+
+	LOCK_GUARD(datalock);
+	graphs.push_back(config);
+	return config;
+}
+
+Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &_title) {
+	ERR_FAIL_COND_V(_title.is_empty(), Ref<FPSGraphParameters>());
+
+	Ref<FPSGraphParameters> config = Ref<FPSGraphParameters>(memnew(FPSGraphParameters(this, _title)));
+
+	LOCK_GUARD(datalock);
+	graphs.push_back(config);
+	return config;
+}
+
+void DataGraphManager::update_fps_graphs(double _delta) {
+	LOCK_GUARD(datalock);
+	for (auto &i : graphs) {
+		Ref<GraphParameters> g = i;
+		if (g->get_type() == GraphParameters::GRAPH_FPS) {
+			g->update(_delta);
+			owner->mark_canvas_dirty();
+		}
 	}
 }
 

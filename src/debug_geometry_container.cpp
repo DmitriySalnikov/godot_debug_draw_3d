@@ -158,7 +158,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		return;
 	}
 
-	// TODO try to get all active cameras inside scene to properly calculate visibilty
+	// TODO: try to get all active cameras inside scene to properly calculate visibilty
 
 	/* TODO NO WAY TO GET FRUSTUM AT THE MOMENT
 	// Get camera frustum
@@ -176,7 +176,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera_3d()->get_frustum());
 		} else if (editor_viewports.size() > 0) {
 			for (auto vp : editor_viewports) {
-				// TODO idk where is update mode. Mb UPDATE_ALWAYS is default now.
+				// TODO: idk where is update mode. Mb UPDATE_ALWAYS is default now.
 				// if (vp->get_update_mode() == Viewport::UpdateMode::UPDATE_ALWAYS) {
 				frustum_arrays.push_back(vp->get_camera_3d()->get_frustum());
 				//}
@@ -200,7 +200,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	*/
 
 	// Update visibility
-	// TODO disabled
+	// TODO: disabled
 	// geometry_pool.update_visibility(f);
 	geometry_pool.update_visibility(std::vector<std::vector<Plane> >());
 

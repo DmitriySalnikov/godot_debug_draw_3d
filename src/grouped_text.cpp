@@ -2,6 +2,7 @@
 #include "debug_draw.h"
 #include "math_utils.h"
 #include "utils.h"
+#include "draw_cache.h"
 
 using namespace godot;
 
@@ -180,28 +181,8 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 	LOCK_GUARD(datalock);
 	static const String separator = " : ";
 
-	struct Background {
-		Rect2 rect;
-		Color color;
-		Background(const Rect2 &_rect, const Color &_col) :
-				rect(_rect),
-				color(_col){};
-	};
-	std::vector<Background> backgrounds;
-	struct TextPart {
-		String text;
-		Ref<Font> font;
-		int font_size;
-		Vector2 position;
-		Color color;
-		TextPart(const String &_text, const Ref<Font> &_font, const int &_font_size, const Vector2 &_pos, const Color &_col) :
-				text(_text),
-				font(_font),
-				font_size(_font_size),
-				position(_pos),
-				color(_col){};
-	};
-	std::vector<TextPart> text_parts;
+	std::vector<DrawCachedRect> backgrounds;
+	std::vector<DrawCachedText> text_parts;
 
 	real_t groups_height = 0;
 	{
@@ -241,14 +222,14 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 				const Vector2 font_offset = Vector2(0, (real_t)draw_font->get_ascent(font_size)) + text_padding;
 
 				float size_right_revert = (size.x + text_padding.x * 2) * right_side_multiplier;
-				backgrounds.push_back(Background(
+				backgrounds.push_back(DrawCachedRect(
 						Rect2(Vector2(pos.x + size_right_revert, pos.y).floor(), Vector2(size.x + text_padding.x * 2, size.y + text_padding.y * 2).floor()),
 						owner->get_text_background_color()));
 
 				// Draw colored string
 				if ((t.get() && t->value_color == Colors::empty_color) || is_title_only) {
 					// Both parts with same color
-					text_parts.push_back(TextPart(text, draw_font, font_size,
+					text_parts.push_back(DrawCachedText(text, draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
 							g->group_color));
 				} else {
@@ -256,11 +237,11 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 					String textSep = keyText + separator;
 					int64_t _keyLength = textSep.length();
 
-					text_parts.push_back(TextPart(text.substr(0, _keyLength), draw_font, font_size,
+					text_parts.push_back(DrawCachedText(text.substr(0, _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
 							g->group_color));
 
-					text_parts.push_back(TextPart(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
+					text_parts.push_back(DrawCachedText(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
 							g->group_color));
 				}

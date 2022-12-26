@@ -37,7 +37,7 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
 	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
 
-	// TODO EditorPlugin's is not available in GDExtensions...
+	// TODO: EditorPlugin's is not available in GDExtensions...
 	/*
 #ifdef TOOLS_ENABLED
 	ClassDB::register_class<DebugDraw3DEditorPlugin>();

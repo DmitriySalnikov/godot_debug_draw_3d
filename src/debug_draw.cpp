@@ -123,7 +123,7 @@ void DebugDraw::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
-	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO must be explicitly double. Need fix for Variant converter
+	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO: -1 must be explicitly double. Need fix for Variant converter
 
 	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
@@ -156,9 +156,9 @@ DebugDraw::~DebugDraw() {
 	}
 }
 
-// TODO clear geometry on scene switch
+// TODO: clear geometry on scene switch
 //
-// TODO restore animation for lines in example scene
+// TODO: restore animation for lines in example scene
 
 void DebugDraw::_scene_tree_found() {
 	base_node = memnew(DebugDrawSceneManager);
@@ -249,7 +249,7 @@ void DebugDraw::ready() {
 		SCENE_ROOT()->move_child(_canvas_layer, 0);
 
 		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
 			current_draw_canvas = default_canvas;
 		}
 	}
@@ -261,7 +261,7 @@ void DebugDraw::process(double delta) {
 	grouped_text->cleanup_text(delta);
 
 	// FPS Graph
-	data_graphs->_update_fps(delta);
+	data_graphs->update_fps_graphs(delta);
 
 	// Update overlay
 	if (_canvas_need_update) {
@@ -286,10 +286,10 @@ void DebugDraw::process(double delta) {
 	}
 }
 
-// TODO use version with pointer
+// TODO: use version with pointer
 // void DebugDraw::_on_canvas_item_draw(CanvasItem *ci) {
 void DebugDraw::_on_canvas_item_draw() {
-	// TODO remove it
+	// TODO: remove it
 	CanvasItem *ci = current_draw_canvas;
 
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
@@ -302,6 +302,7 @@ void DebugDraw::_set_base_world_node(Node *_world_base) {
 	dgc->set_world(_world_base);
 }
 
+// TODO: mark dirty if changed fonts or offsets
 void DebugDraw::mark_canvas_dirty() {
 	_canvas_need_update = true;
 }
@@ -482,7 +483,7 @@ void DebugDraw::set_custom_canvas(CanvasItem *_canvas) {
 
 	if (!_canvas) {
 		if (!connected_internal) {
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
 			current_draw_canvas = default_canvas;
 		}
 		if (connected_custom) {
@@ -495,7 +496,7 @@ void DebugDraw::set_custom_canvas(CanvasItem *_canvas) {
 			current_draw_canvas = nullptr;
 		}
 		if (!connected_custom) {
-			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO use bind()
+			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
 			current_draw_canvas = _canvas;
 		}
 	}

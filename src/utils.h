@@ -80,14 +80,7 @@ static String get_file_name_in_repository(const String &name) {
 
 #pragma endregion !PRINTING
 
-// TODO temp constants. I didn't find them in gdnative api
-
-const godot::Vector2 Vector2_ZERO = godot::Vector2(0, 0);
-const godot::Vector2 Vector2_ONE = godot::Vector2(1, 1);
-const godot::Vector2 Vector2_UP = godot::Vector2(0, -1);
-const godot::Vector2 Vector2_DOWN = godot::Vector2(0, 1);
-const godot::Vector2 Vector2_RIGHT = godot::Vector2(1, 0);
-const godot::Vector2 Vector2_LEFT = godot::Vector2(-1, 0);
+// TODO: temp constants. I didn't find them in gdnative api
 
 const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
 const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
@@ -206,7 +199,7 @@ public:
 		return ordered;
 	}
 
-	// TODO need to use make from API when it becomes possible
+	// TODO: need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
 	static godot::Dictionary make_dict(Args... args) {

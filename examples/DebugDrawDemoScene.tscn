@@ -205,15 +205,10 @@ func _on_FPSMS_toggled(button_pressed: bool) -> void:
 		cfg.frame_time_mode = button_pressed
 
 func _on_HSlider_value_changed(value: float) -> void:
-	var cfg = DebugDraw.get_graph_config(\"FPS\")
-	if cfg:
-		cfg.size = Vector2i(int(value), cfg.size.y)
+	get_parent().graph_size = Vector2i(int(value), get_parent().graph_size.y)
 
 func _on_HSlider2_value_changed(value: float) -> void:
-	var cfg = DebugDraw.get_graph_config(\"FPS\")
-	if cfg:
-		cfg.buffer_size = int(value)
-
+	get_parent().graph_buffer_size = int(value)
 
 func _on_Button_pressed() -> void:
 	DebugDraw.clear_all()
@@ -224,16 +219,10 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-test_text = false
-test_graphs = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
 text_groups_text_font_size = 17
-graph_offset = Vector2i(10, 11)
-graph_size = Vector2i(206, 77)
-graph_title_font_size = 17
-graph_text_font_size = 11
 graph_text_precision = 1
 
 [node name="Camera" type="Camera3D" parent="."]
@@ -245,11 +234,14 @@ far = 52.5
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
-anchors_preset = 2
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
+anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -172.0
 offset_top = -172.0
-offset_right = 172.0
+grow_horizontal = 0
 grow_vertical = 0
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="Panel"]

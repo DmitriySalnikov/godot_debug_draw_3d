@@ -55,7 +55,7 @@ private:
 
 	CanvasItem *default_canvas = nullptr;
 
-	// TODO remove it and use Callable::bind in connect methods
+	// TODO: remove it and use Callable::bind in connect methods
 	CanvasItem *current_draw_canvas = nullptr;
 
 	// Text
@@ -67,13 +67,13 @@ private:
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
-	// TODO bool is_ready = false;
+	// TODO: bool is_ready = false;
 	bool is_ready = true;
 
 	DebugDraw *get_singleton_gdscript() {
 		return singleton;
 	};
-	// TODO use pointer to CanvasItem from Callable::bind
+	// TODO: use pointer to CanvasItem from Callable::bind
 	// void _on_canvas_item_draw(CanvasItem *ci);
 	void _on_canvas_item_draw();
 

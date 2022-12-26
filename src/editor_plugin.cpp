@@ -17,7 +17,7 @@
 using namespace godot;
 
 void DebugDraw3DEditorPlugin::_bind_methods() {
-	// TODO pointers is not available..
+	// TODO: pointers is not available..
 	// ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw3DEditorPlugin::_on_scene_changed);
 
 	ClassDB::bind_method(D_METHOD(TEXT(disable_plugin)), &DebugDraw3DEditorPlugin::disable_plugin);

@@ -185,6 +185,7 @@
     <ClInclude Include="src\circular_buffer.h" />
     <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\debug_draw.h" />
+    <ClInclude Include="src\draw_cache.h" />
     <ClInclude Include="src\editor_plugin.h" />
     <ClInclude Include="src\data_graphs.h" />
     <ClInclude Include="src\geometry_generators.h" />
