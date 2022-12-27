@@ -1,4 +1,4 @@
-# Not working at the moment. Very early version! Use Godot 3.x version!
+# Version 4.x is not working correctly at the moment. Very early version! Use the Godot 3.x version!
 
 ![icon](/images/icon.png)
 
@@ -7,6 +7,8 @@
 This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in C++ and can be used with GDScript or C#.
 
 Based on my previous addon, which was developed only for C# https://github.com/DmitriySalnikov/godot_debug_draw_cs, and which was inspired by Zylann's GDScript addon https://github.com/Zylann/godot_debug_draw
+
+## [Godot 3 version](https://github.com/DmitriySalnikov/godot_debug_draw_3d/tree/godot_3)
 
 ## Donations
 
