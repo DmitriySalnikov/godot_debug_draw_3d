@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "circular_buffer.h"
 #include "colors.h"
@@ -21,8 +21,8 @@ using namespace godot;
 
 class DataGraphManager;
 
-class GraphParameters : public RefCounted {
-	GDCLASS(GraphParameters, RefCounted);
+class DebugDrawGraph : public RefCounted {
+	GDCLASS(DebugDrawGraph, RefCounted);
 
 public:
 	enum GraphLinePosition : int {
@@ -118,8 +118,8 @@ protected:
 	void _init(DataGraphManager *_owner, StringName _title);
 
 public:
-	GraphParameters(){};
-	GraphParameters(DataGraphManager *_owner, StringName _title);
+	DebugDrawGraph(){};
+	DebugDrawGraph(DataGraphManager *_owner, StringName _title);
 
 	virtual GraphType get_type() { return GraphType::GRAPH_NORMAL; };
 	StringName get_title() const;
@@ -179,17 +179,17 @@ public:
 		Rect2i base;
 	};
 
-	Vector2i _get_graph_position(const bool &_is_root, const GraphParameters::GraphPosition &_corner, const GraphParameters::graph_rects &_rects) const;
+	Vector2i _get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const;
 	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const;
 };
 
-VARIANT_ENUM_CAST(GraphParameters::GraphPosition);
-VARIANT_ENUM_CAST(GraphParameters::GraphLinePosition);
-VARIANT_ENUM_CAST(GraphParameters::GraphSide);
-VARIANT_BITFIELD_CAST(GraphParameters::TextFlags);
+VARIANT_ENUM_CAST(DebugDrawGraph::GraphPosition);
+VARIANT_ENUM_CAST(DebugDrawGraph::GraphLinePosition);
+VARIANT_ENUM_CAST(DebugDrawGraph::GraphSide);
+VARIANT_BITFIELD_CAST(DebugDrawGraph::TextFlags);
 
-class FPSGraphParameters : public GraphParameters {
-	GDCLASS(FPSGraphParameters, GraphParameters);
+class DebugDrawFPSGraph : public DebugDrawGraph {
+	GDCLASS(DebugDrawFPSGraph, DebugDrawGraph);
 
 public:
 	/// Switch between frame time and FPS modes
@@ -203,8 +203,8 @@ protected:
 	virtual void _update_received(double _value) override;
 
 public:
-	FPSGraphParameters(){};
-	FPSGraphParameters(DataGraphManager *_owner, StringName _title);
+	DebugDrawFPSGraph(){};
+	DebugDrawFPSGraph(DataGraphManager *_owner, StringName _title);
 
 	virtual GraphType get_type() override { return GraphType::GRAPH_FPS; };
 	void set_frame_time_mode(const bool _state);
@@ -214,7 +214,7 @@ public:
 };
 
 class DataGraphManager {
-	std::vector<Ref<GraphParameters> > graphs;
+	std::vector<Ref<DebugDrawGraph> > graphs;
 	mutable std::recursive_mutex datalock;
 	class DebugDraw *owner = nullptr;
 
@@ -223,12 +223,12 @@ public:
 	~DataGraphManager();
 
 	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const;
-	Ref<GraphParameters> create_graph(const StringName &_title);
-	Ref<GraphParameters> create_fps_graph(const StringName &_title);
+	Ref<DebugDrawGraph> create_graph(const StringName &_title);
+	Ref<DebugDrawGraph> create_fps_graph(const StringName &_title);
 	void auto_update_graphs(double delta);
 	void graph_update_data(const StringName &_title, const double &_data);
 	void remove_graph(const StringName &_title);
 	void clear_graphs();
-	Ref<GraphParameters> get_graph_config(const StringName &_title) const;
+	Ref<DebugDrawGraph> get_graph(const StringName &_title) const;
 	PackedStringArray get_graph_names() const;
 };

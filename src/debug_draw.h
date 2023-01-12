@@ -24,7 +24,7 @@ using namespace godot;
 class DataGraphManager;
 class DebugDrawSceneManager;
 class DebugGeometryContainer;
-class GraphParameters;
+class DebugDrawGraph;
 class GroupedText;
 
 class DebugDraw : public Object {
@@ -498,27 +498,27 @@ public:
 
 	/// Create new graph with custom data.
 	/// title: Title of the graph
-	Ref<GraphParameters> create_graph(String title);
+	Ref<DebugDrawGraph> create_graph(const StringName &title);
 
 	/// Create new graph with custom data.
 	/// title: Title of the graph
-	Ref<GraphParameters> create_fps_graph(String title);
+	Ref<DebugDrawGraph> create_fps_graph(const StringName &title);
 
 	/// Update custom graph data
 	/// title: Title of the graph
 	/// data: New data
-	void graph_update_data(String title, real_t data);
+	void graph_update_data(const StringName &title, real_t data);
 
 	/// Remove graph
 	/// title: Title of the graph
-	void remove_graph(String title);
+	void remove_graph(const StringName &title);
 
 	/// Remove all graphs
 	void clear_graphs();
 
 	/// Get config for graph.
 	/// title: Title of the graph
-	Ref<GraphParameters> get_graph_config(String title);
+	Ref<DebugDrawGraph> get_graph(const StringName &title);
 
 	/// Get all graph names
 	PackedStringArray get_graph_names();

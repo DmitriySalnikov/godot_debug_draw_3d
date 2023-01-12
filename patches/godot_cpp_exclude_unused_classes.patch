@@ -1,17 +1,18 @@
 diff --git a/SConstruct b/SConstruct
+index 27ee137..445fda0 100644
 --- a/SConstruct
 +++ b/SConstruct
-@@ -88,6 +88,8 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
+@@ -123,6 +123,8 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
  
  opts.Add(BoolVariable("build_library", "Build the godot-cpp library.", True))
- opts.Add(EnumVariable("float", "Floating-point precision", "32", ("32", "64")))
+ opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
 +opts.Add(BoolVariable("exclude_unused_classes", "Disable generation of unused classes.", True))
 +opts.Add(PathVariable("folder_to_include_classes", "Path to the directory containing extension sources", "../src", PathVariable.PathIsDir))
  
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index aac51fa..64aa426 100644
+index e5bb84e..a9f63a4 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
 @@ -5,6 +5,78 @@ import re
@@ -124,7 +125,7 @@ index aac51fa..64aa426 100644
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(target, files)
      env["godot_cpp_gen_dir"] = target[0].abspath
-@@ -971,6 +1053,9 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -975,6 +1057,9 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
          header_filename = include_gen_folder / (camel_to_snake(class_api["name"]) + ".hpp")
          source_filename = source_gen_folder / (camel_to_snake(class_api["name"]) + ".cpp")
  

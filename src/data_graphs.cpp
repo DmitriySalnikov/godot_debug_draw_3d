@@ -7,11 +7,11 @@
 
 using namespace godot;
 
-void GraphParameters::_bind_methods() {
-#define REG_CLASS_NAME GraphParameters
+void DebugDrawGraph::_bind_methods() {
+#define REG_CLASS_NAME DebugDrawGraph
 
-	ClassDB::bind_method(D_METHOD(TEXT(get_title)), &GraphParameters::get_title);
-	ClassDB::bind_method(D_METHOD(TEXT(set_parent), "parent", "side"), &GraphParameters::set_parent, GraphSide::SIDE_BOTTOM);
+	ClassDB::bind_method(D_METHOD(TEXT(get_title)), &DebugDrawGraph::get_title);
+	ClassDB::bind_method(D_METHOD(TEXT(set_parent), "parent", "side"), &DebugDrawGraph::set_parent, GraphSide::SIDE_BOTTOM);
 
 	REG_PROP_BOOL(enabled);
 	REG_PROP_BOOL(show_title);
@@ -62,223 +62,225 @@ void GraphParameters::_bind_methods() {
 #undef REG_CLASS_NAME
 }
 
-GraphParameters::GraphParameters(DataGraphManager *_owner, StringName _title) {
+DebugDrawGraph::DebugDrawGraph(DataGraphManager *_owner, StringName _title) {
 	_init(_owner, _title);
 	if (IS_EDITOR_HINT()) {
 		corner = GraphPosition::POSITION_LEFT_TOP;
 	}
 }
 
-void GraphParameters::_init(DataGraphManager *_owner, StringName _title) {
+void DebugDrawGraph::_init(DataGraphManager *_owner, StringName _title) {
 	buffer_data = std::make_unique<CircularBuffer<double> >(get_buffer_size());
 	owner = _owner;
 	title = _title;
 }
 
-StringName GraphParameters::get_title() const {
+StringName DebugDrawGraph::get_title() const {
 	return title;
 }
 
-void GraphParameters::set_enabled(const bool _state) {
+void DebugDrawGraph::set_enabled(const bool _state) {
 	enabled = _state;
 }
 
-bool GraphParameters::is_enabled() const {
+bool DebugDrawGraph::is_enabled() const {
 	return enabled;
 }
 
-void GraphParameters::set_show_title(const bool _state) {
+void DebugDrawGraph::set_show_title(const bool _state) {
 	show_title = _state;
 }
 
-bool GraphParameters::is_show_title() const {
+bool DebugDrawGraph::is_show_title() const {
 	return show_title;
 }
 
-void GraphParameters::set_line_position(const GraphLinePosition _position) {
+void DebugDrawGraph::set_line_position(const GraphLinePosition _position) {
 	line_position = _position;
 }
 
-GraphParameters::GraphLinePosition GraphParameters::get_line_position() const {
+DebugDrawGraph::GraphLinePosition DebugDrawGraph::get_line_position() const {
 	return line_position;
 }
 
-void GraphParameters::set_show_text_flags(const BitField<TextFlags> _flags) {
+void DebugDrawGraph::set_show_text_flags(const BitField<TextFlags> _flags) {
 	show_text_flags = _flags;
 }
 
-BitField<GraphParameters::TextFlags> GraphParameters::get_show_text_flags() const {
+BitField<DebugDrawGraph::TextFlags> DebugDrawGraph::get_show_text_flags() const {
 	return show_text_flags;
 }
 
-void GraphParameters::set_size(const Vector2i &_size) {
+void DebugDrawGraph::set_size(const Vector2i &_size) {
 	size = _size;
 	size.x = Math::clamp(size.x, 1, INT32_MAX);
 	size.y = Math::clamp(size.y, 1, INT32_MAX);
 }
 
-Vector2i GraphParameters::get_size() const {
+Vector2i DebugDrawGraph::get_size() const {
 	return size;
 }
 
-void GraphParameters::set_buffer_size(const int _buf_size) {
+void DebugDrawGraph::set_buffer_size(const int _buf_size) {
 	buffer_size = Math::clamp(_buf_size, 3, INT32_MAX);
 }
 
-int GraphParameters::get_buffer_size() const {
+int DebugDrawGraph::get_buffer_size() const {
 	return buffer_size;
 }
 
-void GraphParameters::set_offset(const Vector2i &_offset) {
+void DebugDrawGraph::set_offset(const Vector2i &_offset) {
 	offset = _offset;
 }
 
-Vector2i GraphParameters::get_offset() const {
+Vector2i DebugDrawGraph::get_offset() const {
 	return offset;
 }
 
-void GraphParameters::set_corner(const GraphPosition _position) {
+void DebugDrawGraph::set_corner(const GraphPosition _position) {
 	corner = (GraphPosition)_position;
 }
 
-GraphParameters::GraphPosition GraphParameters::get_corner() const {
+DebugDrawGraph::GraphPosition DebugDrawGraph::get_corner() const {
 	return corner;
 }
 
-void GraphParameters::set_line_width(const real_t _width) {
+void DebugDrawGraph::set_line_width(const real_t _width) {
 	line_width = Math::clamp(_width, 1.0f, 32.0f);
 }
 
-real_t GraphParameters::get_line_width() const {
+real_t DebugDrawGraph::get_line_width() const {
 	return line_width;
 }
 
-void GraphParameters::set_line_color(const Color &_new_color) {
+void DebugDrawGraph::set_line_color(const Color &_new_color) {
 	line_color = _new_color;
 }
 
-Color GraphParameters::get_line_color() const {
+Color DebugDrawGraph::get_line_color() const {
 	return line_color;
 }
 
-void GraphParameters::set_background_color(const Color &_new_color) {
+void DebugDrawGraph::set_background_color(const Color &_new_color) {
 	background_color = _new_color;
 }
 
-Color GraphParameters::get_background_color() const {
+Color DebugDrawGraph::get_background_color() const {
 	return background_color;
 }
 
-void GraphParameters::set_border_color(const Color &_new_color) {
+void DebugDrawGraph::set_border_color(const Color &_new_color) {
 	border_color = _new_color;
 }
 
-Color GraphParameters::get_border_color() const {
+Color DebugDrawGraph::get_border_color() const {
 	return border_color;
 }
 
-void GraphParameters::set_text_suffix(const String &_suffix) {
+void DebugDrawGraph::set_text_suffix(const String &_suffix) {
 	text_suffix = _suffix;
 }
 
-String GraphParameters::get_text_suffix() const {
+String DebugDrawGraph::get_text_suffix() const {
 	return text_suffix;
 }
 
-void GraphParameters::set_custom_font(const Ref<Font> _custom_font) {
+void DebugDrawGraph::set_custom_font(const Ref<Font> _custom_font) {
 	custom_font = _custom_font;
 }
 
-Ref<Font> GraphParameters::get_custom_font() const {
+Ref<Font> DebugDrawGraph::get_custom_font() const {
 	return custom_font;
 }
 
-void GraphParameters::set_title_size(const int _size) {
+void DebugDrawGraph::set_title_size(const int _size) {
 	title_size = Math::clamp(_size, 1, INT_MAX);
 }
 
-int GraphParameters::get_title_size() const {
+int DebugDrawGraph::get_title_size() const {
 	return title_size;
 }
 
-void GraphParameters::set_text_size(const int _size) {
+void DebugDrawGraph::set_text_size(const int _size) {
 	text_size = Math::clamp(_size, 1, INT_MAX);
 }
 
-int GraphParameters::get_text_size() const {
+int DebugDrawGraph::get_text_size() const {
 	return text_size;
 }
 
-void GraphParameters::set_title_color(const Color &_new_color) {
+void DebugDrawGraph::set_title_color(const Color &_new_color) {
 	title_color = _new_color;
 }
 
-Color GraphParameters::get_title_color() const {
+Color DebugDrawGraph::get_title_color() const {
 	return title_color;
 }
 
-void GraphParameters::set_text_color(const Color &_new_color) {
+void DebugDrawGraph::set_text_color(const Color &_new_color) {
 	text_color = _new_color;
 }
 
-Color GraphParameters::get_text_color() const {
+Color DebugDrawGraph::get_text_color() const {
 	return text_color;
 }
 
-void GraphParameters::set_text_precision(const int _precision) {
+void DebugDrawGraph::set_text_precision(const int _precision) {
 	text_precision = Math::clamp(_precision, 0, 64);
 }
 
-int GraphParameters::get_text_precision() const {
+int DebugDrawGraph::get_text_precision() const {
 	return text_precision;
 }
 
-void GraphParameters::set_parent_graph(const StringName &_graph) {
+void DebugDrawGraph::set_parent_graph(const StringName &_graph) {
 	parent_graph = _graph;
 }
 
-StringName GraphParameters::get_parent_graph() const {
+StringName DebugDrawGraph::get_parent_graph() const {
 	return parent_graph;
 }
 
-void GraphParameters::set_parent_graph_side(const GraphSide _side) {
+void DebugDrawGraph::set_parent_graph_side(const GraphSide _side) {
 	parent_graph_side = _side;
 }
 
-GraphParameters::GraphSide GraphParameters::get_parent_graph_side() const {
+DebugDrawGraph::GraphSide DebugDrawGraph::get_parent_graph_side() const {
 	return parent_graph_side;
 }
 
-void GraphParameters::set_parent(const StringName &_name, const GraphSide _side) {
+void DebugDrawGraph::set_parent(const StringName &_name, const GraphSide _side) {
 	set_parent_graph(_name);
 	set_parent_graph_side(_side);
 }
 
-void GraphParameters::set_data_getter(const Callable &_callable) {
+void DebugDrawGraph::set_data_getter(const Callable &_callable) {
 	if (data_getter != _callable)
 		data_getter = _callable;
 }
 
-Callable GraphParameters::get_data_getter() const {
+Callable DebugDrawGraph::get_data_getter() const {
 	return data_getter;
 }
 
-void GraphParameters::update(double _value) {
+void DebugDrawGraph::update(double _value) {
 	LOCK_GUARD(datalock);
 
-	if (get_buffer_size() != buffer_data->buffer_size())
+	if (get_buffer_size() != buffer_data->buffer_size()) {
 		buffer_data = std::make_unique<CircularBuffer<double> >(get_buffer_size());
+		//graph_range.reset(get_buffer_size());
+	}
 
 	_update_received(_value);
 }
 
-void GraphParameters::_update_received(double value) {
+void DebugDrawGraph::_update_received(double value) {
 	LOCK_GUARD(datalock);
 
 	buffer_data->add(value);
 }
 
-Vector2i GraphParameters::_get_graph_position(const bool &_is_root, const GraphParameters::GraphPosition &_corner, const GraphParameters::graph_rects &_rects) const {
+Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const {
 	Vector2i pos = _rects.base.position;
 
 	Vector2i graph_size = get_size();
@@ -328,7 +330,7 @@ Vector2i GraphParameters::_get_graph_position(const bool &_is_root, const GraphP
 	return pos;
 }
 
-GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const {
+DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const {
 	if (!is_enabled())
 		return _prev_rects;
 
@@ -390,40 +392,37 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 	// Draw graph line
 	// TODO: graphs is stretched over total graph size and not centered
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
-		Vector2 base_pos = border_rect_fixed.position + Vector2(0, 1);
-		double height = border_rect_fixed.size.y - 2;
-		double difference = Math::max(max, min) - Math::min(max, min);
-		double height_multiplier = difference != 0 ? height / Math::abs(difference) : 0;
+		Vector2 base_pos = rects.base.position + Vector2(1, 1);
+		Vector2 size = rects.base.size - Vector2(1, 2);
+		double difference = max - min;
+		double size_multiplier_x = size.x / (get_buffer_size() - 1);
+		double size_multiplier_y = difference != 0 ? size.y / (real_t)difference : 0;
+		PackedVector2Array line_points;
 
 		double center_offset = 0;
 		switch (get_line_position()) {
-			case GraphParameters::LINE_TOP: {
+			case DebugDrawGraph::LINE_TOP: {
 				center_offset = 0;
 				break;
 			}
-			case GraphParameters::LINE_CENTER: {
-				center_offset = difference * height_multiplier * 0.5;
+			case DebugDrawGraph::LINE_CENTER: {
+				center_offset = difference * size_multiplier_y * 0.5;
 				break;
 			}
-			case GraphParameters::LINE_BOTTOM: {
-				center_offset = height - 1;
+			case DebugDrawGraph::LINE_BOTTOM: {
+				center_offset = size.y - 1;
 				break;
 			}
 		}
 
-		PackedVector2Array line_points;
-
-		const int offset = (int)buffer_data->is_filled();
-		double points_interval = (double)border_rect_fixed.size.x / ((int64_t)get_buffer_size() - 1 - offset);
-
-		line_points.resize((buffer_data->size() - offset) * 2);
+		// prepare array for `draw_multiline`
 		{
+			size_t s = line_points.size() - 1;
+			line_points.resize(line_points.size() * 2);
 			auto w = line_points.ptrw();
-			for (size_t i = 1; i < buffer_data->size() - offset; i++) {
-				double value = buffer_data->get(i) + (min * -1);
-				double value2 = buffer_data->get(i - 1) + (min * -1);
-				w[(int)i * 2] = base_pos + Vector2((real_t)(i * points_interval), (real_t)((value * height_multiplier)));
-				w[(int)i * 2 + 1] = base_pos + Vector2((real_t)((i - 1) * points_interval), (real_t)((value2 * height_multiplier)));
+			for (size_t i = s; i > 0; i--) {
+				w[i * 2] = w[i];
+				w[i * 2 + 1] = w[i - 1];
 			}
 		}
 
@@ -447,28 +446,28 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 
 	// Draw text
 	int precision = get_text_precision();
-	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_MAX) {
+	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_MAX) {
 		_ci->draw_string(draw_font,
 				pos + Vector2(4, (real_t)draw_font->get_ascent(get_text_size()) - 1).floor(),
 				String("max: {0} {1}").format(Array::make(format_float(max, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
-	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_AVG) {
+	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_AVG) {
 		_ci->draw_string(draw_font,
 				(pos + Vector2(4, (graph_size.y * 0.5f + (real_t)get_text_size() * 0.5f - 2))).floor(),
 				String("avg: {0} {1}").format(Array::make(format_float(avg, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
-	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_MIN) {
+	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_MIN) {
 		_ci->draw_string(draw_font,
 				(pos + Vector2(4, graph_size.y - 3)).floor(),
 				String("min: {0} {1}").format(Array::make(format_float(min, precision), get_text_suffix())),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
-	if (get_show_text_flags() & GraphParameters::TextFlags::TEXT_CURRENT) {
+	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of the line to offset from the border
 		String text = String("{0} {1} ").format(Array::make(format_float((buffer_data->size() > 1 ? buffer_data->get(buffer_data->size() - 2) : 0), precision), get_text_suffix()));
 		_ci->draw_string(draw_font,
@@ -491,9 +490,9 @@ GraphParameters::graph_rects GraphParameters::draw(CanvasItem *_ci, const Ref<Fo
 }
 
 ////////////////////////////////////
-// FPSGraphParameters
+// DebugDrawFPSGraph
 
-void FPSGraphParameters::_update_received(double _value) {
+void DebugDrawFPSGraph::_update_received(double _value) {
 	LOCK_GUARD(datalock);
 	if (is_ms != is_frame_time_mode()) {
 		buffer_data->reset();
@@ -504,27 +503,27 @@ void FPSGraphParameters::_update_received(double _value) {
 	buffer_data->add(is_ms ? _value * 1000.f : 1.f / _value);
 }
 
-FPSGraphParameters::FPSGraphParameters(DataGraphManager *_owner, StringName _title) {
+DebugDrawFPSGraph::DebugDrawFPSGraph(DataGraphManager *_owner, StringName _title) {
 	_init(_owner, _title);
 };
 
-void FPSGraphParameters::_bind_methods() {
-#define REG_CLASS_NAME FPSGraphParameters
+void DebugDrawFPSGraph::_bind_methods() {
+#define REG_CLASS_NAME DebugDrawFPSGraph
 
 	REG_PROP_BOOL(frame_time_mode);
 
 #undef REG_CLASS_NAME
 }
 
-void FPSGraphParameters::set_frame_time_mode(const bool _state) {
+void DebugDrawFPSGraph::set_frame_time_mode(const bool _state) {
 	frametime_mode = _state;
 }
 
-bool FPSGraphParameters::is_frame_time_mode() const {
+bool DebugDrawFPSGraph::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
-void FPSGraphParameters::set_data_getter(const Callable &_callable) {
+void DebugDrawFPSGraph::set_data_getter(const Callable &_callable) {
 	PRINT_WARNING("The FPS graph is already updated automatically");
 }
 
@@ -542,9 +541,9 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 	LOCK_GUARD(datalock);
 
 	struct GraphsNode {
-		const Ref<GraphParameters> instance;
+		const Ref<DebugDrawGraph> instance;
 		std::vector<GraphsNode> children;
-		GraphsNode(const Ref<GraphParameters> &_node) :
+		GraphsNode(const Ref<DebugDrawGraph> &_node) :
 				instance(_node){};
 	};
 
@@ -572,7 +571,7 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 	}
 
 	Vector2 base_offset = owner->get_graphs_base_offset();
-	Rect2i base_rect[GraphParameters::POSITION_MAX] = {
+	Rect2i base_rect[DebugDrawGraph::POSITION_MAX] = {
 		Rect2i(base_offset, Vector2i()), // left_top
 		Rect2i(Vector2(_vp_size.x - base_offset.x, base_offset.y), Vector2i()), // right_top
 		Rect2i(Vector2(base_offset.x, _vp_size.y - base_offset.y), Vector2i()), // left_bottom
@@ -581,9 +580,9 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 
 	// 'rect' is a parameter storing the rectangle of the parent node
 	// 'corner' is a parameter inherited from the root node
-	std::function<void(GraphsNode *, GraphParameters::graph_rects, GraphParameters::GraphPosition, bool)> iterate_nodes;
-	iterate_nodes = [&, this](GraphsNode *node, GraphParameters::graph_rects rects, GraphParameters::GraphPosition corner, bool is_root) {
-		GraphParameters::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root);
+	std::function<void(GraphsNode *, DebugDrawGraph::graph_rects, DebugDrawGraph::GraphPosition, bool)> iterate_nodes;
+	iterate_nodes = [&, this](GraphsNode *node, DebugDrawGraph::graph_rects rects, DebugDrawGraph::GraphPosition corner, bool is_root) {
+		DebugDrawGraph::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root);
 
 		for (auto &g : node->children) {
 			iterate_nodes(&g, prev_rects, corner, false);
@@ -595,20 +594,20 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 	}
 }
 
-Ref<GraphParameters> DataGraphManager::create_graph(const StringName &_title) {
-	ERR_FAIL_COND_V(_title.is_empty(), Ref<GraphParameters>());
+Ref<DebugDrawGraph> DataGraphManager::create_graph(const StringName &_title) {
+	ERR_FAIL_COND_V(_title.is_empty(), Ref<DebugDrawGraph>());
 
-	Ref<GraphParameters> config = Ref<GraphParameters>(memnew(GraphParameters(this, _title)));
+	Ref<DebugDrawGraph> config = Ref<DebugDrawGraph>(memnew(DebugDrawGraph(this, _title)));
 
 	LOCK_GUARD(datalock);
 	graphs.push_back(config);
 	return config;
 }
 
-Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &_title) {
-	ERR_FAIL_COND_V(_title.is_empty(), Ref<FPSGraphParameters>());
+Ref<DebugDrawGraph> DataGraphManager::create_fps_graph(const StringName &_title) {
+	ERR_FAIL_COND_V(_title.is_empty(), Ref<DebugDrawFPSGraph>());
 
-	Ref<FPSGraphParameters> config = Ref<FPSGraphParameters>(memnew(FPSGraphParameters(this, _title)));
+	Ref<DebugDrawFPSGraph> config = Ref<DebugDrawFPSGraph>(memnew(DebugDrawFPSGraph(this, _title)));
 
 	LOCK_GUARD(datalock);
 	graphs.push_back(config);
@@ -618,11 +617,11 @@ Ref<GraphParameters> DataGraphManager::create_fps_graph(const StringName &_title
 void DataGraphManager::auto_update_graphs(double _delta) {
 	LOCK_GUARD(datalock);
 	for (auto &i : graphs) {
-		Ref<GraphParameters> g = i;
-		if (g->get_type() == GraphParameters::GRAPH_FPS) {
+		Ref<DebugDrawGraph> g = i;
+		if (g->get_type() == DebugDrawGraph::GRAPH_FPS) {
 			g->update(_delta);
 			owner->mark_canvas_dirty();
-		} else if (g->get_type() == GraphParameters::GRAPH_NORMAL) {
+		} else if (g->get_type() == DebugDrawGraph::GRAPH_NORMAL) {
 			Callable callable = g->get_data_getter();
 			if (callable.is_valid()) {
 				Variant res = callable.callv(Array());
@@ -638,10 +637,10 @@ void DataGraphManager::auto_update_graphs(double _delta) {
 void DataGraphManager::graph_update_data(const StringName &_title, const double &_data) {
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<GraphParameters> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
-		Ref<GraphParameters> g = *graph;
-		if (g->get_type() != GraphParameters::GRAPH_FPS) {
+		Ref<DebugDrawGraph> g = *graph;
+		if (g->get_type() != DebugDrawGraph::GRAPH_FPS) {
 			g->update(_data);
 			owner->mark_canvas_dirty();
 		} else {
@@ -656,7 +655,7 @@ void DataGraphManager::graph_update_data(const StringName &_title, const double 
 void DataGraphManager::remove_graph(const StringName &_title) {
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<GraphParameters> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
 		graphs.erase(graph);
 	}
@@ -673,14 +672,14 @@ void DataGraphManager::clear_graphs() {
 	graphs.clear();
 }
 
-Ref<GraphParameters> DataGraphManager::get_graph_config(const StringName &_title) const {
+Ref<DebugDrawGraph> DataGraphManager::get_graph(const StringName &_title) const {
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<GraphParameters> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
 		return *graph;
 	}
-	return Ref<GraphParameters>();
+	return Ref<DebugDrawGraph>();
 }
 
 PackedStringArray DataGraphManager::get_graph_names() const {

@@ -130,7 +130,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(graph_update_data), "title", "data"), &DebugDraw::graph_update_data);
 	ClassDB::bind_method(D_METHOD(TEXT(remove_graph), "title"), &DebugDraw::remove_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(clear_graphs)), &DebugDraw::clear_graphs);
-	ClassDB::bind_method(D_METHOD(TEXT(get_graph_config), "title"), &DebugDraw::get_graph_config);
+	ClassDB::bind_method(D_METHOD(TEXT(get_graph), "title"), &DebugDraw::get_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(get_graph_names)), &DebugDraw::get_graph_names);
 
 #pragma endregion // Draw Functions
@@ -708,19 +708,19 @@ void DebugDraw::set_text(String key, Variant value, int priority, Color color_of
 #pragma endregion // Text
 #pragma region Graphs
 
-Ref<GraphParameters> DebugDraw::create_graph(String title) {
-	CALL_TO_2D_RET(data_graphs, create_graph, Ref<GraphParameters>(), title);
+Ref<DebugDrawGraph> DebugDraw::create_graph(const StringName &title) {
+	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDrawGraph>(), title);
 }
 
-Ref<GraphParameters> DebugDraw::create_fps_graph(String title) {
-	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<GraphParameters>(), title);
+Ref<DebugDrawGraph> DebugDraw::create_fps_graph(const StringName &title) {
+	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDrawGraph>(), title);
 }
 
-void DebugDraw::graph_update_data(String title, real_t data) {
+void DebugDraw::graph_update_data(const StringName &title, real_t data) {
 	CALL_TO_2D(data_graphs, graph_update_data, title, data);
 }
 
-void DebugDraw::remove_graph(String title) {
+void DebugDraw::remove_graph(const StringName &title) {
 	CALL_TO_2D(data_graphs, remove_graph, title);
 }
 
@@ -728,8 +728,8 @@ void DebugDraw::clear_graphs() {
 	CALL_TO_2D(data_graphs, clear_graphs);
 }
 
-Ref<GraphParameters> DebugDraw::get_graph_config(String title) {
-	CALL_TO_2D_RET(data_graphs, get_graph_config, Ref<GraphParameters>(), title);
+Ref<DebugDrawGraph> DebugDraw::get_graph(const StringName &title) {
+	CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDrawGraph>(), title);
 }
 
 PackedStringArray DebugDraw::get_graph_names() {
