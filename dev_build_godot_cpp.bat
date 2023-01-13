@@ -5,6 +5,7 @@ set api=
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/typed_ptr.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/enum_names.patch
+git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
 
 title win x64 debug dev
 scons platform=windows target=template_debug arch=x86_64 dev_build=yes %api% generate_bindings=yes
