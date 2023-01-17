@@ -115,7 +115,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TOOLS_ENABLED;TYPED_METHOD_BIND;_DEBUG;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TOOLS_ENABLED;TYPED_METHOD_BIND;DEBUG_ENABLED;GDEXTENSION_LIBRARY;DEV_ENABLED;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>

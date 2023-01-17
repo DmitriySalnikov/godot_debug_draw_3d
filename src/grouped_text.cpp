@@ -7,7 +7,7 @@
 using namespace godot;
 
 TextGroupItem::TextGroupItem(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
-	DEBUG_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", _key.utf8().get_data(), _text.utf8().get_data());
+	DEV_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", _key.utf8().get_data(), _text.utf8().get_data());
 
 	expiration_time = _expiration_time;
 	key = _key;
@@ -35,7 +35,7 @@ bool TextGroupItem::is_expired() {
 }
 
 TextGroup::TextGroup(const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
-	DEBUG_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", _title.utf8().get_data());
+	DEV_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", _title.utf8().get_data());
 
 	title = _title;
 	group_priority = _priority;

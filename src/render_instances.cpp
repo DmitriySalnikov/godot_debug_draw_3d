@@ -14,7 +14,7 @@
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
-	DEBUG_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
+	DEV_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
 }
 
 void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Transform3D _transform, Color _col, SphereBounds _bounds) {
@@ -28,7 +28,7 @@ void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Trans
 
 DelayedRendererLine::DelayedRendererLine() :
 		DelayedRenderer() {
-	DEBUG_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
+	DEV_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
 }
 
 void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col) {

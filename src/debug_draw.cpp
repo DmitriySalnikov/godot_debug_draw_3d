@@ -233,8 +233,12 @@ void DebugDraw::ready() {
 		//	ERR_FAIL_MSG("\"Node3DEditorViewportContainer\" not found in editor tree!");
 		// }
 
+
+		/*
+		// Used to explore the editor tree.
 		auto f = FileAccess::open("user://tree.txt", FileAccess::WRITE);
 		f->store_string(Utils::get_scene_tree_as_string(res->get_parent()->get_parent()));
+		*/
 	} else {
 		// Create canvas item and canvas layer
 		_canvas_layer = memnew(CanvasLayer);
@@ -244,9 +248,9 @@ void DebugDraw::ready() {
 		((Control *)default_canvas)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-		SCENE_ROOT()->add_child(_canvas_layer);
+		base_node->add_child(_canvas_layer);
 		_canvas_layer->add_child(default_canvas);
-		SCENE_ROOT()->move_child(_canvas_layer, 0);
+		base_node->move_child(_canvas_layer, 0);
 
 		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
 			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()

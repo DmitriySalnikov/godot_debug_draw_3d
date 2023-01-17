@@ -153,7 +153,7 @@ private:
 				if (time_used_less_then_half_of_instant_pool <= 0) {
 					time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
 
-					DEBUG_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
+					DEV_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
 
 					instant.resize(used_instant);
 				}
@@ -169,7 +169,7 @@ private:
 				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
 					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
-					DEBUG_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
+					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
 
 					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });
 					delayed.resize(used_delayed);
