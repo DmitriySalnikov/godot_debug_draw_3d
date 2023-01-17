@@ -1,4 +1,4 @@
-name: 2. ↗️ Update GDExtension binaries from collected artifacts
+name: ↗️ Update GDExtension binaries from collected artifacts
 run-name: "Update on '${{github.ref_name}}' '${{github.sha}}' #${{github.run_number}}"
 
 on:
@@ -22,7 +22,7 @@ jobs:
       - name: Download GDExtension Binaries
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: util_collect_binaries.yml
+          workflow: gdextension_build.yml
           branch: ${{github.ref_name}}
           name: gdextension_libs
           path: extracted_files/

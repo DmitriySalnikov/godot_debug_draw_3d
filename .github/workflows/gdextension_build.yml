@@ -10,6 +10,7 @@ on:
         lib_utils.py,
         SConstruct,
       ]
+  workflow_dispatch:
   repository_dispatch:
 
 # Stop the same workflow actions
@@ -39,13 +40,6 @@ jobs:
           lfs: true
           submodules: recursive
 
-      - name: Setup build cache
-        uses: ./.github/actions/gdextension_cache
-        with:
-          config: ${{matrix.arch}}_${{matrix.target}}
-          scons-cache: ${{env.SCONS_CACHE}}
-        continue-on-error: true
-
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
@@ -74,13 +68,6 @@ jobs:
           lfs: true
           submodules: recursive
 
-      - name: Setup build cache
-        uses: ./.github/actions/gdextension_cache
-        with:
-          config: ${{matrix.arch}}_${{matrix.target}}
-          scons-cache: ${{env.SCONS_CACHE}}
-        continue-on-error: true
-
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
@@ -108,13 +95,6 @@ jobs:
         with:
           lfs: true
           submodules: recursive
-
-      - name: Setup build cache
-        uses: ./.github/actions/gdextension_cache
-        with:
-          config: ${{matrix.arch}}_${{matrix.target}}
-          scons-cache: ${{env.SCONS_CACHE}}
-        continue-on-error: true
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
@@ -147,13 +127,6 @@ jobs:
           lfs: true
           submodules: recursive
 
-      - name: Setup build cache
-        uses: ./.github/actions/gdextension_cache
-        with:
-          config: ${{matrix.arch}}_${{matrix.target}}
-          scons-cache: ${{env.SCONS_CACHE}}
-        continue-on-error: true
-
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
@@ -162,3 +135,23 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android
+
+  # ============================================
+
+  collect-gdextension:
+    needs: [windows-gdextension, linux-gdextension, macos-gdextension, android-gdextension]
+    name: 📦 Collect GDExtension binaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          path: extracted_files
+
+      - name: Upload GDExtension
+        uses: actions/upload-artifact@v3
+        with:
+          name: gdextension_libs
+          retention-days: 7
+          path: extracted_files/*
