@@ -213,6 +213,7 @@ process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 test_text = false
+test_graphs = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
@@ -221,6 +222,7 @@ graph_text_precision = 1
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
+cull_mask = 1
 current = true
 fov = 38.8
 near = 2.63
@@ -228,13 +230,11 @@ far = 52.5
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
-anchor_left = 1.0
+anchors_preset = 2
 anchor_top = 1.0
-anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -172.0
-offset_top = -172.0
-grow_horizontal = 0
+offset_top = -300.0
+offset_right = 300.0
 grow_vertical = 0
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="Panel"]
@@ -243,12 +243,12 @@ stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false
-size = Vector2i(172, 172)
+size = Vector2i(300, 300)
 render_target_update_mode = 0
 
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]
 transform = Transform3D(1, 0, 0, 0, 0.34202, 0.939693, 0, -0.939693, 0.34202, -3.988, 39.474, 14.053)
-cull_mask = 18
+cull_mask = 2
 fov = 38.8
 near = 2.63
 far = 52.5

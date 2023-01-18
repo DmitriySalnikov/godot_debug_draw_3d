@@ -299,7 +299,7 @@ void DebugDraw::_on_canvas_item_draw() {
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
-	data_graphs->draw(ci, _font, vp_size);
+	data_graphs->draw(ci, _font, vp_size, ci->get_process_delta_time());
 }
 
 void DebugDraw::_set_base_world_node(Node *_world_base) {

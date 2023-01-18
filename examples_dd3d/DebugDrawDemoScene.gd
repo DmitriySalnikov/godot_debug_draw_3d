@@ -25,6 +25,7 @@ extends Node3D
 @export_range(0, 64) var graph_text_precision := 2
 @export_range(1, 32) var graph_line_width := 1.0
 @export_range(1, 512) var graph_buffer_size := 128
+@export var graph_frame_time_mode := true
 @export var graph_is_enabled := true
 
 var time := 0.0
@@ -182,7 +183,7 @@ func _process(delta: float) -> void:
 	
 	# Graphs
 	# Enable FPSGraph if not exists
-	#_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
+	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
 	
 	# Adding more graphs
 	if test_graphs:
@@ -206,6 +207,7 @@ func _process(delta: float) -> void:
 	
 	if draw_array_of_boxes:
 		_draw_array_of_boxes()
+
 
 func _text_tests():
 	DebugDraw.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
@@ -288,11 +290,12 @@ func _graph_test():
 	
 	# If graphs exists, then more tests are done
 	DebugDraw.get_graph(&"Sin Wave!").data_getter = Callable(self, &"_get_sin_wave_for_graph")
+	DebugDraw.get_graph(&"Sin Wave!").upside_down =false
 	
 	DebugDraw.get_graph(&"randf").text_suffix = "utf8 ноль zéro"
-	DebugDraw.get_graph(&"fps9").line_position = DebugDrawGraph.LINE_TOP
+	#DebugDraw.get_graph(&"fps9").line_position = DebugDrawGraph.LINE_TOP
 	DebugDraw.get_graph(&"fps9").offset = Vector2i(0, 0)
-	DebugDraw.get_graph(&"fps11").line_position = DebugDrawGraph.LINE_BOTTOM
+	#DebugDraw.get_graph(&"fps11").line_position = DebugDrawGraph.LINE_BOTTOM
 	DebugDraw.get_graph(&"fps11").offset = Vector2i(16, 0)
 	DebugDraw.get_graph(&"fps6").offset = Vector2i(0, 32)
 	DebugDraw.get_graph(&"fps").offset = Vector2i(16, 32)
@@ -309,7 +312,7 @@ func _graph_test():
 func _upd_graph_params():
 	DebugDraw.graphs_base_offset = graph_offset
 	for g in [&"FPS", &"fps5", &"fps8"]:
-		var graph := DebugDraw.get_graph(g)
+		var graph := DebugDraw.get_graph(g) as DebugDrawFPSGraph
 		if graph:
 			graph.size = graph_size
 			graph.title_size = graph_title_font_size
@@ -317,9 +320,11 @@ func _upd_graph_params():
 			graph.line_width = graph_line_width
 			graph.text_precision = graph_text_precision
 			graph.buffer_size = graph_buffer_size
+			graph.frame_time_mode = graph_frame_time_mode
 
 func _get_sin_wave_for_graph() -> float:
-	return sin(Engine.get_frames_drawn() * 0.5) * 2
+	var mul = 4 if Input.is_key_pressed(KEY_END) else 2
+	return sin(Engine.get_frames_drawn() * 0.5) * mul
 
 func _remove_graphs():
 	DebugDraw.remove_graph(&"randf")

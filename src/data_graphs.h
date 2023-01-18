@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "circular_buffer.h"
 #include "colors.h"
@@ -25,11 +25,11 @@ class DebugDrawGraph : public RefCounted {
 	GDCLASS(DebugDrawGraph, RefCounted);
 
 public:
-	enum GraphLinePosition : int {
+	/*enum GraphLinePosition : int {
 		LINE_TOP = 0,
 		LINE_CENTER = 1,
 		LINE_BOTTOM = 2,
-	};
+	};*/
 
 	enum GraphPosition : int {
 		POSITION_LEFT_TOP = 0,
@@ -60,13 +60,28 @@ public:
 		GRAPH_FPS,
 	};
 
+	struct graph_interpolated_values_range {
+	public:
+		double shrink_weight_max, shrink_weight_min;
+		double upd_timer_max, upd_timer_min, max_timer_delay;
+		double min, max, avg;
+		uint32_t buffer_size;
+
+		void update(const double &_min, const double &_max, const double &_avg, const double &_delta);
+		void reset(uint32_t _buffer_size, double _upd_timer_delay = 2.0);
+	};
+
 private:
 	/// Is Graph enabled
 	bool enabled = true;
+	/// Is Graph line is upside down
+	bool upside_down = false;
 	/// Draw Graph title
 	bool show_title = false;
+	/*
 	/// Draw a graph line aligned vertically in the center
 	GraphLinePosition line_position = GraphLinePosition::LINE_CENTER;
+	*/
 	/// Sets the text visibility *TextFlags*
 	BitField<TextFlags> show_text_flags = TextFlags::TEXT_ALL;
 	/// The size of the graph.
@@ -110,6 +125,7 @@ private:
 protected:
 	mutable std::recursive_mutex datalock;
 	std::unique_ptr<CircularBuffer<double> > buffer_data;
+	mutable graph_interpolated_values_range graph_range;
 	StringName title;
 	DataGraphManager *owner = nullptr;
 
@@ -126,10 +142,12 @@ public:
 
 	void set_enabled(const bool _state);
 	bool is_enabled() const;
+	void set_upside_down(const bool _state);
+	bool is_upside_down() const;
 	void set_show_title(const bool _state);
 	bool is_show_title() const;
-	void set_line_position(const GraphLinePosition _position);
-	GraphLinePosition get_line_position() const;
+	/*void set_line_position(const GraphLinePosition _position);
+	GraphLinePosition get_line_position() const;*/
 	void set_show_text_flags(const BitField<TextFlags> _flags);
 	BitField<TextFlags> get_show_text_flags() const;
 	void set_size(const Vector2i &_size);
@@ -180,11 +198,11 @@ public:
 	};
 
 	Vector2i _get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const;
-	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const;
+	graph_rects draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root, const double &_delta) const;
 };
 
 VARIANT_ENUM_CAST(DebugDrawGraph::GraphPosition);
-VARIANT_ENUM_CAST(DebugDrawGraph::GraphLinePosition);
+//VARIANT_ENUM_CAST(DebugDrawGraph::GraphLinePosition);
 VARIANT_ENUM_CAST(DebugDrawGraph::GraphSide);
 VARIANT_BITFIELD_CAST(DebugDrawGraph::TextFlags);
 
@@ -222,7 +240,7 @@ public:
 	DataGraphManager(class DebugDraw *root);
 	~DataGraphManager();
 
-	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const;
+	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const;
 	Ref<DebugDrawGraph> create_graph(const StringName &_title);
 	Ref<DebugDrawGraph> create_fps_graph(const StringName &_title);
 	void auto_update_graphs(double delta);

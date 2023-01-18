@@ -14,6 +14,7 @@ void DebugDrawGraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(set_parent), "parent", "side"), &DebugDrawGraph::set_parent, GraphSide::SIDE_BOTTOM);
 
 	REG_PROP_BOOL(enabled);
+	REG_PROP_BOOL(upside_down);
 	REG_PROP_BOOL(show_title);
 
 	REG_PROP(show_text_flags, Variant::INT);
@@ -23,7 +24,7 @@ void DebugDrawGraph::_bind_methods() {
 	REG_PROP(corner, Variant::INT);
 	REG_PROP(line_width, Variant::FLOAT);
 	REG_PROP(line_color, Variant::COLOR);
-	REG_PROP(line_position, Variant::INT);
+	//REG_PROP(line_position, Variant::INT);
 	REG_PROP(background_color, Variant::COLOR);
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
@@ -39,9 +40,9 @@ void DebugDrawGraph::_bind_methods() {
 	REG_PROP(parent_graph_side, Variant::INT);
 	REG_PROP(data_getter, Variant::CALLABLE);
 
-	BIND_ENUM_CONSTANT(LINE_TOP);
+	/*BIND_ENUM_CONSTANT(LINE_TOP);
 	BIND_ENUM_CONSTANT(LINE_CENTER);
-	BIND_ENUM_CONSTANT(LINE_BOTTOM);
+	BIND_ENUM_CONSTANT(LINE_BOTTOM);*/
 
 	BIND_ENUM_CONSTANT(POSITION_LEFT_TOP);
 	BIND_ENUM_CONSTANT(POSITION_RIGHT_TOP);
@@ -87,6 +88,14 @@ bool DebugDrawGraph::is_enabled() const {
 	return enabled;
 }
 
+void DebugDrawGraph::set_upside_down(const bool _state) {
+	upside_down = _state;
+}
+
+bool DebugDrawGraph::is_upside_down() const {
+	return upside_down;
+}
+
 void DebugDrawGraph::set_show_title(const bool _state) {
 	show_title = _state;
 }
@@ -95,13 +104,13 @@ bool DebugDrawGraph::is_show_title() const {
 	return show_title;
 }
 
-void DebugDrawGraph::set_line_position(const GraphLinePosition _position) {
-	line_position = _position;
-}
-
-DebugDrawGraph::GraphLinePosition DebugDrawGraph::get_line_position() const {
-	return line_position;
-}
+//void DebugDrawGraph::set_line_position(const GraphLinePosition _position) {
+//	line_position = _position;
+//}
+//
+//DebugDrawGraph::GraphLinePosition DebugDrawGraph::get_line_position() const {
+//	return line_position;
+//}
 
 void DebugDrawGraph::set_show_text_flags(const BitField<TextFlags> _flags) {
 	show_text_flags = _flags;
@@ -268,7 +277,7 @@ void DebugDrawGraph::update(double _value) {
 
 	if (get_buffer_size() != buffer_data->buffer_size()) {
 		buffer_data = std::make_unique<CircularBuffer<double> >(get_buffer_size());
-		//graph_range.reset(get_buffer_size());
+		graph_range.reset(get_buffer_size());
 	}
 
 	_update_received(_value);
@@ -278,6 +287,73 @@ void DebugDrawGraph::_update_received(double value) {
 	LOCK_GUARD(datalock);
 
 	buffer_data->add(value);
+}
+
+void DebugDrawGraph::graph_interpolated_values_range::update(const double &_min, const double &_max, const double &_avg, const double &_delta) {
+	double _center_offset = abs(max - min) * (0.25 * 0.5); // react when the new limit is below 25% of the half range
+	if (_max > max) {
+		max = _max;
+		upd_timer_max = max_timer_delay;
+	} else {
+		if (_max < max - _center_offset) {
+			if (upd_timer_max > 0) {
+				upd_timer_max -= _delta;
+
+				double range = abs(max - min);
+				if (range)
+					shrink_weight_max = buffer_size / range;
+				else
+					shrink_weight_max = 1.0;
+			} else {
+				max = Math::max(_max, Math::move_toward(max, _max, shrink_weight_max));
+				if ((max - min) == 0) {
+					max += shrink_weight_max;
+				}
+			}
+		} else {
+			upd_timer_max = max_timer_delay;
+		}
+	}
+
+	if (_min < min) {
+		min = _min;
+		upd_timer_min = max_timer_delay;
+	} else {
+		if (_min > min + _center_offset) {
+			if (upd_timer_min > 0) {
+				upd_timer_min -= _delta;
+
+				double range = abs(max - min);
+				if (range)
+					shrink_weight_min = buffer_size / range;
+				else
+					shrink_weight_max = 1.0;
+			} else {
+				min = Math::min(_min, Math::move_toward(min, _min, shrink_weight_min));
+				if ((max - min) == 0) {
+					min -= shrink_weight_min;
+				}
+			}
+		} else {
+			upd_timer_min = max_timer_delay;
+		}
+	}
+
+	avg = (max + min) * 0.5;
+}
+
+void DebugDrawGraph::graph_interpolated_values_range::reset(uint32_t _buffer_size, double _upd_timer_delay) {
+	max_timer_delay = _upd_timer_delay;
+	upd_timer_max = max_timer_delay;
+	upd_timer_min = max_timer_delay;
+
+	shrink_weight_max = 1.0;
+	shrink_weight_min = 1.0;
+
+	min = 0;
+	max = 1;
+	avg = 0.5;
+	buffer_size = _buffer_size;
 }
 
 Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const {
@@ -330,7 +406,7 @@ Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDr
 	return pos;
 }
 
-DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root) const {
+DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root, const double &_delta) const {
 	if (!is_enabled())
 		return _prev_rects;
 
@@ -340,12 +416,12 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 
 	double min, max, avg;
 	buffer_data->get_min_max_avg(&min, &max, &avg);
+	graph_range.update(min, max, avg, _delta);
 
 	bool is_on_right_side = _corner == POSITION_RIGHT_TOP || _corner == POSITION_RIGHT_BOTTOM;
 	bool is_on_top_side = _corner == POSITION_LEFT_TOP || _corner == POSITION_RIGHT_TOP;
 
 	Vector2 graph_size = get_size();
-	Vector2 graph_offset = get_offset();
 	Vector2 pos = _get_graph_position(_is_root, _corner, _prev_rects);
 
 	graph_rects rects = { Rect2i(pos, graph_size), Rect2i(pos, graph_size) };
@@ -393,25 +469,39 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 	// TODO: graphs is stretched over total graph size and not centered
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
 		Vector2 base_pos = rects.base.position + Vector2(1, 1);
-		Vector2 size = rects.base.size - Vector2(1, 2);
+		Vector2 size = rects.base.size - Vector2(1, 3);
 		double difference = max - min;
-		double size_multiplier_x = size.x / (get_buffer_size() - 1);
-		double size_multiplier_y = difference != 0 ? size.y / (real_t)difference : 0;
+		double size_multiplier_x = size.x / (get_buffer_size() - 2);
+		//double size_multiplier_y = difference != 0.0 ? size.y / Math::remap(buffer_data->get(0), min, max, graph_range.min, graph_range.max) : 0.0;
 		PackedVector2Array line_points;
 
-		double center_offset = 0;
+		// TODO: return the centering of the line
+		// TODO: fix the centering of the line when max and min are equal
+		/*double center_offset = 0;
 		switch (get_line_position()) {
 			case DebugDrawGraph::LINE_TOP: {
 				center_offset = 0;
 				break;
 			}
 			case DebugDrawGraph::LINE_CENTER: {
-				center_offset = difference * size_multiplier_y * 0.5;
+				center_offset = graph_range.min * size_multiplier_y;
 				break;
 			}
 			case DebugDrawGraph::LINE_BOTTOM: {
-				center_offset = size.y - 1;
+				center_offset = size.y - graph_range.min * size_multiplier_y - 1;
 				break;
+			}
+		}*/
+
+		{
+			size_t s = buffer_data->size() - (int)!buffer_data->is_filled();
+			line_points.resize(buffer_data->size() - 1);
+			double top_limit = upside_down ? 1 : 0;
+			double bottom_limit = upside_down ? 0 : 1;
+
+			auto w = line_points.ptrw();
+			for (size_t i = 0; i < s; i++) {
+				w[i] = base_pos + Vector2((real_t)(size_multiplier_x * i), (real_t)(1.0 + Math::remap(buffer_data->get(i), graph_range.min, graph_range.max, top_limit, bottom_limit) * size.y));
 			}
 		}
 
@@ -486,6 +576,25 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 	_ci->draw_rect(rects.full, Colors::red, false);
 #endif
 
+	// Debug graph range
+#if 0
+	double _center_offset = abs(graph_range.max - graph_range.min) * (0.25 * 0.5);
+
+	double _pos_y = Math::remap(graph_range.max - _center_offset, graph_range.max, graph_range.min, rects.base.position.y, rects.base.position.y + rects.base.size.y);
+	_ci->draw_line(Vector2(rects.base.position.x, _pos_y), Vector2(rects.base.position.x + rects.base.size.x, _pos_y), Colors::green);
+	_pos_y = Math::remap(graph_range.min + _center_offset, graph_range.max, graph_range.min, rects.base.position.y, rects.base.position.y + rects.base.size.y);
+	_ci->draw_line(Vector2(rects.base.position.x, _pos_y), Vector2(rects.base.position.x + rects.base.size.x, _pos_y), Colors::green);
+
+	_ci->draw_string(draw_font,
+			pos + Vector2(4, (real_t)draw_font->get_ascent(get_text_size()) - 1).floor() + Vector2(100, 0),
+			String("{0}c / {1}t").format(Array::make(format_float(graph_range.max, 1), format_float(graph_range.max - _center_offset, 1))),
+			godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Colors::black);
+	_ci->draw_string(draw_font,
+			(pos + Vector2(4, graph_size.y - 3)).floor() + Vector2(100, 0),
+			String("{0}c / {1}t").format(Array::make(format_float(graph_range.min, 1), format_float(graph_range.min + _center_offset, 1))),
+			godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Colors::black);
+#endif
+
 	return rects;
 }
 
@@ -498,6 +607,7 @@ void DebugDrawFPSGraph::_update_received(double _value) {
 		buffer_data->reset();
 		is_ms = is_frame_time_mode();
 		set_text_suffix(is_ms ? "ms" : "fps");
+		set_upside_down(is_ms ? true : false);
 	}
 
 	buffer_data->add(is_ms ? _value * 1000.f : 1.f / _value);
@@ -537,7 +647,7 @@ DataGraphManager::DataGraphManager(DebugDraw *root) {
 DataGraphManager::~DataGraphManager() {
 }
 
-void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) const {
+void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const {
 	LOCK_GUARD(datalock);
 
 	struct GraphsNode {
@@ -580,9 +690,9 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size) 
 
 	// 'rect' is a parameter storing the rectangle of the parent node
 	// 'corner' is a parameter inherited from the root node
-	std::function<void(GraphsNode *, DebugDrawGraph::graph_rects, DebugDrawGraph::GraphPosition, bool)> iterate_nodes;
-	iterate_nodes = [&, this](GraphsNode *node, DebugDrawGraph::graph_rects rects, DebugDrawGraph::GraphPosition corner, bool is_root) {
-		DebugDrawGraph::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root);
+	std::function<void(const GraphsNode *, const DebugDrawGraph::graph_rects &, const DebugDrawGraph::GraphPosition &, const bool &)> iterate_nodes;
+	iterate_nodes = [&, this](const GraphsNode *node, const DebugDrawGraph::graph_rects &rects, const DebugDrawGraph::GraphPosition &corner, const bool &is_root) {
+		DebugDrawGraph::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root, _delta);
 
 		for (auto &g : node->children) {
 			iterate_nodes(&g, prev_rects, corner, false);
@@ -618,6 +728,7 @@ void DataGraphManager::auto_update_graphs(double _delta) {
 	LOCK_GUARD(datalock);
 	for (auto &i : graphs) {
 		Ref<DebugDrawGraph> g = i;
+
 		if (g->get_type() == DebugDrawGraph::GRAPH_FPS) {
 			g->update(_delta);
 			owner->mark_canvas_dirty();
