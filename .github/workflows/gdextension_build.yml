@@ -48,6 +48,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: windows
+          additional: lto=yes
 
   # ============================================
 
@@ -76,6 +77,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: linux
+          additional: lto=yes
 
   # ============================================
 
@@ -104,6 +106,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: macos
+          additional: lto=yes
 
   # ============================================
 
@@ -135,11 +138,18 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android
+          additional: lto=yes
 
   # ============================================
 
   collect-gdextension:
-    needs: [windows-gdextension, linux-gdextension, macos-gdextension, android-gdextension]
+    needs:
+      [
+        windows-gdextension,
+        linux-gdextension,
+        macos-gdextension,
+        android-gdextension,
+      ]
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-latest
 

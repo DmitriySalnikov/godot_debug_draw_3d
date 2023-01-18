@@ -3,7 +3,6 @@
 	"data_graphs.cpp",
 	"debug_draw.cpp",
 	"debug_geometry_container.cpp",
-	"editor_plugin.cpp",
 	"geometry_generators.cpp",
 	"grouped_text.cpp",
 	"math_utils.cpp",

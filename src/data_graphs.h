@@ -202,7 +202,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(DebugDrawGraph::GraphPosition);
-//VARIANT_ENUM_CAST(DebugDrawGraph::GraphLinePosition);
+// VARIANT_ENUM_CAST(DebugDrawGraph::GraphLinePosition);
 VARIANT_ENUM_CAST(DebugDrawGraph::GraphSide);
 VARIANT_BITFIELD_CAST(DebugDrawGraph::TextFlags);
 
@@ -227,7 +227,7 @@ public:
 	virtual GraphType get_type() override { return GraphType::GRAPH_FPS; };
 	void set_frame_time_mode(const bool _state);
 	bool is_frame_time_mode() const;
-	
+
 	virtual void set_data_getter(const Callable &_callable) override;
 };
 

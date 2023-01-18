@@ -192,7 +192,7 @@ public:
 
 	void set_text_default_duration(real_t _duration);
 	real_t get_text_default_duration();
-	
+
 	void set_text_default_size(int _size);
 	int get_text_default_size();
 

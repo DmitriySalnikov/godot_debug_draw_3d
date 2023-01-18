@@ -171,7 +171,6 @@
   <ItemGroup>
     <ClCompile Include="src\colors.cpp" />
     <ClCompile Include="src\debug_draw.cpp" />
-    <ClCompile Include="src\editor_plugin.cpp" />
     <ClCompile Include="src\data_graphs.cpp" />
     <ClCompile Include="src\geometry_generators.cpp" />
     <ClCompile Include="src\grouped_text.cpp" />
@@ -186,7 +185,6 @@
     <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\debug_draw.h" />
     <ClInclude Include="src\draw_cache.h" />
-    <ClInclude Include="src\editor_plugin.h" />
     <ClInclude Include="src\data_graphs.h" />
     <ClInclude Include="src\geometry_generators.h" />
     <ClInclude Include="src\grouped_text.h" />

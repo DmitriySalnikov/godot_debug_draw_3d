@@ -12,6 +12,7 @@ def setup_options(env, arguments, gen_help):
     from SCons.Variables import Variables, BoolVariable, EnumVariable, PathVariable
     opts = Variables([], arguments)
 
+    opts.Add(BoolVariable("lto", "Link-time optimization", False))
     opts.Add(PathVariable("addon_output_dir", "Path to the output directory",
              output_dir / env["platform"], PathVariable.PathIsDirCreate))
     opts.Update(env)
@@ -19,9 +20,17 @@ def setup_options(env, arguments, gen_help):
     gen_help(env, opts)
 
 
-def gdnative_setup_default_cpp_defines(env):
+def gdnative_setup_defines_and_flags(env):
     env.Append(CPPDEFINES=["GDEXTENSION_LIBRARY"])
 
+    if env["lto"]:
+        if env.get("is_msvc", False):
+            env.AppendUnique(CCFLAGS=["/GL"])
+            env.AppendUnique(ARFLAGS=["/LTCG"])
+            env.AppendUnique(LINKFLAGS=["/LTCG"])
+        else:
+            env.AppendUnique(CCFLAGS=["-flto"])
+            env.AppendUnique(LINKFLAGS=["-flto"])
 
 def gdnative_get_sources(src):
     return [src_folder + "/" + file for file in src]
@@ -36,7 +45,7 @@ def gdnative_replace_flag(arr, flag, new_flag):
 def gdnative_get_library_object(env, arguments=None, gen_help=None):
     if arguments != None and gen_help:
         setup_options(env, arguments, gen_help)
-    gdnative_setup_default_cpp_defines(env)
+    gdnative_setup_defines_and_flags(env)
 
     env.Append(CPPPATH=[src_folder])
 

@@ -4,9 +4,9 @@
 #pragma warning(disable : 4244)
 #endif
 
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/classes/ref.hpp>
+#include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 
 #if defined(_MSC_VER)

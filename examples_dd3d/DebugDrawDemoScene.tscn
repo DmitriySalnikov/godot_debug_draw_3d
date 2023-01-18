@@ -213,7 +213,6 @@ process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 test_text = false
-test_graphs = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
