@@ -38,6 +38,7 @@ void DebugDraw::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw::get_singleton_gdscript);
 
 	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
+	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw::_on_scene_changed);
 	ClassDB::bind_method(D_METHOD(TEXT(_scene_tree_found)), &DebugDraw::_scene_tree_found);
 
 #pragma region Constants
@@ -156,13 +157,21 @@ DebugDraw::~DebugDraw() {
 	}
 }
 
-// TODO: clear geometry on scene switch
-// TODO: restore animation for lines in example scene
-
 void DebugDraw::_scene_tree_found() {
 	base_node = memnew(DebugDrawSceneManager);
 	SCENE_ROOT()->add_child(base_node);
 	SCENE_ROOT()->move_child(base_node, 0);
+}
+
+// TODO: finish this!
+void DebugDraw::_connect_scene_changed() {
+	if (SCENE_TREE()->get_edited_scene_root()) {
+		SCENE_TREE()->get_edited_scene_root()->connect(StringName("tree_exiting"), Callable(this, TEXT(_on_scene_changed)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		return;
+	} else {
+	}
+
+	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, TEXT(_on_scene_changed)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 }
 
 void DebugDraw::enter_tree() {
@@ -246,8 +255,10 @@ void DebugDraw::ready() {
 		_canvas_layer->add_child(default_canvas);
 		base_node->move_child(_canvas_layer, 0);
 	}
+
 	set_custom_canvas(custom_canvas);
 	_set_base_world_node(SCENE_ROOT());
+	_connect_scene_changed();
 }
 
 void DebugDraw::process(double delta) {
@@ -289,6 +300,13 @@ void DebugDraw::_on_canvas_item_draw(Control *ci) {
 
 void DebugDraw::_set_base_world_node(Node *_world_base) {
 	dgc->set_world(_world_base);
+}
+
+void DebugDraw::_on_scene_changed() {
+	DEV_PRINT("Scene changed! clear_all()");
+
+	clear_all();
+	_connect_scene_changed();
 }
 
 void DebugDraw::mark_canvas_dirty() {

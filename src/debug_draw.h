@@ -64,8 +64,7 @@ private:
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
-	// TODO: bool is_ready = false;
-	bool is_ready = true;
+	bool is_ready = false;
 
 	DebugDraw *get_singleton_gdscript() {
 		return singleton;
@@ -73,6 +72,7 @@ private:
 
 	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
+	void _connect_scene_changed();
 
 	void enter_tree();
 	void exit_tree();
@@ -80,6 +80,7 @@ private:
 	void process(double delta);
 
 	void _scene_tree_found();
+	void _on_scene_changed();
 
 #pragma region Exposed Parameter Values
 

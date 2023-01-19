@@ -53,7 +53,7 @@ typedef godot::PackedFloat32Array PackedRealArray;
 
 #pragma region PRINTING
 
-#if DEBUG_ENABLED
+#if DEV_ENABLED
 #define DEV_PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
 #define DEV_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
 #define DEV_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
