@@ -152,58 +152,58 @@ public:
 	std::vector<Viewport *> get_custom_editor_viewport();
 
 #pragma region Exposed Parameters
-	void set_empty_color(Color _col);
+	void set_empty_color(const Color &_col);
 	Color get_empty_color();
 
-	void set_debug_enabled(bool _state);
+	void set_debug_enabled(const bool &_state);
 	bool is_debug_enabled();
 
-	void set_freeze_3d_render(bool _state);
+	void set_freeze_3d_render(const bool &_state);
 	bool is_freeze_3d_render();
 
-	void set_visible_instance_bounds(bool _state);
+	void set_visible_instance_bounds(const bool &_state);
 	bool is_visible_instance_bounds();
 
-	void set_use_frustum_culling(bool _state);
+	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling();
 
-	void set_force_use_camera_from_scene(bool _state);
+	void set_force_use_camera_from_scene(const bool &_state);
 	bool is_force_use_camera_from_scene();
 
-	void set_graphs_base_offset(Vector2i _offset);
+	void set_graphs_base_offset(const Vector2i &_offset);
 	Vector2i get_graphs_base_offset();
 
-	void set_geometry_render_layers(int32_t _layers);
+	void set_geometry_render_layers(const int32_t &_layers);
 	int32_t get_geometry_render_layers();
 
 	void set_text_block_position(BlockPosition _position);
 	BlockPosition get_text_block_position();
 
-	void set_text_block_offset(Vector2i _offset);
+	void set_text_block_offset(const Vector2i &_offset);
 	Vector2i get_text_block_offset();
 
-	void set_text_padding(Vector2i _padding);
+	void set_text_padding(const Vector2i &_padding);
 	Vector2i get_text_padding();
 
-	void set_text_default_duration(real_t _duration);
+	void set_text_default_duration(const real_t &_duration);
 	real_t get_text_default_duration();
 
-	void set_text_default_size(int _size);
+	void set_text_default_size(const int &_size);
 	int get_text_default_size();
 
-	void set_text_foreground_color(Color _new_color);
+	void set_text_foreground_color(const Color &_new_color);
 	Color get_text_foreground_color();
 
-	void set_text_background_color(Color _new_color);
+	void set_text_background_color(const Color &_new_color);
 	Color get_text_background_color();
 
-	void set_text_custom_font(Ref<Font> _custom_font);
+	void set_text_custom_font(const Ref<Font> &_custom_font);
 	Ref<Font> get_text_custom_font();
 
-	void set_line_hit_color(Color _new_color);
+	void set_line_hit_color(const Color &_new_color);
 	Color get_line_hit_color();
 
-	void set_line_after_hit_color(Color _new_color);
+	void set_line_after_hit_color(const Color &_new_color);
 	Color get_line_after_hit_color();
 
 	void set_custom_viewport(Viewport *_viewport);

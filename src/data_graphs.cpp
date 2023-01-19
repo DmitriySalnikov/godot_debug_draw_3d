@@ -466,7 +466,6 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 	_ci->draw_rect(border_rect_fixed, get_background_color(), true);
 
 	// Draw graph line
-	// TODO: graphs is stretched over total graph size and not centered
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
 		Vector2 base_pos = rects.base.position + Vector2(1, 1);
 		Vector2 size = rects.base.size - Vector2(1, 3);
@@ -475,7 +474,7 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 		//double size_multiplier_y = difference != 0.0 ? size.y / Math::remap(buffer_data->get(0), min, max, graph_range.min, graph_range.max) : 0.0;
 		PackedVector2Array line_points;
 
-		// TODO: return the centering of the line
+		// TODO: return the line to the center
 		// TODO: fix the centering of the line when max and min are equal
 		/*double center_offset = 0;
 		switch (get_line_position()) {

@@ -1,8 +1,8 @@
 #include "grouped_text.h"
 #include "debug_draw.h"
+#include "draw_cache.h"
 #include "math_utils.h"
 #include "utils.h"
-#include "draw_cache.h"
 
 using namespace godot;
 
@@ -17,13 +17,17 @@ TextGroupItem::TextGroupItem(const double &_expiration_time, const String &_key,
 	second_chance = true;
 }
 
-void TextGroupItem::update(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
+bool TextGroupItem::update(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
+	bool dirty = expiration_time != _expiration_time || key != _key || text != _text || priority != _priority || value_color != _color;
+
 	expiration_time = _expiration_time;
 	key = _key;
 	text = _text;
 	priority = _priority;
 	value_color = _color;
 	second_chance = true;
+
+	return dirty;
 }
 
 bool TextGroupItem::is_expired() {
@@ -34,9 +38,60 @@ bool TextGroupItem::is_expired() {
 	return expiration_time > 0;
 }
 
-TextGroup::TextGroup(const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
+void TextGroup::set_group_priority(int _val) {
+	if (group_priority != _val)
+		owner->mark_canvas_dirty();
+	group_priority = _val;
+}
+
+int TextGroup::get_group_priority() {
+	return group_priority;
+}
+
+void TextGroup::set_show_title(bool _val) {
+	if (show_title != _val)
+		owner->mark_canvas_dirty();
+	show_title = _val;
+}
+
+bool TextGroup::is_show_title() {
+	return show_title;
+}
+
+void TextGroup::set_group_color(Color _val) {
+	if (group_color != _val)
+		owner->mark_canvas_dirty();
+	group_color = _val;
+}
+
+Color TextGroup::get_group_color() {
+	return group_color;
+}
+
+void TextGroup::set_title_size(int _val) {
+	if (title_size != _val)
+		owner->mark_canvas_dirty();
+	title_size = _val;
+}
+
+int TextGroup::get_title_size() {
+	return title_size;
+}
+
+void TextGroup::set_text_size(int _val) {
+	if (text_size != _val)
+		owner->mark_canvas_dirty();
+	text_size = _val;
+}
+
+int TextGroup::get_text_size() {
+	return text_size;
+}
+
+TextGroup::TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
 	DEV_PRINT_STD("New " TEXT(TextGroup) " created: %s\n", _title.utf8().get_data());
 
+	owner = _owner;
 	title = _title;
 	group_priority = _priority;
 	show_title = _show_title;
@@ -67,7 +122,7 @@ void TextGroup::cleanup_texts(const std::function<void()> &_update, const double
 void GroupedText::_create_new_default_groupd_if_needed() {
 	LOCK_GUARD(datalock);
 	if (!_current_text_group) {
-		_current_text_group = std::make_shared<TextGroup>("", 0, false, owner->get_text_foreground_color(), 0, owner->get_text_default_size());
+		_current_text_group = std::make_shared<TextGroup>(owner, "", 0, false, owner->get_text_foreground_color(), 0, owner->get_text_default_size());
 		_text_groups.insert(_current_text_group);
 	}
 }
@@ -110,14 +165,15 @@ void GroupedText::begin_text_group(const String &_group_title, const int &_group
 	int new_text_size = _text_size > 0 ? _text_size : owner->get_text_default_size();
 
 	if (newGroup) {
-		newGroup->show_title = _show_title;
-		newGroup->group_priority = _group_priority;
-		newGroup->group_color = _group_color;
-		newGroup->title_size = new_title_size;
-		newGroup->text_size = new_text_size;
+		newGroup->set_show_title(_show_title);
+		newGroup->set_group_priority(_group_priority);
+		newGroup->set_group_color(_group_color);
+		newGroup->set_title_size(new_title_size);
+		newGroup->set_text_size(new_text_size);
 	} else {
-		newGroup = std::make_shared<TextGroup>(_group_title, _group_priority, _show_title, _group_color, new_title_size, new_text_size);
+		newGroup = std::make_shared<TextGroup>(owner, _group_title, _group_priority, _show_title, _group_color, new_title_size, new_text_size);
 		_text_groups.insert(newGroup);
+		owner->mark_canvas_dirty();
 	}
 
 	_current_text_group = newGroup;
@@ -130,10 +186,11 @@ void GroupedText::end_text_group() {
 	for (const TextGroup_ptr &g : _text_groups) {
 		if (g->title == "") {
 			_current_text_group = g;
-			_current_text_group->group_color = owner->get_text_foreground_color();
-			_current_text_group->group_priority = 0;
-			_current_text_group->show_title = false;
-			_current_text_group->text_size = owner->get_text_default_size();
+			_current_text_group->set_show_title(false);
+			_current_text_group->set_group_priority(0);
+			_current_text_group->set_group_color(owner->get_text_foreground_color());
+			_current_text_group->set_title_size(owner->get_text_default_size());
+			_current_text_group->set_text_size(owner->get_text_default_size());
 			break;
 		}
 	}
@@ -166,10 +223,8 @@ void GroupedText::set_text(const String &_key, const Variant &_value, const int 
 		}
 
 		if (item.get()) {
-			if (_strVal != item->text)
+			if (item->update(new_duration, _key, _strVal, _priority, _color_of_value))
 				owner->mark_canvas_dirty();
-
-			item->update(new_duration, _key, _strVal, _priority, _color_of_value);
 		} else {
 			_current_text_group->Texts.insert(std::make_shared<TextGroupItem>(new_duration, _key, _strVal, _priority, _color_of_value));
 			owner->mark_canvas_dirty();
@@ -198,7 +253,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 		}
 
 		std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_text_groups,
-				[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->group_priority < b->group_priority; });
+				[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->get_group_priority() < b->get_group_priority(); });
 
 		for (const TextGroup_ptr &g : ordered_groups) {
 			auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
@@ -206,7 +261,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 			});
 
 			// Add title to the list
-			if (g->show_title) {
+			if (g->is_show_title()) {
 				item_for_title_of_groups->key = g->title;
 				group_items.insert(group_items.begin(), item_for_title_of_groups);
 			}
@@ -216,7 +271,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 				const bool is_title_only = !t.get() || t->text == "";
 				const String text = is_title_only ? keyText : keyText + separator + t->text;
 
-				const int font_size = t->is_group_title ? g->title_size : g->text_size;
+				const int font_size = t->is_group_title ? g->get_title_size() : g->get_text_size();
 				const Vector2 size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 				const Vector2 text_padding = owner->get_text_padding();
 				const Vector2 font_offset = Vector2(0, (real_t)draw_font->get_ascent(font_size)) + text_padding;
@@ -231,7 +286,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 					// Both parts with same color
 					text_parts.push_back(DrawCachedText(text, draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-							g->group_color));
+							g->get_group_color()));
 				} else {
 					// Both parts with different colors
 					String textSep = keyText + separator;
@@ -239,11 +294,11 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 
 					text_parts.push_back(DrawCachedText(text.substr(0, _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
-							g->group_color));
+							g->get_group_color()));
 
 					text_parts.push_back(DrawCachedText(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
-							g->group_color));
+							g->get_group_color()));
 				}
 				pos.y += size.y + text_padding.y * 2;
 			}

@@ -185,6 +185,8 @@ func _process(delta: float) -> void:
 	# Graphs
 	# Enable FPSGraph if not exists
 	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
+	if Engine.is_editor_hint():
+		DebugDraw.get_graph(&"FPS").offset = Vector2i(0, 64)
 	
 	# Adding more graphs
 	if test_graphs:
@@ -302,9 +304,7 @@ func _graph_test():
 	DebugDraw.get_graph(&"fps").offset = Vector2i(16, 72)
 	
 	DebugDraw.get_graph(&"fps9").enabled = graph_is_enabled
-	if Engine.is_editor_hint():
-		DebugDraw.get_graph(&"FPS").offset = Vector2i(0, 64)
-	else:
+	if !Engine.is_editor_hint():
 		DebugDraw.get_graph(&"fps").corner = DebugDrawGraph.POSITION_LEFT_TOP
 	
 	# Just sending random data to the graph

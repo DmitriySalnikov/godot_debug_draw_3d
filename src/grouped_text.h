@@ -35,21 +35,35 @@ public:
 
 	TextGroupItem(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
 
-	void update(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
+	bool update(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
 	bool is_expired();
 };
 
 typedef std::shared_ptr<TextGroupItem> TextGroupItem_ptr;
 
 class TextGroup {
-public:
-	String title;
+private:
 	int group_priority;
 	bool show_title;
 	Color group_color;
 	int title_size;
 	int text_size;
+
+public:
+	String title;
 	std::unordered_set<TextGroupItem_ptr> Texts;
+	class DebugDraw *owner;
+
+	void set_group_priority(int _val);
+	int get_group_priority();
+	void set_show_title(bool _val);
+	bool is_show_title();
+	void set_group_color(Color _val);
+	Color get_group_color();
+	void set_title_size(int _val);
+	int get_title_size();
+	void set_text_size(int _val);
+	int get_text_size();
 
 	TextGroup() :
 			title(""),
@@ -57,10 +71,10 @@ public:
 			show_title(true),
 			group_color(Color()),
 			title_size(14),
-			text_size(12){
-
+			text_size(12),
+			owner(nullptr){
 			};
-	TextGroup(const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
+	TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
 	void cleanup_texts(const std::function<void()> &_update, const double &_delta);
 };
 
