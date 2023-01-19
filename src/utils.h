@@ -58,7 +58,7 @@ typedef godot::PackedFloat32Array PackedRealArray;
 #define DEV_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
 #define DEV_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
 #else
-#define DEBUG_PRINT(text)
+#define DEV_PRINT(text)
 #define DEV_PRINT_STD(format, ...)
 #define DEV_PRINT_STD_ERR(format, ...)
 #endif
