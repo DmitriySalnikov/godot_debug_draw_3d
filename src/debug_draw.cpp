@@ -184,18 +184,14 @@ void DebugDraw::enter_tree() {
 void DebugDraw::exit_tree() {
 	_font.unref();
 
-	if (default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
+	if (UtilityFunctions::is_instance_valid(default_canvas) && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
 		default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-		current_draw_canvas = nullptr;
+		default_canvas->queue_redraw();
 	}
-	if (custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
+	if (UtilityFunctions::is_instance_valid(custom_canvas) && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
 		custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-		current_draw_canvas = nullptr;
-	}
-
-	// Clear editor canvas
-	if (custom_canvas)
 		custom_canvas->queue_redraw();
+	}
 }
 
 void DebugDraw::ready() {
@@ -225,14 +221,13 @@ void DebugDraw::ready() {
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
-		set_custom_canvas((CanvasItem *)n);
+		default_canvas = (Control *)n;
 		// if (res) {
 		//	res->add_child(_canvasLayer);
 		//	_canvasLayer->add_child(default_canvas);
 		// } else {
 		//	ERR_FAIL_MSG("\"Node3DEditorViewportContainer\" not found in editor tree!");
 		// }
-
 
 		/*
 		// Used to explore the editor tree.
@@ -251,12 +246,8 @@ void DebugDraw::ready() {
 		base_node->add_child(_canvas_layer);
 		_canvas_layer->add_child(default_canvas);
 		base_node->move_child(_canvas_layer, 0);
-
-		if (!custom_canvas) { // && godot_is_instance_valid(custom_canvas))
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
-			current_draw_canvas = default_canvas;
-		}
 	}
+	set_custom_canvas(custom_canvas);
 	_set_base_world_node(SCENE_ROOT());
 }
 
@@ -269,9 +260,9 @@ void DebugDraw::process(double delta) {
 
 	// Update overlay
 	if (_canvas_need_update) {
-		if (!custom_canvas) // && godot_is_instance_valid(custom_canvas))
+		if (!UtilityFunctions::is_instance_valid(custom_canvas) && UtilityFunctions::is_instance_valid(default_canvas))
 			default_canvas->queue_redraw();
-		else
+		else if (UtilityFunctions::is_instance_valid(custom_canvas))
 			custom_canvas->queue_redraw();
 
 		// reset some values
@@ -290,13 +281,8 @@ void DebugDraw::process(double delta) {
 	}
 }
 
-// TODO: use version with pointer
-// void DebugDraw::_on_canvas_item_draw(CanvasItem *ci) {
-void DebugDraw::_on_canvas_item_draw() {
-	// TODO: remove it
-	CanvasItem *ci = current_draw_canvas;
-
-	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_viewport_rect().size;
+void DebugDraw::_on_canvas_item_draw(Control *ci) {
+	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size, ci->get_process_delta_time());
@@ -481,34 +467,32 @@ Viewport *DebugDraw::get_custom_viewport() {
 	return custom_viewport;
 }
 
-void DebugDraw::set_custom_canvas(CanvasItem *_canvas) {
-	bool connected_internal = default_canvas && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-	bool connected_custom = custom_canvas && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+void DebugDraw::set_custom_canvas(Control *_canvas) {
+	bool connected_internal = UtilityFunctions::is_instance_valid(default_canvas) && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+	bool connected_custom = UtilityFunctions::is_instance_valid(custom_canvas) && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
 
 	if (!_canvas) {
-		if (!connected_internal) {
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
-			current_draw_canvas = default_canvas;
+		if (!connected_internal && UtilityFunctions::is_instance_valid(default_canvas)) {
+			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
 		}
 		if (connected_custom) {
 			custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-			current_draw_canvas = nullptr;
+			custom_canvas->queue_redraw();
 		}
 	} else {
 		if (connected_internal) {
 			default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-			current_draw_canvas = nullptr;
+			default_canvas->queue_redraw();
 		}
 		if (!connected_custom) {
-			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw))); // TODO: use bind()
-			current_draw_canvas = _canvas;
+			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
 		}
 	}
 
 	custom_canvas = _canvas;
 }
 
-CanvasItem *DebugDraw::get_custom_canvas() {
+Control *DebugDraw::get_custom_canvas() {
 	return custom_canvas;
 }
 

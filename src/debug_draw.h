@@ -53,10 +53,7 @@ private:
 	bool _canvas_need_update = true;
 	Ref<Font> _font;
 
-	CanvasItem *default_canvas = nullptr;
-
-	// TODO: remove it and use Callable::bind in connect methods
-	CanvasItem *current_draw_canvas = nullptr;
+	Control *default_canvas = nullptr;
 
 	// Text
 	std::unique_ptr<GroupedText> grouped_text;
@@ -73,10 +70,8 @@ private:
 	DebugDraw *get_singleton_gdscript() {
 		return singleton;
 	};
-	// TODO: use pointer to CanvasItem from Callable::bind
-	// void _on_canvas_item_draw(CanvasItem *ci);
-	void _on_canvas_item_draw();
 
+	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
 
 	void enter_tree();
@@ -138,7 +133,7 @@ private:
 	/// Custom 'Viewport' to use for frustum culling.
 	Viewport *custom_viewport = nullptr;
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
-	CanvasItem *custom_canvas = nullptr;
+	Control *custom_canvas = nullptr;
 #pragma endregion // Exposed Parameter Values
 
 protected:
@@ -214,8 +209,8 @@ public:
 	void set_custom_viewport(Viewport *_viewport);
 	Viewport *get_custom_viewport();
 
-	void set_custom_canvas(CanvasItem *_canvas);
-	CanvasItem *get_custom_canvas();
+	void set_custom_canvas(Control *_canvas);
+	Control *get_custom_canvas();
 #pragma endregion // Exposed Parametes
 
 #pragma region Exposed Draw Functions

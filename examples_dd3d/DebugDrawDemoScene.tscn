@@ -212,7 +212,6 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-test_text = false
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
@@ -456,6 +455,20 @@ material = SubResource("1")
 libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
+
+[node name="CustomCanvas" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -639.0
+offset_top = 36.0
+offset_right = -36.0
+offset_bottom = -36.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3

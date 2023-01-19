@@ -74,6 +74,7 @@ func _process(delta: float) -> void:
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
+	DebugDraw.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	
 	# More property toggles
 	DebugDraw.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
@@ -298,7 +299,7 @@ func _graph_test():
 	#DebugDraw.get_graph(&"fps11").line_position = DebugDrawGraph.LINE_BOTTOM
 	DebugDraw.get_graph(&"fps11").offset = Vector2i(16, 0)
 	DebugDraw.get_graph(&"fps6").offset = Vector2i(0, 32)
-	DebugDraw.get_graph(&"fps").offset = Vector2i(16, 32)
+	DebugDraw.get_graph(&"fps").offset = Vector2i(16, 72)
 	
 	DebugDraw.get_graph(&"fps9").enabled = graph_is_enabled
 	if Engine.is_editor_hint():
