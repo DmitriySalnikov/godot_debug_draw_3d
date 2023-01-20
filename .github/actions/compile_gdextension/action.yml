@@ -22,11 +22,20 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup build cache
-      uses: ./.github/actions/gdextension_cache
+    - name: Get godot-cpp SHA
+      shell: bash
+      id: get_godot_cpp_sha
+      run: |
+        echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
+
+    - name: Restore .scons_cache directory
+      uses: actions/cache/restore@v3
       with:
-        config: ${{inputs.arch}}_${{inputs.target}}
-        scons-cache: ${{env.SCONS_CACHE}}
+        path: ${{env.SCONS_CACHE}}
+        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+        restore-keys: |
+          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
+          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}
       continue-on-error: true
 
     - name: Set up Python 3.x
@@ -87,3 +96,10 @@ runs:
         name: ${{inputs.artifact}}
         retention-days: 7
         path: ${{inputs.output_libs_path}}/*
+
+    - name: Save .scons_cache directory
+      uses: actions/cache/save@v3
+      with:
+        path: ${{env.SCONS_CACHE}}
+        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+      continue-on-error: true

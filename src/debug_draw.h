@@ -86,6 +86,7 @@ private:
 
 	// GENERAL
 
+	// TODO: move settings to dedicated storage classes
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
 	/// Freezing 3d debugging instances
@@ -94,6 +95,8 @@ private:
 	bool visible_instance_bounds = false;
 	/// Geometry culling based on camera frustum.
 	/// It is not recommended to use with the current implementation.
+	// TODO: add distance-based culling
+	// TODO: restore this
 	bool use_frustum_culling = false;
 	/// Force use camera placed on edited scene.
 	/// Usable for editor.
