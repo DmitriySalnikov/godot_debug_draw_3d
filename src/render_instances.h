@@ -169,6 +169,7 @@ private:
 				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
 					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
+					// TODO: spam errors if the buffer is not empty, but nothing is actually displayed, e.g. switch to empty scene without clearing
 					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
 
 					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });

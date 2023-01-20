@@ -134,6 +134,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 	return res;
 }
 
+// TODO: replace ImmediateMesh by ArrayMesh to create mesh in 1 call and avoid some errors
 void GeometryPool::fill_lines_data(Ref<ImmediateMesh> _ig) {
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;

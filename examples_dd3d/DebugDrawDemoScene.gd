@@ -39,6 +39,7 @@ func _ready() -> void:
 	if !is_inside_tree():
 		return
 
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed:
@@ -48,6 +49,7 @@ func _input(event: InputEvent) -> void:
 				zylann_example = !zylann_example
 			if event.keycode == KEY_LEFT:
 				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
+
 
 func _process(delta: float) -> void:
 	# Zylann's example :D
@@ -186,7 +188,8 @@ func _process(delta: float) -> void:
 	# Enable FPSGraph if not exists
 	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
 	if Engine.is_editor_hint():
-		DebugDraw.get_graph(&"FPS").offset = Vector2i(0, 64)
+		if DebugDraw.get_graph(&"FPS"):
+			DebugDraw.get_graph(&"FPS").offset = Vector2i(0, 64)
 	
 	# Adding more graphs
 	if test_graphs:

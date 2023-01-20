@@ -205,7 +205,7 @@ func _on_HSlider2_value_changed(value: float) -> void:
 
 func _on_Button_pressed() -> void:
 	DebugDraw.clear_all()
-	get_tree().call_deferred(\"change_scene\", switch_to_scene)
+	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
 "
 
 [node name="DebugDrawDemoScene" type="Node3D"]
@@ -480,7 +480,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("3")
 script = SubResource("2")
-switch_to_scene = "res://debug_draw_examples/DebugDrawDemoSceneCS.tscn"
+switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
 
 [node name="GC" type="GridContainer" parent="Settings"]
 layout_mode = 1

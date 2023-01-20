@@ -157,21 +157,38 @@ DebugDraw::~DebugDraw() {
 	}
 }
 
+Node *DebugDraw::_get_current_scene() {
+	auto ST = SCENE_TREE();
+	if (ENGINE()->is_editor_hint()) {
+		return ST->get_edited_scene_root();
+	}
+	return ST->get_current_scene();
+}
+
 void DebugDraw::_scene_tree_found() {
 	base_node = memnew(DebugDrawSceneManager);
 	SCENE_ROOT()->add_child(base_node);
 	SCENE_ROOT()->move_child(base_node, 0);
 }
 
-// TODO: finish this!
 void DebugDraw::_connect_scene_changed() {
-	if (SCENE_TREE()->get_edited_scene_root()) {
-		SCENE_TREE()->get_edited_scene_root()->connect(StringName("tree_exiting"), Callable(this, TEXT(_on_scene_changed)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+	Node *scene = _get_current_scene();
+	if (scene) {
+		scene->connect(StringName("tree_exiting"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		return;
-	} else {
 	}
 
-	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, TEXT(_on_scene_changed)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(true)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+}
+
+void DebugDraw::_on_scene_changed(bool _is_scene_null) {
+	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
+		DEV_PRINT("Scene changed! clear_all()");
+		clear_all();
+	}
+
+	is_current_scene_is_null = _is_scene_null;
+	_connect_scene_changed();
 }
 
 void DebugDraw::enter_tree() {
@@ -300,13 +317,6 @@ void DebugDraw::_on_canvas_item_draw(Control *ci) {
 
 void DebugDraw::_set_base_world_node(Node *_world_base) {
 	dgc->set_world(_world_base);
-}
-
-void DebugDraw::_on_scene_changed() {
-	DEV_PRINT("Scene changed! clear_all()");
-
-	clear_all();
-	_connect_scene_changed();
 }
 
 void DebugDraw::mark_canvas_dirty() {

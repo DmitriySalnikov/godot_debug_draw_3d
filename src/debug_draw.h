@@ -65,6 +65,7 @@ private:
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
 	bool is_ready = false;
+	bool is_current_scene_is_null = true;
 
 	DebugDraw *get_singleton_gdscript() {
 		return singleton;
@@ -72,15 +73,16 @@ private:
 
 	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
+
+	Node* _get_current_scene();
+	void _scene_tree_found();
 	void _connect_scene_changed();
+	void _on_scene_changed(bool _is_scene_null);
 
 	void enter_tree();
 	void exit_tree();
 	void ready();
 	void process(double delta);
-
-	void _scene_tree_found();
-	void _on_scene_changed();
 
 #pragma region Exposed Parameter Values
 
