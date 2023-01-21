@@ -12,126 +12,41 @@ index 27ee137..445fda0 100644
  # Add platform options
  tools = {}
 diff --git a/binding_generator.py b/binding_generator.py
-index e5bb84e..a9f63a4 100644
+index 9919b73..5baa83f 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -5,6 +5,78 @@ import re
+@@ -1,5 +1,9 @@
+ #!/usr/bin/env python
+ 
++import sys
++sys.path.insert(0, "../patches")
++import get_used_classes
++
+ import json
+ import re
  import shutil
- from pathlib import Path
- 
-+# This patch does not affect the size of the library, but speeds up the build time.
-+# Use the argument `exclude_unused_classes=no` to generate all classes
-+# Use the `folder_to_include_classes=path/` argument to scan classes in a specific directory
-+
-+EXCLUDE_CLASSES = True
-+SOURCES_FOLDER = ""
-+USED_CLASSES = []
-+DEPENDENCIES = set()
-+TEMP_ENGINE_CLASS_NAMES = set()
-+
-+def SCAN_DEPENDENCIES(api):
-+    global EXCLUDE_CLASSES
-+    if not EXCLUDE_CLASSES:
-+        return
-+
-+    global USED_CLASSES
-+
-+    used_classes_file = "../patches/used_classes.json"
-+    import sys
-+    sys.path.insert(0, "../patches")
-+    import get_used_classes
-+    get_used_classes.extract_used_classes(SOURCES_FOLDER, used_classes_file)
-+
-+    with open(used_classes_file, "r") as uc_file:
-+        USED_CLASSES = json.load(uc_file)
-+    for class_api in api["classes"]:
-+        TEMP_ENGINE_CLASS_NAMES.add(class_api["name"])
-+    for name in USED_CLASSES:
-+        _GET_DEPS(api, name)
-+
-+    print("Provided", len(USED_CLASSES), "explicit classes:", str(sorted(USED_CLASSES)))
-+    print()
-+    print("Detected", len(DEPENDENCIES), "implicit classes:", str(sorted(DEPENDENCIES)))
-+
-+    TEMP_ENGINE_CLASS_NAMES.clear()
-+
-+def _GET_DEPS(api, name):
-+    def _ADD_DEPENDENCY_ENGINE_CLASS(_class, _to_scan):
-+        for start in ["enum::", "typedarray::", "bitfield::"]:
-+            if _class.startswith(start):
-+                _class = _class[len(start):].partition(".")[0]
-+                break
-+
-+        if _class in TEMP_ENGINE_CLASS_NAMES:
-+            _to_scan.add(_class)
-+
-+    for class_api in api["classes"]:
-+        if not (class_api["name"] == name or class_api["name"].lower() == name.lower()):
-+            continue
-+
-+        if class_api["name"] == "Object":
-+            break
-+
-+        need_to_scan = set()
-+        need_to_scan.add(class_api["name"])
-+        need_to_scan.add(class_api["inherits"])
-+
-+        for method in class_api.get("methods", []):
-+            if "return_value" in method:
-+                _ADD_DEPENDENCY_ENGINE_CLASS(method["return_value"]["type"], need_to_scan)
-+
-+            for arg in method.get("arguments", []):
-+                _ADD_DEPENDENCY_ENGINE_CLASS(arg["type"], need_to_scan)
-+
-+        for c in need_to_scan:
-+            if c not in DEPENDENCIES:
-+                DEPENDENCIES.add(c)
-+                _GET_DEPS(api, c)
-+        break
-+
-+def NEED_TO_EXCLUDE(name):
-+    return len(DEPENDENCIES) > 0 and name not in DEPENDENCIES
- 
- def generate_mod_version(argcount, const=False, returns=False):
-     s = """
-@@ -77,6 +149,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -77,6 +81,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
      with open(api_filepath) as api_file:
          api = json.load(api_file)
  
-+    SCAN_DEPENDENCIES(api)
++    get_used_classes.scan_dependencies(api)
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
      include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
      source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -103,6 +176,10 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
-             continue
-         header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
-         source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
-+
-+        if NEED_TO_EXCLUDE(engine_class["name"]):
-+            continue
-+
-         if headers:
-             files.append(str(header_filename.as_posix()))
-         if sources:
-@@ -140,6 +217,11 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -130,6 +135,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+         utility_functions_source_path = source_gen_folder / "variant" / "utility_functions.cpp"
+         files.append(str(utility_functions_source_path.as_posix()))
+ 
++    files = get_used_classes.delete_useless(files)
+     return files
+ 
+ 
+@@ -140,6 +146,8 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
  
  
  def scons_emit_files(target, source, env):
-+    global EXCLUDE_CLASSES
-+    global SOURCES_FOLDER
-+    EXCLUDE_CLASSES = env.get("exclude_unused_classes", True)
-+    SOURCES_FOLDER = env.get("folder_to_include_classes", "../src")
++    get_used_classes.setup(env.get("exclude_unused_classes", True), env.get("folder_to_include_classes", "../src"))
 +
      files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
      env.Clean(target, files)
      env["godot_cpp_gen_dir"] = target[0].abspath
-@@ -975,6 +1057,9 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
-         header_filename = include_gen_folder / (camel_to_snake(class_api["name"]) + ".hpp")
-         source_filename = source_gen_folder / (camel_to_snake(class_api["name"]) + ".cpp")
- 
-+        if NEED_TO_EXCLUDE(class_api["name"]):
-+            continue
-+
-         if "methods" in class_api:
-             for method in class_api["methods"]:
-                 if "arguments" in method:
