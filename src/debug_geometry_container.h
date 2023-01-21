@@ -13,7 +13,6 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/immediate_mesh.hpp>
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
@@ -46,7 +45,7 @@ class DebugGeometryContainer {
 
 	struct ImmediateMeshStorage {
 		RID instance;
-		Ref<ImmediateMesh> mesh;
+		Ref<ArrayMesh> mesh;
 		Ref<StandardMaterial3D> material;
 
 		~ImmediateMeshStorage() {

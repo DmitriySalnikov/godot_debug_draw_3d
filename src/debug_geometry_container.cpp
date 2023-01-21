@@ -21,11 +21,11 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 
 	// Create wireframe mesh drawer
 	{
-		Ref<ImmediateMesh> _immediate_mesh;
-		_immediate_mesh.instantiate();
+		Ref<ArrayMesh> _array_mesh;
+		_array_mesh.instantiate();
 		RID _immediate_instance = rs->instance_create();
 
-		rs->instance_set_base(_immediate_instance, _immediate_mesh->get_rid());
+		rs->instance_set_base(_immediate_instance, _array_mesh->get_rid());
 		rs->instance_geometry_set_cast_shadows_setting(_immediate_instance, RenderingServer::SHADOW_CASTING_SETTING_OFF);
 		rs->instance_geometry_set_flag(_immediate_instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 		rs->instance_geometry_set_flag(_immediate_instance, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
@@ -39,7 +39,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 
 		immediate_mesh_storage.instance = _immediate_instance;
 		immediate_mesh_storage.material = mat;
-		immediate_mesh_storage.mesh = _immediate_mesh;
+		immediate_mesh_storage.mesh = _array_mesh;
 	}
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances

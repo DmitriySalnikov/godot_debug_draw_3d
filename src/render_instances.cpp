@@ -43,7 +43,7 @@ void DelayedRendererLine::set_lines(std::vector<Vector3> _lines) {
 	bounds = calculate_bounds_based_on_lines(lines);
 }
 
-std::vector<Vector3> DelayedRendererLine::get_lines() {
+std::vector<Vector3> &DelayedRendererLine::get_lines() {
 	return lines;
 }
 
@@ -134,20 +134,30 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 	return res;
 }
 
-// TODO: replace ImmediateMesh by ArrayMesh to create mesh in 1 call and avoid some errors
-void GeometryPool::fill_lines_data(Ref<ImmediateMesh> _ig) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;
 
-	_ig->surface_begin(Mesh::PrimitiveType::PRIMITIVE_LINES);
+	PackedVector3Array verticies;
+	PackedColorArray colors;
+
+	auto append_lines = [&](DelayedRendererLine &o) {
+		size_t lines_size = o.get_lines().size();
+
+		PackedColorArray cols;
+		cols.resize(lines_size);
+		cols.fill(o.color);
+		colors.append_array(cols);
+
+		size_t p_size = verticies.size();
+		verticies.resize(verticies.size() + lines_size);
+		std::copy(o.get_lines().begin(), o.get_lines().end(), verticies.ptrw() + p_size);
+	};
 
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		auto &o = lines.instant[i];
 		if (o.is_visible) {
-			_ig->surface_set_color(o.color);
-			for (auto &l : o.get_lines()) {
-				_ig->surface_add_vertex(l);
-			};
+			append_lines(o);
 		}
 		o.is_used_one_time = true;
 	}
@@ -159,16 +169,18 @@ void GeometryPool::fill_lines_data(Ref<ImmediateMesh> _ig) {
 		if (!o.is_expired()) {
 			lines.used_delayed++;
 			if (o.is_visible) {
-				_ig->surface_set_color(o.color);
-				for (auto &l : o.get_lines()) {
-					_ig->surface_add_vertex(l);
-				};
+				append_lines(o);
 			}
 		}
 		o.is_used_one_time = true;
 	}
 
-	_ig->surface_end();
+	Array mesh = Array();
+	mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
+	mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verticies;
+	mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
+
+	_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 }
 
 void GeometryPool::reset_counter(double _delta) {

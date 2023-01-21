@@ -7,7 +7,7 @@
 #pragma warning(disable : 4244)
 #endif
 
-#include <godot_cpp/classes/immediate_mesh.hpp>
+#include <godot_cpp/classes/array_mesh.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning(default : 4244)
@@ -99,7 +99,7 @@ public:
 	void update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col);
 
 	void set_lines(std::vector<Vector3> _lines);
-	std::vector<Vector3> get_lines();
+	std::vector<Vector3>& get_lines();
 	AABB calculate_bounds_based_on_lines(std::vector<Vector3> &_lines);
 };
 
@@ -169,7 +169,6 @@ private:
 				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
 					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
-					// TODO: spam errors if the buffer is not empty, but nothing is actually displayed, e.g. switch to empty scene without clearing
 					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
 
 					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });
@@ -207,7 +206,7 @@ public:
 	}
 
 	PackedFloat32Array get_raw_data(InstanceType _type);
-	void fill_lines_data(Ref<ImmediateMesh> _ig);
+	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
 	size_t get_visible_instances();
