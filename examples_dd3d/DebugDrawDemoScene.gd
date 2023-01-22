@@ -28,27 +28,29 @@ extends Node3D
 @export var graph_frame_time_mode := true
 @export var graph_is_enabled := true
 
+var button_presses = {}
 var time := 0.0
 var time2 := 0.0
 var time3 := 0.0
 
 func _ready() -> void:
+	_update_keys_just_press()
+	
 	await get_tree().process_frame
+	
 	# this check is required for inherited scenes, because an instance of this 
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
 
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.pressed:
-			
-			# Some property toggles
-			if event.keycode == KEY_F1:
-				zylann_example = !zylann_example
-			if event.keycode == KEY_LEFT:
-				DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
+func _is_key_just_pressed(key):
+	return button_presses[key] != Input.is_key_pressed(key) and Input.is_key_pressed(key)
+
+
+func _update_keys_just_press():
+	button_presses[KEY_LEFT] = Input.is_key_pressed(KEY_LEFT)
+	button_presses[KEY_F1] = Input.is_key_pressed(KEY_F1)
 
 
 func _process(delta: float) -> void:
@@ -83,6 +85,13 @@ func _process(delta: float) -> void:
 	DebugDraw.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
 	DebugDraw.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
 	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	
+	# Some property toggles
+	if _is_key_just_pressed(KEY_F1):
+		zylann_example = !zylann_example
+	if _is_key_just_pressed(KEY_LEFT):
+		DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
+	_update_keys_just_press()
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -324,7 +333,8 @@ func _upd_graph_params():
 			graph.line_width = graph_line_width
 			graph.text_precision = graph_text_precision
 			graph.buffer_size = graph_buffer_size
-			graph.frame_time_mode = graph_frame_time_mode
+			if Engine.is_editor_hint() or g != &"FPS":
+				graph.frame_time_mode = graph_frame_time_mode
 
 func _get_sin_wave_for_graph() -> float:
 	var mul = 4 if Input.is_key_pressed(KEY_END) else 2

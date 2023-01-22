@@ -6,7 +6,9 @@
 #pragma warning(disable : 4244)
 #endif
 
-#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/main_loop.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 
 #if defined(_MSC_VER)
@@ -158,15 +160,20 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		return;
 	}
 
-	// TODO: try to get all active cameras inside scene to properly calculate visibilty
+	// TODO: try to get all active cameras inside scene to properly calculate visibilty for SubViewports
 
-	/* TODO NO WAY TO GET FRUSTUM AT THE MOMENT
 	// Get camera frustum
-	Camera3D *vp_cam = owner->get_viewport()->get_camera_3d();
+	Camera3D *vp_cam = owner->get_root_node()->get_viewport()->get_camera_3d();
+	if (ENGINE()->is_editor_hint()) {
+		auto s_root = SCENE_TREE()->get_edited_scene_root();
+		if (s_root) {
+			vp_cam = s_root->get_viewport()->get_camera_3d();
+		}
+	}
 
 	std::vector<std::vector<Plane> > f;
 	if (owner->is_use_frustum_culling()) {
-		std::vector<Viewport *> editor_viewports = owner->get_custom_editor_viewport();
+		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewport();
 		std::vector<Array> frustum_arrays;
 
 		frustum_arrays.reserve(1);
@@ -176,17 +183,16 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera_3d()->get_frustum());
 		} else if (editor_viewports.size() > 0) {
 			for (auto vp : editor_viewports) {
-				// TODO: idk where is update mode. Mb UPDATE_ALWAYS is default now.
-				// if (vp->get_update_mode() == Viewport::UpdateMode::UPDATE_ALWAYS) {
-				frustum_arrays.push_back(vp->get_camera_3d()->get_frustum());
-				//}
+				if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
+					frustum_arrays.push_back(vp->get_camera_3d()->get_frustum());
+				}
 			}
 		} else {
 			PRINT_WARNING("No camera found to perform frustum culling for DebugDraw");
 		}
 
 		// Convert frustum to vector
-		f.reserve(1);
+		f.reserve(frustum_arrays.size());
 
 		for (auto &arr : frustum_arrays) {
 			if (arr.size() == 6) {
@@ -197,16 +203,12 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			}
 		}
 	}
-	*/
 
 	// Update visibility
-	// TODO: disabled
-	// geometry_pool.update_visibility(f);
-	geometry_pool.update_visibility(std::vector<std::vector<Plane> >());
+	geometry_pool.update_visibility(f);
 
 	// Debug bounds of instances and lines
 	if (owner->is_visible_instance_bounds()) {
-		// std::vector<Plane> new_instances(geometry_pool.get_used_instances());
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
 		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {

@@ -175,12 +175,14 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 		o.is_used_one_time = true;
 	}
 
-	Array mesh = Array();
-	mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
-	mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verticies;
-	mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
+	if (verticies.size() > 1) {
+		Array mesh = Array();
+		mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
+		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verticies;
+		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
 
-	_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
+		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
+	}
 }
 
 void GeometryPool::reset_counter(double _delta) {

@@ -166,9 +166,9 @@ Node *DebugDraw::_get_current_scene() {
 }
 
 void DebugDraw::_scene_tree_found() {
-	base_node = memnew(DebugDrawSceneManager);
-	SCENE_ROOT()->add_child(base_node);
-	SCENE_ROOT()->move_child(base_node, 0);
+	root_node = memnew(DebugDrawSceneManager);
+	SCENE_ROOT()->add_child(root_node);
+	SCENE_ROOT()->move_child(root_node, 0);
 }
 
 void DebugDraw::_connect_scene_changed() {
@@ -198,7 +198,7 @@ void DebugDraw::enter_tree() {
 		graphs_base_offset = Vector2(12, 72);
 	}
 
-	base_node->set_process_priority(INT32_MAX);
+	root_node->set_process_priority(INT32_MAX);
 
 	grouped_text = std::make_unique<GroupedText>();
 	grouped_text->init_group(this);
@@ -241,18 +241,40 @@ void DebugDraw::ready() {
 
 	if (IS_EDITOR_HINT()) {
 		String editor3d = "Node3DEditorViewportContainer";
+		String subviewport = SubViewport::get_class_static();
 		Node *res = Utils::find_node_by_class(SCENE_ROOT(), &editor3d);
-		// Node *res = SCENE_ROOT()->find_child("MainScreen", true, false);
+		PRINT(res->get_class());
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
 		default_canvas = (Control *)n;
-		// if (res) {
-		//	res->add_child(_canvasLayer);
-		//	_canvasLayer->add_child(default_canvas);
-		// } else {
-		//	ERR_FAIL_MSG("\"Node3DEditorViewportContainer\" not found in editor tree!");
-		// }
+
+		// actual tree for godot 4.0 beta 14
+		//
+		//	0. VSplitContainer
+		//		0. Node3DEditorViewportContainer >>> res
+		//			0. Node3DEditorViewport
+		//				0. SubViewportContainer >>> res->get_child(0)->get_child(0)
+		//					0. SubViewport
+		//						0. Camera3D
+		//				1. ...
+		//			1. Node3DEditorViewport
+		//				0. SubViewportContainer
+		//					0. SubViewport
+		//  ......
+
+		std::vector<SubViewport *> editor_viewports;
+		TypedArray<Node> viewports_root = res->get_children();
+		for (int i = 0; i < viewports_root.size(); i++) {
+			Node *node = cast_to<Node>(viewports_root[i]);
+			if (node) {
+				SubViewport *sub_view = cast_to<SubViewport>(Utils::find_node_by_class(node, &subviewport));
+				if (sub_view) {
+					editor_viewports.push_back(sub_view);
+				}
+			}
+		}
+		set_custom_editor_viewport(editor_viewports);
 
 		/*
 		// Used to explore the editor tree.
@@ -268,9 +290,9 @@ void DebugDraw::ready() {
 		((Control *)default_canvas)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 
-		base_node->add_child(_canvas_layer);
+		root_node->add_child(_canvas_layer);
 		_canvas_layer->add_child(default_canvas);
-		base_node->move_child(_canvas_layer, 0);
+		root_node->move_child(_canvas_layer, 0);
 	}
 
 	set_custom_canvas(custom_canvas);
@@ -323,11 +345,15 @@ void DebugDraw::mark_canvas_dirty() {
 	_canvas_need_update = true;
 }
 
-void DebugDraw::set_custom_editor_viewport(std::vector<Viewport *> _viewports) {
+Node *DebugDraw::get_root_node() {
+	return root_node;
+}
+
+void DebugDraw::set_custom_editor_viewport(std::vector<SubViewport *> _viewports) {
 	custom_editor_viewports = _viewports;
 }
 
-std::vector<Viewport *> DebugDraw::get_custom_editor_viewport() {
+std::vector<SubViewport *> DebugDraw::get_custom_editor_viewport() {
 	return custom_editor_viewports;
 }
 

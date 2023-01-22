@@ -11,7 +11,7 @@
 #include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/sub_viewport.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning(default : 4244)
@@ -42,8 +42,8 @@ public:
 	};
 
 private:
-	std::vector<Viewport *> custom_editor_viewports;
-	DebugDrawSceneManager *base_node = nullptr;
+	std::vector<SubViewport *> custom_editor_viewports;
+	DebugDrawSceneManager *root_node = nullptr;
 
 	// Logs
 	double log_flush_time = 0;
@@ -74,7 +74,7 @@ private:
 	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
 
-	Node* _get_current_scene();
+	Node *_get_current_scene();
 	void _scene_tree_found();
 	void _connect_scene_changed();
 	void _on_scene_changed(bool _is_scene_null);
@@ -98,7 +98,6 @@ private:
 	/// Geometry culling based on camera frustum.
 	/// It is not recommended to use with the current implementation.
 	// TODO: add distance-based culling
-	// TODO: restore this
 	bool use_frustum_culling = false;
 	/// Force use camera placed on edited scene.
 	/// Usable for editor.
@@ -154,8 +153,9 @@ public:
 	};
 	void mark_canvas_dirty();
 
-	void set_custom_editor_viewport(std::vector<Viewport *> _viewports);
-	std::vector<Viewport *> get_custom_editor_viewport();
+	Node *get_root_node();
+	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
+	std::vector<SubViewport *> get_custom_editor_viewport();
 
 #pragma region Exposed Parameters
 	void set_empty_color(const Color &_col);
