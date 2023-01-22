@@ -48,7 +48,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: windows
-          additional: lto=yes debug_symbols=no
+          additional: lto=yes
 
   # ============================================
 
@@ -77,7 +77,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: linux
-          additional: lto=yes debug_symbols=no
+          additional: lto=yes
 
   # ============================================
 
@@ -106,7 +106,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: macos
-          additional: lto=yes debug_symbols=no
+          additional: lto=yes
 
   # ============================================
 
@@ -138,7 +138,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android
-          additional: lto=yes debug_symbols=no
+          additional: lto=yes
 
   # ============================================
 
