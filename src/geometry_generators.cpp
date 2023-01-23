@@ -165,11 +165,11 @@ const std::array<int, 6> GeometryGenerator::PositionIndices{
 
 #pragma endregion
 
-std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(std::array<Plane, 6> frustum) {
+std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
 	std::vector<Vector3> res;
 	res.resize(CubeIndices.size());
 
-	std::function<Vector3(Plane &, Plane &, Plane &)> intersect_planes = [&](Plane &a, Plane &b, Plane &c) {
+	std::function<Vector3(const Plane &, const Plane &, const Plane &)> intersect_planes = [&](const Plane &a, const Plane &b, const Plane &c) {
 		Vector3 intersec_result;
 		a.intersect_3(b, c, &intersec_result);
 		return intersec_result;
@@ -195,7 +195,7 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(std::array<Plan
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quaternion rotation, Vector3 size, bool centered_box, bool with_diagonals) {
+std::vector<Vector3> GeometryGenerator::CreateCubeLines(const Vector3 &position, const Quaternion &rotation, const Vector3 &size, const bool &centered_box, const bool &with_diagonals) {
 	Vector3 scaled[8];
 	std::vector<Vector3> res_with_diags;
 	res_with_diags.resize(CubeWithDiagonalsIndices.size());
@@ -235,7 +235,10 @@ std::vector<Vector3> GeometryGenerator::CreateCubeLines(Vector3 position, Quater
 	}
 }
 
-std::vector<Vector3> GeometryGenerator::CreateSphereLines(int lats, int lons, float radius, Vector3 position) {
+std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position) {
+	int lats = _lats;
+	int lons = _lons;
+
 	if (lats < 2)
 		lats = 2;
 	if (lons < 4)
@@ -282,7 +285,7 @@ std::vector<Vector3> GeometryGenerator::CreateSphereLines(int lats, int lons, fl
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float radius, float height, Vector3 position, int draw_edge_each_n_step) {
+std::vector<Vector3> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const Vector3 &position, const int &draw_edge_each_n_step) {
 	real_t angle = 360.f / edges;
 
 	std::vector<Vector3> points;
@@ -313,7 +316,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(int edges, float rad
 	return points;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateLinesFromPath(PackedVector3Array path) {
+std::vector<Vector3> GeometryGenerator::CreateLinesFromPath(const PackedVector3Array &path) {
 	std::vector<Vector3> res;
 	res.resize(((size_t)path.size() - 1) * 2);
 

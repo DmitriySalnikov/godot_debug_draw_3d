@@ -60,7 +60,7 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
     env["SHOBJPREFIX"] = "#obj/"
 
     library = env.SharedLibrary(
-        (Path(env["addon_output_dir"]) / lib_name).as_posix() + ".{}.{}.{}{}".format(
+        (Path(env["addon_output_dir"]) / ("lib" + lib_name)).as_posix() + ".{}.{}.{}{}".format(
             env["platform"], env["target"], env["arch"], env["SHLIBSUFFIX"]
         ),
         source=gdnative_get_sources(src),

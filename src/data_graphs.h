@@ -125,7 +125,7 @@ private:
 protected:
 	mutable std::recursive_mutex datalock;
 	std::unique_ptr<CircularBuffer<double> > buffer_data;
-	mutable graph_interpolated_values_range graph_range;
+	mutable graph_interpolated_values_range graph_range = {};
 	StringName title;
 	DataGraphManager *owner = nullptr;
 

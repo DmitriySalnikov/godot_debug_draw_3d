@@ -111,6 +111,8 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 
 #pragma endregion !BINDING REGISTRATION
 
+#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color)) / sizeof(real_t))
+
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())

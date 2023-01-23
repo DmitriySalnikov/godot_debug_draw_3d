@@ -66,7 +66,7 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 	geometry_pool.clear_pool();
 }
 
-void DebugGeometryContainer::CreateMMI(InstanceType type, String name, Ref<ArrayMesh> mesh) {
+void DebugGeometryContainer::CreateMMI(InstanceType type, const String &name, Ref<ArrayMesh> mesh) {
 	RenderingServer *rs = RS();
 
 	RID mmi = rs->instance_create();
@@ -171,20 +171,27 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		}
 	}
 
-	std::vector<std::vector<Plane> > f;
+	std::vector<std::vector<Plane> > frustum_planes;
+	std::vector<Vector3> cameras_positions;
 	if (owner->is_use_frustum_culling()) {
 		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewport();
 		std::vector<Array> frustum_arrays;
 
 		frustum_arrays.reserve(1);
+		cameras_positions.reserve(1);
 		if ((owner->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
+			cameras_positions.push_back(vp_cam->get_position());
 		} else if (owner->get_custom_viewport()) {
-			frustum_arrays.push_back(owner->get_custom_viewport()->get_camera_3d()->get_frustum());
+			auto c = owner->get_custom_viewport()->get_camera_3d();
+			frustum_arrays.push_back(c->get_frustum());
+			cameras_positions.push_back(c->get_position());
 		} else if (editor_viewports.size() > 0) {
 			for (auto vp : editor_viewports) {
 				if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
-					frustum_arrays.push_back(vp->get_camera_3d()->get_frustum());
+					auto c = vp->get_camera_3d();
+					frustum_arrays.push_back(c->get_frustum());
+					cameras_positions.push_back(c->get_position());
 				}
 			}
 		} else {
@@ -192,20 +199,20 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		}
 
 		// Convert frustum to vector
-		f.reserve(frustum_arrays.size());
+		frustum_planes.reserve(frustum_arrays.size());
 
 		for (auto &arr : frustum_arrays) {
 			if (arr.size() == 6) {
 				std::vector<Plane> a(6);
 				for (int i = 0; i < arr.size(); i++)
 					a[i] = (Plane)arr[i];
-				f.push_back(a);
+				frustum_planes.push_back(a);
 			}
 		}
 	}
 
 	// Update visibility
-	geometry_pool.update_visibility(f);
+	geometry_pool.update_visibility(frustum_planes);
 
 	// Debug bounds of instances and lines
 	if (owner->is_visible_instance_bounds()) {
@@ -289,10 +296,10 @@ void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
 	rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
 }
 
-void DebugGeometryContainer::create_arrow(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
+void DebugGeometryContainer::create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	Vector3 dir = (b - a);
-	real_t size = (absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
+	real_t size = (is_absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
 	Vector3 pos = b - dir.normalized() * size;
 
 	const Vector3 UP = Vector3(0.0000000001f, 1, 0);
@@ -323,14 +330,14 @@ void DebugGeometryContainer::clear_3d_objects() {
 #pragma region 3D
 #pragma region Spheres
 
-void DebugGeometryContainer::draw_sphere(Vector3 position, real_t radius, Color color, real_t duration, bool hd) {
+void DebugGeometryContainer::draw_sphere(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration, const bool &hd) {
 	Transform3D t(Basis(), position);
 	t.basis.scale(Vector3_ONE * (radius * 2));
 
 	draw_sphere_xf(t, color, duration, hd);
 }
 
-void DebugGeometryContainer::draw_sphere_xf(Transform3D transform, Color color, real_t duration, bool hd) {
+void DebugGeometryContainer::draw_sphere_xf(const Transform3D &transform, const Color &color, const real_t &duration, const bool &hd) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
@@ -340,18 +347,18 @@ void DebugGeometryContainer::draw_sphere_xf(Transform3D transform, Color color, 
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.51f));
 }
 
-void DebugGeometryContainer::draw_sphere_hd(Vector3 position, real_t radius, Color color, real_t duration) {
+void DebugGeometryContainer::draw_sphere_hd(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
 	draw_sphere(position, radius, color, duration, true);
 }
 
-void DebugGeometryContainer::draw_sphere_hd_xf(Transform3D transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_sphere_hd_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
 	draw_sphere_xf(transform, color, duration, true);
 }
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
-void DebugGeometryContainer::draw_cylinder(Transform3D transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_cylinder(const Transform3D &transform, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			InstanceType::CYLINDERS,
@@ -364,11 +371,11 @@ void DebugGeometryContainer::draw_cylinder(Transform3D transform, Color color, r
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugGeometryContainer::draw_box(Vector3 position, Vector3 size, Color color, bool is_box_centered, real_t duration) {
+void DebugGeometryContainer::draw_box(const Vector3 &position, const Vector3 &size, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	draw_box_xf(Transform3D(Basis().scaled(size), position), color, is_box_centered, duration);
 }
 
-void DebugGeometryContainer::draw_box_xf(Transform3D transform, Color color, bool is_box_centered, real_t duration) {
+void DebugGeometryContainer::draw_box_xf(const Transform3D &transform, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	LOCK_GUARD(datalock);
 
 	/// It's possible to use less space to contain box, but this method works better in more cases
@@ -385,13 +392,13 @@ void DebugGeometryContainer::draw_box_xf(Transform3D transform, Color color, boo
 			sb);
 }
 
-void DebugGeometryContainer::draw_aabb(AABB aabb, Color color, real_t duration) {
+void DebugGeometryContainer::draw_aabb(const AABB &aabb, const Color &color, const real_t &duration) {
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(aabb.position, aabb.position + aabb.size, bottom, top, diag);
 	draw_box(bottom, diag, color, false, duration);
 }
 
-void DebugGeometryContainer::draw_aabb_ab(Vector3 a, Vector3 b, Color color, real_t duration) {
+void DebugGeometryContainer::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(a, b, bottom, top, diag);
 	draw_box(bottom, diag, color, false, duration);
@@ -400,7 +407,7 @@ void DebugGeometryContainer::draw_aabb_ab(Vector3 a, Vector3 b, Color color, rea
 #pragma endregion // Boxes
 #pragma region Lines
 
-void DebugGeometryContainer::draw_line_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+void DebugGeometryContainer::draw_line_hit(const Vector3 &start, const Vector3 &end, const Vector3 &hit, const bool &is_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	if (is_hit) {
 		geometry_pool.add_or_update_line(duration, { start, hit }, hit_color == Colors::empty_color ? owner->get_line_hit_color() : hit_color);
@@ -417,7 +424,7 @@ void DebugGeometryContainer::draw_line_hit(Vector3 start, Vector3 end, Vector3 h
 	}
 }
 
-void DebugGeometryContainer::draw_line_hit_offset(Vector3 start, Vector3 end, bool is_hit, real_t unit_offset_of_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+void DebugGeometryContainer::draw_line_hit_offset(const Vector3 &start, const Vector3 &end, const bool &is_hit, const real_t &unit_offset_of_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	if (is_hit && unit_offset_of_hit >= 0 && unit_offset_of_hit <= 1) {
 		draw_line_hit(start, end, ((end - start).normalized() * start.distance_to(end) * unit_offset_of_hit + start), is_hit, hit_size, hit_color, after_hit_color, duration);
@@ -428,12 +435,12 @@ void DebugGeometryContainer::draw_line_hit_offset(Vector3 start, Vector3 end, bo
 
 #pragma region Normal
 
-void DebugGeometryContainer::draw_line(Vector3 a, Vector3 b, Color color, real_t duration) {
+void DebugGeometryContainer::draw_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_line(duration, { a, b }, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_lines(PackedVector3Array lines, Color color, real_t duration) {
+void DebugGeometryContainer::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 
 	if (lines.size() % 2 != 0) {
@@ -449,7 +456,7 @@ void DebugGeometryContainer::draw_lines(PackedVector3Array lines, Color color, r
 	geometry_pool.add_or_update_line(duration, l, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_lines_c(std::vector<Vector3> &lines, Color color, real_t duration) {
+void DebugGeometryContainer::draw_lines_c(const std::vector<Vector3> &lines, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 
 	if (lines.size() % 2 != 0) {
@@ -460,12 +467,12 @@ void DebugGeometryContainer::draw_lines_c(std::vector<Vector3> &lines, Color col
 	geometry_pool.add_or_update_line(duration, lines, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t duration) {
+void DebugGeometryContainer::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_line(duration, { origin, origin + direction * length }, color == Colors::empty_color ? Colors::red : color);
 }
 
-void DebugGeometryContainer::draw_line_path(PackedVector3Array path, Color color, real_t duration) {
+void DebugGeometryContainer::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
 	if (path.size() < 2) {
 		PRINT_ERROR("Line path must contains at least 2 points. " + String::num_int64(path.size()) + " is not enough.");
 		return;
@@ -478,7 +485,7 @@ void DebugGeometryContainer::draw_line_path(PackedVector3Array path, Color color
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugGeometryContainer::draw_arrow(Transform3D transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_arrow(const Transform3D &transform, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 
 	geometry_pool.add_or_update_instance(
@@ -489,18 +496,18 @@ void DebugGeometryContainer::draw_arrow(Transform3D transform, Color color, real
 			SphereBounds(transform.origin - transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
-void DebugGeometryContainer::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
+void DebugGeometryContainer::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_line(duration, { a, b }, color == Colors::empty_color ? Colors::light_green : color);
 
 	create_arrow(a, b, color, arrow_size, is_absolute_size, duration);
 }
 
-void DebugGeometryContainer::draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
+void DebugGeometryContainer::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	draw_arrow_line(origin, origin + direction * length, color, arrow_size, is_absolute_size, duration);
 }
 
-void DebugGeometryContainer::draw_arrow_path(PackedVector3Array path, Color color, real_t arrow_size, bool is_absolute_size, real_t duration) {
+void DebugGeometryContainer::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_line(duration, GeometryGenerator::CreateLinesFromPath(path), color == Colors::empty_color ? Colors::light_green : color);
 
@@ -512,7 +519,7 @@ void DebugGeometryContainer::draw_arrow_path(PackedVector3Array path, Color colo
 #pragma endregion // Arrows
 #pragma region Points
 
-void DebugGeometryContainer::draw_point_path(PackedVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+void DebugGeometryContainer::draw_point_path(const PackedVector3Array &path, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
 	draw_points(path, size, points_color == Colors::empty_color ? Colors::red : points_color, duration);
 	draw_line_path(path, lines_color == Colors::empty_color ? Colors::green : lines_color, duration);
 }
@@ -522,7 +529,7 @@ void DebugGeometryContainer::draw_point_path(PackedVector3Array path, real_t siz
 
 #pragma region Misc
 
-void DebugGeometryContainer::draw_square(Vector3 position, real_t size, Color color, real_t duration) {
+void DebugGeometryContainer::draw_square(const Vector3 &position, const real_t &size, const Color &color, const real_t &duration) {
 	Transform3D t(Basis(), position);
 	t.basis.scale(Vector3_ONE * size);
 
@@ -535,43 +542,13 @@ void DebugGeometryContainer::draw_square(Vector3 position, real_t size, Color co
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size));
 }
 
-void DebugGeometryContainer::draw_points(PackedVector3Array points, real_t size, Color color, real_t duration) {
+void DebugGeometryContainer::draw_points(const PackedVector3Array &points, const real_t &size, const Color &color, const real_t &duration) {
 	for (int i = 0; i < points.size(); i++) {
 		draw_square(points[i], size, color, duration);
 	}
 }
 
-#pragma region Camera Frustum
-
-void DebugGeometryContainer::draw_camera_frustum(Camera3D *camera, Color color, real_t duration) {
-	ERR_FAIL_COND(!camera);
-	draw_camera_frustum_planes(camera->get_frustum(), color, duration);
-}
-
-void DebugGeometryContainer::draw_camera_frustum_planes(Array camera_frustum, Color color, real_t duration) {
-	std::array<Plane, 6> planes = { Plane() };
-
-	if (camera_frustum.size() == 6) {
-		for (int i = 0; i < camera_frustum.size(); i++) {
-			planes[i] = camera_frustum[i];
-		}
-	} else {
-		PRINT_ERROR("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
-	}
-
-	draw_camera_frustum_planes_c(planes, color, duration);
-}
-
-void DebugGeometryContainer::draw_camera_frustum_planes_c(std::array<Plane, 6> planes, Color color, real_t duration) {
-	auto lines = GeometryGenerator::CreateCameraFrustumLines(planes);
-
-	LOCK_GUARD(datalock);
-	geometry_pool.add_or_update_line(duration, lines, color == Colors::empty_color ? Colors::red : color);
-}
-
-#pragma endregion // Camera Frustum
-
-void DebugGeometryContainer::draw_position(Transform3D transform, Color color, real_t duration) {
+void DebugGeometryContainer::draw_position(const Transform3D &transform, const Color &color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	geometry_pool.add_or_update_instance(
 			InstanceType::POSITIONS,
@@ -581,7 +558,7 @@ void DebugGeometryContainer::draw_position(Transform3D transform, Color color, r
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
 
-void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_gizmo(const Transform3D &transform, const Color &color, const bool &is_centered, const real_t &duration) {
 	LOCK_GUARD(datalock);
 
 	bool is_color_empty = color == Colors::empty_color;
@@ -604,18 +581,18 @@ void DebugGeometryContainer::draw_gizmo(Transform3D transform, Color color, bool
 #undef PLUS
 }
 
-void DebugGeometryContainer::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_grid(const Vector3 &origin, const Vector3 &x_size, const Vector3 &y_size, const Vector2i &subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
 	draw_grid_xf(Transform3D(Basis(x_size, y_size.cross(x_size).normalized(), y_size), origin),
 			subdivision, color, is_centered, duration);
 }
 
-void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
+void DebugGeometryContainer::draw_grid_xf(const Transform3D &transform, const Vector2i &_subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
 #define MAX_SUBDIVISIONS 1024 * 1024
-	ERR_FAIL_COND(subdivision.x > MAX_SUBDIVISIONS);
-	ERR_FAIL_COND(subdivision.y > MAX_SUBDIVISIONS);
+	ERR_FAIL_COND(_subdivision.x > MAX_SUBDIVISIONS);
+	ERR_FAIL_COND(_subdivision.y > MAX_SUBDIVISIONS);
 	LOCK_GUARD(datalock);
 
-	subdivision = subdivision.abs();
+	Vector2i subdivision = _subdivision.abs();
 	subdivision = Vector2i(Math::clamp(subdivision.x, 1, MAX_SUBDIVISIONS), Math::clamp(subdivision.y, 1, MAX_SUBDIVISIONS));
 	Vector3 x_axis = transform.basis.get_column(0);
 	Vector3 z_axis = transform.basis.get_column(2);
@@ -639,6 +616,36 @@ void DebugGeometryContainer::draw_grid_xf(Transform3D transform, Vector2i subdiv
 
 	draw_lines_c(lines, color == Colors::empty_color ? Colors::white : color, duration);
 }
+
+#pragma region Camera Frustum
+
+void DebugGeometryContainer::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {
+	ERR_FAIL_COND(!camera);
+	draw_camera_frustum_planes(camera->get_frustum(), color, duration);
+}
+
+void DebugGeometryContainer::draw_camera_frustum_planes(const Array &camera_frustum, const Color &color, const real_t &duration) {
+	std::array<Plane, 6> planes = { Plane() };
+
+	if (camera_frustum.size() == 6) {
+		for (int i = 0; i < camera_frustum.size(); i++) {
+			planes[i] = camera_frustum[i];
+		}
+	} else {
+		PRINT_ERROR("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
+	}
+
+	draw_camera_frustum_planes_c(planes, color, duration);
+}
+
+void DebugGeometryContainer::draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const Color &color, const real_t &duration) {
+	auto lines = GeometryGenerator::CreateCameraFrustumLines(planes);
+
+	LOCK_GUARD(datalock);
+	geometry_pool.add_or_update_line(duration, lines, color == Colors::empty_color ? Colors::red : color);
+}
+
+#pragma endregion // Camera Frustum
 
 #pragma endregion // Misc
 #pragma endregion // 3D

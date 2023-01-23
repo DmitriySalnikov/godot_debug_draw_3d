@@ -13,9 +13,6 @@
 #pragma warning(default : 4244)
 #endif
 
-#define INSTANCE_DATA_SIZE (sizeof(Transform3D) + sizeof(Color))
-#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color)) / sizeof(real_t))
-
 using namespace godot;
 
 enum InstanceType : char {
@@ -60,7 +57,7 @@ public:
 		return is_used_one_time;
 	}
 
-	bool update_visibility(std::vector<std::vector<Plane> > &_frustums, bool _skip_expiration_check) {
+	bool update_visibility(const std::vector<std::vector<Plane> > &_frustums, bool _skip_expiration_check) {
 		if (_skip_expiration_check || !is_expired()) {
 			if (_frustums.size()) {
 				is_visible = false;
@@ -88,7 +85,7 @@ public:
 	InstanceType type = InstanceType::CUBES;
 
 	DelayedRendererInstance();
-	void update(real_t _exp_time, InstanceType _type, Transform3D _transform, Color _col, SphereBounds _bounds);
+	void update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds);
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
@@ -96,11 +93,11 @@ class DelayedRendererLine : public DelayedRenderer<AABB> {
 
 public:
 	DelayedRendererLine();
-	void update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col);
+	void update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col);
 
-	void set_lines(std::vector<Vector3> _lines);
-	std::vector<Vector3>& get_lines();
-	AABB calculate_bounds_based_on_lines(std::vector<Vector3> &_lines);
+	void set_lines(const std::vector<Vector3> &_lines);
+	std::vector<Vector3> &get_lines();
+	AABB calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines);
 };
 
 class GeometryPool {
@@ -218,11 +215,11 @@ public:
 	size_t get_used_lines_instant();
 	size_t get_used_lines_delayed();
 	void clear_pool();
-	void for_each_instance(std::function<void(DelayedRendererInstance *)> _func);
-	void for_each_line(std::function<void(DelayedRendererLine *)> _func);
-	void update_visibility(std::vector<std::vector<Plane> > _frustums);
+	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
+	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
+	void update_visibility(const std::vector<std::vector<Plane> > &_frustums);
 	void update_expiration(double _delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> _custom_upd = nullptr);
-	void add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
+	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };

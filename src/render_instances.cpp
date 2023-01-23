@@ -17,7 +17,7 @@ DelayedRendererInstance::DelayedRendererInstance() :
 	DEV_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
 }
 
-void DelayedRendererInstance::update(real_t _exp_time, InstanceType _type, Transform3D _transform, Color _col, SphereBounds _bounds) {
+void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds) {
 	_update(_exp_time, true);
 
 	type = _type;
@@ -31,14 +31,14 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, Color _col) {
+void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col) {
 	_update(_exp_time, true);
 
 	set_lines(_lines);
 	color = _col;
 }
 
-void DelayedRendererLine::set_lines(std::vector<Vector3> _lines) {
+void DelayedRendererLine::set_lines(const std::vector<Vector3> &_lines) {
 	lines = _lines;
 	bounds = calculate_bounds_based_on_lines(lines);
 }
@@ -47,7 +47,7 @@ std::vector<Vector3> &DelayedRendererLine::get_lines() {
 	return lines;
 }
 
-AABB DelayedRendererLine::calculate_bounds_based_on_lines(std::vector<Vector3> &_lines) {
+AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines) {
 	if (_lines.size() > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
 		Vector3 begin = _lines[0];
@@ -112,6 +112,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 				w[id + 13] = o.color[1];
 				w[id + 14] = o.color[2];
 				w[id + 15] = o.color[3];
+				// TODO: mb use custom data to implement volumetric shapes...
 			}
 		};
 
@@ -248,7 +249,7 @@ void GeometryPool::clear_pool() {
 	lines.clear_pools();
 }
 
-void GeometryPool::for_each_instance(std::function<void(DelayedRendererInstance *)> _func) {
+void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func) {
 	for (auto &inst : instances) {
 		for (size_t i = 0; i < inst.used_instant; i++) {
 			_func(&inst.instant[i]);
@@ -260,7 +261,7 @@ void GeometryPool::for_each_instance(std::function<void(DelayedRendererInstance 
 	}
 }
 
-void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> _func) {
+void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &_func) {
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		_func(&lines.instant[i]);
 	}
@@ -270,7 +271,7 @@ void GeometryPool::for_each_line(std::function<void(DelayedRendererLine *)> _fun
 	}
 }
 
-void GeometryPool::update_visibility(std::vector<std::vector<Plane> > _frustums) {
+void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &_frustums) {
 	for (auto &t : instances) {
 		for (size_t i = 0; i < t.used_instant; i++)
 			t.instant[i].update_visibility(_frustums, true);
@@ -320,14 +321,14 @@ void GeometryPool::scan_visible_instances() {
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, Transform3D _transform, Color _col, SphereBounds _bounds, std::function<void(DelayedRendererInstance *)> _custom_upd) {
+void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
 	DelayedRendererInstance *inst = instances[_type].get(_exp_time > 0);
 	inst->update(_exp_time, _type, _transform, _col, _bounds);
 	if (_custom_upd)
 		_custom_upd(inst);
 }
 
-void GeometryPool::add_or_update_line(real_t _exp_time, std::vector<Vector3> _lines, Color _col, std::function<void(DelayedRendererLine *)> _custom_upd) {
+void GeometryPool::add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
 	DelayedRendererLine *inst = lines.get(_exp_time > 0);
 	inst->update(_exp_time, _lines, _col);
 	if (_custom_upd)

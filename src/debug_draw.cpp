@@ -243,7 +243,6 @@ void DebugDraw::ready() {
 		String editor3d = "Node3DEditorViewportContainer";
 		String subviewport = SubViewport::get_class_static();
 		Node *res = Utils::find_node_by_class(SCENE_ROOT(), &editor3d);
-		PRINT(res->get_class());
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
@@ -599,100 +598,100 @@ void DebugDraw::clear_all() {
 
 #pragma region Spheres
 
-void DebugDraw::draw_sphere(Vector3 position, real_t radius, Color color, real_t duration) {
+void DebugDraw::draw_sphere(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_sphere, position, radius, color, duration);
 }
 
-void DebugDraw::draw_sphere_xf(Transform3D transform, Color color, real_t duration) {
+void DebugDraw::draw_sphere_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_sphere_xf, transform, color, duration);
 }
 
-void DebugDraw::draw_sphere_hd(Vector3 position, real_t radius, Color color, real_t duration) {
+void DebugDraw::draw_sphere_hd(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_sphere_hd, position, radius, color, duration);
 }
 
-void DebugDraw::draw_sphere_hd_xf(Transform3D transform, Color color, real_t duration) {
+void DebugDraw::draw_sphere_hd_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_sphere_hd_xf, transform, color, duration);
 }
 
 #pragma endregion // Spheres
 #pragma region Cylinders
 
-void DebugDraw::draw_cylinder(Transform3D transform, Color color, real_t duration) {
+void DebugDraw::draw_cylinder(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_cylinder, transform, color, duration);
 }
 
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugDraw::draw_box(Vector3 position, Vector3 size, Color color, bool is_box_centered, real_t duration) {
+void DebugDraw::draw_box(const Vector3 &position, const Vector3 &size, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	CALL_TO_DGC(draw_box, position, size, color, is_box_centered, duration);
 }
 
-void DebugDraw::draw_box_xf(Transform3D transform, Color color, bool is_box_centered, real_t duration) {
+void DebugDraw::draw_box_xf(const Transform3D &transform, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	CALL_TO_DGC(draw_box_xf, transform, color, is_box_centered, duration);
 }
 
-void DebugDraw::draw_aabb(AABB aabb, Color color, real_t duration) {
+void DebugDraw::draw_aabb(const AABB &aabb, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_aabb, aabb, color, duration);
 }
 
-void DebugDraw::draw_aabb_ab(Vector3 a, Vector3 b, Color color, real_t duration) {
+void DebugDraw::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_aabb_ab, a, b, color, duration);
 }
 
 #pragma endregion // Boxes
 #pragma region Lines
 
-void DebugDraw::draw_line_hit(Vector3 start, Vector3 end, Vector3 hit, bool is_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+void DebugDraw::draw_line_hit(const Vector3 &start, const Vector3 &end, const Vector3 &hit, const bool &is_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	CALL_TO_DGC(draw_line_hit, start, end, hit, is_hit, hit_size, hit_color, after_hit_color, duration);
 }
 
-void DebugDraw::draw_line_hit_offset(Vector3 start, Vector3 end, bool is_hit, real_t unit_offset_of_hit, real_t hit_size, Color hit_color, Color after_hit_color, real_t duration) {
+void DebugDraw::draw_line_hit_offset(const Vector3 &start, const Vector3 &end, const bool &is_hit, const real_t &unit_offset_of_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	CALL_TO_DGC(draw_line_hit_offset, start, end, is_hit, unit_offset_of_hit, hit_size, hit_color, after_hit_color, duration);
 }
 
 #pragma region Normal
 
-void DebugDraw::draw_line(Vector3 a, Vector3 b, Color color, real_t duration) {
+void DebugDraw::draw_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_line, a, b, color, duration);
 }
 
-void DebugDraw::draw_lines(PackedVector3Array lines, Color color, real_t duration) {
+void DebugDraw::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_lines, lines, color, duration);
 }
 
-void DebugDraw::draw_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t duration) {
+void DebugDraw::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_ray, origin, direction, length, color, duration);
 }
 
-void DebugDraw::draw_line_path(PackedVector3Array path, Color color, real_t duration) {
+void DebugDraw::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_line_path, path, color, duration);
 }
 
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugDraw::draw_arrow(Transform3D transform, Color color, real_t duration) {
+void DebugDraw::draw_arrow(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_arrow, transform, color, duration);
 }
 
-void DebugDraw::draw_arrow_line(Vector3 a, Vector3 b, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
-	CALL_TO_DGC(draw_arrow_line, a, b, color, arrow_size, absolute_size, duration);
+void DebugDraw::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+	CALL_TO_DGC(draw_arrow_line, a, b, color, arrow_size, is_absolute_size, duration);
 }
 
-void DebugDraw::draw_arrow_ray(Vector3 origin, Vector3 direction, real_t length, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
-	CALL_TO_DGC(draw_arrow_ray, origin, direction, length, color, arrow_size, absolute_size, duration);
+void DebugDraw::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+	CALL_TO_DGC(draw_arrow_ray, origin, direction, length, color, arrow_size, is_absolute_size, duration);
 }
 
-void DebugDraw::draw_arrow_path(PackedVector3Array path, Color color, real_t arrow_size, bool absolute_size, real_t duration) {
-	CALL_TO_DGC(draw_arrow_path, path, color, arrow_size, absolute_size, duration);
+void DebugDraw::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+	CALL_TO_DGC(draw_arrow_path, path, color, arrow_size, is_absolute_size, duration);
 }
 
 #pragma endregion // Arrows
 #pragma region Points
 
-void DebugDraw::draw_point_path(PackedVector3Array path, real_t size, Color points_color, Color lines_color, real_t duration) {
+void DebugDraw::draw_point_path(const PackedVector3Array &path, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
 	CALL_TO_DGC(draw_point_path, path, size, points_color, lines_color, duration);
 }
 
@@ -700,38 +699,38 @@ void DebugDraw::draw_point_path(PackedVector3Array path, real_t size, Color poin
 #pragma endregion // Lines
 #pragma region Misc
 
-void DebugDraw::draw_square(Vector3 position, real_t size, Color color, real_t duration) {
+void DebugDraw::draw_square(const Vector3 &position, const real_t &size, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_square, position, size, color, duration);
 }
 
-void DebugDraw::draw_points(PackedVector3Array points, real_t size, Color color, real_t duration) {
+void DebugDraw::draw_points(const PackedVector3Array &points, const real_t &size, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_points, points, size, color, duration);
 }
 
-void DebugDraw::draw_position(Transform3D transform, Color color, real_t duration) {
+void DebugDraw::draw_position(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_position, transform, color, duration);
 }
 
-void DebugDraw::draw_gizmo(Transform3D transform, Color color, bool is_centered, real_t duration) {
+void DebugDraw::draw_gizmo(const Transform3D &transform, const Color &color, const bool &is_centered, const real_t &duration) {
 	CALL_TO_DGC(draw_gizmo, transform, color, is_centered, duration);
 }
 
-void DebugDraw::draw_grid(Vector3 origin, Vector3 x_size, Vector3 y_size, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
+void DebugDraw::draw_grid(const Vector3 &origin, const Vector3 &x_size, const Vector3 &y_size, const Vector2i &subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
 	CALL_TO_DGC(draw_grid, origin, x_size, y_size, subdivision, color, is_centered, duration);
 }
 
-void DebugDraw::draw_grid_xf(Transform3D transform, Vector2i subdivision, Color color, bool is_centered, real_t duration) {
-	CALL_TO_DGC(draw_grid_xf, transform, subdivision, color, is_centered, duration);
+void DebugDraw::draw_grid_xf(const Transform3D &transform, const Vector2i &_subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
+	CALL_TO_DGC(draw_grid_xf, transform, _subdivision, color, is_centered, duration);
 }
 
 #pragma region Camera Frustum
 
-void DebugDraw::draw_camera_frustum(class Camera3D *camera, Color color, real_t duration) {
+void DebugDraw::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {
 	CALL_TO_DGC(draw_camera_frustum, camera, color, duration);
 }
 
-void DebugDraw::draw_camera_frustum_planes(Array cameraFrustum, Color color, real_t duration) {
-	CALL_TO_DGC(draw_camera_frustum_planes, cameraFrustum, color, duration);
+void DebugDraw::draw_camera_frustum_planes(const Array &camera_frustum, const Color &color, const real_t &duration) {
+	CALL_TO_DGC(draw_camera_frustum_planes, camera_frustum, color, duration);
 }
 
 #pragma endregion // Camera Frustum
