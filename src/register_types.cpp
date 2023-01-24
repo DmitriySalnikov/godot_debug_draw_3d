@@ -2,6 +2,8 @@
 
 #include "data_graphs.h"
 #include "debug_draw.h"
+#include "debug_draw_config_2d.h"
+#include "debug_draw_config_3d.h"
 #include "utils.h"
 
 #if defined(_MSC_VER)
@@ -26,6 +28,8 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	}
 
 	ClassDB::register_class<DebugDraw>();
+	ClassDB::register_class<DebugDrawConfig2D>();
+	ClassDB::register_class<DebugDrawConfig3D>();
 	ClassDB::register_class<DebugDrawGraph>();
 	ClassDB::register_class<DebugDrawFPSGraph>();
 	ClassDB::register_class<DebugDrawSceneManager>();

@@ -167,11 +167,14 @@
     <None Include="addons\debug_draw_3d\debug_draw_3d.gdextension" />
     <None Include="lib_utils.py" />
     <None Include="SConstruct" />
+    <None Include="src\default_sources.json" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\colors.cpp" />
     <ClCompile Include="src\debug_draw.cpp" />
     <ClCompile Include="src\data_graphs.cpp" />
+    <ClCompile Include="src\debug_draw_config_2d.cpp" />
+    <ClCompile Include="src\debug_draw_config_3d.cpp" />
     <ClCompile Include="src\geometry_generators.cpp" />
     <ClCompile Include="src\grouped_text.cpp" />
     <ClCompile Include="src\math_utils.cpp" />
@@ -184,6 +187,8 @@
     <ClInclude Include="src\circular_buffer.h" />
     <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\debug_draw.h" />
+    <ClInclude Include="src\debug_draw_config_2d.h" />
+    <ClInclude Include="src\debug_draw_config_3d.h" />
     <ClInclude Include="src\draw_cache.h" />
     <ClInclude Include="src\data_graphs.h" />
     <ClInclude Include="src\geometry_generators.h" />

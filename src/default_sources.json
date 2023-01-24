@@ -2,6 +2,8 @@
 	"colors.cpp",
 	"data_graphs.cpp",
 	"debug_draw.cpp",
+	"debug_draw_config_2d.cpp",
+	"debug_draw_config_3d.cpp",
 	"debug_geometry_container.cpp",
 	"geometry_generators.cpp",
 	"grouped_text.cpp",

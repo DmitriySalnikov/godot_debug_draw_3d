@@ -10,7 +10,7 @@ extends Node3D
 
 @export_category("Text groups")
 @export var show_hints := true
-@export var text_groups_position := DebugDraw.POSITION_LEFT_TOP
+@export var text_groups_position := DebugDrawConfig2D.POSITION_LEFT_TOP
 @export var text_groups_offset := Vector2i(8, 8)
 @export var text_groups_padding := Vector2i(3, 1)
 @export_range(1, 100) var text_groups_default_font_size := 12
@@ -76,21 +76,21 @@ func _process(delta: float) -> void:
 	$LagTest.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
-	DebugDraw.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
+	DebugDraw.config_3d.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
 	DebugDraw.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	
 	# More property toggles
-	DebugDraw.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
-	DebugDraw.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
+	DebugDraw.config_3d.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
+	DebugDraw.config_3d.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
 	DebugDraw.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
-	DebugDraw.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	DebugDraw.config_3d.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_F1):
 		zylann_example = !zylann_example
 	if _is_key_just_pressed(KEY_LEFT):
-		DebugDraw.use_frustum_culling = !DebugDraw.use_frustum_culling
+		DebugDraw.config_3d.config_3d.use_frustum_culling = !DebugDraw.config_3d.use_frustum_culling
 	_update_keys_just_press()
 	
 	# Zones with black borders
@@ -183,19 +183,19 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
 	# 2D
-	DebugDraw.text_default_size = text_groups_default_font_size
-	DebugDraw.text_block_offset = text_groups_offset
-	DebugDraw.text_block_position = text_groups_position
-	DebugDraw.text_padding = text_groups_padding
+	DebugDraw.config_2d.text_default_size = text_groups_default_font_size
+	DebugDraw.config_2d.text_block_offset = text_groups_offset
+	DebugDraw.config_2d.text_block_position = text_groups_position
+	DebugDraw.config_2d.text_padding = text_groups_padding
 	
-	DebugDraw.text_custom_font = custom_font
+	DebugDraw.config_2d.text_custom_font = custom_font
 	
 	if test_text:
 		_text_tests()
 	
 	# Graphs
 	# Enable FPSGraph if not exists
-	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDraw.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
+	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDrawGraph.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDrawGraph.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
 	if Engine.is_editor_hint():
 		if DebugDraw.get_graph(&"FPS"):
 			DebugDraw.get_graph(&"FPS").offset = Vector2i(0, 64)
@@ -249,12 +249,12 @@ func _text_tests():
 	
 	if show_hints:
 		DebugDraw.begin_text_group("controls", 1024, Color.WHITE, false)
-		DebugDraw.set_text("Shift: change render layers", DebugDraw.geometry_render_layers, 1)
-		DebugDraw.set_text("Enter: freeze render", DebugDraw.freeze_3d_render, 2)
-		DebugDraw.set_text("Up: use scene camera", DebugDraw.force_use_camera_from_scene, 3)
+		DebugDraw.set_text("Shift: change render layers", DebugDraw.config_3d.geometry_render_layers, 1)
+		DebugDraw.set_text("Enter: freeze render", DebugDraw.config_3d.freeze_3d_render, 2)
+		DebugDraw.set_text("Up: use scene camera", DebugDraw.config_3d.force_use_camera_from_scene, 3)
 		DebugDraw.set_text("Down: toggle debug", DebugDraw.debug_enabled, 4)
-		DebugDraw.set_text("Left: toggle frustum culling", DebugDraw.use_frustum_culling, 5)
-		DebugDraw.set_text("Right: draw bounds for culling", DebugDraw.visible_instance_bounds, 6)
+		DebugDraw.set_text("Left: toggle frustum culling", DebugDraw.config_3d.use_frustum_culling, 5)
+		DebugDraw.set_text("Right: draw bounds for culling", DebugDraw.config_3d.visible_instance_bounds, 6)
 
 func _more_tests():
 	# Line hits render
@@ -277,14 +277,14 @@ func _draw_array_of_boxes():
 
 func _graph_test():
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps", true, true, DebugDrawGraph.TEXT_CURRENT, &"", DebugDrawGraph.SIDE_LEFT, DebugDraw.POSITION_RIGHT_TOP)
+	_create_graph(&"fps", true, true, DebugDrawGraph.TEXT_CURRENT, &"", DebugDrawGraph.SIDE_LEFT, DebugDrawGraph.POSITION_RIGHT_TOP)
 # warning-ignore:return_value_discarded
 	_create_graph(&"fps2", true, false, DebugDrawGraph.TEXT_CURRENT, &"fps", DebugDrawGraph.SIDE_BOTTOM, 0, Vector2i(200, 100))
 # warning-ignore:return_value_discarded
 	_create_graph(&"Sin Wave!", false, true, DebugDrawGraph.TEXT_CURRENT, &"fps2", DebugDrawGraph.SIDE_BOTTOM)
 	
 # warning-ignore:return_value_discarded
-	_create_graph(&"randf", false, true, DebugDrawGraph.TEXT_AVG, &"", DebugDrawGraph.SIDE_LEFT, DebugDraw.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
+	_create_graph(&"randf", false, true, DebugDrawGraph.TEXT_AVG, &"", DebugDrawGraph.SIDE_LEFT, DebugDrawGraph.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
 # warning-ignore:return_value_discarded
 	_create_graph(&"fps5", true, true, DebugDrawGraph.TEXT_ALL, &"randf", DebugDrawGraph.SIDE_TOP)
 # warning-ignore:return_value_discarded
@@ -295,7 +295,7 @@ func _graph_test():
 # warning-ignore:return_value_discarded
 	_create_graph(&"fps7", true, false, DebugDrawGraph.TEXT_ALL, &"FPS", DebugDrawGraph.SIDE_BOTTOM)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps8", true, true, DebugDrawGraph.TEXT_ALL, &"", DebugDrawGraph.SIDE_TOP, DebugDraw.POSITION_LEFT_BOTTOM)
+	_create_graph(&"fps8", true, true, DebugDrawGraph.TEXT_ALL, &"", DebugDrawGraph.SIDE_TOP, DebugDrawGraph.POSITION_LEFT_BOTTOM)
 # warning-ignore:return_value_discarded
 	_create_graph(&"fps9", true, false, DebugDrawGraph.TEXT_ALL, &"fps8", DebugDrawGraph.SIDE_RIGHT)
 # warning-ignore:return_value_discarded
@@ -323,7 +323,7 @@ func _graph_test():
 	DebugDraw.graph_update_data(&"randf", randf())
 
 func _upd_graph_params():
-	DebugDraw.graphs_base_offset = graph_offset
+	DebugDraw.config_2d.graphs_base_offset = graph_offset
 	for g in [&"FPS", &"fps5", &"fps8"]:
 		var graph := DebugDraw.get_graph(g) as DebugDrawFPSGraph
 		if graph:

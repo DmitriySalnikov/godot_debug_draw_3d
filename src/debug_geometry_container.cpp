@@ -1,5 +1,6 @@
 #include "debug_geometry_container.h"
 #include "debug_draw.h"
+#include "debug_draw_config_3d.h"
 #include "utils.h"
 
 #if defined(_MSC_VER)
@@ -145,7 +146,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(datalock);
 
 	// Don't clear geometry if freezed
-	if (owner->is_freeze_3d_render())
+	if (owner->get_config_3d()->is_freeze_3d_render())
 		return;
 
 	immediate_mesh_storage.mesh->clear_surfaces();
@@ -160,6 +161,11 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		return;
 	}
 
+	// Update render layers
+	if (render_layers != owner->get_config_3d()->get_geometry_render_layers()) {
+		set_render_layer_mask(owner->get_config_3d()->get_geometry_render_layers());
+	}
+
 	// TODO: try to get all active cameras inside scene to properly calculate visibilty for SubViewports
 
 	// Get camera frustum
@@ -171,15 +177,16 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		}
 	}
 
+	// Collect frustums and camera positions
 	std::vector<std::vector<Plane> > frustum_planes;
 	std::vector<Vector3> cameras_positions;
-	if (owner->is_use_frustum_culling()) {
-		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewport();
+	if (owner->get_config_3d()->is_use_frustum_culling()) {
+		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewports();
 		std::vector<Array> frustum_arrays;
 
 		frustum_arrays.reserve(1);
 		cameras_positions.reserve(1);
-		if ((owner->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
+		if ((owner->get_config_3d()->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
 			cameras_positions.push_back(vp_cam->get_position());
 		} else if (owner->get_custom_viewport()) {
@@ -215,7 +222,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.update_visibility(frustum_planes);
 
 	// Debug bounds of instances and lines
-	if (owner->is_visible_instance_bounds()) {
+	if (owner->get_config_3d()->is_visible_instance_bounds()) {
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
 		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
@@ -289,11 +296,17 @@ Dictionary DebugGeometryContainer::get_render_stats() {
 }
 
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
+	LOCK_GUARD(datalock);
 	RenderingServer *rs = RS();
 	for (auto &mmi : multi_mesh_storage)
 		rs->instance_set_layer_mask(mmi.instance, layers);
 
 	rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
+	render_layers = layers;
+}
+
+int32_t DebugGeometryContainer::get_render_layer_mask() const {
+	return render_layers;
 }
 
 void DebugGeometryContainer::create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
@@ -410,17 +423,17 @@ void DebugGeometryContainer::draw_aabb_ab(const Vector3 &a, const Vector3 &b, co
 void DebugGeometryContainer::draw_line_hit(const Vector3 &start, const Vector3 &end, const Vector3 &hit, const bool &is_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	LOCK_GUARD(datalock);
 	if (is_hit) {
-		geometry_pool.add_or_update_line(duration, { start, hit }, hit_color == Colors::empty_color ? owner->get_line_hit_color() : hit_color);
-		geometry_pool.add_or_update_line(duration, { hit, end }, after_hit_color == Colors::empty_color ? owner->get_line_after_hit_color() : after_hit_color);
+		geometry_pool.add_or_update_line(duration, { start, hit }, hit_color == Colors::empty_color ? owner->get_config_3d()->get_line_hit_color() : hit_color);
+		geometry_pool.add_or_update_line(duration, { hit, end }, after_hit_color == Colors::empty_color ? owner->get_config_3d()->get_line_after_hit_color() : after_hit_color);
 
 		geometry_pool.add_or_update_instance(
 				InstanceType::BILLBOARD_SQUARES,
 				duration,
 				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
-				hit_color == Colors::empty_color ? owner->get_line_hit_color() : hit_color,
+				hit_color == Colors::empty_color ? owner->get_config_3d()->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size));
 	} else {
-		geometry_pool.add_or_update_line(duration, { start, end }, hit_color == Colors::empty_color ? owner->get_line_hit_color() : hit_color);
+		geometry_pool.add_or_update_line(duration, { start, end }, hit_color == Colors::empty_color ? owner->get_config_3d()->get_line_hit_color() : hit_color);
 	}
 }
 

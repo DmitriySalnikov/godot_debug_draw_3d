@@ -14,3 +14,6 @@ transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.74623e-08, 1, 1.11759e-0
 
 [node name="Settings" parent="." index="20"]
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
+
+[node name="Button" parent="Settings/GC/VB/H" index="1"]
+text = "Switch to GDScript"

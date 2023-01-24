@@ -23,8 +23,10 @@ using namespace godot;
 
 class DataGraphManager;
 class DebugDrawSceneManager;
-class DebugGeometryContainer;
+class DebugDrawConfig2D;
+class DebugDrawConfig3D;
 class DebugDrawGraph;
+class DebugGeometryContainer;
 class GroupedText;
 
 class DebugDraw : public Object {
@@ -32,14 +34,6 @@ class DebugDraw : public Object {
 
 	friend DebugDrawSceneManager;
 	static DebugDraw *singleton;
-
-public:
-	enum BlockPosition : int {
-		POSITION_LEFT_TOP = 0,
-		POSITION_RIGHT_TOP = 1,
-		POSITION_LEFT_BOTTOM = 2,
-		POSITION_RIGHT_BOTTOM = 3,
-	};
 
 private:
 	std::vector<SubViewport *> custom_editor_viewports;
@@ -71,6 +65,7 @@ private:
 		return singleton;
 	};
 
+	void _on_canvas_marked_dirty();
 	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
 
@@ -88,57 +83,16 @@ private:
 
 	// GENERAL
 
-	// TODO: move settings to dedicated storage classes
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
-	/// Freezing 3d debugging instances
-	bool freeze_3d_render = false;
-	/// Debug for debug...
-	bool visible_instance_bounds = false;
-	/// Geometry culling based on camera frustum.
-	/// It is not recommended to use with the current implementation.
-	// TODO: add distance-based culling
-	bool use_frustum_culling = false;
-	/// Force use camera placed on edited scene.
-	/// Usable for editor.
-	bool force_use_camera_from_scene = false;
-	/// Base offset for all graphs
-	Vector2i graphs_base_offset = Vector2i(8, 8);
-	/// Layers on which the geometry will be displayed
-	int32_t geometry_render_layers = 1;
-
-	// TEXT
-
-	/// Position of text block
-	BlockPosition text_block_position = BlockPosition::POSITION_LEFT_TOP;
-	/// Offset from the corner selected in 'text_block_position'
-	Vector2i text_block_offset = Vector2i(8, 8);
-	/// Text padding for each line
-	Vector2i text_padding = Vector2i(3, 1);
-	/// How long text remain shown after being invoked.
-	real_t text_default_duration = 0.5f;
-	/// Default text size
-	int text_default_size = 12;
-	/// Default color of the text
-	Color text_foreground_color = Colors::white;
-	/// Background color of the text
-	Color text_background_color = Colors::gray_bg;
-	/// Custom text Font
-	Ref<Font> text_custom_font = nullptr;
-
-	// GEOMETRY
-
-	/// Default color of line with hit
-	Color line_hit_color = Colors::red;
-	/// Default color of line after hit
-	Color line_after_hit_color = Colors::green;
-
-	// Misc
-
 	/// Custom 'Viewport' to use for frustum culling.
 	Viewport *custom_viewport = nullptr;
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
 	Control *custom_canvas = nullptr;
+
+	Ref<DebugDrawConfig2D> config_2d;
+	Ref<DebugDrawConfig3D> config_3d;
+
 #pragma endregion // Exposed Parameter Values
 
 protected:
@@ -155,68 +109,26 @@ public:
 
 	Node *get_root_node();
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
-	std::vector<SubViewport *> get_custom_editor_viewport();
+	std::vector<SubViewport *> get_custom_editor_viewports();
 
 #pragma region Exposed Parameters
 	void set_empty_color(const Color &_col);
-	Color get_empty_color();
+	Color get_empty_color() const;
 
 	void set_debug_enabled(const bool &_state);
-	bool is_debug_enabled();
+	bool is_debug_enabled() const;
 
-	void set_freeze_3d_render(const bool &_state);
-	bool is_freeze_3d_render();
+	void set_config_2d(Ref<DebugDrawConfig2D> _cfg);
+	Ref<DebugDrawConfig2D> get_config_2d() const;
 
-	void set_visible_instance_bounds(const bool &_state);
-	bool is_visible_instance_bounds();
-
-	void set_use_frustum_culling(const bool &_state);
-	bool is_use_frustum_culling();
-
-	void set_force_use_camera_from_scene(const bool &_state);
-	bool is_force_use_camera_from_scene();
-
-	void set_graphs_base_offset(const Vector2i &_offset);
-	Vector2i get_graphs_base_offset();
-
-	void set_geometry_render_layers(const int32_t &_layers);
-	int32_t get_geometry_render_layers();
-
-	void set_text_block_position(BlockPosition _position);
-	BlockPosition get_text_block_position();
-
-	void set_text_block_offset(const Vector2i &_offset);
-	Vector2i get_text_block_offset();
-
-	void set_text_padding(const Vector2i &_padding);
-	Vector2i get_text_padding();
-
-	void set_text_default_duration(const real_t &_duration);
-	real_t get_text_default_duration();
-
-	void set_text_default_size(const int &_size);
-	int get_text_default_size();
-
-	void set_text_foreground_color(const Color &_new_color);
-	Color get_text_foreground_color();
-
-	void set_text_background_color(const Color &_new_color);
-	Color get_text_background_color();
-
-	void set_text_custom_font(const Ref<Font> &_custom_font);
-	Ref<Font> get_text_custom_font();
-
-	void set_line_hit_color(const Color &_new_color);
-	Color get_line_hit_color();
-
-	void set_line_after_hit_color(const Color &_new_color);
-	Color get_line_after_hit_color();
+	void set_config_3d(Ref<DebugDrawConfig3D> _cfg);
+	Ref<DebugDrawConfig3D> get_config_3d() const;
 
 	void set_custom_viewport(Viewport *_viewport);
-	Viewport *get_custom_viewport();
+	Viewport *get_custom_viewport() const;
 
 	void set_custom_canvas(Control *_canvas);
-	Control *get_custom_canvas();
+	Control *get_custom_canvas() const;
 #pragma endregion // Exposed Parametes
 
 #pragma region Exposed Draw Functions
@@ -369,7 +281,7 @@ public:
 	/// color: Arrow color
 	/// duration: Duration of existence in seconds
 	void draw_arrow(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0);
-	
+
 	/// Draw line with arrow
 	/// a: Start point
 	/// b: End point
@@ -426,20 +338,20 @@ public:
 	/// size: Size of squares
 	/// duration: Duration of existence in seconds
 	void draw_points(const PackedVector3Array &points, const real_t &size = 0.25f, const Color &color = Colors::empty_color, const real_t &duration = 0);
-	
+
 	/// Draw 3 intersecting lines with the given transformations
 	/// transform: Transform3D of lines
 	/// color: Color
 	/// duration: Duration of existence in seconds
 	void draw_position(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0);
-	
+
 	/// Draw 3 lines with the given transformations and arrows at the ends
 	/// transform: Transform3D of lines
 	/// color: Color
 	/// is_centered: If 'true', then the lines will intersect in the center of the transform
 	/// duration: Duration of existence in seconds
 	void draw_gizmo(const Transform3D &transform, const Color &color = Colors::empty_color, const bool &is_centered = false, const real_t &duration = 0);
-	
+
 	/// Draw simple grid with given size and subdivision
 	/// origin: Grid origin
 	/// x_size: Direction and size of the X side. As an axis in the Basis.
@@ -465,7 +377,7 @@ public:
 	/// color: Color
 	/// duration: Duration of existence in seconds
 	void draw_camera_frustum(const class Camera3D *camera, const Color &color = Colors::empty_color, const real_t &duration = 0);
-	
+
 	/// Draw camera frustum area
 	/// cameraFrustum: Array of frustum planes
 	/// color: Color
@@ -533,8 +445,6 @@ public:
 #pragma endregion // 2D
 #pragma endregion // Exposed Draw Functions
 };
-
-VARIANT_ENUM_CAST(DebugDraw::BlockPosition);
 
 class DebugDrawSceneManager : public CanvasLayer {
 	GDCLASS(DebugDrawSceneManager, CanvasLayer)

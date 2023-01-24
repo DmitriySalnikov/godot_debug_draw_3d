@@ -72,8 +72,7 @@ public:
 			group_color(Color()),
 			title_size(14),
 			text_size(12),
-			owner(nullptr){
-			};
+			owner(nullptr){};
 	TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
 	void cleanup_texts(const std::function<void()> &_update, const double &_delta);
 };

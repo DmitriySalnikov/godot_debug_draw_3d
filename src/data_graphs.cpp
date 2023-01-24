@@ -1,5 +1,6 @@
 #include "data_graphs.h"
 #include "debug_draw.h"
+#include "debug_draw_config_2d.h"
 #include "math_utils.h"
 #include "utils.h"
 
@@ -24,7 +25,7 @@ void DebugDrawGraph::_bind_methods() {
 	REG_PROP(corner, Variant::INT);
 	REG_PROP(line_width, Variant::FLOAT);
 	REG_PROP(line_color, Variant::COLOR);
-	//REG_PROP(line_position, Variant::INT);
+	// REG_PROP(line_position, Variant::INT);
 	REG_PROP(background_color, Variant::COLOR);
 	REG_PROP(border_color, Variant::COLOR);
 	REG_PROP(text_suffix, Variant::STRING);
@@ -104,13 +105,13 @@ bool DebugDrawGraph::is_show_title() const {
 	return show_title;
 }
 
-//void DebugDrawGraph::set_line_position(const GraphLinePosition _position) {
+// void DebugDrawGraph::set_line_position(const GraphLinePosition _position) {
 //	line_position = _position;
-//}
+// }
 //
-//DebugDrawGraph::GraphLinePosition DebugDrawGraph::get_line_position() const {
+// DebugDrawGraph::GraphLinePosition DebugDrawGraph::get_line_position() const {
 //	return line_position;
-//}
+// }
 
 void DebugDrawGraph::set_show_text_flags(const BitField<TextFlags> _flags) {
 	show_text_flags = _flags;
@@ -471,7 +472,7 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 		Vector2 size = rects.base.size - Vector2(1, 3);
 		double difference = max - min;
 		double size_multiplier_x = size.x / (get_buffer_size() - 2);
-		//double size_multiplier_y = difference != 0.0 ? size.y / Math::remap(buffer_data->get(0), min, max, graph_range.min, graph_range.max) : 0.0;
+		// double size_multiplier_y = difference != 0.0 ? size.y / Math::remap(buffer_data->get(0), min, max, graph_range.min, graph_range.max) : 0.0;
 		PackedVector2Array line_points;
 
 		// TODO: return the line to the center
@@ -679,7 +680,7 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, 
 		populate_nodes(&n);
 	}
 
-	Vector2 base_offset = owner->get_graphs_base_offset();
+	Vector2 base_offset = owner->get_config_2d()->get_graphs_base_offset();
 	Rect2i base_rect[DebugDrawGraph::POSITION_MAX] = {
 		Rect2i(base_offset, Vector2i()), // left_top
 		Rect2i(Vector2(_vp_size.x - base_offset.x, base_offset.y), Vector2i()), // right_top

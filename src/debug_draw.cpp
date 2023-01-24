@@ -1,9 +1,11 @@
 #include "debug_draw.h"
-#include "utils.h"
 
 #include "data_graphs.h"
+#include "debug_draw_config_2d.h"
+#include "debug_draw_config_3d.h"
 #include "debug_geometry_container.h"
 #include "grouped_text.h"
+#include "utils.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244)
@@ -37,37 +39,18 @@ void DebugDraw::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw::get_singleton_gdscript);
 
+	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_marked_dirty)), &DebugDraw::_on_canvas_marked_dirty);
 	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
 	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw::_on_scene_changed);
 	ClassDB::bind_method(D_METHOD(TEXT(_scene_tree_found)), &DebugDraw::_scene_tree_found);
-
-#pragma region Constants
-
-	BIND_ENUM_CONSTANT(POSITION_LEFT_TOP);
-	BIND_ENUM_CONSTANT(POSITION_RIGHT_TOP);
-	BIND_ENUM_CONSTANT(POSITION_LEFT_BOTTOM);
-	BIND_ENUM_CONSTANT(POSITION_RIGHT_BOTTOM);
 
 #pragma region Parameters
 
 	REG_PROP(empty_color, Variant::COLOR);
 	REG_PROP_BOOL(debug_enabled);
-	REG_PROP_BOOL(freeze_3d_render);
-	REG_PROP_BOOL(visible_instance_bounds);
-	REG_PROP_BOOL(use_frustum_culling);
-	REG_PROP_BOOL(force_use_camera_from_scene);
-	REG_PROP(graphs_base_offset, Variant::VECTOR2I);
-	REG_PROP(geometry_render_layers, Variant::INT);
-	REG_PROP(text_block_position, Variant::INT);
-	REG_PROP(text_block_offset, Variant::VECTOR2I);
-	REG_PROP(text_padding, Variant::VECTOR2I);
-	REG_PROP(text_default_duration, Variant::FLOAT);
-	REG_PROP(text_default_size, Variant::INT);
-	REG_PROP(text_foreground_color, Variant::COLOR);
-	REG_PROP(text_background_color, Variant::COLOR);
-	REG_PROP(text_custom_font, Variant::OBJECT);
-	REG_PROP(line_hit_color, Variant::COLOR);
-	REG_PROP(line_after_hit_color, Variant::COLOR);
+
+	REG_PROP(config_2d, Variant::OBJECT);
+	REG_PROP(config_3d, Variant::OBJECT);
 
 	REG_PROP(custom_viewport, Variant::OBJECT);
 	REG_PROP(custom_canvas, Variant::OBJECT);
@@ -166,6 +149,9 @@ Node *DebugDraw::_get_current_scene() {
 }
 
 void DebugDraw::_scene_tree_found() {
+	set_config_2d(nullptr);
+	set_config_3d(nullptr);
+
 	root_node = memnew(DebugDrawSceneManager);
 	SCENE_ROOT()->add_child(root_node);
 	SCENE_ROOT()->move_child(root_node, 0);
@@ -192,12 +178,6 @@ void DebugDraw::_on_scene_changed(bool _is_scene_null) {
 }
 
 void DebugDraw::enter_tree() {
-	if (IS_EDITOR_HINT()) {
-		text_block_position = BlockPosition::POSITION_LEFT_BOTTOM;
-		text_block_offset = Vector2(24, 24);
-		graphs_base_offset = Vector2(12, 72);
-	}
-
 	root_node->set_process_priority(INT32_MAX);
 
 	grouped_text = std::make_unique<GroupedText>();
@@ -223,7 +203,7 @@ void DebugDraw::ready() {
 	is_ready = true;
 
 	// Usefull nodes and names:
-	// CanvasItemEditor - probobly 2D editor viewport
+	// CanvasItemEditor - probably 2D editor viewport
 	// Node3DEditorViewportContainer - base 3D viewport
 	// Node3DEditorViewportContainer/Node3DEditorViewport - base of 1 of 4 viewports
 	// Node3DEditorViewportContainer/Node3DEditorViewport/SubViewportContainer/SubViewport/Camera3D
@@ -329,6 +309,10 @@ void DebugDraw::process(double delta) {
 	}
 }
 
+void DebugDraw::_on_canvas_marked_dirty() {
+	mark_canvas_dirty();
+}
+
 void DebugDraw::_on_canvas_item_draw(Control *ci) {
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
@@ -352,14 +336,14 @@ void DebugDraw::set_custom_editor_viewport(std::vector<SubViewport *> _viewports
 	custom_editor_viewports = _viewports;
 }
 
-std::vector<SubViewport *> DebugDraw::get_custom_editor_viewport() {
+std::vector<SubViewport *> DebugDraw::get_custom_editor_viewports() {
 	return custom_editor_viewports;
 }
 
 void DebugDraw::set_empty_color(const Color &_col) {
 }
 
-Color DebugDraw::get_empty_color() {
+Color DebugDraw::get_empty_color() const {
 	return Colors::empty_color;
 }
 
@@ -373,164 +357,48 @@ void DebugDraw::set_debug_enabled(const bool &_state) {
 	}
 }
 
-bool DebugDraw::is_debug_enabled() {
+bool DebugDraw::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw::set_freeze_3d_render(const bool &_state) {
-	freeze_3d_render = _state;
+void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
+	if (_cfg.is_valid()) {
+		if (_cfg->is_connected(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty))))
+			_cfg->disconnect(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+
+		config_2d = _cfg;
+	} else {
+		config_2d = Ref<DebugDrawConfig2D>();
+		config_2d.instantiate();
+	}
+
+	mark_canvas_dirty();
+	if (!config_2d->is_connected(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty))))
+		config_2d->connect(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
 }
 
-bool DebugDraw::is_freeze_3d_render() {
-	return freeze_3d_render;
+Ref<DebugDrawConfig2D> DebugDraw::get_config_2d() const {
+	return config_2d;
 }
 
-void DebugDraw::set_visible_instance_bounds(const bool &_state) {
-	visible_instance_bounds = _state;
-}
-
-bool DebugDraw::is_visible_instance_bounds() {
-	return visible_instance_bounds;
-}
-
-void DebugDraw::set_use_frustum_culling(const bool &_state) {
-	use_frustum_culling = _state;
-}
-
-bool DebugDraw::is_use_frustum_culling() {
-	return use_frustum_culling;
-}
-
-void DebugDraw::set_force_use_camera_from_scene(const bool &_state) {
-	force_use_camera_from_scene = _state;
-}
-
-bool DebugDraw::is_force_use_camera_from_scene() {
-	return force_use_camera_from_scene;
-}
-
-void DebugDraw::set_graphs_base_offset(const Vector2i &_offset) {
-	if (graphs_base_offset != _offset)
-		mark_canvas_dirty();
-	graphs_base_offset = _offset;
-}
-
-Vector2i DebugDraw::get_graphs_base_offset() {
-	return graphs_base_offset;
-}
-
-void DebugDraw::set_geometry_render_layers(const int32_t &_layers) {
-	if (geometry_render_layers != _layers) {
-		dgc->set_render_layer_mask(_layers);
-		geometry_render_layers = _layers;
+void DebugDraw::set_config_3d(Ref<DebugDrawConfig3D> _cfg) {
+	if (_cfg.is_valid()) {
+		config_3d = _cfg;
+	} else {
+		config_3d = Ref<DebugDrawConfig3D>();
+		config_3d.instantiate();
 	}
 }
 
-int32_t DebugDraw::get_geometry_render_layers() {
-	return geometry_render_layers;
-}
-
-void DebugDraw::set_text_block_position(BlockPosition _position) {
-	if (text_block_position != (BlockPosition)_position)
-		mark_canvas_dirty();
-	text_block_position = (BlockPosition)_position;
-}
-
-DebugDraw::BlockPosition DebugDraw::get_text_block_position() {
-	return (BlockPosition)text_block_position;
-}
-
-void DebugDraw::set_text_block_offset(const Vector2i &_offset) {
-	if (text_block_offset != _offset)
-		mark_canvas_dirty();
-	text_block_offset = _offset;
-}
-
-Vector2i DebugDraw::get_text_block_offset() {
-	return text_block_offset;
-}
-
-void DebugDraw::set_text_padding(const Vector2i &_padding) {
-	if (text_padding != _padding)
-		mark_canvas_dirty();
-	text_padding = _padding;
-	text_padding.x = Math::clamp(text_padding.x, 0, INT_MAX);
-	text_padding.y = Math::clamp(text_padding.y, 0, INT_MAX);
-}
-
-Vector2i DebugDraw::get_text_padding() {
-	return text_padding;
-}
-
-void DebugDraw::set_text_default_duration(const real_t &_duration) {
-	text_default_duration = _duration;
-}
-
-real_t DebugDraw::get_text_default_duration() {
-	return text_default_duration;
-}
-
-void DebugDraw::set_text_default_size(const int &_size) {
-	if (text_default_size != _size)
-		mark_canvas_dirty();
-	text_default_size = Math::clamp(_size, 1, INT_MAX);
-}
-
-int DebugDraw::get_text_default_size() {
-	return text_default_size;
-}
-
-void DebugDraw::set_text_foreground_color(const Color &_new_color) {
-	if (text_foreground_color != _new_color)
-		mark_canvas_dirty();
-	text_foreground_color = _new_color;
-}
-
-Color DebugDraw::get_text_foreground_color() {
-	return text_foreground_color;
-}
-
-void DebugDraw::set_text_background_color(const Color &_new_color) {
-	if (text_background_color != _new_color)
-		mark_canvas_dirty();
-	text_background_color = _new_color;
-}
-
-Color DebugDraw::get_text_background_color() {
-	return text_background_color;
-}
-
-void DebugDraw::set_text_custom_font(const Ref<Font> &_custom_font) {
-	if (text_custom_font != _custom_font)
-		mark_canvas_dirty();
-	text_custom_font = _custom_font;
-}
-
-Ref<Font> DebugDraw::get_text_custom_font() {
-	return text_custom_font;
-}
-
-void DebugDraw::set_line_hit_color(const Color &_new_color) {
-	line_hit_color = _new_color;
-}
-
-Color DebugDraw::get_line_hit_color() {
-	return line_hit_color;
-}
-
-void DebugDraw::set_line_after_hit_color(const Color &_new_color) {
-	line_after_hit_color = _new_color;
-}
-
-Color DebugDraw::get_line_after_hit_color() {
-	return line_after_hit_color;
+Ref<DebugDrawConfig3D> DebugDraw::get_config_3d() const {
+	return config_3d;
 }
 
 void DebugDraw::set_custom_viewport(Viewport *_viewport) {
 	custom_viewport = _viewport;
 }
 
-Viewport *DebugDraw::get_custom_viewport() {
+Viewport *DebugDraw::get_custom_viewport() const {
 	return custom_viewport;
 }
 
@@ -559,7 +427,7 @@ void DebugDraw::set_custom_canvas(Control *_canvas) {
 	custom_canvas = _canvas;
 }
 
-Control *DebugDraw::get_custom_canvas() {
+Control *DebugDraw::get_custom_canvas() const {
 	return custom_canvas;
 }
 
@@ -592,8 +460,8 @@ void DebugDraw::clear_all() {
 
 #pragma region 3D
 
-#define CALL_TO_DGC(func, ...)                          \
-	if (!dgc || NEED_LEAVE || freeze_3d_render) return; \
+#define CALL_TO_DGC(func, ...)                                          \
+	if (!dgc || NEED_LEAVE || config_3d->is_freeze_3d_render()) return; \
 	dgc->func(__VA_ARGS__)
 
 #pragma region Spheres
