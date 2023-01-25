@@ -245,7 +245,7 @@ std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, cons
 		lons = 4;
 
 	std::vector<Vector3> res;
-	res.resize(lats * lons * 6);
+	res.resize((size_t)lats * (size_t)lons * 6);
 
 	int total = 0;
 	for (int i = 1; i <= lats; i++) {
@@ -289,7 +289,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(const int &edges, co
 	real_t angle = 360.f / edges;
 
 	std::vector<Vector3> points;
-	points.reserve(size_t(4 * edges + ((edges / draw_edge_each_n_step) * 2)));
+	points.reserve(4 * (size_t)edges + (((size_t)edges / (size_t)draw_edge_each_n_step) * 2));
 
 	Vector3 d = Vector3(0, height, 0);
 	for (int i = 0; i < edges; i++) {

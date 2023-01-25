@@ -84,7 +84,7 @@ class GroupedText {
 	TextGroupItem_ptr item_for_title_of_groups;
 	std::unordered_set<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;
-	class DebugDraw *owner;
+	class DebugDraw *owner = nullptr;
 	std::recursive_mutex datalock;
 
 	void _create_new_default_groupd_if_needed();

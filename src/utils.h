@@ -136,8 +136,35 @@ class Utils {
 public:
 	static void logv(const char *p_format, bool p_err, bool p_force_print, ...);
 	static void print_logs();
-	static godot::Node *find_node_by_class(godot::Node *start_node, godot::String *class_name);
+
+	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
 	static godot::String get_scene_tree_as_string(godot::Node *start);
+
+	template<class T>
+	static bool connect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr) {
+		if (godot::UtilityFunctions::is_instance_valid(p_inst) && !p_inst->is_connected(p_signal, p_callable)) {
+			godot::Error err = p_inst->connect(p_signal, p_callable, p_flags);
+			if (p_out_error)
+				*p_out_error = err;
+			return true;
+		}
+		return false;
+	}
+
+	template <class T>
+	static bool disconnect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable) {
+		if (godot::UtilityFunctions::is_instance_valid(p_inst) && p_inst->is_connected(p_signal, p_callable)) {
+			p_inst->disconnect(p_signal, p_callable);
+			return true;
+		}
+		return false;
+	}
+
+	template <class T>
+	static bool swap_connection(T p_inst_new, T p_inst_old, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr) {
+		disconnect_safe(p_inst_old, p_signal, p_callable);
+		return connect_safe(p_inst_new, p_signal, p_callable, p_flags, p_out_error);
+	}
 
 	template <class TPool, class TContainer>
 	static TPool convert_to_pool_array(TContainer &arr) {
@@ -160,7 +187,7 @@ public:
 	}
 
 	template <class T>
-	static typename std::vector<T>::const_iterator find(const std::vector<T> &arr, std::function<bool(T)> search) {
+	static typename std::vector<T>::const_iterator find(const std::vector<T> &arr, const std::function<bool(T)> &search) {
 		for (auto it = arr.begin(); it != arr.end(); it++) {
 			if (search(*it))
 				return it;
@@ -169,9 +196,9 @@ public:
 	}
 
 	template <class TVal, class TFun>
-	static void remove_where(std::unordered_set<TVal> *set, const TFun &checker_bool_val, const std::function<void(TVal)> &deleter = nullptr) {
+	static void remove_where(std::unordered_set<TVal> &set, const TFun &checker_bool_val, const std::function<void(TVal)> &deleter = nullptr) {
 		std::unordered_set<TVal> to_remove;
-		for (const TVal &t : *set) {
+		for (const TVal &t : set) {
 			if (checker_bool_val(t)) {
 				to_remove.insert(t);
 			}
@@ -180,22 +207,22 @@ public:
 			if (deleter) {
 				deleter(t);
 			}
-			(*set).erase(t);
+			set.erase(t);
 		}
 	}
 
 	template <class TVal, class TFun>
-	static int sum(const std::unordered_set<TVal> *set, TFun getter_int_val) {
+	static int sum(const std::unordered_set<TVal> &set, const TFun &getter_int_val) {
 		int res = 0;
-		for (const TVal &t : *set) {
+		for (const TVal &t : set) {
 			res += getter_int_val(t);
 		}
 		return res;
 	}
 
 	template <class TVal, class TFun>
-	inline static std::vector<TVal> order_by(const std::unordered_set<TVal> *set, const TFun &comparator_bool_tval_tval) {
-		std::vector<TVal> ordered((*set).begin(), (*set).end());
+	static std::vector<TVal> order_by(const std::unordered_set<TVal> &set, const TFun &comparator_bool_tval_tval) {
+		std::vector<TVal> ordered(set.begin(), set.end());
 
 		std::sort(ordered.begin(), ordered.end(), comparator_bool_tval_tval);
 		return ordered;

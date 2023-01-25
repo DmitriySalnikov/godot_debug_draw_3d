@@ -143,7 +143,7 @@ void GroupedText::clear_text() {
 void GroupedText::cleanup_text(const double &delta) {
 	LOCK_GUARD(datalock);
 	// Clean texts
-	Utils::remove_where(&_text_groups, [](auto g) { return g->Texts.size() == 0; });
+	Utils::remove_where(_text_groups, [](auto g) { return g->Texts.size() == 0; });
 
 	for (const TextGroup_ptr &g : _text_groups) {
 		std::function<void()> upd_txt([this] { owner->mark_canvas_dirty(); });
@@ -253,11 +253,11 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 				break;
 		}
 
-		std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(&_text_groups,
+		std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(_text_groups,
 				[](TextGroup_ptr const &a, TextGroup_ptr const &b) { return a->get_group_priority() < b->get_group_priority(); });
 
 		for (const TextGroup_ptr &g : ordered_groups) {
-			auto group_items = Utils::order_by(&g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
+			auto group_items = Utils::order_by(g->Texts, [](TextGroupItem_ptr const &a, TextGroupItem_ptr const &b) {
 				return a->priority < b->priority || (a->priority == b->priority && a->key.naturalnocasecmp_to(b->key) < 0);
 			});
 

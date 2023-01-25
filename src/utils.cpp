@@ -26,6 +26,10 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 
 	std::string s;
 
+#if defined(_MSC_VER)
+#pragma warning(disable : 6387)
+#endif
+
 	if (len >= static_buf_size) {
 		char *buf_alloc = (char *)malloc((size_t)len + 1);
 		vsnprintf(buf_alloc, (size_t)len + 1, p_format, list_copy);
@@ -35,6 +39,10 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 		s = buf;
 	}
 	va_end(list_copy);
+
+#if defined(_MSC_VER)
+#pragma warning(default : 6387)
+#endif
 
 	size_t hsh = std::hash<std::string>()(s);
 
@@ -74,10 +82,10 @@ void Utils::print_logs() {
 #endif
 }
 
-Node *Utils::find_node_by_class(Node *start_node, String *class_name) {
+Node *Utils::find_node_by_class(Node *start_node, const String &class_name) {
 	for (int i = 0; i < start_node->get_child_count(); i++) {
 		auto c = start_node->get_child(i);
-		if (c->get_class() == *class_name)
+		if (c->get_class() == class_name)
 			return c;
 		auto nc = find_node_by_class(c, class_name);
 		if (nc)
@@ -86,7 +94,7 @@ Node *Utils::find_node_by_class(Node *start_node, String *class_name) {
 	return nullptr;
 }
 
-godot::String Utils::get_scene_tree_as_string(godot::Node *start) {
+String Utils::get_scene_tree_as_string(Node *start) {
 	String output = "";
 	std::function<void(Node *, int)> get_node_tree;
 	get_node_tree = [&output, &get_node_tree](Node *node, int depth) {
@@ -99,4 +107,4 @@ godot::String Utils::get_scene_tree_as_string(godot::Node *start) {
 
 	get_node_tree(start, 0);
 	return output;
-};
+}

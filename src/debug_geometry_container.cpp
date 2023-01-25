@@ -281,8 +281,6 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.reset_counter(delta);
 }
 
-#include <godot_cpp/variant/dictionary.hpp>
-
 Dictionary DebugGeometryContainer::get_render_stats() {
 	LOCK_GUARD(datalock);
 

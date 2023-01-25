@@ -189,14 +189,10 @@ void DebugDraw::enter_tree() {
 void DebugDraw::exit_tree() {
 	_font.unref();
 
-	if (UtilityFunctions::is_instance_valid(default_canvas) && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
-		default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 		default_canvas->queue_redraw();
-	}
-	if (UtilityFunctions::is_instance_valid(custom_canvas) && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)))) {
-		custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 		custom_canvas->queue_redraw();
-	}
 }
 
 void DebugDraw::ready() {
@@ -222,7 +218,7 @@ void DebugDraw::ready() {
 	if (IS_EDITOR_HINT()) {
 		String editor3d = "Node3DEditorViewportContainer";
 		String subviewport = SubViewport::get_class_static();
-		Node *res = Utils::find_node_by_class(SCENE_ROOT(), &editor3d);
+		Node *res = Utils::find_node_by_class(SCENE_ROOT(), editor3d);
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
@@ -247,7 +243,7 @@ void DebugDraw::ready() {
 		for (int i = 0; i < viewports_root.size(); i++) {
 			Node *node = cast_to<Node>(viewports_root[i]);
 			if (node) {
-				SubViewport *sub_view = cast_to<SubViewport>(Utils::find_node_by_class(node, &subviewport));
+				SubViewport *sub_view = cast_to<SubViewport>(Utils::find_node_by_class(node, subviewport));
 				if (sub_view) {
 					editor_viewports.push_back(sub_view);
 				}
@@ -363,8 +359,7 @@ bool DebugDraw::is_debug_enabled() const {
 
 void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 	if (_cfg.is_valid()) {
-		if (_cfg->is_connected(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty))))
-			_cfg->disconnect(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+		Utils::disconnect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
 
 		config_2d = _cfg;
 	} else {
@@ -373,8 +368,7 @@ void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 	}
 
 	mark_canvas_dirty();
-	if (!config_2d->is_connected(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty))))
-		config_2d->connect(DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+	Utils::connect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
 }
 
 Ref<DebugDrawConfig2D> DebugDraw::get_config_2d() const {
@@ -403,25 +397,14 @@ Viewport *DebugDraw::get_custom_viewport() const {
 }
 
 void DebugDraw::set_custom_canvas(Control *_canvas) {
-	bool connected_internal = UtilityFunctions::is_instance_valid(default_canvas) && default_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-	bool connected_custom = UtilityFunctions::is_instance_valid(custom_canvas) && custom_canvas->is_connected("draw", Callable(this, TEXT(_on_canvas_item_draw)));
-
 	if (!_canvas) {
-		if (!connected_internal && UtilityFunctions::is_instance_valid(default_canvas)) {
-			default_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
-		}
-		if (connected_custom) {
-			custom_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+		Utils::connect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
+		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 			custom_canvas->queue_redraw();
-		}
 	} else {
-		if (connected_internal) {
-			default_canvas->disconnect("draw", Callable(this, TEXT(_on_canvas_item_draw)));
+		if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 			default_canvas->queue_redraw();
-		}
-		if (!connected_custom) {
-			_canvas->connect("draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
-		}
+		Utils::connect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
 	}
 
 	custom_canvas = _canvas;

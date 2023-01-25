@@ -61,15 +61,20 @@ public:
 		if (_skip_expiration_check || !is_expired()) {
 			if (_frustums.size()) {
 				is_visible = false;
-				for (auto &frustum : _frustums)
-					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum))
-						return is_visible = true;
+				for (auto &frustum : _frustums) {
+					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
+						is_visible = true;
+						return is_visible;
+					}
+				}
 				return false;
 			} else {
-				return is_visible = true;
+				is_visible = true;
+				return is_visible;
 			}
 		}
-		return is_visible = false;
+		is_visible = false;
+		return is_visible;
 	}
 
 	void update_expiration(double delta) {

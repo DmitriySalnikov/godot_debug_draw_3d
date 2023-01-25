@@ -529,7 +529,7 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 			return "{FORMAT FAILED}";
 		}
 		std::unique_ptr<char[]> buf(new char[(size_t)size_s]);
-		buf[size_s - 1] = '\0';
+		buf[(size_t)size_s - 1] = '\0';
 		std::snprintf(buf.get(), (size_t)size_s, "%.*f", precision, real_val);
 		return String(buf.get());
 	};

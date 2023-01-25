@@ -6,17 +6,6 @@
 #include "debug_draw_config_3d.h"
 #include "utils.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
-#include <godot_cpp/classes/editor_interface.hpp>
-#include <godot_cpp/core/class_db.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
-
 using namespace godot;
 
 DebugDraw *debug_draw_3d_singleton = nullptr;
