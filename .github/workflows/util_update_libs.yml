@@ -29,10 +29,9 @@ jobs:
 
       - name: Replace with new files
         run: |
-          ls extracted_files/*
+          ls -R extracted_files
           rm -rf ${{env.ADDON_LIBS_PATH}}/
-          mv -f extracted_files/**/* ${{env.ADDON_LIBS_PATH}}
-          touch ${{env.ADDON_LIBS_PATH}}/.gdignore
+          mv -f extracted_files ${{env.ADDON_LIBS_PATH}}
 
       - name: Commit report
         run: |
