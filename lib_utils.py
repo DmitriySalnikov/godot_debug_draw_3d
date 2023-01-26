@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-lib_name = "debug_draw_3d"
-output_dir = Path("addons") / lib_name / "libs"
+lib_name = "dd3d"
+output_dir = Path("addons") / "debug_draw_3d" / "libs"
 src_folder = "src"
 
 
@@ -14,7 +14,7 @@ def setup_options(env, arguments, gen_help):
 
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
     opts.Add(PathVariable("addon_output_dir", "Path to the output directory",
-             output_dir / env["platform"], PathVariable.PathIsDirCreate))
+             output_dir, PathVariable.PathIsDirCreate))
     opts.Update(env)
 
     gen_help(env, opts)
@@ -31,6 +31,7 @@ def gdnative_setup_defines_and_flags(env):
         else:
             env.AppendUnique(CCFLAGS=["-flto"])
             env.AppendUnique(LINKFLAGS=["-flto"])
+
 
 def gdnative_get_sources(src):
     return [src_folder + "/" + file for file in src]
@@ -59,12 +60,20 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
     # store all obj's in a dedicated folder
     env["SHOBJPREFIX"] = "#obj/"
 
-    library = env.SharedLibrary(
-        (Path(env["addon_output_dir"]) / ("lib" + lib_name)).as_posix() + ".{}.{}.{}{}".format(
-            env["platform"], env["target"], env["arch"], env["SHLIBSUFFIX"]
-        ),
+    library_full_name = "lib" + lib_name + ".{}.{}.{}{}".format(
+        env["platform"], env["target"], env["arch"], env["SHLIBSUFFIX"])
+
+    env.Default(env.SharedLibrary(
+        target=env.File(Path(env["addon_output_dir"]) / library_full_name),
         source=gdnative_get_sources(src),
         SHLIBSUFFIX=env["SHLIBSUFFIX"]
-    )
+    ))
 
-    return library
+    # Needed for easy reuse of this library in other build scripts
+    # TODO: not tested at the moment. Probably need some changes in the C++ code
+    env = env.Clone()
+    env.Append(LIBPATH=[env.Dir(env["addon_output_dir"])])
+    if env.get("is_msvc", False):
+        env.Append(LIBS=[library_full_name.replace(".dll", ".lib")])
+    else:
+        env.Append(LIBS=[library_full_name])

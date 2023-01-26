@@ -31,7 +31,8 @@ jobs:
         run: |
           ls extracted_files/*
           rm -rf ${{env.ADDON_LIBS_PATH}}/
-          mv -f extracted_files ${{env.ADDON_LIBS_PATH}}
+          mv -f extracted_files/**/* ${{env.ADDON_LIBS_PATH}}
+          touch ${{env.ADDON_LIBS_PATH}}/.gdignore
 
       - name: Commit report
         run: |
