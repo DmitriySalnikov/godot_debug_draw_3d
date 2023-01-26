@@ -50,6 +50,7 @@ private:
 	int text_size;
 
 public:
+	bool is_used_one_time = false;
 	String title;
 	std::unordered_set<TextGroupItem_ptr> Texts;
 	class DebugDraw *owner;

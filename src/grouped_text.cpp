@@ -143,7 +143,16 @@ void GroupedText::clear_text() {
 void GroupedText::cleanup_text(const double &delta) {
 	LOCK_GUARD(datalock);
 	// Clean texts
-	Utils::remove_where(_text_groups, [](auto g) { return g->Texts.size() == 0; });
+	size_t old_size = _text_groups.size();
+	Utils::remove_where(_text_groups, [](auto g) {
+		bool prev_used = g->is_used_one_time;
+		g->is_used_one_time = true;
+		return g->Texts.size() == 0 && prev_used;
+	});
+
+	if (old_size != _text_groups.size()) {
+		owner->mark_canvas_dirty();
+	}
 
 	for (const TextGroup_ptr &g : _text_groups) {
 		std::function<void()> upd_txt([this] { owner->mark_canvas_dirty(); });
@@ -151,7 +160,6 @@ void GroupedText::cleanup_text(const double &delta) {
 	}
 }
 
-// TODO: a group without text will recreate itself in each frame
 void GroupedText::begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size) {
 	LOCK_GUARD(datalock);
 
@@ -172,6 +180,7 @@ void GroupedText::begin_text_group(const String &_group_title, const int &_group
 		newGroup->set_group_color(_group_color);
 		newGroup->set_title_size(new_title_size);
 		newGroup->set_text_size(new_text_size);
+		newGroup->is_used_one_time = false;
 	} else {
 		newGroup = std::make_shared<TextGroup>(owner, _group_title, _group_priority, _show_title, _group_color, new_title_size, new_text_size);
 		_text_groups.insert(newGroup);
