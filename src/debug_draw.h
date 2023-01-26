@@ -26,6 +26,7 @@ class DebugDrawSceneManager;
 class DebugDrawConfig2D;
 class DebugDrawConfig3D;
 class DebugDrawGraph;
+class DebugDrawStats;
 class DebugGeometryContainer;
 class GroupedText;
 
@@ -135,7 +136,7 @@ public:
 
 	/// Returns a dictionary with rendering statistics.
 	/// Some data can be delayed by 1 frame.
-	Dictionary get_render_stats();
+	Ref<DebugDrawStats> get_render_stats();
 
 	/// Clear all 3D objects
 	void clear_3d_objects();

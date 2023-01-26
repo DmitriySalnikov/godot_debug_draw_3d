@@ -52,7 +52,7 @@ bool MathUtils::is_bounds_partially_inside_convex_shape(const AABB &bounds, cons
 
 bool MathUtils::is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::vector<Plane> &planes) {
 	for (Plane p : planes)
-		if (p.distance_to(sphere.Position) >= sphere.Radius)
+		if (p.distance_to(sphere.position) >= sphere.Radius)
 			return false;
 
 	return true;

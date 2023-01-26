@@ -60,16 +60,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
-    <TargetName>libdebug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\</OutDir>
+    <TargetName>libdd3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_dev|x64'">
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
-    <TargetName>libdebug_draw_3d.windows.template_debug.$(LlvmPlatformName)</TargetName>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\</OutDir>
+    <TargetName>libdd3d.windows.template_debug.$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
@@ -77,8 +77,8 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(ProjectDir)godot-cpp\include;$(ProjectDir)godot-cpp\gdextension;$(ProjectDir)godot-cpp\gen\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(ProjectDir)godot-cpp\bin;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\windows\</OutDir>
-    <TargetName>libdebug_draw_3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
+    <OutDir>$(SolutionDir)addons\debug_draw_3d\libs\</OutDir>
+    <TargetName>libdd3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='template_debug|x64'">
@@ -175,6 +175,7 @@
     <ClCompile Include="src\data_graphs.cpp" />
     <ClCompile Include="src\debug_draw_config_2d.cpp" />
     <ClCompile Include="src\debug_draw_config_3d.cpp" />
+    <ClCompile Include="src\draw_stats.cpp" />
     <ClCompile Include="src\geometry_generators.cpp" />
     <ClCompile Include="src\grouped_text.cpp" />
     <ClCompile Include="src\math_utils.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="src\debug_draw_config_3d.h" />
     <ClInclude Include="src\draw_cache.h" />
     <ClInclude Include="src\data_graphs.h" />
+    <ClInclude Include="src\draw_stats.h" />
     <ClInclude Include="src\geometry_generators.h" />
     <ClInclude Include="src\grouped_text.h" />
     <ClInclude Include="src\math_utils.h" />

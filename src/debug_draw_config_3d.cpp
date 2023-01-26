@@ -15,6 +15,7 @@ void DebugDrawConfig3D::_bind_methods() {
 	REG_PROP_BOOL(freeze_3d_render);
 	REG_PROP_BOOL(visible_instance_bounds);
 	REG_PROP_BOOL(use_frustum_culling);
+	REG_PROP(cull_by_distance, Variant::FLOAT);
 	REG_PROP_BOOL(force_use_camera_from_scene);
 	REG_PROP(geometry_render_layers, Variant::INT);
 	REG_PROP(line_hit_color, Variant::COLOR);
@@ -45,6 +46,14 @@ void DebugDrawConfig3D::set_use_frustum_culling(const bool &_state) {
 
 bool DebugDrawConfig3D::is_use_frustum_culling() const {
 	return use_frustum_culling;
+}
+
+void DebugDrawConfig3D::set_cull_by_distance(const real_t &_distance) {
+	cull_by_distance = Math::clamp(_distance, -1.0f, (real_t)INT_MAX);
+}
+
+real_t DebugDrawConfig3D::get_cull_by_distance() const {
+	return cull_by_distance;
 }
 
 void DebugDrawConfig3D::set_force_use_camera_from_scene(const bool &_state) {

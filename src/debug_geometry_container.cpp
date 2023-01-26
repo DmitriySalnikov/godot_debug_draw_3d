@@ -2,6 +2,7 @@
 #include "debug_draw.h"
 #include "debug_draw_config_3d.h"
 #include "utils.h"
+#include "draw_stats.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244)
@@ -15,6 +16,8 @@
 #if defined(_MSC_VER)
 #pragma warning(default : 4244)
 #endif
+
+#include <array>
 
 using namespace godot;
 
@@ -170,7 +173,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 
 	// Get camera frustum
 	Camera3D *vp_cam = owner->get_root_node()->get_viewport()->get_camera_3d();
-	if (ENGINE()->is_editor_hint()) {
+	if (IS_EDITOR_HINT()) {
 		auto s_root = SCENE_TREE()->get_edited_scene_root();
 		if (s_root) {
 			vp_cam = s_root->get_viewport()->get_camera_3d();
@@ -180,7 +183,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	// Collect frustums and camera positions
 	std::vector<std::vector<Plane> > frustum_planes;
 	std::vector<Vector3> cameras_positions;
-	if (owner->get_config_3d()->is_use_frustum_culling()) {
+	{
 		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewports();
 		std::vector<Array> frustum_arrays;
 
@@ -206,20 +209,24 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		}
 
 		// Convert frustum to vector
-		frustum_planes.reserve(frustum_arrays.size());
+		if (owner->get_config_3d()->is_use_frustum_culling()) {
+			frustum_planes.reserve(frustum_arrays.size());
 
-		for (auto &arr : frustum_arrays) {
-			if (arr.size() == 6) {
-				std::vector<Plane> a(6);
-				for (int i = 0; i < arr.size(); i++)
-					a[i] = (Plane)arr[i];
-				frustum_planes.push_back(a);
+			for (auto &arr : frustum_arrays) {
+				if (arr.size() == 6) {
+					std::vector<Plane> a(6);
+					for (int i = 0; i < arr.size(); i++)
+						a[i] = (Plane)arr[i];
+					frustum_planes.push_back(a);
+				}
 			}
 		}
 	}
 
 	// Update visibility
-	geometry_pool.update_visibility(frustum_planes);
+	geometry_pool.update_visibility(
+			frustum_planes,
+			GeometryPoolDistanceCullingData(owner->get_config_3d()->get_cull_by_distance(), cameras_positions));
 
 	// Debug bounds of instances and lines
 	if (owner->get_config_3d()->is_visible_instance_bounds()) {
@@ -228,7 +235,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
 			if (!o->is_visible || o->is_expired())
 				return;
-			new_instances.push_back({ o->bounds.Position, o->bounds.Radius });
+			new_instances.push_back({ o->bounds.position, o->bounds.Radius });
 		};
 
 		geometry_pool.for_each_instance(draw_instance_spheres);
@@ -265,32 +272,21 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
 
 	// Update MultiMeshInstances
+	std::array<Ref<MultiMesh> *, InstanceType::ALL> meshes;
 	for (int i = 0; i < InstanceType::ALL; i++) {
-		Ref<MultiMesh> &mm = multi_mesh_storage[i].mesh;
-		mm->set_visible_instance_count(-1);
-
-		auto a = geometry_pool.get_raw_data((InstanceType)i);
-		mm->set_instance_count((int)(a.size() / INSTANCE_DATA_FLOAT_COUNT));
-		if (a.size()) {
-			mm->set_buffer(a);
-		}
+		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
+
+	geometry_pool.fill_instance_data(meshes);
 
 	geometry_pool.scan_visible_instances();
 	geometry_pool.update_expiration(delta);
 	geometry_pool.reset_counter(delta);
 }
 
-Dictionary DebugGeometryContainer::get_render_stats() {
+Ref<DebugDrawStats> DebugGeometryContainer::get_render_stats() {
 	LOCK_GUARD(datalock);
-
-	return Utils::make_dict(
-			"instances", (int64_t)geometry_pool.get_used_instances_total(),
-			"visible_instances", (int64_t)geometry_pool.get_visible_instances(),
-			"wireframes", (int64_t)geometry_pool.get_used_lines_total(),
-			"visible_wireframes", (int64_t)geometry_pool.get_visible_lines(),
-			"total", (int64_t)geometry_pool.get_used_instances_total() + geometry_pool.get_used_lines_total(),
-			"total_visible", (int64_t)geometry_pool.get_visible_instances() + geometry_pool.get_visible_lines());
+	return geometry_pool.get_stats();
 }
 
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
@@ -393,7 +389,7 @@ void DebugGeometryContainer::draw_box_xf(const Transform3D &transform, const Col
 	SphereBounds sb(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CubeRadiusForSphere);
 
 	if (!is_box_centered) {
-		sb.Position = transform.origin + transform.basis.get_scale() * 0.5f;
+		sb.position = transform.origin + transform.basis.get_scale() * 0.5f;
 	}
 	geometry_pool.add_or_update_instance(
 			is_box_centered ? InstanceType::CUBES_CENTERED : InstanceType::CUBES,

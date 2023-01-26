@@ -13,6 +13,13 @@
 #pragma warning(default : 4244)
 #endif
 
+#include <array>
+
+namespace godot {
+class MultiMesh;
+}
+class DebugDrawStats;
+
 using namespace godot;
 
 enum InstanceType : char {
@@ -25,6 +32,16 @@ enum InstanceType : char {
 	SPHERES_HD,
 	CYLINDERS,
 	ALL,
+};
+
+class GeometryPoolDistanceCullingData {
+public:
+	real_t m_max_distance;
+	std::vector<Vector3> m_camera_positions;
+	GeometryPoolDistanceCullingData(const real_t &t_max_distance, const std::vector<Vector3> &t_camera_positions) {
+		m_max_distance = t_max_distance;
+		m_camera_positions = t_camera_positions;
+	}
 };
 
 template <class TBounds>
@@ -57,11 +74,21 @@ public:
 		return is_used_one_time;
 	}
 
-	bool update_visibility(const std::vector<std::vector<Plane> > &_frustums, bool _skip_expiration_check) {
+	bool update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
 		if (_skip_expiration_check || !is_expired()) {
+			is_visible = false;
+
+			if (t_distance_data.m_max_distance > 0 && t_distance_data.m_camera_positions.size()) {
+				for (const auto &pos : t_distance_data.m_camera_positions) {
+					if (pos.distance_to(bounds.position) > t_distance_data.m_max_distance) {
+						is_visible = false;
+						return is_visible;
+					}
+				}
+			}
+
 			if (_frustums.size()) {
-				is_visible = false;
-				for (auto &frustum : _frustums) {
+				for (const auto &frustum : _frustums) {
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
 						is_visible = true;
 						return is_visible;
@@ -201,28 +228,28 @@ private:
 	ObjectsPool<DelayedRendererInstance> instances[InstanceType::ALL] = {};
 	ObjectsPool<DelayedRendererLine> lines;
 
+	uint64_t time_spent_to_fill_buffers_of_instances = 0;
+	uint64_t time_spent_to_fill_buffers_of_lines = 0;
+	uint64_t time_spent_to_cull_instant = 0;
+	uint64_t time_spent_to_cull_delayed = 0;
+
+	PackedFloat32Array get_raw_data(InstanceType _type);
+
 public:
 	GeometryPool() {}
 
 	~GeometryPool() {
 	}
 
-	PackedFloat32Array get_raw_data(InstanceType _type);
+	void fill_instance_data(const std::array<Ref<MultiMesh>*, InstanceType::ALL> &t_meshes);
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
-	size_t get_visible_instances();
-	size_t get_visible_lines();
-	size_t get_used_instances_total();
-	size_t get_used_instances_instant(InstanceType _type);
-	size_t get_used_instances_delayed(InstanceType _type);
-	size_t get_used_lines_total();
-	size_t get_used_lines_instant();
-	size_t get_used_lines_delayed();
+	Ref<DebugDrawStats> get_stats() const;
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
-	void update_visibility(const std::vector<std::vector<Plane> > &_frustums);
+	void update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
 	void update_expiration(double _delta);
 	void scan_visible_instances();
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);

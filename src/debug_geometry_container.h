@@ -30,6 +30,8 @@
 
 using namespace godot;
 
+class DebugDrawStats;
+
 class DebugGeometryContainer {
 	class DebugDraw *owner;
 
@@ -84,7 +86,7 @@ public:
 	void set_render_layer_mask(int32_t layers);
 	int32_t get_render_layer_mask() const;
 
-	Dictionary get_render_stats();
+	Ref<DebugDrawStats> get_render_stats();
 	void create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration = 0);
 
 #pragma region Exposed Draw Functions

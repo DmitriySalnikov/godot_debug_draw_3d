@@ -26,8 +26,9 @@ private:
 	bool visible_instance_bounds = false;
 	/// Geometry culling based on camera frustum.
 	/// It is not recommended to use with the current implementation.
-	// TODO: add distance-based culling
 	bool use_frustum_culling = false;
+	/// Geometry culling based on the distance to the camera.
+	real_t cull_by_distance = -1;
 	/// Force use camera placed on edited scene.
 	/// Usable for editor.
 	bool force_use_camera_from_scene = false;
@@ -48,6 +49,9 @@ public:
 
 	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling() const;
+
+	void set_cull_by_distance(const real_t &_distance);
+	real_t get_cull_by_distance() const;
 
 	void set_force_use_camera_from_scene(const bool &_state);
 	bool is_force_use_camera_from_scene() const;

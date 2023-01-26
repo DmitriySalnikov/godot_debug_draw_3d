@@ -212,6 +212,8 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+draw_array_of_boxes = true
+start_culling_distance = 55.0
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
@@ -224,7 +226,7 @@ cull_mask = 1
 current = true
 fov = 38.8
 near = 2.63
-far = 52.5
+far = 60.0
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -324,6 +326,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4103, 0, 6.71577)
 
 [node name="Box3" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 10.5182)
+
+[node name="BoxOutOfDistabceCulling" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.608, 0.344, -16.314)
 
 [node name="AABB" type="Node3D" parent="."]
 transform = Transform3D(-0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.0121951, -0.0566928, -0.0370723, -0.997703, -11.4765, -4.76837e-07, 7.18889)

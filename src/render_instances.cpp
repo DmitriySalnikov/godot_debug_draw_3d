@@ -1,4 +1,5 @@
 #include "render_instances.h"
+#include "draw_stats.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4244)
@@ -7,6 +8,7 @@
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/texture.hpp>
+#include <godot_cpp/classes/time.hpp>
 
 #if defined(_MSC_VER)
 #pragma warning(default : 4244)
@@ -81,6 +83,27 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 	}
 }
 
+void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes) {
+	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec();
+
+	// TODO: need static buffer to avoid constant vector's creation. 450kb is needed for 7500 instances of all types at the same time..
+	// 512kb as starting point will be good
+	// mb need to add a timer here to reduce this buffer after a while
+	for (size_t i = 0; i < t_meshes.size(); i++) {
+		auto &mesh = *t_meshes[i];
+		mesh->set_visible_instance_count(-1);
+
+		auto a = get_raw_data((InstanceType)i);
+		mesh->set_instance_count((int)(a.size() / INSTANCE_DATA_FLOAT_COUNT));
+
+		if (a.size()) {
+			mesh->set_buffer(a);
+		}
+	}
+
+	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec() - time_spent_to_fill_buffers_of_instances;
+}
+
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 	PackedFloat32Array res;
 	res.resize((instances[_type].used_instant + instances[_type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT);
@@ -136,8 +159,12 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 }
 
 void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
+	time_spent_to_fill_buffers_of_lines = 0;
+
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;
+
+	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec();
 
 	PackedVector3Array verticies;
 	PackedColorArray colors;
@@ -184,6 +211,8 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 
 		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
+
+	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec() - time_spent_to_fill_buffers_of_lines;
 }
 
 void GeometryPool::reset_counter(double _delta) {
@@ -194,18 +223,6 @@ void GeometryPool::reset_counter(double _delta) {
 	}
 }
 
-size_t GeometryPool::get_visible_instances() {
-	int sum = 0;
-	for (auto &i : instances) {
-		sum += i.visible_objects;
-	}
-	return sum;
-}
-
-size_t GeometryPool::get_visible_lines() {
-	return lines.visible_objects;
-}
-
 void GeometryPool::reset_visible_objects() {
 	for (auto &i : instances) {
 		i.reset_visible_counter();
@@ -213,33 +230,35 @@ void GeometryPool::reset_visible_objects() {
 	lines.reset_visible_counter();
 }
 
-size_t GeometryPool::get_used_instances_instant(InstanceType _type) {
-	return instances[_type]._prev_used_instant;
-}
-
-size_t GeometryPool::get_used_instances_delayed(InstanceType _type) {
-	return instances[_type].used_delayed;
-}
-
-size_t GeometryPool::get_used_instances_total() {
-	size_t sum = 0;
+Ref<DebugDrawStats> GeometryPool::get_stats() const {
+	size_t used_instances = 0;
 	for (auto &i : instances) {
-		sum += i._prev_used_instant;
-		sum += i.used_delayed;
+		used_instances += i._prev_used_instant;
+		used_instances += i.used_delayed;
 	}
-	return sum;
-}
 
-size_t GeometryPool::get_used_lines_total() {
-	return lines._prev_used_instant + lines.used_delayed;
-}
+	size_t visible_instances = 0;
+	for (auto &i : instances) {
+		visible_instances += i.visible_objects;
+	}
 
-size_t GeometryPool::get_used_lines_instant() {
-	return lines._prev_used_instant;
-}
+	size_t used_lines = lines._prev_used_instant + lines.used_delayed;
 
-size_t GeometryPool::get_used_lines_delayed() {
-	return lines.used_delayed;
+	Ref<DebugDrawStats> stats;
+	stats.instantiate();
+	stats->setup(
+			/* t_instances */ used_instances,
+			/* t_lines */ used_lines,
+
+			/* t_visible_instances */ visible_instances,
+			/* t_visible_lines */ lines.visible_objects,
+
+			/* t_time_filling_buffers_instances_usec */ time_spent_to_fill_buffers_of_instances,
+			/* t_time_filling_buffers_lines_usec */ time_spent_to_fill_buffers_of_lines,
+
+			/* t_time_culling_instant_usec */ time_spent_to_cull_instant,
+			/* t_time_culling_delayed_usec */ time_spent_to_cull_delayed);
+	return stats;
 }
 
 void GeometryPool::clear_pool() {
@@ -271,20 +290,37 @@ void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)
 	}
 }
 
-void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &_frustums) {
-	for (auto &t : instances) {
+void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
+	uint64_t instant_time = 0;
+	uint64_t delayed_time = 0;
+	for (auto &t : instances) { // loop over instance types
+		instant_time = TIME()->get_ticks_usec();
+
 		for (size_t i = 0; i < t.used_instant; i++)
-			t.instant[i].update_visibility(_frustums, true);
+			t.instant[i].update_visibility(_frustums, t_distance_data, true);
+
+		instant_time = TIME()->get_ticks_usec() - instant_time;
+		delayed_time = TIME()->get_ticks_usec();
 
 		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_visibility(_frustums, false);
+			t.delayed[i].update_visibility(_frustums, t_distance_data, false);
+
+		delayed_time = TIME()->get_ticks_usec() - delayed_time;
 	}
 
+	// loop over lines
+	time_spent_to_cull_instant = TIME()->get_ticks_usec();
+
 	for (size_t i = 0; i < lines.used_instant; i++)
-		lines.instant[i].update_visibility(_frustums, true);
+		lines.instant[i].update_visibility(_frustums, t_distance_data, true);
+
+	time_spent_to_cull_instant = TIME()->get_ticks_usec() - time_spent_to_cull_instant + instant_time;
+	time_spent_to_cull_delayed = TIME()->get_ticks_usec();
 
 	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_visibility(_frustums, false);
+		lines.delayed[i].update_visibility(_frustums, t_distance_data, false);
+
+	time_spent_to_cull_delayed = TIME()->get_ticks_usec() - time_spent_to_cull_delayed + delayed_time;
 }
 
 void GeometryPool::update_expiration(double _delta) {

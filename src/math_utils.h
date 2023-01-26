@@ -34,14 +34,14 @@ public:
 /// May not work for non-local space transformations
 class SphereBounds {
 public:
-	Vector3 Position;
+	Vector3 position;
 	real_t Radius = 1;
 
 	SphereBounds() :
-			Position(),
+			position(),
 			Radius() {}
 
 	SphereBounds(const Vector3 &_pos, const real_t &_radius) :
-			Position(_pos),
+			position(_pos),
 			Radius(_radius) {}
 };

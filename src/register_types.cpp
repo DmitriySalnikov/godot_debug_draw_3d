@@ -4,6 +4,7 @@
 #include "debug_draw.h"
 #include "debug_draw_config_2d.h"
 #include "debug_draw_config_3d.h"
+#include "draw_stats.h"
 #include "utils.h"
 
 using namespace godot;
@@ -22,6 +23,7 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	ClassDB::register_class<DebugDrawGraph>();
 	ClassDB::register_class<DebugDrawFPSGraph>();
 	ClassDB::register_class<DebugDrawSceneManager>();
+	ClassDB::register_class<DebugDrawStats>();
 
 	debug_draw_3d_singleton = memnew(DebugDraw);
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);

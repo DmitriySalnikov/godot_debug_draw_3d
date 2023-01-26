@@ -151,6 +151,7 @@ void GroupedText::cleanup_text(const double &delta) {
 	}
 }
 
+// TODO: a group without text will recreate itself in each frame
 void GroupedText::begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size) {
 	LOCK_GUARD(datalock);
 

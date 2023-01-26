@@ -4,6 +4,7 @@
 #include "debug_draw_config_2d.h"
 #include "debug_draw_config_3d.h"
 #include "debug_geometry_container.h"
+#include "draw_stats.h"
 #include "grouped_text.h"
 #include "utils.h"
 
@@ -133,6 +134,7 @@ DebugDraw::DebugDraw() {
 }
 
 DebugDraw::~DebugDraw() {
+	// TODO: need a proper clean-up
 	if (singleton && singleton == this) {
 		singleton = nullptr;
 	} else {
@@ -142,7 +144,7 @@ DebugDraw::~DebugDraw() {
 
 Node *DebugDraw::_get_current_scene() {
 	auto ST = SCENE_TREE();
-	if (ENGINE()->is_editor_hint()) {
+	if (IS_EDITOR_HINT()) {
 		return ST->get_edited_scene_root();
 	}
 	return ST->get_current_scene();
@@ -418,8 +420,8 @@ Control *DebugDraw::get_custom_canvas() const {
 
 #pragma region Draw Functions
 
-Dictionary DebugDraw::get_render_stats() {
-	if (!dgc || !is_ready) return Dictionary();
+Ref<DebugDrawStats> DebugDraw::get_render_stats() {
+	if (!dgc || !is_ready) return Ref<DebugDrawStats>();
 	return dgc->get_render_stats();
 }
 

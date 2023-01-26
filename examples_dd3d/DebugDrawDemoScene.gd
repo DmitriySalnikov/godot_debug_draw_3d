@@ -7,9 +7,11 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
+@export_range(0, 1024) var start_culling_distance := 0.0
 
-@export_category("Text groups")
-@export var show_hints := true
+@export_group("Text groups", "text_groups")
+@export var text_groups_show_hints := true
+@export var text_groups_show_stats := true
 @export var text_groups_position := DebugDrawConfig2D.POSITION_LEFT_TOP
 @export var text_groups_offset := Vector2i(8, 8)
 @export var text_groups_padding := Vector2i(3, 1)
@@ -50,6 +52,7 @@ func _is_key_just_pressed(key):
 
 func _update_keys_just_press():
 	button_presses[KEY_LEFT] = Input.is_key_pressed(KEY_LEFT)
+	button_presses[KEY_UP] = Input.is_key_pressed(KEY_UP)
 	button_presses[KEY_F1] = Input.is_key_pressed(KEY_F1)
 
 
@@ -82,7 +85,6 @@ func _process(delta: float) -> void:
 	
 	# More property toggles
 	DebugDraw.config_3d.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
-	DebugDraw.config_3d.force_use_camera_from_scene = Input.is_key_pressed(KEY_UP)
 	DebugDraw.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
 	DebugDraw.config_3d.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
@@ -90,7 +92,14 @@ func _process(delta: float) -> void:
 	if _is_key_just_pressed(KEY_F1):
 		zylann_example = !zylann_example
 	if _is_key_just_pressed(KEY_LEFT):
-		DebugDraw.config_3d.config_3d.use_frustum_culling = !DebugDraw.config_3d.use_frustum_culling
+		DebugDraw.config_3d.use_frustum_culling = !DebugDraw.config_3d.use_frustum_culling
+	if _is_key_just_pressed(KEY_UP):
+		DebugDraw.config_3d.force_use_camera_from_scene = !DebugDraw.config_3d.force_use_camera_from_scene
+	
+	if Engine.is_editor_hint():
+		DebugDraw.config_3d.cull_by_distance = start_culling_distance if DebugDraw.config_3d.force_use_camera_from_scene else 0.0
+	else:
+		DebugDraw.config_3d.cull_by_distance = start_culling_distance
 	_update_keys_just_press()
 	
 	# Zones with black borders
@@ -116,6 +125,8 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_box_xf($Box1.global_transform, Color.MEDIUM_PURPLE)
 	DebugDraw.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
+	
+	DebugDraw.draw_box_xf($BoxOutOfDistabceCulling.global_transform, Color.RED)
 	
 	DebugDraw.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
 	DebugDraw.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
@@ -235,19 +246,29 @@ func _text_tests():
 	DebugDraw.set_text("Rendered frames", Engine.get_frames_drawn())
 	DebugDraw.end_text_group()
 	
-	DebugDraw.begin_text_group("-- Stats --", 3, Color.WHEAT)
-	
-	var RenderCount = DebugDraw.get_render_stats()
-	if RenderCount.size():
-		DebugDraw.set_text("Total", RenderCount.total)
-		DebugDraw.set_text("Instances", RenderCount.instances, 1)
-		DebugDraw.set_text("Wireframes", RenderCount.wireframes, 2)
-		DebugDraw.set_text("Total Visible", RenderCount.total_visible, 3)
-		DebugDraw.set_text("Visible Instances", RenderCount.visible_instances, 4)
-		DebugDraw.set_text("Visible Wireframes", RenderCount.visible_wireframes, 5)
+	if text_groups_show_stats:
+		DebugDraw.begin_text_group("-- Stats --", 3, Color.WHEAT)
+		
+		var render_stats := DebugDraw.get_render_stats()
+		if render_stats:
+			DebugDraw.set_text("Total", render_stats.total_geometry)
+			DebugDraw.set_text("Instances", render_stats.instances, 1)
+			DebugDraw.set_text("Lines", render_stats.lines, 2)
+			DebugDraw.set_text("Total Visible", render_stats.total_visible, 3)
+			DebugDraw.set_text("Visible Instances", render_stats.visible_instances, 4)
+			DebugDraw.set_text("Visible Lines", render_stats.visible_lines, 5)
+			
+			DebugDraw.set_text("---", null, 6)
+			
+			DebugDraw.set_text("Culling time", "%.2f ms" % (render_stats.total_time_culling_usec / 1000.0), 7)
+			DebugDraw.set_text("Filling instances buffer", "%.2f ms" % (render_stats.time_filling_buffers_instances_usec / 1000.0), 8)
+			DebugDraw.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 9)
+			DebugDraw.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 10)
+			DebugDraw.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 11)
+		
 		DebugDraw.end_text_group()
 	
-	if show_hints:
+	if text_groups_show_hints:
 		DebugDraw.begin_text_group("controls", 1024, Color.WHITE, false)
 		DebugDraw.set_text("Shift: change render layers", DebugDraw.config_3d.geometry_render_layers, 1)
 		DebugDraw.set_text("Enter: freeze render", DebugDraw.config_3d.freeze_3d_render, 2)
