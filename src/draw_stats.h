@@ -24,39 +24,39 @@ private:                                     \
 public:                                      \
 	type get_##name() const { return name; }
 
-	DEFINE_DEFAULT_PROP(size_t, instances, 0);
-	DEFINE_DEFAULT_PROP(size_t, lines, 0);
-	DEFINE_DEFAULT_PROP(size_t, total_geometry, 0);
+	DEFINE_DEFAULT_PROP(int64_t, instances, 0);
+	DEFINE_DEFAULT_PROP(int64_t, lines, 0);
+	DEFINE_DEFAULT_PROP(int64_t, total_geometry, 0);
 
-	DEFINE_DEFAULT_PROP(size_t, visible_instances, 0);
-	DEFINE_DEFAULT_PROP(size_t, visible_lines, 0);
-	DEFINE_DEFAULT_PROP(size_t, total_visible, 0);
+	DEFINE_DEFAULT_PROP(int64_t, visible_instances, 0);
+	DEFINE_DEFAULT_PROP(int64_t, visible_lines, 0);
+	DEFINE_DEFAULT_PROP(int64_t, total_visible, 0);
 
-	DEFINE_DEFAULT_PROP(size_t, time_filling_buffers_instances_usec, 0);
-	DEFINE_DEFAULT_PROP(size_t, time_filling_buffers_lines_usec, 0);
-	DEFINE_DEFAULT_PROP(size_t, total_time_filling_buffers_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, time_filling_buffers_instances_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, time_filling_buffers_lines_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, total_time_filling_buffers_usec, 0);
 
-	DEFINE_DEFAULT_PROP(size_t, time_culling_instant_usec, 0);
-	DEFINE_DEFAULT_PROP(size_t, time_culling_delayed_usec, 0);
-	DEFINE_DEFAULT_PROP(size_t, total_time_culling_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, time_culling_instant_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, time_culling_delayed_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, total_time_culling_usec, 0);
 
-	DEFINE_DEFAULT_PROP(size_t, total_time_spent_usec, 0);
+	DEFINE_DEFAULT_PROP(int64_t, total_time_spent_usec, 0);
 
 #undef DEFINE_DEFAULT_PROP
 
-	void set_not_exposed(size_t t_val) {}
+	void set_not_exposed(int64_t t_val) {}
 
 	DebugDrawStats(){};
 
 	void setup(
-			const size_t &t_instances,
-			const size_t &t_lines,
-			const size_t &t_visible_instances,
-			const size_t &t_visible_lines,
-			const size_t &t_time_filling_buffers_instances_usec,
-			const size_t &t_time_filling_buffers_lines_usec,
-			const size_t &t_time_culling_instant_usec,
-			const size_t &t_time_culling_delayed_usec) {
+			const int64_t &t_instances,
+			const int64_t &t_lines,
+			const int64_t &t_visible_instances,
+			const int64_t &t_visible_lines,
+			const int64_t &t_time_filling_buffers_instances_usec,
+			const int64_t &t_time_filling_buffers_lines_usec,
+			const int64_t &t_time_culling_instant_usec,
+			const int64_t &t_time_culling_delayed_usec) {
 
 		instances = t_instances;
 		lines = t_lines;
