@@ -1,3 +1,4 @@
+#if false
 
 // This condition will indicate when the API implementation needs to be compiled.
 // While it is not recommended to change the conditions here, you can add
@@ -866,3 +867,4 @@ public class DebugDrawCS : Node
 	}
 }
 
+#endif

@@ -62,10 +62,6 @@ private:
 	bool is_ready = false;
 	bool is_current_scene_is_null = true;
 
-	DebugDraw *get_singleton_gdscript() {
-		return singleton;
-	};
-
 	void _on_canvas_marked_dirty();
 	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
@@ -410,7 +406,7 @@ public:
 	/// priority: Priority of this line. Lower value is higher position.
 	/// color_of_value: Value color
 	/// duration: Expiration time
-	void set_text(String key, Variant value = "", int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
+	void set_text(String key, Variant value = Variant(), int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 #pragma endregion // Text
 #pragma region Graphs

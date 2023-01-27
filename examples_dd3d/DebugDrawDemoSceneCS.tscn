@@ -1,13 +1,10 @@
-[gd_scene load_steps=2 format=3 uid="uid://sxtw8fme7g63"]
+[gd_scene load_steps=3 format=3 uid="uid://sxtw8fme7g63"]
 
 [ext_resource type="PackedScene" uid="uid://c3sccy6x0ht5j" path="res://examples_dd3d/DebugDrawDemoScene.tscn" id="2"]
+[ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoSceneCS.cs" id="2_ipqea"]
 
 [node name="DebugDrawDemoSceneCS" instance=ExtResource("2")]
-text_groups_position = 0
-text_groups_default_font_size = 12
-text_groups_title_font_size = 14
-text_groups_text_font_size = 12
-graph_text_precision = 2
+script = ExtResource("2_ipqea")
 
 [node name="a" parent="AABB" index="0"]
 transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.74623e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707)

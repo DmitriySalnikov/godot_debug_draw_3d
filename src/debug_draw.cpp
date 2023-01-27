@@ -38,8 +38,6 @@ DebugDraw *DebugDraw::singleton = nullptr;
 void DebugDraw::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw
 
-	ClassDB::bind_method(D_METHOD(TEXT(get_singleton)), &DebugDraw::get_singleton_gdscript);
-
 	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_marked_dirty)), &DebugDraw::_on_canvas_marked_dirty);
 	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
 	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw::_on_scene_changed);
@@ -108,7 +106,7 @@ void DebugDraw::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
-	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, "", 0, Colors::empty_color, -1.0); // TODO: -1 must be explicitly double. Need fix for Variant converter
+	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, Variant(), 0, Colors::empty_color, -1.0); // TODO: -1 must be explicitly double. Need fix for Variant converter
 
 	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
 	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
@@ -151,6 +149,9 @@ Node *DebugDraw::_get_current_scene() {
 }
 
 void DebugDraw::_scene_tree_found() {
+	if (!SCENE_TREE())
+		return;
+
 	set_config_2d(nullptr);
 	set_config_3d(nullptr);
 
