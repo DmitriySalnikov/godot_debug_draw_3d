@@ -25,7 +25,6 @@ private:
 	/// Debug for debug...
 	bool visible_instance_bounds = false;
 	/// Geometry culling based on camera frustum.
-	/// It is not recommended to use with the current implementation.
 	bool use_frustum_culling = false;
 	/// Geometry culling based on the distance to the camera.
 	real_t cull_by_distance = -1;

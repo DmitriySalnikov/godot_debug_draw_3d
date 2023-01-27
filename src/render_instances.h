@@ -67,14 +67,10 @@ public:
 			is_visible(false) {}
 
 	bool is_expired() const {
-		if (expiration_time > 0) {
-			return false;
-		}
-
-		return is_used_one_time;
+		return expiration_time > 0 ? false : is_used_one_time;
 	}
 
-	bool update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
+	bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
 		if (_skip_expiration_check || !is_expired()) {
 			is_visible = false;
 
@@ -87,8 +83,8 @@ public:
 				}
 			}
 
-			if (_frustums.size()) {
-				for (const auto &frustum : _frustums) {
+			if (t_frustums.size()) {
+				for (const auto &frustum : t_frustums) {
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
 						is_visible = true;
 						return is_visible;
@@ -128,7 +124,7 @@ public:
 	void update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col);
 
 	void set_lines(const std::vector<Vector3> &_lines);
-	std::vector<Vector3> &get_lines();
+	const std::vector<Vector3> &get_lines() const;
 	AABB calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines);
 };
 
@@ -137,7 +133,7 @@ private:
 	template <class TInst>
 	struct ObjectsPool {
 		const real_t TIME_USED_TO_SHRINK_INSTANT = 10; // 10 sec
-		const real_t TIME_USED_TO_SHRINK_DELAYED = 30; // 30 sec
+		const real_t TIME_USED_TO_SHRINK_DELAYED = 15; // 15 sec
 
 		std::vector<TInst> instant = {};
 		std::vector<TInst> delayed = {};
@@ -241,7 +237,7 @@ public:
 	~GeometryPool() {
 	}
 
-	void fill_instance_data(const std::array<Ref<MultiMesh>*, InstanceType::ALL> &t_meshes);
+	void fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes);
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
@@ -249,7 +245,7 @@ public:
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
-	void update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
+	void update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
 	void update_expiration(double _delta);
 	void scan_visible_instances();
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);

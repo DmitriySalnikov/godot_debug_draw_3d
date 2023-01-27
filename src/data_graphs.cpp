@@ -69,6 +69,7 @@ DebugDrawGraph::DebugDrawGraph(DataGraphManager *_owner, StringName _title) {
 	if (IS_EDITOR_HINT()) {
 		corner = GraphPosition::POSITION_LEFT_TOP;
 	}
+	graph_range.reset(get_buffer_size());
 }
 
 void DebugDrawGraph::_init(DataGraphManager *_owner, StringName _title) {

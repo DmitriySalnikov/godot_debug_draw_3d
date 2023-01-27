@@ -14,6 +14,49 @@
 #pragma warning(default : 4244)
 #endif
 
+template <class T, size_t _TStepSize>
+struct TempBigBuffer {
+private:
+	T m_buffer;
+	int m_accesses_before_shrink = InstanceType::ALL * 60; // try to shrink after 60 frames
+	int m_shrink_timer;
+
+public:
+	TempBigBuffer() {
+		m_buffer.resize(_TStepSize);
+		m_shrink_timer = 0;
+	}
+
+	void prepare_buffer(size_t t_expected_size) {
+		if ((size_t)m_buffer.size() < t_expected_size) {
+			size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
+			DEV_PRINT_STD(TEXT(TempBigBuffer) ": extending from %d to %d\n", m_buffer.size(), new_size);
+			m_buffer.resize(new_size);
+			m_shrink_timer = 0;
+		} else {
+			if (t_expected_size < m_buffer.size() - _TStepSize) {
+				m_shrink_timer++;
+				if (m_shrink_timer >= m_accesses_before_shrink) {
+					size_t new_size = (size_t)m_buffer.size() - _TStepSize;
+					DEV_PRINT_STD(TEXT(TempBigBuffer) ": shrinking from %d to %d\n", m_buffer.size(), new_size);
+					m_buffer.resize(new_size);
+					m_shrink_timer = 0;
+				}
+			} else {
+				m_shrink_timer = 0;
+			}
+		}
+	}
+
+	inline auto ptrw() {
+		return m_buffer.ptrw();
+	}
+
+	inline auto slice(int64_t begin, int64_t end = 2147483647) {
+		return m_buffer.slice(begin, end);
+	}
+};
+
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
 	DEV_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
@@ -45,7 +88,7 @@ void DelayedRendererLine::set_lines(const std::vector<Vector3> &_lines) {
 	bounds = calculate_bounds_based_on_lines(lines);
 }
 
-std::vector<Vector3> &DelayedRendererLine::get_lines() {
+const std::vector<Vector3> &DelayedRendererLine::get_lines() const {
 	return lines;
 }
 
@@ -86,16 +129,13 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes) {
 	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec();
 
-	// TODO: need static buffer to avoid constant vector's creation. 450kb is needed for 7500 instances of all types at the same time..
-	// 512kb as starting point will be good
-	// mb need to add a timer here to reduce this buffer after a while
 	for (size_t i = 0; i < t_meshes.size(); i++) {
 		auto &mesh = *t_meshes[i];
-		mesh->set_visible_instance_count(-1);
 
-		auto a = get_raw_data((InstanceType)i);
+		PackedFloat32Array a = get_raw_data((InstanceType)i);
+
 		mesh->set_instance_count((int)(a.size() / INSTANCE_DATA_FLOAT_COUNT));
-
+		mesh->set_visible_instance_count(-1);
 		if (a.size()) {
 			mesh->set_buffer(a);
 		}
@@ -105,57 +145,73 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, Instanc
 }
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
-	PackedFloat32Array res;
-	res.resize((instances[_type].used_instant + instances[_type].delayed.size()) * INSTANCE_DATA_FLOAT_COUNT);
+	auto &inst = instances[_type];
+
+	size_t buffer_size = (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
+	thread_local static auto temp_buffer = TempBigBuffer<PackedFloat32Array, 128 * 1024>();
+	temp_buffer.prepare_buffer(buffer_size);
 
 	size_t last_added = 0;
-	if (res.size() > 0) {
-		auto w = res.ptrw();
+	if (buffer_size > 0) {
+		auto w = temp_buffer.ptrw();
 
 		auto write_data = [&last_added, &w](DelayedRendererInstance &o) {
-			int id = (int)(last_added * INSTANCE_DATA_FLOAT_COUNT);
+			size_t id = last_added * INSTANCE_DATA_FLOAT_COUNT;
 
-			o.is_used_one_time = true;
-			if (o.is_visible) {
-				last_added++;
+			last_added++;
 
-				w[id + 0] = o.transform.basis.rows[0][0];
-				w[id + 1] = o.transform.basis.rows[0][1];
-				w[id + 2] = o.transform.basis.rows[0][2];
-				w[id + 3] = o.transform.origin.x;
-				w[id + 4] = o.transform.basis.rows[1][0];
-				w[id + 5] = o.transform.basis.rows[1][1];
-				w[id + 6] = o.transform.basis.rows[1][2];
-				w[id + 7] = o.transform.origin.y;
-				w[id + 8] = o.transform.basis.rows[2][0];
-				w[id + 9] = o.transform.basis.rows[2][1];
-				w[id + 10] = o.transform.basis.rows[2][2];
-				w[id + 11] = o.transform.origin.z;
-				w[id + 12] = o.color[0];
-				w[id + 13] = o.color[1];
-				w[id + 14] = o.color[2];
-				w[id + 15] = o.color[3];
-				// TODO: mb use custom data to implement volumetric shapes...
-			}
+			// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
+			real_t *transform = reinterpret_cast<real_t *>(&o.transform);
+			memcpy(w + id + 0, transform + 0, 3 * sizeof(real_t));
+			*(w + id + 3) = transform[9];
+			memcpy(w + id + 4, transform + 3, 3 * sizeof(real_t));
+			*(w + id + 7) = transform[10];
+			memcpy(w + id + 8, transform + 6, 3 * sizeof(real_t));
+			*(w + id + 11) = transform[11];
+			memcpy(w + id + 12, reinterpret_cast<real_t *>(&o.color), 4 * sizeof(real_t));
+
+			/*w[id + 0] = o.transform.basis.rows[0][0];
+			w[id + 1] = o.transform.basis.rows[0][1];
+			w[id + 2] = o.transform.basis.rows[0][2];
+			w[id + 3] = o.transform.origin.x;
+			w[id + 4] = o.transform.basis.rows[1][0];
+			w[id + 5] = o.transform.basis.rows[1][1];
+			w[id + 6] = o.transform.basis.rows[1][2];
+			w[id + 7] = o.transform.origin.y;
+			w[id + 8] = o.transform.basis.rows[2][0];
+			w[id + 9] = o.transform.basis.rows[2][1];
+			w[id + 10] = o.transform.basis.rows[2][2];
+			w[id + 11] = o.transform.origin.z;
+			w[id + 12] = o.color[0];
+			w[id + 13] = o.color[1];
+			w[id + 14] = o.color[2];
+			w[id + 15] = o.color[3];*/
+			// TODO: mb use custom data to implement volumetric shapes...
 		};
 
-		for (size_t i = 0; i < instances[_type].used_instant; i++) {
-			write_data(instances[_type].instant[i]);
-		}
-		instances[_type]._prev_used_instant = instances[_type].used_instant;
-
-		instances[_type].used_delayed = 0;
-		for (size_t i = 0; i < instances[_type].delayed.size(); i++) {
-			auto &o = instances[_type].delayed[i];
-			if (!o.is_expired()) {
-				instances[_type].used_delayed++;
+		for (size_t i = 0; i < inst.used_instant; i++) {
+			auto &o = inst.instant[i];
+			o.is_used_one_time = true;
+			if (o.is_visible) {
 				write_data(o);
 			}
 		}
-	}
-	res.resize(last_added * INSTANCE_DATA_FLOAT_COUNT);
+		inst._prev_used_instant = inst.used_instant;
 
-	return res;
+		inst.used_delayed = 0;
+		for (size_t i = 0; i < inst.delayed.size(); i++) {
+			auto &o = inst.delayed[i];
+			if (!o.is_expired()) {
+				inst.used_delayed++;
+				o.is_used_one_time = true;
+				if (o.is_visible) {
+					write_data(o);
+				}
+			}
+		}
+	}
+
+	return temp_buffer.slice(0, last_added * INSTANCE_DATA_FLOAT_COUNT);
 }
 
 void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
@@ -164,22 +220,41 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;
 
-	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec();
+	size_t spent_timer = TIME()->get_ticks_usec();
 
-	PackedVector3Array verticies;
-	PackedColorArray colors;
+	// 1000 frustums. Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
+	size_t used_vertices = 0;
 
-	auto append_lines = [&](DelayedRendererLine &o) {
+	// pre calculate buffer size
+	for (size_t i = 0; i < lines.used_instant; i++) {
+		auto &o = lines.instant[i];
+		if (o.is_visible) {
+			used_vertices += o.get_lines().size();
+		}
+	}
+	for (size_t i = 0; i < lines.delayed.size(); i++) {
+		auto &o = lines.delayed[i];
+		if (o.is_visible && !o.is_expired()) {
+			used_vertices += o.get_lines().size();
+		}
+	}
+
+	thread_local static auto verices_buffer = TempBigBuffer<PackedVector3Array, 64 * 1024>();
+	thread_local static auto colors_buffer = TempBigBuffer<PackedColorArray, 64 * 1024>();
+	verices_buffer.prepare_buffer(used_vertices);
+	colors_buffer.prepare_buffer(used_vertices);
+
+	size_t prev_pos = 0;
+	auto vertices_write = verices_buffer.ptrw();
+	auto colors_write = colors_buffer.ptrw();
+
+	auto append_lines = [&](const DelayedRendererLine &o) {
 		size_t lines_size = o.get_lines().size();
 
-		PackedColorArray cols;
-		cols.resize(lines_size);
-		cols.fill(o.color);
-		colors.append_array(cols);
+		std::copy(o.get_lines().begin(), o.get_lines().end(), vertices_write + prev_pos);
+		std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, o.color);
 
-		size_t p_size = verticies.size();
-		verticies.resize(verticies.size() + lines_size);
-		std::copy(o.get_lines().begin(), o.get_lines().end(), verticies.ptrw() + p_size);
+		prev_pos += lines_size;
 	};
 
 	for (size_t i = 0; i < lines.used_instant; i++) {
@@ -203,16 +278,16 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 		o.is_used_one_time = true;
 	}
 
-	if (verticies.size() > 1) {
+	if (used_vertices > 1) {
 		Array mesh = Array();
 		mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
-		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verticies;
-		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
+		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verices_buffer.slice(0, used_vertices);
+		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors_buffer.slice(0, used_vertices);
 
 		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
 
-	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec() - time_spent_to_fill_buffers_of_lines;
+	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec() - spent_timer;
 }
 
 void GeometryPool::reset_counter(double _delta) {
@@ -290,35 +365,35 @@ void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)
 	}
 }
 
-void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
+void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
 	uint64_t instant_time = 0;
 	uint64_t delayed_time = 0;
 	for (auto &t : instances) { // loop over instance types
-		instant_time = TIME()->get_ticks_usec();
+		uint64_t i_t = TIME()->get_ticks_usec();
 
 		for (size_t i = 0; i < t.used_instant; i++)
-			t.instant[i].update_visibility(_frustums, t_distance_data, true);
+			t.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
-		instant_time = TIME()->get_ticks_usec() - instant_time;
-		delayed_time = TIME()->get_ticks_usec();
+		instant_time += TIME()->get_ticks_usec() - i_t;
+		uint64_t d_t = TIME()->get_ticks_usec();
 
 		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_visibility(_frustums, t_distance_data, false);
+			t.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
-		delayed_time = TIME()->get_ticks_usec() - delayed_time;
+		delayed_time += TIME()->get_ticks_usec() - d_t;
 	}
 
 	// loop over lines
 	time_spent_to_cull_instant = TIME()->get_ticks_usec();
 
 	for (size_t i = 0; i < lines.used_instant; i++)
-		lines.instant[i].update_visibility(_frustums, t_distance_data, true);
+		lines.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
 	time_spent_to_cull_instant = TIME()->get_ticks_usec() - time_spent_to_cull_instant + instant_time;
 	time_spent_to_cull_delayed = TIME()->get_ticks_usec();
 
 	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_visibility(_frustums, t_distance_data, false);
+		lines.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
 	time_spent_to_cull_delayed = TIME()->get_ticks_usec() - time_spent_to_cull_delayed + delayed_time;
 }

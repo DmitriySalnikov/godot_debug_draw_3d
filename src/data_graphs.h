@@ -75,7 +75,7 @@ private:
 	/// Is Graph enabled
 	bool enabled = true;
 	/// Is Graph line is upside down
-	bool upside_down = false;
+	bool upside_down = true;
 	/// Draw Graph title
 	bool show_title = false;
 	/*

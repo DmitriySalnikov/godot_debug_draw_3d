@@ -174,6 +174,7 @@ func _process(delta: float) -> void:
 	DebugDraw.draw_point_path(points_below3, 0.25, Color.BLUE, Color.TOMATO)
 	
 	# Misc
+	#for i in 1000:
 	DebugDraw.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
 	DebugDraw.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
@@ -265,7 +266,7 @@ func _text_tests():
 			DebugDraw.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 9)
 			DebugDraw.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 10)
 			DebugDraw.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 11)
-		
+			
 		DebugDraw.end_text_group()
 	
 	if text_groups_show_hints:
@@ -277,6 +278,7 @@ func _text_tests():
 		DebugDraw.set_text("Left: toggle frustum culling", DebugDraw.config_3d.use_frustum_culling, 5)
 		DebugDraw.set_text("Right: draw bounds for culling", DebugDraw.config_3d.visible_instance_bounds, 6)
 
+
 func _more_tests():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
@@ -285,6 +287,7 @@ func _more_tests():
 	
 		# Delayed line render
 	DebugDraw.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw.empty_color, 0.5)
+
 
 func _draw_array_of_boxes():
 	# Lots of boxes to check performance.. I guess..
@@ -295,6 +298,7 @@ func _draw_array_of_boxes():
 					DebugDraw.draw_box(Vector3(x, -4-z, y), Vector3.ONE, DebugDraw.empty_color, false, 1.25)
 		time2 = 1.25
 	time2 -= get_process_delta_time()
+
 
 func _graph_test():
 # warning-ignore:return_value_discarded
@@ -343,6 +347,7 @@ func _graph_test():
 	# Just sending random data to the graph
 	DebugDraw.graph_update_data(&"randf", randf())
 
+
 func _upd_graph_params():
 	DebugDraw.config_2d.graphs_base_offset = graph_offset
 	for g in [&"FPS", &"fps5", &"fps8"]:
@@ -357,9 +362,11 @@ func _upd_graph_params():
 			if Engine.is_editor_hint() or g != &"FPS":
 				graph.frame_time_mode = graph_frame_time_mode
 
+
 func _get_sin_wave_for_graph() -> float:
 	var mul = 4 if Input.is_key_pressed(KEY_END) else 2
 	return sin(Engine.get_frames_drawn() * 0.5) * mul
+
 
 func _remove_graphs():
 	DebugDraw.remove_graph(&"randf")
@@ -374,6 +381,7 @@ func _remove_graphs():
 	DebugDraw.remove_graph(&"fps10")
 	DebugDraw.remove_graph(&"fps11")
 	DebugDraw.remove_graph(&"fps12")
+
 
 func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side := DebugDrawGraph.SIDE_BOTTOM, pos = DebugDrawGraph.POSITION_LEFT_BOTTOM, size := Vector2i(256, 60), font = null) -> DebugDrawGraph:
 	var graph := DebugDraw.get_graph(title)
