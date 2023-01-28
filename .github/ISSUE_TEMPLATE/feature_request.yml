@@ -3,25 +3,25 @@ description: Suggest an idea for this project
 title: "[Feature Request]: "
 labels: ["enhancement"]
 body:
-- type: markdown
-  attributes:
-    value: |
-      - Write a descriptive feature request title above.
-      - Search [open](https://github.com/DmitriySalnikov/godot_debug_draw_3d/issues) and [closed](https://github.com/DmitriySalnikov/godot_debug_draw_3d/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been suggested.
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive feature request title above.
+        - Search [open](https://github.com/DmitriySalnikov/godot_debug_draw_3d/issues) and [closed](https://github.com/DmitriySalnikov/godot_debug_draw_3d/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been suggested.
 
-- type: textarea
-  attributes:
-    label: Feature description
-    description: |
-      Briefly describe your suggestion.
-      You can include images or videos with drag and drop, and format code blocks.
-  validations:
-    required: true
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: |
+        Briefly describe your suggestion.
+        You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags.
+    validations:
+      required: true
 
-- type: textarea
-  attributes:
-    label: Solution approach
-    description: |
-      If you have any ideas on how to implement this suggestion, you can describe them here.
-  validations:
-    required: false
+  - type: textarea
+    attributes:
+      label: Implementation Ideas
+      description: |
+        If you have any ideas on how to implement this suggestion, you can describe them here.
+    validations:
+      required: false
