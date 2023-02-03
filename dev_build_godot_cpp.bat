@@ -3,7 +3,6 @@ cd godot-cpp
 set api= 
 
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
-git apply --ignore-space-change --ignore-whitespace ../patches/enum_names.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
 
 title win x64 debug dev
