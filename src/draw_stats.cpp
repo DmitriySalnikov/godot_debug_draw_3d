@@ -2,11 +2,10 @@
 #include "utils.h"
 
 void DebugDrawStats::_bind_methods() {
-	ClassDB::bind_method(D_METHOD(TEXT(set_not_exposed), "value"), &DebugDrawStats::set_not_exposed);
-
 #define REG_PROPERTY_NO_SET(name, type)                                              \
 	ClassDB::bind_method(D_METHOD(TEXT(get_##name)), &DebugDrawStats::get_##name); \
-	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_not_exposed), TEXT(get_##name));
+	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &DebugDrawStats::set_##name); \
+	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(get_##name));
 #pragma region Parameters
 
 	REG_PROPERTY_NO_SET(instances, Variant::INT);

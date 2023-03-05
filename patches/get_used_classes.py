@@ -72,7 +72,10 @@ def scan_dependencies(api):
 
     print("Provided", len(used_classes),
           "explicit classes:", str(sorted(used_classes)))
-    print("A total of", len(found_dependencies), "classes were found:", str(sorted(found_dependencies)))
+    print()
+    print("A total of", len(found_dependencies),
+          "classes were found:", str(sorted(found_dependencies)))
+    print()
 
     temp_engine_class_names.clear()
 
@@ -133,9 +136,9 @@ def delete_useless(files):
         c) + ".cpp" for c in found_dependencies]
 
     src_path = "gen/src/classes/"
-    print()
     print("These", len(dependencies_file_names), "files from the",
           src_path, "directory will be compiled:", dependencies_file_names)
+    print()
 
     new_files_list = []
     for f in files:

@@ -22,7 +22,8 @@ private:                                     \
 	type name = def;                         \
                                              \
 public:                                      \
-	type get_##name() const { return name; }
+	type get_##name() const { return name; } \
+	void set_##name(int64_t val) {}
 
 	DEFINE_DEFAULT_PROP(int64_t, instances, 0);
 	DEFINE_DEFAULT_PROP(int64_t, lines, 0);
@@ -43,8 +44,6 @@ public:                                      \
 	DEFINE_DEFAULT_PROP(int64_t, total_time_spent_usec, 0);
 
 #undef DEFINE_DEFAULT_PROP
-
-	void set_not_exposed(int64_t t_val) {}
 
 	DebugDrawStats(){};
 

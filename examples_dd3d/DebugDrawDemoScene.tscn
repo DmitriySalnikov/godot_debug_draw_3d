@@ -212,7 +212,6 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-draw_array_of_boxes = true
 start_culling_distance = 55.0
 text_groups_position = 2
 text_groups_default_font_size = 15
@@ -446,7 +445,6 @@ target_position = Vector3(0, -3.464, 0)
 [node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
 autoplay = "New Anim"
 playback_process_mode = 0
-playback_speed = 0.3
 libraries = {
 "": SubResource("AnimationLibrary_vh8ml")
 }
