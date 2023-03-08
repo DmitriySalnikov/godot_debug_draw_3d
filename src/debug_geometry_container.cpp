@@ -68,6 +68,16 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 
 	geometry_pool.clear_pool();
 	geometry_pool.clear_pool();
+
+	RenderingServer *rs = RS();
+	rs->free_rid(immediate_mesh_storage.instance);
+	immediate_mesh_storage.mesh.unref();
+	immediate_mesh_storage.material.unref();
+
+	for (auto &i : multi_mesh_storage) {
+		rs->free_rid(i.instance);
+		i.mesh.unref();
+	}
 }
 
 void DebugGeometryContainer::CreateMMI(InstanceType type, const String &name, Ref<ArrayMesh> mesh) {

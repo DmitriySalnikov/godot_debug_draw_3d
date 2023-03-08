@@ -161,8 +161,13 @@ void DebugDraw::_scene_tree_found() {
 }
 
 void DebugDraw::_connect_scene_changed() {
+	// Skip when exiting the tree and finish this loop
+	if (dgc) {
+		return;
+	}
+
 	Node *scene = _get_current_scene();
-	if (scene) {
+	if (scene && UtilityFunctions::is_instance_valid(scene)) {
 		scene->connect(StringName("tree_exiting"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		return;
 	}
@@ -191,6 +196,21 @@ void DebugDraw::enter_tree() {
 
 void DebugDraw::exit_tree() {
 	_font.unref();
+
+	dgc.reset();
+	data_graphs.reset();
+	grouped_text.reset();
+
+	root_node->queue_free();
+	root_node = nullptr;
+
+	if (!IS_EDITOR_HINT()) {
+		_canvas_layer->queue_free();
+		default_canvas->queue_free();
+
+		_canvas_layer = nullptr;
+		default_canvas = nullptr;
+	}
 
 	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 		default_canvas->queue_redraw();

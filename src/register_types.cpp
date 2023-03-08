@@ -33,7 +33,7 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 /** GDExtension Uninitialize **/
 extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (debug_draw_3d_singleton) {
-		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw3D));
+		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
 		memfree(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;
