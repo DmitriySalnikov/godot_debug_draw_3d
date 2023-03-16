@@ -26,9 +26,7 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 
 	std::string s;
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 6387)
-#endif
+	MSVC_WARNING_DISABLE(6387)
 
 	if (len >= static_buf_size) {
 		char *buf_alloc = (char *)malloc((size_t)len + 1);
@@ -40,9 +38,7 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 	}
 	va_end(list_copy);
 
-#if defined(_MSC_VER)
-#pragma warning(default : 6387)
-#endif
+	MSVC_WARNING_RESTORE(6387)
 
 	size_t hsh = std::hash<std::string>()(s);
 

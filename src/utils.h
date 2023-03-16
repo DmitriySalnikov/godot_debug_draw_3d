@@ -1,23 +1,7 @@
 #pragma once
 
 #include "circular_buffer.h"
-
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/core/binder_common.hpp>
-#include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/core/error_macros.hpp>
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+#include "utils_compiler.h"
 
 #include <algorithm>
 #include <functional>
@@ -30,20 +14,16 @@
 #include <unordered_set>
 #include <vector>
 
-#define TEXT(s) #s
-
-#if DEBUG_ENABLED && _MSC_VER
-#ifndef _CRT_STRINGIZE
-#define _CRT_STRINGIZE_(x) #x
-#define _CRT_STRINGIZE(x) _CRT_STRINGIZE_(x)
-#endif
-
-// Expands to macro:
-#define EXPAND_MACRO(x) __pragma(message(__FILE__ _CRT_STRINGIZE((__LINE__) \
-																 : \nmacro\t) #x " expands to:\n" _CRT_STRINGIZE(x)))
-#else
-#define EXPAND_MACRO(x)
-#endif
+MSVC_WARNING_DISABLE(4244)
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/core/binder_common.hpp>
+#include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/godot.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+MSVC_WARNING_RESTORE(4244)
 
 #if REAL_T_IS_DOUBLE
 typedef godot::PackedFloat64Array PackedRealArray;
@@ -141,7 +121,7 @@ public:
 	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
 	static godot::String get_scene_tree_as_string(godot::Node *start);
 
-	template<class T>
+	template <class T>
 	static bool connect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr) {
 		if (godot::UtilityFunctions::is_instance_valid(p_inst) && !p_inst->is_connected(p_signal, p_callable)) {
 			godot::Error err = p_inst->connect(p_signal, p_callable, p_flags);

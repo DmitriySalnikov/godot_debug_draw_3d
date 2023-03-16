@@ -1,16 +1,12 @@
 #pragma once
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
+#include "utils_compiler.h"
 
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 #include <functional>
 #include <memory>

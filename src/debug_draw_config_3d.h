@@ -2,15 +2,9 @@
 
 #include "colors.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/ref_counted.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 using namespace godot;
 

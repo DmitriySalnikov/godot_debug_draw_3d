@@ -4,18 +4,12 @@
 #include "utils.h"
 #include "draw_stats.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/main_loop.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/world3d.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 #include <array>
 

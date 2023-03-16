@@ -1,18 +1,12 @@
 #include "render_instances.h"
 #include "draw_stats.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/time.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 template <class T, size_t _TStepSize>
 struct TempBigBuffer {

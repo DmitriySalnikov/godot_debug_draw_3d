@@ -8,10 +8,7 @@
 #include "grouped_text.h"
 #include "utils.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -24,10 +21,7 @@
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/window.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 #include <limits.h>
 

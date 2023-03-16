@@ -5,10 +5,7 @@
 #include "math_utils.h"
 #include "render_instances.h"
 
-#if defined(_MSC_VER)
-#pragma warning(disable : 4244)
-#endif
-
+MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -21,10 +18,7 @@
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/texture.hpp>
-
-#if defined(_MSC_VER)
-#pragma warning(default : 4244)
-#endif
+MSVC_WARNING_RESTORE(4244)
 
 #include <map>
 
