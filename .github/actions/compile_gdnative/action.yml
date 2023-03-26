@@ -5,7 +5,7 @@ inputs:
     description: Target platform
     required: true
   target:
-    description: The scons target (debug/release_debug/release).
+    description: The scons target (debug/release_debug/release)
     default: "release"
   bits:
     description: Bits or arch (bits=64, bits=32, arch=arm64 or empty)
