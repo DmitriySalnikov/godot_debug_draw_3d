@@ -35,6 +35,7 @@ class DebugGeometryContainer {
 
 		~MultiMeshStorage() {
 			RS()->free_rid(instance);
+			mesh.unref();
 		}
 	};
 	MultiMeshStorage multi_mesh_storage[InstanceType::ALL] = {};
@@ -46,6 +47,8 @@ class DebugGeometryContainer {
 
 		~ImmediateMeshStorage() {
 			RS()->free_rid(instance);
+			mesh.unref();
+			material.unref();
 		}
 	};
 	ImmediateMeshStorage immediate_mesh_storage;

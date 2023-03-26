@@ -55,6 +55,7 @@ public:
 	const static char *s_marked_dirty;
 
 	DebugDrawConfig2D();
+	~DebugDrawConfig2D();
 
 	void set_graphs_base_offset(const Vector2i &_offset);
 	Vector2i get_graphs_base_offset() const;

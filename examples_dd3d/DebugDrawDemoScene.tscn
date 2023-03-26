@@ -184,7 +184,9 @@ func _ready() -> void:
 		$GC/VB/HSlider.value = test.size.x
 		$GC/VB/HSlider2.value = test.buffer_size
 	await get_tree().create_timer(0.2).timeout
-	$GC/VB/H/Button.disabled = false
+	
+	# TODO: temp disabled
+	$GC/VB/H/Button.disabled = true
 
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:

@@ -22,6 +22,7 @@ void DebugDrawConfig3D::_bind_methods() {
 	REG_PROP(line_after_hit_color, Variant::COLOR);
 
 #pragma endregion
+#undef REG_CLASS_NAME
 }
 
 void DebugDrawConfig3D::set_freeze_3d_render(const bool &_state) {

@@ -72,6 +72,10 @@ DebugDrawGraph::DebugDrawGraph(DataGraphManager *_owner, StringName _title) {
 	graph_range.reset(get_buffer_size());
 }
 
+DebugDrawGraph::~DebugDrawGraph() {
+	custom_font.unref();
+}
+
 void DebugDrawGraph::_init(DataGraphManager *_owner, StringName _title) {
 	buffer_data = std::make_unique<CircularBuffer<double> >(get_buffer_size());
 	owner = _owner;
@@ -646,6 +650,10 @@ DataGraphManager::DataGraphManager(DebugDraw *root) {
 }
 
 DataGraphManager::~DataGraphManager() {
+	for (auto &g : graphs) {
+		g.unref();
+	}
+	graphs.clear();
 }
 
 void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const {

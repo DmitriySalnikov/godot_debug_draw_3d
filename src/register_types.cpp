@@ -37,6 +37,10 @@ extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializatio
 		Engine::get_singleton()->unregister_singleton("Dbg3");
 		memfree(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;
+
+		UtilityFunctions::push_warning("\n[DebugDraw] The next error is related to https://github.com/godotengine/godot-cpp/issues/914\n"
+			"Also, closing the window may be slow due to the crash associated with the unregistration of the GDExtension singleton.\n"
+			"I advise you to close the project using the \"Stop\" button in the editor.\n");
 	}
 }
 

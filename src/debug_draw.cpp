@@ -49,6 +49,7 @@ void DebugDraw::_bind_methods() {
 	REG_PROP(custom_canvas, Variant::OBJECT);
 
 #pragma endregion
+#undef REG_CLASS_NAME
 
 #pragma region Draw Functions
 	ClassDB::bind_method(D_METHOD(TEXT(clear_3d_objects)), &DebugDraw::clear_3d_objects);
@@ -210,6 +211,9 @@ void DebugDraw::exit_tree() {
 		default_canvas->queue_redraw();
 	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 		custom_canvas->queue_redraw();
+
+	config_2d.unref();
+	config_3d.unref();
 }
 
 void DebugDraw::ready() {

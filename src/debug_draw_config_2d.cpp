@@ -28,6 +28,11 @@ void DebugDrawConfig2D::_bind_methods() {
 	REG_PROP(text_custom_font, Variant::OBJECT);
 
 	ADD_SIGNAL(MethodInfo(s_marked_dirty));
+#undef REG_CLASS_NAME
+}
+
+DebugDrawConfig2D::~DebugDrawConfig2D() {
+	text_custom_font.unref();
 }
 
 DebugDrawConfig2D::DebugDrawConfig2D() {

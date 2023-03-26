@@ -130,6 +130,7 @@ protected:
 public:
 	DebugDrawGraph(){};
 	DebugDrawGraph(DataGraphManager *_owner, StringName _title);
+	~DebugDrawGraph();
 
 	virtual GraphType get_type() { return GraphType::GRAPH_NORMAL; };
 	StringName get_title() const;
