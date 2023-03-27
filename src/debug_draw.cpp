@@ -127,7 +127,6 @@ DebugDraw::DebugDraw() {
 }
 
 DebugDraw::~DebugDraw() {
-	// TODO: need a proper clean-up
 	if (singleton && singleton == this) {
 		singleton = nullptr;
 	} else {
