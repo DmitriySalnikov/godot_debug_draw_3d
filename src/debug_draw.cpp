@@ -157,7 +157,7 @@ void DebugDraw::_scene_tree_found() {
 
 void DebugDraw::_connect_scene_changed() {
 	// Skip when exiting the tree and finish this loop
-	if (dgc) {
+	if (is_closing) {
 		return;
 	}
 
@@ -190,6 +190,7 @@ void DebugDraw::enter_tree() {
 }
 
 void DebugDraw::exit_tree() {
+	is_closing = true;
 	_font.unref();
 
 	dgc.reset();

@@ -54,6 +54,7 @@ private:
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
 	bool is_ready = false;
+	bool is_closing = false;
 	bool is_current_scene_is_null = true;
 
 	void _on_canvas_marked_dirty();
