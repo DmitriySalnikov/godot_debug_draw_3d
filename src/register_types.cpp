@@ -28,6 +28,8 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 	debug_draw_3d_singleton = memnew(DebugDraw);
 	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
 	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
+
+	// TODO: test ability to create EditorPlugin on MODULE_INITIALIZATION_LEVEL_EDITOR 😅
 }
 
 /** GDExtension Uninitialize **/
