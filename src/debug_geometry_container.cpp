@@ -208,12 +208,10 @@ void DebugGeometryContainer::update_geometry(double delta) {
 					cameras_positions.push_back(c->get_position());
 				}
 			}
-		} else {
-			PRINT_WARNING("No camera found to perform frustum culling for DebugDraw");
 		}
 
 		// Convert frustum to vector
-		if (owner->get_config_3d()->is_use_frustum_culling()) {
+		if (owner->get_config_3d()->is_use_frustum_culling() && frustum_arrays.size()) {
 			frustum_planes.reserve(frustum_arrays.size());
 
 			for (auto &arr : frustum_arrays) {
