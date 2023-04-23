@@ -11,39 +11,53 @@ using namespace godot;
 
 DebugDraw *debug_draw_3d_singleton = nullptr;
 
+#ifdef DEBUG_ENABLED
+#include "asset_library_update_checker.h"
+Ref<AssetLibraryUpdateChecker> upd_checker;
+#endif
+
 /** GDExtension Initialize **/
 extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		ClassDB::register_class<DebugDraw>();
+		ClassDB::register_class<DebugDrawConfig2D>();
+		ClassDB::register_class<DebugDrawConfig3D>();
+		ClassDB::register_class<DebugDrawGraph>();
+		ClassDB::register_class<DebugDrawFPSGraph>();
+		ClassDB::register_class<DebugDrawSceneManager>();
+		ClassDB::register_class<DebugDrawStats>();
+
+		debug_draw_3d_singleton = memnew(DebugDraw);
+		Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
+		Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
 	}
 
-	ClassDB::register_class<DebugDraw>();
-	ClassDB::register_class<DebugDrawConfig2D>();
-	ClassDB::register_class<DebugDrawConfig3D>();
-	ClassDB::register_class<DebugDrawGraph>();
-	ClassDB::register_class<DebugDrawFPSGraph>();
-	ClassDB::register_class<DebugDrawSceneManager>();
-	ClassDB::register_class<DebugDrawStats>();
-
-	debug_draw_3d_singleton = memnew(DebugDraw);
-	Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
-	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
-
-	// TODO: test ability to create EditorPlugin on MODULE_INITIALIZATION_LEVEL_EDITOR 😅
+#ifdef DEBUG_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		ClassDB::register_class<AssetLibraryUpdateChecker>();
+		upd_checker.instantiate();
+	}
+#endif
 }
 
 /** GDExtension Uninitialize **/
 extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
-	if (debug_draw_3d_singleton) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE && debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
 		memfree(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;
 
 		UtilityFunctions::push_warning("\n[DebugDraw] The next error is related to https://github.com/godotengine/godot-cpp/issues/914\n"
-			"Also, closing the window may be slow due to the crash associated with the unregistration of the GDExtension singleton.\n"
-			"I advise you to close the project using the \"Stop\" button in the editor.\n");
+									   "Also, closing the window may be slow due to the crash associated with the unregistration of the GDExtension singleton.\n"
+									   "I advise you to close the project using the \"Stop\" button in the editor.\n");
 	}
+
+#ifdef DEBUG_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		upd_checker.unref();
+	}
+#endif
 }
 
 /** GDExtension Initialize **/

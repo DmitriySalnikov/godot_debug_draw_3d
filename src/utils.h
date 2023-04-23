@@ -45,7 +45,7 @@ typedef godot::PackedFloat32Array PackedRealArray;
 
 #define PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
 #define PRINT_ERROR(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify())
-#define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), true)
+#define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), false, true)
 
 namespace godot {
 static String get_file_name_in_repository(const String &name) {
@@ -101,6 +101,20 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #define ENGINE() Engine::get_singleton()
 
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
+
+#define PS() ProjectSettings::get_singleton()
+#define DEFINE_SETTING_AND_GET(var, path, def, type) \
+	{                                                \
+		if (!PS()->has_setting(path)) {              \
+			PS()->set_setting(path, def);            \
+		}                                            \
+		Dictionary info;                             \
+		info["name"] = path;                         \
+		info["type"] = type;                         \
+		PS()->add_property_info(info);               \
+		PS()->set_initial_value(path, def);          \
+	}                                                \
+	var = PS()->get_setting(path)
 
 class Utils {
 #if DEBUG_ENABLED

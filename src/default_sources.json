@@ -1,4 +1,5 @@
 [
+	"asset_library_update_checker",
 	"colors.cpp",
 	"data_graphs.cpp",
 	"debug_draw.cpp",

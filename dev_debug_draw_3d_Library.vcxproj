@@ -173,6 +173,7 @@
     <None Include="src\default_sources.json" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\asset_library_update_checker.cpp" />
     <ClCompile Include="src\colors.cpp" />
     <ClCompile Include="src\debug_draw.cpp" />
     <ClCompile Include="src\data_graphs.cpp" />
@@ -188,6 +189,7 @@
     <ClCompile Include="src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\asset_library_update_checker.h" />
     <ClInclude Include="src\circular_buffer.h" />
     <ClInclude Include="src\colors.h" />
     <ClInclude Include="src\debug_draw.h" />
@@ -203,6 +205,7 @@
     <ClInclude Include="src\render_instances.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\utils_compiler.h" />
+    <ClInclude Include="src\version.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -44,7 +44,7 @@ def extract_used_classes(folder_path: str):
                 if not f.endswith((".cpp", ".cxx", ".c++", ".c", ".cc", ".inc", ".hpp", ".hxx", ".h", ".hh")):
                     continue
 
-                with open(Path(dir) / f, "r") as file:
+                with open(Path(dir) / f, "r", encoding="utf8") as file:
                     data = file.read()
 
                     matches = find_class.finditer(data)
