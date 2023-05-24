@@ -54,7 +54,7 @@ jobs:
 
   linux-gdextension:
     name: 🐧 Linux
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-20.04"
 
     strategy:
       fail-fast: false
@@ -106,7 +106,7 @@ jobs:
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: macos
-          additional: lto=yes
+          additional: lto=yes macos_deployment_target=10.14
 
   # ============================================
 

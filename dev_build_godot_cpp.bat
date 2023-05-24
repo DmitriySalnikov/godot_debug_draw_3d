@@ -19,9 +19,9 @@ scons platform=windows target=template_release arch=x86_64 debug_symbols=no %api
 if errorlevel 1 ( echo Failed to compile Windows godot-cpp for x64. Code: %errorlevel% && exit /b %errorlevel% )
 
 title android arm64v8 debug
-scons platform=android target=template_debug android_arch=arm64v8 %api%
+scons platform=android target=template_debug arch=arm64v8 %api%
 if errorlevel 1 ( echo Failed to compile debug Android godot-cpp for arm64v8. Code: %errorlevel% && exit /b %errorlevel% )
 
 title android arm64v8
-scons platform=android target=template_release android_arch=arm64v8 %api%
+scons platform=android target=template_release arch=arm64v8 %api%
 if errorlevel 1 ( echo Failed to compile Android godot-cpp for arm64v8. Code: %errorlevel% && exit /b %errorlevel% )
