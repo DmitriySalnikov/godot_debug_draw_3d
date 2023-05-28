@@ -77,3 +77,5 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
         env.Append(LIBS=[library_full_name.replace(".dll", ".lib")])
     else:
         env.Append(LIBS=[library_full_name])
+    
+    return env
