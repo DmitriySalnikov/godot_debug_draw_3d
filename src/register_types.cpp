@@ -11,7 +11,7 @@ using namespace godot;
 
 DebugDraw *debug_draw_3d_singleton = nullptr;
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 #include "asset_library_update_checker.h"
 Ref<AssetLibraryUpdateChecker> upd_checker;
 #endif
@@ -32,7 +32,7 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 		Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		ClassDB::register_class<AssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
@@ -45,15 +45,11 @@ extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializatio
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE && debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
-		memfree(debug_draw_3d_singleton);
+		memdelete(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;
-
-		UtilityFunctions::push_warning("\n[DebugDraw] The next error is related to https://github.com/godotengine/godot-cpp/issues/914\n"
-									   "Also, closing the window may be slow due to the crash associated with the unregistration of the GDExtension singleton.\n"
-									   "I advise you to close the project using the \"Stop\" button in the editor.\n");
 	}
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		upd_checker.unref();
 	}
@@ -62,8 +58,8 @@ extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializatio
 
 /** GDExtension Initialize **/
 extern "C" {
-GDExtensionBool GDE_EXPORT debug_draw_3d_library_init(const GDExtensionInterface *p_interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
-	godot::GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
+GDExtensionBool GDE_EXPORT debug_draw_3d_library_init(GDExtensionInterfaceGetProcAddress p_get_proc_address, GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
+	godot::GDExtensionBinding::InitObject init_obj(p_get_proc_address, p_library, r_initialization);
 
 	init_obj.register_initializer(initialize_debug_draw_3d_module);
 	init_obj.register_terminator(uninitialize_debug_draw_3d_module);

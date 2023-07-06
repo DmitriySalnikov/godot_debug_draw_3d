@@ -31,7 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64]
-        target: [template_debug, template_release]
+        target: [editor, template_debug, template_release]
 
     steps:
       - name: Checkout
@@ -60,7 +60,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x86_64]
-        target: [template_debug, template_release]
+        target: [editor, template_debug, template_release]
 
     steps:
       - name: Checkout
@@ -89,7 +89,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [universal]
-        target: [template_debug, template_release]
+        target: [editor, template_debug, template_release]
 
     steps:
       - name: Checkout

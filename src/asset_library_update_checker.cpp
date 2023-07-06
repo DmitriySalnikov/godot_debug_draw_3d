@@ -1,10 +1,10 @@
 #include "asset_library_update_checker.h"
-#ifdef DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
 
 #include "version.h"
 
 MSVC_WARNING_DISABLE(4244)
-#include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -22,6 +22,9 @@ void AssetLibraryUpdateChecker::_bind_methods() {
 }
 
 void AssetLibraryUpdateChecker::request_completed(int result, int response_code, PackedStringArray headers, PackedByteArray body) {
+	request->queue_free();
+	request = nullptr;
+
 	if (response_code != 200)
 		return;
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 
 #include "utils.h"
 
 MSVC_WARNING_DISABLE(4244)
-#include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/http_request.hpp>
+#include <godot_cpp/classes/ref_counted.hpp>
 MSVC_WARNING_RESTORE(4244)
 
 using namespace godot;
