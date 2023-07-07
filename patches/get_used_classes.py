@@ -60,7 +60,8 @@ def extract_used_classes(folder_path: str):
                         with open(Path(dir) / f, "r", encoding="utf-8") as file:
                             read_data(file)
                     except UnicodeDecodeError as e:
-                        print("Skipping file due to 'UnicodeDecodeError' exception: " + (Path(dir) / f).resolve().as_posix() + "\nException: " + str(e))
+                        print("Skipping file due to 'UnicodeDecodeError' exception: " +
+                              (Path(dir) / f).resolve().as_posix() + "\nException: " + str(e))
                         skips += 1
                         continue
         return skips
@@ -78,13 +79,22 @@ def extract_used_classes(folder_path: str):
 
 
 def scan_dependencies(api):
+    api = dict(api)
     if not is_need_to_exclude_classes:
         return
 
     used_classes = extract_used_classes(sources_folder)
 
     for class_api in api["classes"]:
+        # It will change the actual value inside the `api`!!!
+        #
+        # ClassDB Singleton is renamed in godot-cpp.
+        # This class cannot appear as an argument or return value, so no other renaming is required yet.
+        if class_api["name"] == "ClassDB":
+            class_api["name"] = "ClassDBSingleton"
+
         temp_engine_class_names.add(class_api["name"])
+
     for name in used_classes:
         _get_dependencies(api, name)
 
@@ -150,19 +160,18 @@ def delete_useless(files):
         return files
 
     # convert found class names to file names
-    dependencies_file_names = [camel_to_snake(
-        c) + ".cpp" for c in found_dependencies]
+    deps_file_names = [camel_to_snake(c) + ".cpp" for c in found_dependencies]
 
     src_path = "gen/src/classes/"
-    print("These", len(dependencies_file_names), "files from the",
-          src_path, "directory will be compiled:", dependencies_file_names)
+    print("These", len(deps_file_names), "files from the",
+          src_path, "directory will be compiled:", deps_file_names)
     print()
 
     new_files_list = []
     for f in files:
         split = f.split(src_path)
         if len(split) > 1:
-            if split[1] in dependencies_file_names:
+            if split[1] in deps_file_names:
                 new_files_list.append(f)
         else:
             new_files_list.append(f)
