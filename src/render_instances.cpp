@@ -1,4 +1,7 @@
 #include "render_instances.h"
+
+#ifndef DISABLE_DEBUG_RENDERING
+
 #include "draw_stats.h"
 
 MSVC_WARNING_DISABLE(4244)
@@ -439,3 +442,5 @@ void GeometryPool::add_or_update_line(real_t _exp_time, const std::vector<Vector
 	if (_custom_upd)
 		_custom_upd(inst);
 }
+
+#endif

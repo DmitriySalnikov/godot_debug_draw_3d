@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef DISABLE_DEBUG_RENDERING
+
 #include "math_utils.h"
 #include "utils.h"
 
@@ -245,3 +247,5 @@ public:
 	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };
+
+#endif

@@ -213,6 +213,8 @@ protected:
 	bool is_ms = false;
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEBUG_RENDERING
 	virtual void _update_received(double _value) override;
 
 public:
@@ -220,11 +222,13 @@ public:
 	DebugDrawFPSGraph(DataGraphManager *_owner, StringName _title);
 
 	virtual GraphType get_type() override { return GraphType::GRAPH_FPS; };
+	virtual void set_data_getter(const Callable &_callable) override;
+#endif
 	void set_frame_time_mode(const bool _state);
 	bool is_frame_time_mode() const;
-
-	virtual void set_data_getter(const Callable &_callable) override;
 };
+
+#ifndef DISABLE_DEBUG_RENDERING
 
 class DataGraphManager {
 	std::vector<Ref<DebugDrawGraph> > graphs;
@@ -245,3 +249,5 @@ public:
 	Ref<DebugDrawGraph> get_graph(const StringName &_title) const;
 	PackedStringArray get_graph_names() const;
 };
+
+#endif

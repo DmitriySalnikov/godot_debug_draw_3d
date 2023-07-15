@@ -296,6 +296,8 @@ void DebugDrawGraph::_update_received(double value) {
 }
 
 void DebugDrawGraph::graph_interpolated_values_range::update(const double &_min, const double &_max, const double &_avg, const double &_delta) {
+#ifndef DISABLE_DEBUG_RENDERING
+
 	double _center_offset = abs(max - min) * (0.25 * 0.5); // react when the new limit is below 25% of the half range
 	if (_max > max) {
 		max = _max;
@@ -346,6 +348,7 @@ void DebugDrawGraph::graph_interpolated_values_range::update(const double &_min,
 	}
 
 	avg = (max + min) * 0.5;
+#endif
 }
 
 void DebugDrawGraph::graph_interpolated_values_range::reset(uint32_t _buffer_size, double _upd_timer_delay) {
@@ -363,6 +366,7 @@ void DebugDrawGraph::graph_interpolated_values_range::reset(uint32_t _buffer_siz
 }
 
 Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const {
+#ifndef DISABLE_DEBUG_RENDERING
 	Vector2i pos = _rects.base.position;
 
 	Vector2i graph_size = get_size();
@@ -410,9 +414,13 @@ Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDr
 	}
 
 	return pos;
+#else
+	return Vector2i();
+#endif
 }
 
 DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root, const double &_delta) const {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!is_enabled())
 		return _prev_rects;
 
@@ -601,11 +609,23 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 #endif
 
 	return rects;
+#else
+	return _prev_rects;
+#endif
 }
 
 ////////////////////////////////////
 // DebugDrawFPSGraph
 
+void DebugDrawFPSGraph::_bind_methods() {
+#define REG_CLASS_NAME DebugDrawFPSGraph
+
+	REG_PROP_BOOL(frame_time_mode);
+
+#undef REG_CLASS_NAME
+}
+
+#ifndef DISABLE_DEBUG_RENDERING
 void DebugDrawFPSGraph::_update_received(double _value) {
 	LOCK_GUARD(datalock);
 	if (is_ms != is_frame_time_mode()) {
@@ -622,13 +642,10 @@ DebugDrawFPSGraph::DebugDrawFPSGraph(DataGraphManager *_owner, StringName _title
 	_init(_owner, _title);
 };
 
-void DebugDrawFPSGraph::_bind_methods() {
-#define REG_CLASS_NAME DebugDrawFPSGraph
-
-	REG_PROP_BOOL(frame_time_mode);
-
-#undef REG_CLASS_NAME
+void DebugDrawFPSGraph::set_data_getter(const Callable &_callable) {
+	PRINT_WARNING("The FPS graph is already updated automatically");
 }
+#endif
 
 void DebugDrawFPSGraph::set_frame_time_mode(const bool _state) {
 	frametime_mode = _state;
@@ -638,13 +655,10 @@ bool DebugDrawFPSGraph::is_frame_time_mode() const {
 	return frametime_mode;
 }
 
-void DebugDrawFPSGraph::set_data_getter(const Callable &_callable) {
-	PRINT_WARNING("The FPS graph is already updated automatically");
-}
-
 ////////////////////////////////////
 // DataGraphManager
 
+#ifndef DISABLE_DEBUG_RENDERING
 DataGraphManager::DataGraphManager(DebugDraw *root) {
 	owner = root;
 }
@@ -811,3 +825,5 @@ PackedStringArray DataGraphManager::get_graph_names() const {
 	}
 	return res;
 }
+
+#endif

@@ -11,13 +11,15 @@ using namespace godot;
 
 DebugDraw *debug_draw_3d_singleton = nullptr;
 
-#ifdef TOOLS_ENABLED
+#ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEBUG_ENABLED
 #include "asset_library_update_checker.h"
 Ref<AssetLibraryUpdateChecker> upd_checker;
 #endif
+#endif
 
 /** GDExtension Initialize **/
-extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		ClassDB::register_class<DebugDraw>();
 		ClassDB::register_class<DebugDrawConfig2D>();
@@ -32,16 +34,18 @@ extern "C" void GDE_EXPORT initialize_debug_draw_3d_module(ModuleInitializationL
 		Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
 	}
 
-#ifdef TOOLS_ENABLED
+#ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEBUG_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		ClassDB::register_class<AssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
 	}
 #endif
+#endif
 }
 
 /** GDExtension Uninitialize **/
-extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
+void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE && debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
@@ -49,10 +53,12 @@ extern "C" void GDE_EXPORT uninitialize_debug_draw_3d_module(ModuleInitializatio
 		debug_draw_3d_singleton = nullptr;
 	}
 
-#ifdef TOOLS_ENABLED
+#ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEBUG_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		upd_checker.unref();
 	}
+#endif
 #endif
 }
 

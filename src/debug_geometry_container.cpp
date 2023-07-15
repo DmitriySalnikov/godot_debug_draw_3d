@@ -1,8 +1,10 @@
 #include "debug_geometry_container.h"
+
+#ifndef DISABLE_DEBUG_RENDERING
 #include "debug_draw.h"
 #include "debug_draw_config_3d.h"
-#include "utils.h"
 #include "draw_stats.h"
+#include "utils.h"
 
 MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/main_loop.hpp>
@@ -659,3 +661,5 @@ void DebugGeometryContainer::draw_camera_frustum_planes_c(const std::array<Plane
 #pragma endregion // Misc
 #pragma endregion // 3D
 #pragma endregion // Draw Functions
+
+#endif

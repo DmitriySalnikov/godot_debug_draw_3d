@@ -60,19 +60,6 @@ static String get_file_name_in_repository(const String &name) {
 
 #pragma endregion !PRINTING
 
-// TODO: temp constants. I didn't find them in gdnative api
-
-const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
-const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
-const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
-const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);
-const godot::Vector3 Vector3_LEFT = godot::Vector3(-1, 0, 0);
-const godot::Vector3 Vector3_RIGHT = godot::Vector3(1, 0, 0);
-const godot::Vector3 Vector3_BACK = godot::Vector3(0, 0, 1);
-const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
-
-const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
-
 #pragma region BINDING REGISTRATION
 
 // For this to work, you need to define REG_CLASS_NAME before using it.
@@ -115,6 +102,19 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 		PS()->set_initial_value(path, def);          \
 	}                                                \
 	var = PS()->get_setting(path)
+
+// TODO: temp constants. I didn't find them in gdnative api
+
+const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
+const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
+const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
+const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);
+const godot::Vector3 Vector3_LEFT = godot::Vector3(-1, 0, 0);
+const godot::Vector3 Vector3_RIGHT = godot::Vector3(1, 0, 0);
+const godot::Vector3 Vector3_BACK = godot::Vector3(0, 0, 1);
+const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
+
+const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 
 class Utils {
 #if DEBUG_ENABLED

@@ -78,6 +78,7 @@ void Utils::print_logs() {
 #endif
 }
 
+#ifndef DISABLE_DEBUG_RENDERING
 Node *Utils::find_node_by_class(Node *start_node, const String &class_name) {
 	for (int i = 0; i < start_node->get_child_count(); i++) {
 		auto c = start_node->get_child(i);
@@ -104,3 +105,4 @@ String Utils::get_scene_tree_as_string(Node *start) {
 	get_node_tree(start, 0);
 	return output;
 }
+#endif

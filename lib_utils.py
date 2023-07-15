@@ -12,6 +12,7 @@ def setup_options(env, arguments, gen_help):
     from SCons.Variables import Variables, BoolVariable, EnumVariable, PathVariable
     opts = Variables([], arguments)
 
+    opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
     opts.Add(PathVariable("addon_output_dir", "Path to the output directory",
              output_dir, PathVariable.PathIsDirCreate))
@@ -22,6 +23,9 @@ def setup_options(env, arguments, gen_help):
 
 def gdnative_setup_defines_and_flags(env):
     env.Append(CPPDEFINES=["GDEXTENSION_LIBRARY"])
+
+    if "release" in env["target"] and not env["force_enabled_dd3d"]:
+        env.Append(CPPDEFINES=["DISABLE_DEBUG_RENDERING"])
 
     if env["lto"]:
         if env.get("is_msvc", False):
@@ -60,8 +64,12 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
     # store all obj's in a dedicated folder
     env["SHOBJPREFIX"] = "#obj/"
 
-    library_full_name = "lib" + lib_name + ".{}.{}.{}{}".format(
-        env["platform"], env["target"], env["arch"], env["SHLIBSUFFIX"])
+    additional_tags = ""
+    if "release" in env["target"] and env["force_enabled_dd3d"]:
+        additional_tags += ".enabled"
+
+    library_full_name = "lib" + lib_name + ".{}.{}.{}{}{}".format(
+        env["platform"], env["target"], env["arch"], additional_tags,env["SHLIBSUFFIX"])
 
     env.Default(env.SharedLibrary(
         target=env.File(Path(env["addon_output_dir"]) / library_full_name),
@@ -77,5 +85,5 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
         env.Append(LIBS=[library_full_name.replace(".dll", ".lib")])
     else:
         env.Append(LIBS=[library_full_name])
-    
+
     return env

@@ -1,4 +1,5 @@
 #pragma once
+#ifndef DISABLE_DEBUG_RENDERING
 
 #include "utils_compiler.h"
 
@@ -77,7 +78,6 @@ public:
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
 
 class GroupedText {
-
 	TextGroupItem_ptr item_for_title_of_groups;
 	std::unordered_set<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;
@@ -95,3 +95,5 @@ public:
 	void set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration);
 	void draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size);
 };
+
+#endif
