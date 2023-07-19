@@ -4,6 +4,7 @@
 #include "geometry_generators.h"
 
 MSVC_WARNING_DISABLE(4244)
+#include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/font.hpp>
@@ -44,6 +45,7 @@ private:
 
 	Control *default_canvas = nullptr;
 
+#ifndef DISABLE_DEBUG_RENDERING
 	// Text
 	std::unique_ptr<GroupedText> grouped_text;
 
@@ -52,6 +54,7 @@ private:
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
+#endif
 
 	bool is_ready = false;
 	bool is_closing = false;
@@ -203,7 +206,7 @@ public:
 	void draw_aabb(const AABB &aabb, const Color &color = Colors::empty_color, const real_t &duration = 0);
 
 	/// Draw AABB from 'a' to 'b'
-	/// a: Firts corner
+	/// a: First corner
 	/// b: Second corner
 	/// color: Box color
 	/// duration: Duration of existence in seconds

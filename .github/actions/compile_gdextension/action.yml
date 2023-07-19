@@ -72,6 +72,9 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
         cd ..
         scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
+        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.platform}}" != "android" ]; then
+          scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} force_enabled_dd3d=yes ${{inputs.additional}}
+        fi
         echo "::endgroup::"
 
     - name: Prepare artifact Unix

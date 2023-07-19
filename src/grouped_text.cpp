@@ -7,6 +7,7 @@
 
 using namespace godot;
 
+#ifndef DISABLE_DEBUG_RENDERING
 TextGroupItem::TextGroupItem(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
 	DEV_PRINT_STD("New " TEXT(TextGroupItem) " created: %s : %s\n", _key.utf8().get_data(), _text.utf8().get_data());
 
@@ -351,3 +352,5 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 		_ci->draw_string(tp.font, tp.position, tp.text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, tp.font_size, tp.color);
 	}
 }
+
+#endif

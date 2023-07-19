@@ -135,16 +135,22 @@ DebugDraw::~DebugDraw() {
 }
 
 Node *DebugDraw::_get_current_scene() {
+#ifndef DISABLE_DEBUG_RENDERING
 	auto ST = SCENE_TREE();
 	if (IS_EDITOR_HINT()) {
 		return ST->get_edited_scene_root();
 	}
 	return ST->get_current_scene();
+#else
+	return nullptr;
+#endif
 }
 
 void DebugDraw::_scene_tree_found() {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!SCENE_TREE())
 		return;
+#endif
 
 	set_config_2d(nullptr);
 	set_config_3d(nullptr);
@@ -155,6 +161,7 @@ void DebugDraw::_scene_tree_found() {
 }
 
 void DebugDraw::_connect_scene_changed() {
+#ifndef DISABLE_DEBUG_RENDERING
 	// Skip when exiting the tree and finish this loop
 	if (is_closing) {
 		return;
@@ -167,9 +174,11 @@ void DebugDraw::_connect_scene_changed() {
 	}
 
 	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(true)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+#endif
 }
 
 void DebugDraw::_on_scene_changed(bool _is_scene_null) {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
 		clear_all();
@@ -177,19 +186,24 @@ void DebugDraw::_on_scene_changed(bool _is_scene_null) {
 
 	is_current_scene_is_null = _is_scene_null;
 	_connect_scene_changed();
+#endif
 }
 
 void DebugDraw::enter_tree() {
+#ifndef DISABLE_DEBUG_RENDERING
 	root_node->set_process_priority(INT32_MAX);
 
 	grouped_text = std::make_unique<GroupedText>();
 	grouped_text->init_group(this);
 	data_graphs = std::make_unique<DataGraphManager>(this);
 	dgc = std::make_unique<DebugGeometryContainer>(this);
+#endif
 }
 
 void DebugDraw::exit_tree() {
 	is_closing = true;
+
+#ifndef DISABLE_DEBUG_RENDERING
 	_font.unref();
 
 	dgc.reset();
@@ -211,6 +225,7 @@ void DebugDraw::exit_tree() {
 		default_canvas->queue_redraw();
 	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
 		custom_canvas->queue_redraw();
+#endif
 
 	config_2d.unref();
 	config_3d.unref();
@@ -219,7 +234,8 @@ void DebugDraw::exit_tree() {
 void DebugDraw::ready() {
 	is_ready = true;
 
-	// Usefull nodes and names:
+#ifndef DISABLE_DEBUG_RENDERING
+	// Useful nodes and names:
 	// CanvasItemEditor - probably 2D editor viewport
 	// Node3DEditorViewportContainer - base 3D viewport
 	// Node3DEditorViewportContainer/Node3DEditorViewport - base of 1 of 4 viewports
@@ -294,9 +310,11 @@ void DebugDraw::ready() {
 	set_custom_canvas(custom_canvas);
 	_set_base_world_node(SCENE_ROOT());
 	_connect_scene_changed();
+#endif
 }
 
 void DebugDraw::process(double delta) {
+#ifndef DISABLE_DEBUG_RENDERING
 	// Clean texts
 	grouped_text->cleanup_text(delta);
 
@@ -317,6 +335,7 @@ void DebugDraw::process(double delta) {
 
 	// Update 3D debug
 	dgc->update_geometry(delta);
+#endif
 
 	// Print logs if needed
 	log_flush_time += delta;
@@ -331,14 +350,22 @@ void DebugDraw::_on_canvas_marked_dirty() {
 }
 
 void DebugDraw::_on_canvas_item_draw(Control *ci) {
+#ifndef DISABLE_DEBUG_RENDERING
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size, ci->get_process_delta_time());
+#else
+	return;
+#endif
 }
 
 void DebugDraw::_set_base_world_node(Node *_world_base) {
+#ifndef DISABLE_DEBUG_RENDERING
 	dgc->set_world(_world_base);
+#else
+	return;
+#endif
 }
 
 void DebugDraw::mark_canvas_dirty() {
@@ -380,7 +407,9 @@ bool DebugDraw::is_debug_enabled() const {
 
 void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 	if (_cfg.is_valid()) {
+#ifndef DISABLE_DEBUG_RENDERING
 		Utils::disconnect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+#endif
 
 		config_2d = _cfg;
 	} else {
@@ -388,8 +417,10 @@ void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 		config_2d.instantiate();
 	}
 
+#ifndef DISABLE_DEBUG_RENDERING
 	mark_canvas_dirty();
 	Utils::connect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+#endif
 }
 
 Ref<DebugDrawConfig2D> DebugDraw::get_config_2d() const {
@@ -418,6 +449,7 @@ Viewport *DebugDraw::get_custom_viewport() const {
 }
 
 void DebugDraw::set_custom_canvas(Control *_canvas) {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!_canvas) {
 		Utils::connect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
 		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
@@ -427,6 +459,7 @@ void DebugDraw::set_custom_canvas(Control *_canvas) {
 			default_canvas->queue_redraw();
 		Utils::connect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
 	}
+#endif
 
 	custom_canvas = _canvas;
 }
@@ -440,33 +473,53 @@ Control *DebugDraw::get_custom_canvas() const {
 #pragma region Draw Functions
 
 Ref<DebugDrawStats> DebugDraw::get_render_stats() {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!dgc || !is_ready) return Ref<DebugDrawStats>();
 	return dgc->get_render_stats();
+#else
+	return Ref<DebugDrawStats>();
+#endif
 }
 
 void DebugDraw::clear_3d_objects() {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!dgc || !is_ready) return;
 	dgc->clear_3d_objects();
+#else
+	return;
+#endif
 }
 
 void DebugDraw::clear_2d_objects() {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!grouped_text || !data_graphs || !is_ready) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_dirty();
+#else
+	return;
+#endif
 }
 
 void DebugDraw::clear_all() {
+#ifndef DISABLE_DEBUG_RENDERING
 	if (!is_ready) return;
 	clear_2d_objects();
 	clear_3d_objects();
+#else
+	return;
+#endif
 }
 
 #pragma region 3D
 
+#ifndef DISABLE_DEBUG_RENDERING
 #define CALL_TO_DGC(func, ...)                                          \
 	if (!dgc || NEED_LEAVE || config_3d->is_freeze_3d_render()) return; \
 	dgc->func(__VA_ARGS__)
+#else
+#define CALL_TO_DGC(func, ...) return
+#endif
 
 #pragma region Spheres
 
@@ -612,6 +665,7 @@ void DebugDraw::draw_camera_frustum_planes(const Array &camera_frustum, const Co
 #pragma region 2D
 #pragma region Text
 
+#ifndef DISABLE_DEBUG_RENDERING
 #define CALL_TO_2D(obj, func, ...)  \
 	if (!obj || NEED_LEAVE) return; \
 	obj->func(__VA_ARGS__)
@@ -619,6 +673,10 @@ void DebugDraw::draw_camera_frustum_planes(const Array &camera_frustum, const Co
 #define CALL_TO_2D_RET(obj, func, def, ...) \
 	if (!obj || NEED_LEAVE) return def;     \
 	return obj->func(__VA_ARGS__)
+#else
+#define CALL_TO_2D(obj, func, ...) return
+#define CALL_TO_2D_RET(obj, func, def, ...) return def
+#endif
 
 void DebugDraw::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title, int title_size, int text_size) {
 	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title, title_size, text_size);

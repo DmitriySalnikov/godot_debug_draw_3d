@@ -1,6 +1,7 @@
 #pragma once
 
-#ifdef TOOLS_ENABLED
+#ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEBUG_ENABLED
 
 #include "utils.h"
 
@@ -27,4 +28,5 @@ public:
 	AssetLibraryUpdateChecker();
 };
 
+#endif
 #endif

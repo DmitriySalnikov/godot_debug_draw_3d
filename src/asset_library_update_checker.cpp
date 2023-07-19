@@ -1,6 +1,7 @@
 #include "asset_library_update_checker.h"
 
-#ifdef TOOLS_ENABLED
+#ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEBUG_ENABLED
 
 #include "version.h"
 
@@ -69,4 +70,5 @@ AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
 		call_deferred(TEXT(init));
 }
 
+#endif
 #endif

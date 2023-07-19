@@ -1,4 +1,5 @@
 #pragma once
+#ifndef DISABLE_DEBUG_RENDERING
 
 #include "colors.h"
 #include "geometry_generators.h"
@@ -157,3 +158,5 @@ public:
 #pragma endregion // 3D
 #pragma endregion // Exposed Draw Functions
 };
+
+#endif
