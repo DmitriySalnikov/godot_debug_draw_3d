@@ -117,9 +117,11 @@ Besides `DebugDraw`, you can also use `Dbg3`.
 
 But unfortunately at the moment `GDExtension` does not support adding documentation.
 
-<!-- ## Exporting a project
+## Exporting a project
 
-Most likely, when exporting the release version of the game, you will not want to export the debugging library with it. So you will need to make additional configuration of the project. -->
+Most likely, when exporting a release version of a game, you don't want to export the debug library along with it. But since there is still no `Conditional Compilation` in `GDScript`, so I decided to create a `dummy` library that has the same API as a regular library, but has minimal impact on performance, even if calls to its methods occur. The `dummy` library is used by default in the release version. However if you need to use debug rendering in the release version, then you can add the `forced_dd3d` feature when exporting. In this case, the release library with all the functionality will be used.
+
+![export_features](/images/export_features.png)
 
 <!-- ### For GDScript
 
@@ -160,6 +162,8 @@ The text in the keys and values of a text group cannot contain multi-line string
 The entire text overlay can only be placed in one corner, unlike DataGraphs.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
+
+**The version for Godot 4.0 requires explicitly specifying the exact data types, otherwise errors may occur.**
 
 **The C# binding is not ready yet.**
 
