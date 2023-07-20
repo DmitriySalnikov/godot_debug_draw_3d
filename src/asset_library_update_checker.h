@@ -17,6 +17,9 @@ class AssetLibraryUpdateChecker : public RefCounted {
 
 private:
 	HTTPRequest *request = nullptr;
+	String addon_name;
+	String repository_name;
+	String root_settings_section;
 
 protected:
 	static void _bind_methods();

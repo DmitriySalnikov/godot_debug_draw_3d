@@ -6,6 +6,7 @@
 #include "version.h"
 
 MSVC_WARNING_DISABLE(4244)
+#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
@@ -43,12 +44,14 @@ void AssetLibraryUpdateChecker::request_completed(int result, int response_code,
 	}
 
 	if (ver_num > DD3D_VERSION) {
-		PRINT_WARNING(String("\nAn update for Debug Draw 3D is available. Current: ") + DD3D_VERSION_STR + " -> New: " + ver + "\n" +
-					  "It will not be possible to update the addon through the editor, since its files are currently locked.\n" +
-					  "You need to download the archive from this link (select the URL below, click copy and paste this address into your browser):\n" + download_url + "\n" +
-					  "Then close the editor and replace the files in your project with new ones from the archive\n" +
-					  "(In the archive, first go inside the godot_debug_draw_3d-XXXXX... folder and extract its contents).\n" +
-					  "To disable this alert, go to the Project Settings in the \"debug_draw_3d/settings/\" section");
+		PRINT(String("=====\n") +
+				"An update for " + addon_name + " is available. Current: " + DD3D_VERSION_STR + " -> New: " + ver + "\n" +
+				"It will not be possible to update the addon through the editor, since its files are currently locked.\n" +
+				"You need to download the archive from this link (select the URL below, click copy and paste this address into your browser):\n" + download_url + "\n" +
+				"Then close the editor and replace the files in your project with new ones from the archive\n" +
+				"(In the archive, first go inside the " + repository_name + "-XXXXX... folder and extract its contents).\n" +
+				"To disable this alert, go to the Project Settings in the \"" + root_settings_section + "\" section\n"+
+				"=====");
 	}
 }
 
@@ -64,7 +67,12 @@ void AssetLibraryUpdateChecker::init() {
 }
 
 AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
-	DEFINE_SETTING_AND_GET(bool check_updates, "debug_draw_3d/settings/check_for_updates", true, Variant::BOOL);
+	addon_name = "Debug Draw 3D";
+	repository_name = "godot_debug_draw_3d";
+	root_settings_section = "debug_draw_3d/settings/";
+
+	DEFINE_SETTING_READ_ONLY(root_settings_section + "addon_version", DD3D_VERSION_STR, Variant::STRING);
+	DEFINE_SETTING_AND_GET(bool check_updates, root_settings_section + "check_for_updates", true, Variant::BOOL);
 
 	if (check_updates)
 		call_deferred(TEXT(init));
