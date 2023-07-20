@@ -14,7 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/core/binder_common.hpp>
@@ -23,7 +23,7 @@ MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 #if REAL_T_IS_DOUBLE
 typedef godot::PackedFloat64Array PackedRealArray;

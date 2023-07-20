@@ -6,7 +6,7 @@
 #include "math_utils.h"
 #include "render_instances.h"
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -19,7 +19,7 @@ MSVC_WARNING_DISABLE(4244)
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 #include <godot_cpp/classes/texture.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 #include <map>
 

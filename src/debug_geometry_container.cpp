@@ -6,12 +6,12 @@
 #include "draw_stats.h"
 #include "utils.h"
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/main_loop.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/world3d.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 #include <array>
 

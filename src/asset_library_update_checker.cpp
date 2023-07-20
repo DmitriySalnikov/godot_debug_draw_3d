@@ -5,14 +5,14 @@
 
 #include "version.h"
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/scene_tree_timer.hpp>
 #include <godot_cpp/classes/window.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 void AssetLibraryUpdateChecker::_bind_methods() {
 #define REG_CLASS_NAME AssetLibraryUpdateChecker

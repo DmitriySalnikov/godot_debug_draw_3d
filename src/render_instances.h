@@ -5,9 +5,9 @@
 #include "math_utils.h"
 #include "utils.h"
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 #include <array>
 

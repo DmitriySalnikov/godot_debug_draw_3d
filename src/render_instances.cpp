@@ -4,12 +4,12 @@
 
 #include "draw_stats.h"
 
-MSVC_WARNING_DISABLE(4244)
+GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/time.hpp>
-MSVC_WARNING_RESTORE(4244)
+GODOT_WARNING_RESTORE()
 
 template <class T, size_t _TStepSize>
 struct TempBigBuffer {
