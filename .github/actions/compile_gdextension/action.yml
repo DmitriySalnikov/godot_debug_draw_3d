@@ -69,6 +69,7 @@ runs:
         echo "::group::🛠️ GDExtesion Compilation 🛠️"
         cd godot-cpp
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
+        git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
         cd ..
         scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
