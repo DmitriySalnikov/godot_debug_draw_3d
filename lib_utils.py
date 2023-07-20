@@ -22,7 +22,7 @@ def setup_options(env, arguments, gen_help):
     gen_help(env, opts)
 
 
-def gdnative_setup_defines_and_flags(env):
+def setup_defines_and_flags(env):
     env.Append(CPPDEFINES=["GDEXTENSION_LIBRARY"])
 
     if "release" in env["target"] and not env["force_enabled_dd3d"]:
@@ -38,27 +38,27 @@ def gdnative_setup_defines_and_flags(env):
             env.AppendUnique(LINKFLAGS=["-flto"])
 
 
-def gdnative_get_sources(src):
+def get_sources(src):
     res = [src_folder + "/" + file for file in src]
     res = unity_tools.generate_unity_build(res, "dd3d_")
 
     return res
 
 
-def gdnative_replace_flag(arr, flag, new_flag):
+def replace_flag(arr, flag, new_flag):
     if flag in arr:
         arr.remove(flag)
     arr.append(new_flag)
 
 
-def gdnative_get_library_object(env, arguments=None, gen_help=None):
+def get_library_object(env, arguments=None, gen_help=None):
     if arguments != None and gen_help:
         setup_options(env, arguments, gen_help)
-    gdnative_setup_defines_and_flags(env)
+    setup_defines_and_flags(env)
 
     env.Append(CPPPATH=[src_folder])
 
-    # gdnative_replace_flag(env["CXXFLAGS"], "/std:c++17" if env.get("is_msvc", False) else "-std=c++17",
+    # replace_flag(env["CXXFLAGS"], "/std:c++17" if env.get("is_msvc", False) else "-std=c++17",
     #                      "/std:c++20" if env.get("is_msvc", False) else "-std=c++20")
 
     src = []
@@ -78,7 +78,7 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
 
     env.Default(env.SharedLibrary(
         target=env.File(Path(env["addon_output_dir"]) / library_full_name),
-        source=gdnative_get_sources(src),
+        source=get_sources(src),
         SHLIBSUFFIX=env["SHLIBSUFFIX"]
     ))
 
