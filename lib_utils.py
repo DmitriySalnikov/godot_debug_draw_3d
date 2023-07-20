@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from patches import unity_tools
 from pathlib import Path
 
 lib_name = "dd3d"
@@ -38,7 +39,10 @@ def gdnative_setup_defines_and_flags(env):
 
 
 def gdnative_get_sources(src):
-    return [src_folder + "/" + file for file in src]
+    res = [src_folder + "/" + file for file in src]
+    res = unity_tools.generate_unity_build(res, "dd3d_")
+
+    return res
 
 
 def gdnative_replace_flag(arr, flag, new_flag):
@@ -64,6 +68,7 @@ def gdnative_get_library_object(env, arguments=None, gen_help=None):
     # store all obj's in a dedicated folder
     env["SHOBJPREFIX"] = "#obj/"
 
+    # some additional tags
     additional_tags = ""
     if "release" in env["target"] and env["force_enabled_dd3d"]:
         additional_tags += ".enabled"

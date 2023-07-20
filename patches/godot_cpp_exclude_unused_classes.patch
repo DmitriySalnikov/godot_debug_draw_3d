@@ -1,16 +1,17 @@
 diff --git a/SConstruct b/SConstruct
-index 42f8fc0..789434b 100644
+index 11ec4cf..da86c93 100644
 --- a/SConstruct
 +++ b/SConstruct
-@@ -124,6 +124,8 @@ opts.Add(BoolVariable("generate_template_get_node", "Generate a template version
+@@ -151,6 +151,9 @@ opts.Add(
+     )
+ )
  
- opts.Add(BoolVariable("build_library", "Build the godot-cpp library.", True))
- opts.Add(EnumVariable("precision", "Set the floating-point precision level", "single", ("single", "double")))
 +opts.Add(BoolVariable("exclude_unused_classes", "Disable generation of unused classes.", True))
 +opts.Add(PathVariable("folder_to_include_classes", "Path to the directory containing extension sources", "../src", PathVariable.PathIsDir))
- 
++
  # Add platform options
  tools = {}
+ for pl in platforms:
 diff --git a/binding_generator.py b/binding_generator.py
 index d04c698..fb1136d 100644
 --- a/binding_generator.py

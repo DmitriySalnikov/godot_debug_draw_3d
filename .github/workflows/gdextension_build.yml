@@ -21,6 +21,7 @@ concurrency:
 env:
   SCONS_CACHE: ${{github.workspace}}/.scons-cache/
   OUTPUT_LIBS_PATH: bin
+  FORCE_DISABLE_UNITY: yes
 
 jobs:
   windows-gdextension:
