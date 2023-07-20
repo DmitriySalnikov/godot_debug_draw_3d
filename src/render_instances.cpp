@@ -27,7 +27,7 @@ public:
 	void prepare_buffer(size_t t_expected_size) {
 		if ((size_t)m_buffer.size() < t_expected_size) {
 			size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
-			DEV_PRINT_STD(TEXT(TempBigBuffer) ": extending from %d to %d\n", m_buffer.size(), new_size);
+			DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": extending from %d to %d\n", m_buffer.size(), new_size);
 			m_buffer.resize(new_size);
 			m_shrink_timer = 0;
 		} else {
@@ -35,7 +35,7 @@ public:
 				m_shrink_timer++;
 				if (m_shrink_timer >= m_accesses_before_shrink) {
 					size_t new_size = (size_t)m_buffer.size() - _TStepSize;
-					DEV_PRINT_STD(TEXT(TempBigBuffer) ": shrinking from %d to %d\n", m_buffer.size(), new_size);
+					DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": shrinking from %d to %d\n", m_buffer.size(), new_size);
 					m_buffer.resize(new_size);
 					m_shrink_timer = 0;
 				}
@@ -56,7 +56,7 @@ public:
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
-	DEV_PRINT_STD("New " TEXT(DelayedRendererInstance) " created\n");
+	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
 }
 
 void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds) {
@@ -70,7 +70,7 @@ void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type
 
 DelayedRendererLine::DelayedRendererLine() :
 		DelayedRenderer() {
-	DEV_PRINT_STD("New " TEXT(DelayedRendererLine) " created\n");
+	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
 void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col) {

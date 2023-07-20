@@ -46,14 +46,14 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
-		CreateMMI(InstanceType::CUBES, TEXT(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices));
-		CreateMMI(InstanceType::CUBES_CENTERED, TEXT(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices));
-		CreateMMI(InstanceType::ARROWHEADS, TEXT(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices));
-		CreateMMI(InstanceType::BILLBOARD_SQUARES, TEXT(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices));
-		CreateMMI(InstanceType::POSITIONS, TEXT(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices));
-		CreateMMI(InstanceType::SPHERES, TEXT(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
-		CreateMMI(InstanceType::SPHERES_HD, TEXT(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
-		CreateMMI(InstanceType::CYLINDERS, TEXT(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
+		CreateMMI(InstanceType::CUBES, NAMEOF(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::CUBES_CENTERED, NAMEOF(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::ARROWHEADS, NAMEOF(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices));
+		CreateMMI(InstanceType::BILLBOARD_SQUARES, NAMEOF(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices));
+		CreateMMI(InstanceType::POSITIONS, NAMEOF(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices));
+		CreateMMI(InstanceType::SPHERES, NAMEOF(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::SPHERES_HD, NAMEOF(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::CYLINDERS, NAMEOF(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
 
 		set_render_layer_mask(1);
 	}

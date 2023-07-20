@@ -70,9 +70,9 @@ static String get_file_name_in_repository(const String &name) {
 #define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &REG_CLASS_NAME::name)
 
 #define REG_PROP_BASE(name, type, getter)                                                   \
-	ClassDB::bind_method(D_METHOD(TEXT(set_##name), "value"), &REG_CLASS_NAME::set_##name); \
-	ClassDB::bind_method(D_METHOD(TEXT(getter##name)), &REG_CLASS_NAME::getter##name);      \
-	ADD_PROPERTY(PropertyInfo(type, #name), TEXT(set_##name), TEXT(getter##name));
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &REG_CLASS_NAME::set_##name); \
+	ClassDB::bind_method(D_METHOD(NAMEOF(getter##name)), &REG_CLASS_NAME::getter##name);      \
+	ADD_PROPERTY(PropertyInfo(type, #name), NAMEOF(set_##name), NAMEOF(getter##name));
 #define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
 #define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
 

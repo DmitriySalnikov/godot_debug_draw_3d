@@ -1,6 +1,6 @@
 #pragma once
 
-#define TEXT(s) #s
+#define NAMEOF(s) #s
 
 // Expands to macro
 #if DEBUG_ENABLED && _MSC_VER

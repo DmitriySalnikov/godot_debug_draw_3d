@@ -30,7 +30,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDrawStats>();
 
 		debug_draw_3d_singleton = memnew(DebugDraw);
-		Engine::get_singleton()->register_singleton(TEXT(DebugDraw), debug_draw_3d_singleton);
+		Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw), debug_draw_3d_singleton);
 		Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
 	}
 
@@ -47,7 +47,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 /** GDExtension Uninitialize **/
 void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE && debug_draw_3d_singleton) {
-		Engine::get_singleton()->unregister_singleton(TEXT(DebugDraw));
+		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
 		memdelete(debug_draw_3d_singleton);
 		debug_draw_3d_singleton = nullptr;

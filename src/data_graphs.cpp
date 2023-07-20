@@ -11,8 +11,8 @@ using namespace godot;
 void DebugDrawGraph::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawGraph
 
-	ClassDB::bind_method(D_METHOD(TEXT(get_title)), &DebugDrawGraph::get_title);
-	ClassDB::bind_method(D_METHOD(TEXT(set_parent), "parent", "side"), &DebugDrawGraph::set_parent, GraphSide::SIDE_BOTTOM);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_parent), "parent", "side"), &DebugDrawGraph::set_parent, GraphSide::SIDE_BOTTOM);
 
 	REG_PROP_BOOL(enabled);
 	REG_PROP_BOOL(upside_down);

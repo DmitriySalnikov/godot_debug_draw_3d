@@ -32,10 +32,10 @@ DebugDraw *DebugDraw::singleton = nullptr;
 void DebugDraw::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw
 
-	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_marked_dirty)), &DebugDraw::_on_canvas_marked_dirty);
-	ClassDB::bind_method(D_METHOD(TEXT(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
-	ClassDB::bind_method(D_METHOD(TEXT(_on_scene_changed)), &DebugDraw::_on_scene_changed);
-	ClassDB::bind_method(D_METHOD(TEXT(_scene_tree_found)), &DebugDraw::_scene_tree_found);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_on_canvas_marked_dirty)), &DebugDraw::_on_canvas_marked_dirty);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_on_canvas_item_draw)), &DebugDraw::_on_canvas_item_draw);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDraw::_on_scene_changed);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_scene_tree_found)), &DebugDraw::_scene_tree_found);
 
 #pragma region Parameters
 
@@ -52,85 +52,85 @@ void DebugDraw::_bind_methods() {
 #undef REG_CLASS_NAME
 
 #pragma region Draw Functions
-	ClassDB::bind_method(D_METHOD(TEXT(clear_3d_objects)), &DebugDraw::clear_3d_objects);
-	ClassDB::bind_method(D_METHOD(TEXT(clear_2d_objects)), &DebugDraw::clear_2d_objects);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_3d_objects)), &DebugDraw::clear_3d_objects);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_2d_objects)), &DebugDraw::clear_2d_objects);
 
-	ClassDB::bind_method(D_METHOD(TEXT(clear_all)), &DebugDraw::clear_all);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDraw::clear_all);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere, 0.5f, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_xf, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere, 0.5f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_xf, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_hd), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere_hd, 0.5f, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_sphere_hd_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_hd_xf, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_hd), "position", "radius", "color", "duration"), &DebugDraw::draw_sphere_hd, 0.5f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_hd_xf), "transform", "color", "duration"), &DebugDraw::draw_sphere_hd_xf, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_cylinder), "transform", "color", "duration"), &DebugDraw::draw_cylinder, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder), "transform", "color", "duration"), &DebugDraw::draw_cylinder, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw::draw_box, Colors::empty_color, false, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw::draw_box_xf, Colors::empty_color, true, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb), "aabb", "color", "duration"), &DebugDraw::draw_aabb, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_aabb_ab), "a", "b", "color", "duration"), &DebugDraw::draw_aabb_ab, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw::draw_box, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw::draw_box_xf, Colors::empty_color, true, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_aabb), "aabb", "color", "duration"), &DebugDraw::draw_aabb, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_aabb_ab), "a", "b", "color", "duration"), &DebugDraw::draw_aabb_ab, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_line_hit), "start", "end", "hit", "is_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit, 0.25f, Colors::empty_color, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_line_hit_offset), "start", "end", "is_hit", "unit_offset_of_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit_offset, 0.5f, 0.25f, Colors::empty_color, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_line_hit), "start", "end", "hit", "is_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit, 0.25f, Colors::empty_color, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_line_hit_offset), "start", "end", "is_hit", "unit_offset_of_hit", "hit_size", "hit_color", "after_hit_color", "duration"), &DebugDraw::draw_line_hit_offset, 0.5f, 0.25f, Colors::empty_color, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_line), "a", "b", "color", "duration"), &DebugDraw::draw_line, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_lines), "lines", "color", "duration"), &DebugDraw::draw_lines, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_ray), "origin", "direction", "length", "color", "duration"), &DebugDraw::draw_ray, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_line_path), "path", "color", "duration"), &DebugDraw::draw_line_path, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_line), "a", "b", "color", "duration"), &DebugDraw::draw_line, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_lines), "lines", "color", "duration"), &DebugDraw::draw_lines, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_ray), "origin", "direction", "length", "color", "duration"), &DebugDraw::draw_ray, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_line_path), "path", "color", "duration"), &DebugDraw::draw_line_path, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow), "transform", "color", "duration"), &DebugDraw::draw_arrow, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow), "transform", "color", "duration"), &DebugDraw::draw_arrow, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_line), "a", "b", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_line, Colors::empty_color, 0.5f, false, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_ray), "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_ray, Colors::empty_color, 0.5f, false, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_arrow_path), "path", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_path, Colors::empty_color, 0.75f, true, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_line), "a", "b", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_line, Colors::empty_color, 0.5f, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_ray), "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_ray, Colors::empty_color, 0.5f, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_path), "path", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw::draw_arrow_path, Colors::empty_color, 0.75f, true, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_point_path), "path", "size", "points_color", "lines_color", "duration"), &DebugDraw::draw_point_path, 0.25f, Colors::empty_color, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_point_path), "path", "size", "points_color", "lines_color", "duration"), &DebugDraw::draw_point_path, 0.25f, Colors::empty_color, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_square), "position", "size", "color", "duration"), &DebugDraw::draw_square, 0.2f, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_points), "points", "size", "color", "duration"), &DebugDraw::draw_points, 0.2f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_square), "position", "size", "color", "duration"), &DebugDraw::draw_square, 0.2f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_points), "points", "size", "color", "duration"), &DebugDraw::draw_points, 0.2f, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_camera_frustum), "camera", "color", "duration"), &DebugDraw::draw_camera_frustum, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_camera_frustum_planes), "camera_frustum", "color", "duration"), &DebugDraw::draw_camera_frustum_planes, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_camera_frustum), "camera", "color", "duration"), &DebugDraw::draw_camera_frustum, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_camera_frustum_planes), "camera_frustum", "color", "duration"), &DebugDraw::draw_camera_frustum_planes, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_position), "transform", "color", "duration"), &DebugDraw::draw_position, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_position), "transform", "color", "duration"), &DebugDraw::draw_position, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_gizmo), "transform", "color", "is_centered", "duration"), &DebugDraw::draw_gizmo, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_gizmo), "transform", "color", "is_centered", "duration"), &DebugDraw::draw_gizmo, Colors::empty_color, false, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid, Colors::empty_color, true, 0);
-	ClassDB::bind_method(D_METHOD(TEXT(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid, Colors::empty_color, true, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw::draw_grid_xf, Colors::empty_color, true, 0);
 
-	ClassDB::bind_method(D_METHOD(TEXT(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, -1, -1);
-	ClassDB::bind_method(D_METHOD(TEXT(end_text_group)), &DebugDraw::end_text_group);
-	ClassDB::bind_method(D_METHOD(TEXT(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, Variant(), 0, Colors::empty_color, -1.0); // TODO: -1 must be explicitly double. Need fix for Variant converter
+	ClassDB::bind_method(D_METHOD(NAMEOF(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw::begin_text_group, 0, Colors::empty_color, true, -1, -1);
+	ClassDB::bind_method(D_METHOD(NAMEOF(end_text_group)), &DebugDraw::end_text_group);
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw::set_text, Variant(), 0, Colors::empty_color, -1.0); // TODO: -1 must be explicitly double. Need fix for Variant converter
 
-	ClassDB::bind_method(D_METHOD(TEXT(create_graph), "title"), &DebugDraw::create_graph);
-	ClassDB::bind_method(D_METHOD(TEXT(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
-	ClassDB::bind_method(D_METHOD(TEXT(graph_update_data), "title", "data"), &DebugDraw::graph_update_data);
-	ClassDB::bind_method(D_METHOD(TEXT(remove_graph), "title"), &DebugDraw::remove_graph);
-	ClassDB::bind_method(D_METHOD(TEXT(clear_graphs)), &DebugDraw::clear_graphs);
-	ClassDB::bind_method(D_METHOD(TEXT(get_graph), "title"), &DebugDraw::get_graph);
-	ClassDB::bind_method(D_METHOD(TEXT(get_graph_names)), &DebugDraw::get_graph_names);
+	ClassDB::bind_method(D_METHOD(NAMEOF(create_graph), "title"), &DebugDraw::create_graph);
+	ClassDB::bind_method(D_METHOD(NAMEOF(create_fps_graph), "title"), &DebugDraw::create_fps_graph);
+	ClassDB::bind_method(D_METHOD(NAMEOF(graph_update_data), "title", "data"), &DebugDraw::graph_update_data);
+	ClassDB::bind_method(D_METHOD(NAMEOF(remove_graph), "title"), &DebugDraw::remove_graph);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_graphs)), &DebugDraw::clear_graphs);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_graph), "title"), &DebugDraw::get_graph);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_graph_names)), &DebugDraw::get_graph_names);
 
 #pragma endregion // Draw Functions
 
-	ClassDB::bind_method(D_METHOD(TEXT(get_render_stats)), &DebugDraw::get_render_stats);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_render_stats)), &DebugDraw::get_render_stats);
 }
 
 DebugDraw::DebugDraw() {
 	if (!singleton) {
 		singleton = this;
 	} else {
-		PRINT_ERROR("Only 1 instance of " TEXT(DebugDraw) " is allowed");
+		PRINT_ERROR("Only 1 instance of " NAMEOF(DebugDraw) " is allowed");
 	}
 
-	call_deferred(TEXT(_scene_tree_found));
+	call_deferred(NAMEOF(_scene_tree_found));
 }
 
 DebugDraw::~DebugDraw() {
 	if (singleton && singleton == this) {
 		singleton = nullptr;
 	} else {
-		PRINT_ERROR("More than 1 " TEXT(DebugDraw) " instance was created");
+		PRINT_ERROR("More than 1 " NAMEOF(DebugDraw) " instance was created");
 	}
 }
 
@@ -169,11 +169,11 @@ void DebugDraw::_connect_scene_changed() {
 
 	Node *scene = _get_current_scene();
 	if (scene && UtilityFunctions::is_instance_valid(scene)) {
-		scene->connect(StringName("tree_exiting"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		scene->connect(StringName("tree_exiting"), Callable(this, NAMEOF(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		return;
 	}
 
-	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, TEXT(_on_scene_changed)).bindv(Array::make(true)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, NAMEOF(_on_scene_changed)).bindv(Array::make(true)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 #endif
 }
 
@@ -221,9 +221,9 @@ void DebugDraw::exit_tree() {
 		default_canvas = nullptr;
 	}
 
-	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
 		default_canvas->queue_redraw();
-	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
 		custom_canvas->queue_redraw();
 #endif
 
@@ -408,7 +408,7 @@ bool DebugDraw::is_debug_enabled() const {
 void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 	if (_cfg.is_valid()) {
 #ifndef DISABLE_DEBUG_RENDERING
-		Utils::disconnect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+		Utils::disconnect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
 #endif
 
 		config_2d = _cfg;
@@ -419,7 +419,7 @@ void DebugDraw::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
 
 #ifndef DISABLE_DEBUG_RENDERING
 	mark_canvas_dirty();
-	Utils::connect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, TEXT(_on_canvas_marked_dirty)));
+	Utils::connect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
 #endif
 }
 
@@ -451,13 +451,13 @@ Viewport *DebugDraw::get_custom_viewport() const {
 void DebugDraw::set_custom_canvas(Control *_canvas) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!_canvas) {
-		Utils::connect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
-		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
+		Utils::connect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
+		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
 			custom_canvas->queue_redraw();
 	} else {
-		if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw))))
+		if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
 			default_canvas->queue_redraw();
-		Utils::connect_safe(custom_canvas, "draw", Callable(this, TEXT(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
+		Utils::connect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
 	}
 #endif
 
