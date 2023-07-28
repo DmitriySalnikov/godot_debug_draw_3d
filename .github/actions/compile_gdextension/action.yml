@@ -80,7 +80,7 @@ runs:
         echo "::endgroup::"
 
     - name: Prepare artifact Unix
-      if: runner.os != 'Windows' && inputs.platform != 'android'
+      if: runner.os != 'Windows' && inputs.platform != 'android' && inputs.platform != 'javascript'
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then

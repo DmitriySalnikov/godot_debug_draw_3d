@@ -143,6 +143,48 @@ jobs:
 
   # ============================================
 
+  web-gdextension:
+    name: 🕸 Web
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [wasm32]
+        target: [template_debug, template_release]
+
+    env:
+      EM_VERSION: 1.39.18
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+
+      - uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: ${{env.EM_VERSION}}
+
+      - shell: bash
+        run: |
+          cd godot-cpp
+          git apply --ignore-space-change --ignore-whitespace ../patches/fixed_javascript_build.patch
+          cd ..
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: javascript
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          artifact: javascript
+          additional: lto=yes
+
+  # ============================================
+
   collect-gdextension:
     needs:
       [
@@ -150,6 +192,7 @@ jobs:
         linux-gdextension,
         macos-gdextension,
         android-gdextension,
+        web-gdextension,
       ]
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-latest

@@ -1,0 +1,37 @@
+diff --git a/tools/javascript.py b/tools/javascript.py
+index 42c601d..2dbb4dc 100644
+--- a/tools/javascript.py
++++ b/tools/javascript.py
+@@ -1,8 +1,8 @@
+ import os
+-
++from SCons.Util import WhereIs
+ 
+ def exists(env):
+-    return "EM_CONFIG" in os.environ
++    return WhereIs("emcc") is not None
+ 
+ 
+ def generate(env):
+@@ -10,9 +10,6 @@ def generate(env):
+         print("Only wasm32 supported on web. Exiting.")
+         Exit()
+ 
+-    if "EM_CONFIG" in os.environ:
+-        env["ENV"] = os.environ
+-
+     env["CC"] = "emcc"
+     env["CXX"] = "em++"
+     env["AR"] = "emar"
+@@ -39,9 +36,9 @@ def generate(env):
+     env.Replace(SHLINKFLAGS="$LINKFLAGS")
+     env.Replace(SHLINKFLAGS="$LINKFLAGS")
+ 
+-    if env["target"] == "debug":
++    if env["target"] in ["editor", "template_debug"]:
+         env.Append(CCFLAGS=["-O0", "-g"])
+-    elif env["target"] == "release":
++    elif env["target"] == "template_release":
+         env.Append(CCFLAGS=["-O3"])
+ 
+     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
