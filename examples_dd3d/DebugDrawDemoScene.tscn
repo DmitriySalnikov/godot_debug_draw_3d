@@ -177,7 +177,7 @@ func _ready() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	var test := DebugDraw.get_graph(&\"FPS\")
+	var test := DebugDraw2D.get_graph(&\"FPS\")
 	if test:
 		$GC/VB/H/FPSEnabled.button_pressed = test.enabled
 		$GC/VB/FPSMS.button_pressed = test.frame_time_mode
@@ -190,12 +190,12 @@ func _ready() -> void:
 
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
-	var cfg = DebugDraw.get_graph(&\"FPS\")
+	var cfg = DebugDraw2D.get_graph(&\"FPS\")
 	if cfg:
 		cfg.enabled = button_pressed
 
 func _on_FPSMS_toggled(button_pressed: bool) -> void:
-	var cfg = DebugDraw.get_graph(&\"FPS\")
+	var cfg = DebugDraw2D.get_graph(&\"FPS\")
 	if cfg:
 		cfg.frame_time_mode = button_pressed
 
@@ -206,7 +206,7 @@ func _on_HSlider2_value_changed(value: float) -> void:
 	get_parent().graph_buffer_size = int(value)
 
 func _on_Button_pressed() -> void:
-	DebugDraw.clear_all()
+	DebugDraw2D.clear_2d_objects()
 	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
 "
 

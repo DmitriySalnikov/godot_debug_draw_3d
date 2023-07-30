@@ -1,7 +1,7 @@
 #include "debug_geometry_container.h"
 
 #ifndef DISABLE_DEBUG_RENDERING
-#include "debug_draw.h"
+#include "debug_draw_3d.h"
 #include "debug_draw_config_3d.h"
 #include "draw_stats.h"
 #include "utils.h"
@@ -17,7 +17,7 @@ GODOT_WARNING_RESTORE()
 
 using namespace godot;
 
-DebugGeometryContainer::DebugGeometryContainer(class DebugDraw *root) {
+DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 	owner = root;
 	RenderingServer *rs = RS();
 

@@ -1,5 +1,5 @@
 #include "grouped_text.h"
-#include "debug_draw.h"
+#include "debug_draw_2d.h"
 #include "debug_draw_config_2d.h"
 #include "draw_cache.h"
 #include "math_utils.h"
@@ -90,7 +90,7 @@ int TextGroup::get_text_size() {
 	return text_size;
 }
 
-TextGroup::TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
+TextGroup::TextGroup(DebugDraw2D *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
 	DEV_PRINT_STD("New " NAMEOF(TextGroup) " created: %s\n", _title.utf8().get_data());
 
 	owner = _owner;
@@ -129,7 +129,7 @@ void GroupedText::_create_new_default_groupd_if_needed() {
 	}
 }
 
-void GroupedText::init_group(DebugDraw *p_owner) {
+void GroupedText::init_group(DebugDraw2D *p_owner) {
 	owner = p_owner;
 	_current_text_group = nullptr;
 	item_for_title_of_groups = std::make_shared<TextGroupItem>(0.0f, "", "", 0, Colors::empty_color);

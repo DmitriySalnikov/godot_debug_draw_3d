@@ -6,7 +6,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
 #include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
@@ -17,75 +16,37 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class DataGraphManager;
-class DebugDrawSceneManager;
-class DebugDrawConfig2D;
+class DebugDrawManager;
 class DebugDrawConfig3D;
-class DebugDrawGraph;
 class DebugDrawStats;
 class DebugGeometryContainer;
-class GroupedText;
 
-class DebugDraw : public Object {
-	GDCLASS(DebugDraw, Object)
+class DebugDraw3D : public Object {
+	GDCLASS(DebugDraw3D, Object)
 
-	friend DebugDrawSceneManager;
-	static DebugDraw *singleton;
+	friend DebugDrawManager;
+	static DebugDraw3D *singleton;
 
 private:
 	std::vector<SubViewport *> custom_editor_viewports;
-	DebugDrawSceneManager *root_node = nullptr;
-
-	// Logs
-	double log_flush_time = 0;
-
-	// 2d
-	CanvasLayer *_canvas_layer = nullptr;
-	bool _canvas_need_update = true;
-	Ref<Font> _font;
-
-	Control *default_canvas = nullptr;
+	DebugDrawManager *root_node = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
-	// Text
-	std::unique_ptr<GroupedText> grouped_text;
-
-	// Graphs
-	std::unique_ptr<DataGraphManager> data_graphs;
-
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 #endif
 
-	bool is_ready = false;
-	bool is_closing = false;
-	bool is_current_scene_is_null = true;
-
-	void _on_canvas_marked_dirty();
-	void _on_canvas_item_draw(Control *ci);
 	void _set_base_world_node(Node *world_base);
 
-	Node *_get_current_scene();
-	void _scene_tree_found();
-	void _connect_scene_changed();
-	void _on_scene_changed(bool _is_scene_null);
-
-	void enter_tree();
-	void exit_tree();
-	void ready();
 	void process(double delta);
 
 #pragma region Exposed Parameter Values
-
-	// GENERAL
 
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
 	/// Custom 'Viewport' to use for frustum culling.
 	Viewport *custom_viewport = nullptr;
-	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
-	Control *custom_canvas = nullptr;
 
-	Ref<DebugDrawConfig2D> config_2d;
 	Ref<DebugDrawConfig3D> config_3d;
 
 #pragma endregion // Exposed Parameter Values
@@ -94,13 +55,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	DebugDraw();
-	~DebugDraw();
+	DebugDraw3D();
+	~DebugDraw3D();
 
-	static DebugDraw *get_singleton() {
+	void init(DebugDrawManager *root);
+
+	static DebugDraw3D *get_singleton() {
 		return singleton;
 	};
-	void mark_canvas_dirty();
 
 	Node *get_root_node();
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
@@ -113,17 +75,12 @@ public:
 	void set_debug_enabled(const bool &_state);
 	bool is_debug_enabled() const;
 
-	void set_config_2d(Ref<DebugDrawConfig2D> _cfg);
-	Ref<DebugDrawConfig2D> get_config_2d() const;
-
 	void set_config_3d(Ref<DebugDrawConfig3D> _cfg);
 	Ref<DebugDrawConfig3D> get_config_3d() const;
 
 	void set_custom_viewport(Viewport *_viewport);
 	Viewport *get_custom_viewport() const;
 
-	void set_custom_canvas(Control *_canvas);
-	Control *get_custom_canvas() const;
 #pragma endregion // Exposed Parametes
 
 #pragma region Exposed Draw Functions
@@ -135,13 +92,6 @@ public:
 	/// Clear all 3D objects
 	void clear_3d_objects();
 
-	/// Clear all 2D objects
-	void clear_2d_objects();
-
-	/// Clear all debug objects
-	void clear_all();
-
-#pragma region 3D
 #pragma region Spheres
 
 	/// Draw sphere
@@ -382,71 +332,5 @@ public:
 #pragma endregion // Camera Frustum
 
 #pragma endregion // Misc
-#pragma endregion // 3D
-
-#pragma region 2D
-#pragma region Text
-
-	/// Begin text group
-	/// group_title: Group title and ID
-	/// group_priority: Group priority
-	/// group_color: Group color
-	/// show_title: Whether to show the title
-	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true, int title_size = 14, int text_size = 12);
-
-	/// End text group. Should be called after 'begin_text_group' if you don't need more than one group.
-	/// If you need to create 2+ groups just call again 'begin_text_group' and this function in the end.
-	void end_text_group();
-
-	/// Add or update text in overlay
-	/// key: The name of the field, if there is a 'value', otherwise the whole string will be equal to the 'key'
-	/// value: Value of field
-	/// priority: Priority of this line. Lower value is higher position.
-	/// color_of_value: Value color
-	/// duration: Expiration time
-	void set_text(String key, Variant value = Variant(), int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
-
-#pragma endregion // Text
-#pragma region Graphs
-
-	/// Create new graph with custom data.
-	/// title: Title of the graph
-	Ref<DebugDrawGraph> create_graph(const StringName &title);
-
-	/// Create new graph with custom data.
-	/// title: Title of the graph
-	Ref<DebugDrawGraph> create_fps_graph(const StringName &title);
-
-	/// Update custom graph data
-	/// title: Title of the graph
-	/// data: New data
-	void graph_update_data(const StringName &title, real_t data);
-
-	/// Remove graph
-	/// title: Title of the graph
-	void remove_graph(const StringName &title);
-
-	/// Remove all graphs
-	void clear_graphs();
-
-	/// Get config for graph.
-	/// title: Title of the graph
-	Ref<DebugDrawGraph> get_graph(const StringName &title);
-
-	/// Get all graph names
-	PackedStringArray get_graph_names();
-
-#pragma endregion // Graphs
-#pragma endregion // 2D
 #pragma endregion // Exposed Draw Functions
-};
-
-class DebugDrawSceneManager : public CanvasLayer {
-	GDCLASS(DebugDrawSceneManager, CanvasLayer)
-protected:
-	static void _bind_methods(){};
-	void _notification(int what);
-
-public:
-	DebugDrawSceneManager(){};
 };

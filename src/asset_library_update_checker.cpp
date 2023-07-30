@@ -127,5 +127,11 @@ AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
 		call_deferred(NAMEOF(init));
 }
 
+AssetLibraryUpdateChecker::~AssetLibraryUpdateChecker() {
+	if (UtilityFunctions::is_instance_valid(request))
+		request->queue_free();
+	request = nullptr;
+}
+
 #endif
 #endif

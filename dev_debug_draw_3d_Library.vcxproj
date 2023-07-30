@@ -89,7 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;GDEXTENSION_LIBRARY;DEBUG_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;DEBUG_ENABLED;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -175,10 +175,12 @@
   <ItemGroup>
     <ClCompile Include="src\asset_library_update_checker.cpp" />
     <ClCompile Include="src\colors.cpp" />
-    <ClCompile Include="src\debug_draw.cpp" />
+    <ClCompile Include="src\debug_draw_2d.cpp" />
+    <ClCompile Include="src\debug_draw_3d.cpp" />
     <ClCompile Include="src\data_graphs.cpp" />
     <ClCompile Include="src\debug_draw_config_2d.cpp" />
     <ClCompile Include="src\debug_draw_config_3d.cpp" />
+    <ClCompile Include="src\debug_draw_manager.cpp" />
     <ClCompile Include="src\draw_stats.cpp" />
     <ClCompile Include="src\geometry_generators.cpp" />
     <ClCompile Include="src\grouped_text.cpp" />
@@ -192,9 +194,11 @@
     <ClInclude Include="src\asset_library_update_checker.h" />
     <ClInclude Include="src\circular_buffer.h" />
     <ClInclude Include="src\colors.h" />
-    <ClInclude Include="src\debug_draw.h" />
+    <ClInclude Include="src\debug_draw_2d.h" />
+    <ClInclude Include="src\debug_draw_3d.h" />
     <ClInclude Include="src\debug_draw_config_2d.h" />
     <ClInclude Include="src\debug_draw_config_3d.h" />
+    <ClInclude Include="src\debug_draw_manager.h" />
     <ClInclude Include="src\draw_cache.h" />
     <ClInclude Include="src\data_graphs.h" />
     <ClInclude Include="src\draw_stats.h" />

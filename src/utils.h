@@ -69,7 +69,7 @@ static String get_file_name_in_repository(const String &name) {
 #define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &REG_CLASS_NAME::name)
 #define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &REG_CLASS_NAME::name)
 
-#define REG_PROP_BASE(name, type, getter)                                                   \
+#define REG_PROP_BASE(name, type, getter)                                                     \
 	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &REG_CLASS_NAME::set_##name); \
 	ClassDB::bind_method(D_METHOD(NAMEOF(getter##name)), &REG_CLASS_NAME::getter##name);      \
 	ADD_PROPERTY(PropertyInfo(type, #name), NAMEOF(set_##name), NAMEOF(getter##name));
@@ -112,6 +112,22 @@ static String get_file_name_in_repository(const String &name) {
 		info["usage"] = PROPERTY_USAGE_READ_ONLY;  \
 		PS()->add_property_info(info);             \
 		PS()->set_initial_value(path, def);        \
+	}
+
+#define ASSIGN_SINGLETON(class_name)                                         \
+	if (!singleton) {                                                        \
+		singleton = this;                                                    \
+	} else {                                                                 \
+		PRINT_ERROR("Only 1 instance of " NAMEOF(class_name) " is allowed"); \
+	}
+
+#define UNASSIGN_SINGLETON(class_name)                                              \
+	if (singleton) {                                                                \
+		if (singleton == this) {                                                    \
+			singleton = nullptr;                                                    \
+		} else {                                                                    \
+			PRINT_ERROR("More than 1 " NAMEOF(class_name) " instance was created"); \
+		}                                                                           \
 	}
 
 // TODO: temp constants. I didn't find them in gdnative api

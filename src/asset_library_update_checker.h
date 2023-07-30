@@ -34,6 +34,7 @@ public:
 	void init();
 
 	AssetLibraryUpdateChecker();
+	~AssetLibraryUpdateChecker();
 };
 
 #endif

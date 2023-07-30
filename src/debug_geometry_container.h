@@ -28,7 +28,7 @@ using namespace godot;
 class DebugDrawStats;
 
 class DebugGeometryContainer {
-	class DebugDraw *owner;
+	class DebugDraw3D *owner;
 
 	struct MultiMeshStorage {
 		RID instance;
@@ -73,7 +73,7 @@ class DebugGeometryContainer {
 	std::recursive_mutex datalock;
 
 public:
-	DebugGeometryContainer(class DebugDraw *root);
+	DebugGeometryContainer(class DebugDraw3D *root);
 	~DebugGeometryContainer();
 
 	void set_world(Node *new_world);

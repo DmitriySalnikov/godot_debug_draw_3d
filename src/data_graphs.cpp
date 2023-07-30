@@ -1,5 +1,5 @@
 #include "data_graphs.h"
-#include "debug_draw.h"
+#include "debug_draw_2d.h"
 #include "debug_draw_config_2d.h"
 #include "math_utils.h"
 #include "utils.h"
@@ -659,7 +659,7 @@ bool DebugDrawFPSGraph::is_frame_time_mode() const {
 // DataGraphManager
 
 #ifndef DISABLE_DEBUG_RENDERING
-DataGraphManager::DataGraphManager(DebugDraw *root) {
+DataGraphManager::DataGraphManager(DebugDraw2D *root) {
 	owner = root;
 }
 

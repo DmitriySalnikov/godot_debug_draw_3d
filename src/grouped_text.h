@@ -50,7 +50,7 @@ public:
 	bool is_used_one_time = false;
 	String title;
 	std::unordered_set<TextGroupItem_ptr> Texts;
-	class DebugDraw *owner;
+	class DebugDraw2D *owner;
 
 	void set_group_priority(int _val);
 	int get_group_priority();
@@ -71,7 +71,7 @@ public:
 			title_size(14),
 			text_size(12),
 			owner(nullptr){};
-	TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
+	TextGroup(class DebugDraw2D *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
 	void cleanup_texts(const std::function<void()> &_update, const double &_delta);
 };
 
@@ -81,13 +81,13 @@ class GroupedText {
 	TextGroupItem_ptr item_for_title_of_groups;
 	std::unordered_set<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;
-	class DebugDraw *owner = nullptr;
+	class DebugDraw2D *owner = nullptr;
 	std::recursive_mutex datalock;
 
 	void _create_new_default_groupd_if_needed();
 
 public:
-	void init_group(class DebugDraw *p_owner);
+	void init_group(class DebugDraw2D *p_owner);
 	void clear_text();
 	void cleanup_text(const double &_delta);
 	void begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size);
