@@ -17,9 +17,14 @@ class AssetLibraryUpdateChecker : public RefCounted {
 
 private:
 	HTTPRequest *request = nullptr;
+	int addon_id;
 	String addon_name;
 	String repository_name;
 	String root_settings_section;
+	String changes_page;
+
+	String godot_asset_api;
+	String godot_asset_page;
 
 protected:
 	static void _bind_methods();
