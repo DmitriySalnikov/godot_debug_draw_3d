@@ -1,8 +1,8 @@
 diff --git a/binding_generator.py b/binding_generator.py
-index 6e47e7b..6d9c0ad 100644
+index 6e47e7bcb..44c8fe75d 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -97,9 +97,9 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -97,9 +97,10 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
              files.append(str(source_filename.as_posix()))
  
      for engine_class in api["classes"]:
@@ -11,10 +11,11 @@ index 6e47e7b..6d9c0ad 100644
          if engine_class["name"] == "ClassDB":
 -            continue
 +            engine_class["name"] = "ClassDBSingleton"
++            engine_class["alias_for"] = "ClassDB"
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
          if headers:
-@@ -1036,21 +1036,21 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -1036,21 +1037,23 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
  
      # First create map of classes and singletons.
      for class_api in api["classes"]:
@@ -23,6 +24,7 @@ index 6e47e7b..6d9c0ad 100644
          if class_api["name"] == "ClassDB":
 -            continue
 +            class_api["name"] = "ClassDBSingleton"
++            class_api["alias_for"] = "ClassDB"
          engine_classes[class_api["name"]] = class_api["is_refcounted"]
      for native_struct in api["native_structures"]:
          engine_classes[native_struct["name"]] = False
@@ -32,6 +34,7 @@ index 6e47e7b..6d9c0ad 100644
 +        # Generate code for the ClassDB singleton under a different name.
 +        if singleton["name"] == "ClassDB":
 +            singleton["name"] = "ClassDBSingleton"
++            singleton["alias_for"] = "ClassDB"
          singletons.append(singleton["name"])
  
      for class_api in api["classes"]:
@@ -41,7 +44,7 @@ index 6e47e7b..6d9c0ad 100644
          # Check used classes for header include.
          used_classes = set()
          fully_used_classes = set()
-@@ -1242,7 +1242,7 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+@@ -1242,7 +1245,7 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
      if len(fully_used_classes) > 0:
          result.append("")
  
@@ -50,7 +53,19 @@ index 6e47e7b..6d9c0ad 100644
          result.append("#include <godot_cpp/core/class_db.hpp>")
          result.append("")
          result.append("#include <type_traits>")
-@@ -1421,6 +1421,51 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+@@ -1263,7 +1266,10 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+     inherits = class_api["inherits"] if "inherits" in class_api else "Wrapped"
+     result.append(f"class {class_name} : public {inherits} {{")
+ 
+-    result.append(f"\tGDEXTENSION_CLASS({class_name}, {inherits})")
++    if "alias_for" in class_api:
++        result.append(f"\tGDEXTENSION_CLASS_ALIAS({class_name}, {class_api['alias_for']}, {inherits})")
++    else:
++        result.append(f"\tGDEXTENSION_CLASS({class_name}, {inherits})")
+     result.append("")
+ 
+     result.append("public:")
+@@ -1421,6 +1427,51 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
                  result.append(f'VARIANT_ENUM_CAST({class_name}::{enum_api["name"]});')
          result.append("")
  
@@ -102,43 +117,7 @@ index 6e47e7b..6d9c0ad 100644
      result.append(f"#endif // ! {header_guard}")
  
      return "\n".join(result)
-@@ -1456,9 +1501,14 @@ def generate_engine_class_source(class_api, used_classes, fully_used_classes, us
-         # We assume multi-threaded access is OK because each assignment will assign the same value every time
-         result.append(f"\tstatic {class_name} *singleton = nullptr;")
-         result.append("\tif (unlikely(singleton == nullptr)) {")
--        result.append(
--            f"\t\tGDExtensionObjectPtr singleton_obj = internal::gdextension_interface_global_get_singleton({class_name}::get_class_static()._native_ptr());"
--        )
-+        if class_name != "ClassDBSingleton":
-+            result.append(
-+                f"\t\tGDExtensionObjectPtr singleton_obj = internal::gdextension_interface_global_get_singleton({class_name}::get_class_static()._native_ptr());"
-+            )
-+        else:
-+            result.append(
-+                f"\t\tGDExtensionObjectPtr singleton_obj = internal::gdextension_interface_global_get_singleton(StringName(\"ClassDB\")._native_ptr());"
-+            )
-         result.append("#ifdef DEBUG_ENABLED")
-         result.append("\t\tERR_FAIL_COND_V(singleton_obj == nullptr, nullptr);")
-         result.append("#endif // DEBUG_ENABLED")
-@@ -1486,9 +1536,14 @@ def generate_engine_class_source(class_api, used_classes, fully_used_classes, us
-             result.append(method_signature + " {")
- 
-             # Method body.
--            result.append(
--                f'\tstatic GDExtensionMethodBindPtr _gde_method_bind = internal::gdextension_interface_classdb_get_method_bind({class_name}::get_class_static()._native_ptr(), StringName("{method["name"]}")._native_ptr(), {method["hash"]});'
--            )
-+            if class_name != "ClassDBSingleton":
-+                result.append(
-+                    f'\tstatic GDExtensionMethodBindPtr _gde_method_bind = internal::gdextension_interface_classdb_get_method_bind({class_name}::get_class_static()._native_ptr(), StringName("{method["name"]}")._native_ptr(), {method["hash"]});'
-+                )
-+            else:
-+                result.append(
-+                    f'\tstatic GDExtensionMethodBindPtr _gde_method_bind = internal::gdextension_interface_classdb_get_method_bind(StringName(\"ClassDB\")._native_ptr(), StringName("{method["name"]}")._native_ptr(), {method["hash"]});'
-+                )
-             method_call = "\t"
-             has_return = "return_value" in method and method["return_value"]["type"] != "void"
- 
-@@ -2288,6 +2343,7 @@ def escape_identifier(id):
+@@ -2288,6 +2339,7 @@ def escape_identifier(id):
          "operator": "_operator",
          "typeof": "type_of",
          "typename": "type_name",
@@ -146,8 +125,41 @@ index 6e47e7b..6d9c0ad 100644
      }
      if id in cpp_keywords_map:
          return cpp_keywords_map[id]
+diff --git a/include/godot_cpp/classes/wrapped.hpp b/include/godot_cpp/classes/wrapped.hpp
+index f2efbd091..d297945d6 100644
+--- a/include/godot_cpp/classes/wrapped.hpp
++++ b/include/godot_cpp/classes/wrapped.hpp
+@@ -305,7 +305,7 @@ public:
+ 	};
+ 
+ // Don't use this for your classes, use GDCLASS() instead.
+-#define GDEXTENSION_CLASS(m_class, m_inherits)                                                                             \
++#define GDEXTENSION_CLASS_ALIAS(m_class, m_alias_for, m_inherits)                                                          \
+ private:                                                                                                                   \
+ 	void operator=(const m_class &p_rval) {}                                                                               \
+                                                                                                                            \
+@@ -353,7 +353,7 @@ public:
+ 	static void initialize_class() {}                                                                                      \
+                                                                                                                            \
+ 	static ::godot::StringName &get_class_static() {                                                                       \
+-		static ::godot::StringName string_name = ::godot::StringName(#m_class);                                            \
++		static ::godot::StringName string_name = ::godot::StringName(#m_alias_for);                                        \
+ 		return string_name;                                                                                                \
+ 	}                                                                                                                      \
+                                                                                                                            \
+@@ -378,6 +378,9 @@ public:
+ 		_gde_binding_free_callback,                                                                                        \
+ 		_gde_binding_reference_callback,                                                                                   \
+ 	};                                                                                                                     \
+-	m_class() : m_class(#m_class) {}
++	m_class() : m_class(#m_alias_for) {}
++
++// Don't use this for your classes, use GDCLASS() instead.
++#define GDEXTENSION_CLASS(m_class, m_inherits) GDEXTENSION_CLASS_ALIAS(m_class, m_class, m_inherits)
+ 
+ #endif // GODOT_WRAPPED_HPP
 diff --git a/include/godot_cpp/core/class_db.hpp b/include/godot_cpp/core/class_db.hpp
-index 0802a45..35fb053 100644
+index 0802a45dc..35fb05310 100644
 --- a/include/godot_cpp/core/class_db.hpp
 +++ b/include/godot_cpp/core/class_db.hpp
 @@ -38,6 +38,8 @@
@@ -159,7 +171,7 @@ index 0802a45..35fb053 100644
  #include <list>
  #include <set>
  #include <string>
-@@ -137,6 +139,8 @@ public:
+@@ -137,6 +139,8 @@ class ClassDB {
  
  	static void initialize(GDExtensionInitializationLevel p_level);
  	static void deinitialize(GDExtensionInitializationLevel p_level);
@@ -169,7 +181,7 @@ index 0802a45..35fb053 100644
  
  #define BIND_CONSTANT(m_constant) \
 diff --git a/src/core/class_db.cpp b/src/core/class_db.cpp
-index 159c031..e12e569 100644
+index 159c03142..e12e569a2 100644
 --- a/src/core/class_db.cpp
 +++ b/src/core/class_db.cpp
 @@ -310,7 +310,18 @@ GDExtensionClassCallVirtual ClassDB::get_virtual_func(void *p_userdata, GDExtens
