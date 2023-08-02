@@ -30,7 +30,6 @@ class DebugDraw2D : public Object {
 	static DebugDraw2D *singleton;
 
 private:
-	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
 	// 2d

@@ -168,7 +168,8 @@ _data = {
 [sub_resource type="Theme" id="3"]
 
 [sub_resource type="GDScript" id="2"]
-script/source = "extends Control
+script/source = "@tool
+extends Control
 
 @export var switch_to_scene = \"\"
 
@@ -188,6 +189,14 @@ func _ready() -> void:
 	# TODO: temp disabled
 	$GC/VB/H/Button.disabled = true
 
+
+func _process(_delta):
+	pass
+	#queue_redraw()
+
+func _draw():
+	pass
+	#draw_texture_rect_region(load(\"res://icon.svg\"), Rect2(Vector2(), Vector2(128,128)), Rect2(Vector2(), Vector2(128,128)))
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
 	var cfg = DebugDraw2D.get_graph(&\"FPS\")
@@ -231,6 +240,7 @@ far = 60.0
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
+custom_minimum_size = Vector2(300, 300)
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -244,7 +254,7 @@ stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false
-size = Vector2i(300, 300)
+size = Vector2i(2, 2)
 render_target_update_mode = 0
 
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]
@@ -514,27 +524,30 @@ layout_mode = 2
 [node name="FPSEnabled" type="CheckBox" parent="Settings/GC/VB/H"]
 layout_mode = 2
 size_flags_horizontal = 3
+button_pressed = true
 text = "FPS Graph enabled"
 
 [node name="Button" type="Button" parent="Settings/GC/VB/H"]
 layout_mode = 2
+disabled = true
 text = "Switch to C#"
 
 [node name="FPSMS" type="CheckBox" parent="Settings/GC/VB"]
 layout_mode = 2
+button_pressed = true
 text = "FPS Graph ms or FPS"
 
 [node name="HSlider" type="HSlider" parent="Settings/GC/VB"]
 layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
-value = 50.0
+value = 200.0
 
 [node name="HSlider2" type="HSlider" parent="Settings/GC/VB"]
 layout_mode = 2
 min_value = 50.0
 max_value = 1000.0
-value = 50.0
+value = 128.0
 
 [connection signal="toggled" from="Settings/GC/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
 [connection signal="pressed" from="Settings/GC/VB/H/Button" to="Settings" method="_on_Button_pressed"]
