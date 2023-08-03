@@ -1,12 +1,11 @@
 #include "debug_draw_3d.h"
 
-#include "data_graphs.h"
-#include "debug_draw_config_3d.h"
+#include "config_3d.h"
 #include "debug_draw_manager.h"
 #include "debug_geometry_container.h"
-#include "draw_stats.h"
 #include "geometry_generators.h"
-#include "utils.h"
+#include "stats_3d.h"
+#include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/config_file.hpp>
@@ -37,7 +36,7 @@ void DebugDraw3D::_bind_methods() {
 	REG_PROP(empty_color, Variant::COLOR);
 	REG_PROP_BOOL(debug_enabled);
 
-	REG_PROP(config_3d, Variant::OBJECT);
+	REG_PROP(config, Variant::OBJECT);
 
 	REG_PROP(custom_viewport, Variant::OBJECT);
 
@@ -100,7 +99,7 @@ DebugDraw3D::DebugDraw3D() {
 
 void DebugDraw3D::init(DebugDrawManager *root) {
 	root_node = root;
-	set_config_3d(nullptr);
+	set_config(nullptr);
 
 #ifndef DISABLE_DEBUG_RENDERING
 	dgc = std::make_unique<DebugGeometryContainer>(this);
@@ -114,7 +113,7 @@ DebugDraw3D::~DebugDraw3D() {
 	dgc.reset();
 #endif
 
-	config_3d.unref();
+	config.unref();
 	root_node = nullptr;
 }
 
@@ -166,17 +165,17 @@ bool DebugDraw3D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw3D::set_config_3d(Ref<DebugDrawConfig3D> _cfg) {
+void DebugDraw3D::set_config(Ref<DebugDrawConfig3D> _cfg) {
 	if (_cfg.is_valid()) {
-		config_3d = _cfg;
+		config = _cfg;
 	} else {
-		config_3d = Ref<DebugDrawConfig3D>();
-		config_3d.instantiate();
+		config = Ref<DebugDrawConfig3D>();
+		config.instantiate();
 	}
 }
 
-Ref<DebugDrawConfig3D> DebugDraw3D::get_config_3d() const {
-	return config_3d;
+Ref<DebugDrawConfig3D> DebugDraw3D::get_config() const {
+	return config;
 }
 
 void DebugDraw3D::set_custom_viewport(Viewport *_viewport) {
@@ -191,12 +190,12 @@ Viewport *DebugDraw3D::get_custom_viewport() const {
 
 #pragma region Draw Functions
 
-Ref<DebugDrawStats> DebugDraw3D::get_render_stats() {
+Ref<DebugDrawStats3D> DebugDraw3D::get_render_stats() {
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!dgc) return Ref<DebugDrawStats>();
+	if (!dgc) return Ref<DebugDrawStats3D>();
 	return dgc->get_render_stats();
 #else
-	return Ref<DebugDrawStats>();
+	return Ref<DebugDrawStats3D>();
 #endif
 }
 
@@ -212,7 +211,7 @@ void DebugDraw3D::clear_3d_objects() {
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
 #define CHECK_BEFORE_CALL() \
-	if (!dgc || NEED_LEAVE || config_3d->is_freeze_3d_render()) return;
+	if (!dgc || NEED_LEAVE || config->is_freeze_3d_render()) return;
 #else
 #define CHECK_BEFORE_CALL()
 #endif
@@ -321,17 +320,17 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(dgc->datalock);
 	if (is_hit) {
-		dgc->geometry_pool.add_or_update_line(duration, { start, hit }, IS_DEFAULT_COLOR(hit_color) ? get_config_3d()->get_line_hit_color() : hit_color);
-		dgc->geometry_pool.add_or_update_line(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? get_config_3d()->get_line_after_hit_color() : after_hit_color);
+		dgc->geometry_pool.add_or_update_line(duration, { start, hit }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		dgc->geometry_pool.add_or_update_line(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
 		dgc->geometry_pool.add_or_update_instance(
 				InstanceType::BILLBOARD_SQUARES,
 				duration,
 				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
-				IS_DEFAULT_COLOR(hit_color) ? get_config_3d()->get_line_hit_color() : hit_color,
+				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size));
 	} else {
-		dgc->geometry_pool.add_or_update_line(duration, { start, end }, IS_DEFAULT_COLOR(hit_color) ? get_config_3d()->get_line_hit_color() : hit_color);
+		dgc->geometry_pool.add_or_update_line(duration, { start, end }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 	}
 }
 

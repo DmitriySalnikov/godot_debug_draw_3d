@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include "circular_buffer.h"
-#include "colors.h"
+#include "common/circular_buffer.h"
+#include "common/colors.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -10,6 +11,8 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 #include <map>
+#include <mutex>
+#include <vector>
 
 using namespace godot;
 

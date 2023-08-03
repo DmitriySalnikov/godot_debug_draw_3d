@@ -1,10 +1,9 @@
 #include "debug_geometry_container.h"
 
 #ifndef DISABLE_DEBUG_RENDERING
+#include "config_3d.h"
 #include "debug_draw_3d.h"
-#include "debug_draw_config_3d.h"
-#include "draw_stats.h"
-#include "utils.h"
+#include "stats_3d.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/main_loop.hpp>
@@ -155,7 +154,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(datalock);
 
 	// Don't clear geometry if frozen
-	if (owner->get_config_3d()->is_freeze_3d_render())
+	if (owner->get_config()->is_freeze_3d_render())
 		return;
 
 	immediate_mesh_storage.mesh->clear_surfaces();
@@ -171,8 +170,8 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	}
 
 	// Update render layers
-	if (render_layers != owner->get_config_3d()->get_geometry_render_layers()) {
-		set_render_layer_mask(owner->get_config_3d()->get_geometry_render_layers());
+	if (render_layers != owner->get_config()->get_geometry_render_layers()) {
+		set_render_layer_mask(owner->get_config()->get_geometry_render_layers());
 	}
 
 	// TODO: try to get all active cameras inside scene to properly calculate visibilty for SubViewports
@@ -195,7 +194,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 
 		frustum_arrays.reserve(1);
 		cameras_positions.reserve(1);
-		if ((owner->get_config_3d()->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
+		if ((owner->get_config()->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
 			cameras_positions.push_back(vp_cam->get_position());
 		} else if (owner->get_custom_viewport()) {
@@ -213,7 +212,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		}
 
 		// Convert frustum to vector
-		if (owner->get_config_3d()->is_use_frustum_culling() && frustum_arrays.size()) {
+		if (owner->get_config()->is_use_frustum_culling() && frustum_arrays.size()) {
 			frustum_planes.reserve(frustum_arrays.size());
 
 			for (auto &arr : frustum_arrays) {
@@ -230,10 +229,10 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	// Update visibility
 	geometry_pool.update_visibility(
 			frustum_planes,
-			GeometryPoolDistanceCullingData(owner->get_config_3d()->get_cull_by_distance(), cameras_positions));
+			GeometryPoolDistanceCullingData(owner->get_config()->get_cull_by_distance(), cameras_positions));
 
 	// Debug bounds of instances and lines
-	if (owner->get_config_3d()->is_visible_instance_bounds()) {
+	if (owner->get_config()->is_visible_instance_bounds()) {
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
 		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
@@ -288,7 +287,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.reset_counter(delta);
 }
 
-Ref<DebugDrawStats> DebugGeometryContainer::get_render_stats() {
+Ref<DebugDrawStats3D> DebugGeometryContainer::get_render_stats() {
 	LOCK_GUARD(datalock);
 	return geometry_pool.get_stats();
 }

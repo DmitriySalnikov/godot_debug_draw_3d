@@ -1,7 +1,7 @@
 #pragma once
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "utils_compiler.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -78,6 +78,30 @@ public:
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
 
 class GroupedText {
+	struct DrawRectInstance {
+		Rect2 rect;
+		Color color;
+		bool filled;
+		DrawRectInstance(const Rect2 &_rect, const Color &_col, const bool &_filled = true) :
+				rect(_rect),
+				color(_col),
+				filled(_filled){};
+	};
+
+	struct DrawTextInstance {
+		String text;
+		Ref<Font> font;
+		int font_size;
+		Vector2 position;
+		Color color;
+		DrawTextInstance(const String &_text, const Ref<Font> &_font, const int &_font_size, const Vector2 &_pos, const Color &_col) :
+				text(_text),
+				font(_font),
+				font_size(_font_size),
+				position(_pos),
+				color(_col){};
+	};
+
 	TextGroupItem_ptr item_for_title_of_groups;
 	std::unordered_set<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;

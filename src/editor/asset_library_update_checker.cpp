@@ -3,6 +3,7 @@
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEBUG_ENABLED
 
+#include "utils/utils.h"
 #include "version.h"
 
 GODOT_WARNING_DISABLE()

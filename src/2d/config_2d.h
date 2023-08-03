@@ -1,6 +1,7 @@
 #pragma once
 
-#include "colors.h"
+#include "common/colors.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/font.hpp>

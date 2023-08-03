@@ -1,13 +1,11 @@
 #include "debug_draw_2d.h"
 
-#include "data_graphs.h"
-#include "debug_draw_config_2d.h"
-#include "debug_draw_config_3d.h"
+#include "config_2d.h"
 #include "debug_draw_manager.h"
-#include "debug_geometry_container.h"
-#include "draw_stats.h"
+#include "graphs.h"
 #include "grouped_text.h"
-#include "utils.h"
+#include "stats_2d.h"
+#include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/config_file.hpp>
@@ -41,7 +39,7 @@ void DebugDraw2D::_bind_methods() {
 	REG_PROP(empty_color, Variant::COLOR);
 	REG_PROP_BOOL(debug_enabled);
 
-	REG_PROP(config_2d, Variant::OBJECT);
+	REG_PROP(config, Variant::OBJECT);
 
 	REG_PROP(custom_canvas, Variant::OBJECT);
 
@@ -74,7 +72,7 @@ DebugDraw2D::DebugDraw2D() {
 
 void DebugDraw2D::init(DebugDrawManager *root) {
 	root_node = root;
-	set_config_2d(nullptr);
+	set_config(nullptr);
 
 #ifndef DISABLE_DEBUG_RENDERING
 	grouped_text = std::make_unique<GroupedText>();
@@ -109,7 +107,7 @@ DebugDraw2D::~DebugDraw2D() {
 #endif
 
 	root_node = nullptr;
-	config_2d.unref();
+	config.unref();
 }
 
 void DebugDraw2D::process(double delta) {
@@ -178,26 +176,26 @@ bool DebugDraw2D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw2D::set_config_2d(Ref<DebugDrawConfig2D> _cfg) {
+void DebugDraw2D::set_config(Ref<DebugDrawConfig2D> _cfg) {
 	if (_cfg.is_valid()) {
 #ifndef DISABLE_DEBUG_RENDERING
-		Utils::disconnect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
+		Utils::disconnect_safe(config, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
 #endif
 
-		config_2d = _cfg;
+		config = _cfg;
 	} else {
-		config_2d = Ref<DebugDrawConfig2D>();
-		config_2d.instantiate();
+		config = Ref<DebugDrawConfig2D>();
+		config.instantiate();
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING
 	mark_canvas_dirty();
-	Utils::connect_safe(config_2d, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
+	Utils::connect_safe(config, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
 #endif
 }
 
-Ref<DebugDrawConfig2D> DebugDraw2D::get_config_2d() const {
-	return config_2d;
+Ref<DebugDrawConfig2D> DebugDraw2D::get_config() const {
+	return config;
 }
 
 void DebugDraw2D::set_custom_canvas(Control *_canvas) {
@@ -224,9 +222,9 @@ Control *DebugDraw2D::get_custom_canvas() const {
 
 #pragma region Draw Functions
 
-Ref<DebugDrawStats> DebugDraw2D::get_render_stats() {
+Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
 	// TODO: add 2d version
-	return Ref<DebugDrawStats>();
+	return Ref<DebugDrawStats2D>();
 }
 
 void DebugDraw2D::clear_2d_objects() {

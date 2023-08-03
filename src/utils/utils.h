@@ -1,7 +1,7 @@
 #pragma once
 
-#include "circular_buffer.h"
-#include "utils_compiler.h"
+#include "common/circular_buffer.h"
+#include "compiler.h"
 
 #include <algorithm>
 #include <functional>

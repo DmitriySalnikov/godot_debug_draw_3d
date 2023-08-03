@@ -1,14 +1,9 @@
 #include "debug_draw_manager.h"
 
-#include "data_graphs.h"
-#include "debug_draw_2d.h"
-#include "debug_draw_3d.h"
-#include "debug_draw_config_2d.h"
-#include "debug_draw_config_3d.h"
-#include "debug_geometry_container.h"
-#include "draw_stats.h"
-#include "grouped_text.h"
-#include "utils.h"
+#include "2d/debug_draw_2d.h"
+#include "2d/grouped_text.h"
+#include "3d/debug_draw_3d.h"
+#include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/config_file.hpp>
@@ -25,9 +20,9 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/window.hpp>
 GODOT_WARNING_RESTORE()
 
-#include <limits.h>
-
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
+
+using namespace godot;
 
 void DebugDrawManager::_bind_methods() {
 	// ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);

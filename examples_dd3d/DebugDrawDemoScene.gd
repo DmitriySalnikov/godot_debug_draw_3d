@@ -79,28 +79,28 @@ func _process(delta: float) -> void:
 	$LagTest.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
-	#DebugDraw3D.config_3d.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
+	#DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
 	DebugDraw2D.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	
 	# More property toggles
-	DebugDraw3D.config_3d.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
+	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
 	DebugDraw3D.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
 	DebugDraw2D.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
-	DebugDraw3D.config_3d.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_F1):
 		zylann_example = !zylann_example
 	if _is_key_just_pressed(KEY_LEFT):
-		DebugDraw3D.config_3d.use_frustum_culling = !DebugDraw3D.config_3d.use_frustum_culling
+		DebugDraw3D.config.use_frustum_culling = !DebugDraw3D.config.use_frustum_culling
 	if _is_key_just_pressed(KEY_UP):
-		DebugDraw3D.config_3d.force_use_camera_from_scene = !DebugDraw3D.config_3d.force_use_camera_from_scene
+		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
 	
 	if Engine.is_editor_hint():
-		DebugDraw3D.config_3d.cull_by_distance = start_culling_distance if DebugDraw3D.config_3d.force_use_camera_from_scene else 0.0
+		DebugDraw3D.config.cull_by_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
 	else:
-		DebugDraw3D.config_3d.cull_by_distance = start_culling_distance
+		DebugDraw3D.config.cull_by_distance = start_culling_distance
 	_update_keys_just_press()
 	
 	# Zones with black borders
@@ -196,12 +196,12 @@ func _process(delta: float) -> void:
 	DebugDraw3D.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
 	# 2D
-	DebugDraw2D.config_2d.text_default_size = text_groups_default_font_size
-	DebugDraw2D.config_2d.text_block_offset = text_groups_offset
-	DebugDraw2D.config_2d.text_block_position = text_groups_position
-	DebugDraw2D.config_2d.text_padding = text_groups_padding
+	DebugDraw2D.config.text_default_size = text_groups_default_font_size
+	DebugDraw2D.config.text_block_offset = text_groups_offset
+	DebugDraw2D.config.text_block_position = text_groups_position
+	DebugDraw2D.config.text_padding = text_groups_padding
 	
-	DebugDraw2D.config_2d.text_custom_font = custom_font
+	DebugDraw2D.config.text_custom_font = custom_font
 	
 	if test_text:
 		_text_tests()
@@ -272,12 +272,12 @@ func _text_tests():
 	
 	if text_groups_show_hints:
 		DebugDraw2D.begin_text_group("controls", 1024, Color.WHITE, false)
-		DebugDraw2D.set_text("Shift: change render layers", DebugDraw3D.config_3d.geometry_render_layers, 1)
-		DebugDraw2D.set_text("Enter: freeze render", DebugDraw3D.config_3d.freeze_3d_render, 2)
-		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config_3d.force_use_camera_from_scene, 3)
+		DebugDraw2D.set_text("Shift: change render layers", DebugDraw3D.config.geometry_render_layers, 1)
+		DebugDraw2D.set_text("Enter: freeze render", DebugDraw3D.config.freeze_3d_render, 2)
+		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 3)
 		DebugDraw2D.set_text("Down: toggle debug", DebugDraw2D.debug_enabled, 4)
-		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config_3d.use_frustum_culling, 5)
-		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config_3d.visible_instance_bounds, 6)
+		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 5)
+		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 6)
 
 
 func _more_tests():
@@ -350,7 +350,7 @@ func _graph_test():
 
 
 func _upd_graph_params():
-	DebugDraw2D.config_2d.graphs_base_offset = graph_offset
+	DebugDraw2D.config.graphs_base_offset = graph_offset
 	for g in [&"FPS", &"fps5", &"fps8"]:
 		var graph := DebugDraw2D.get_graph(g) as DebugDrawFPSGraph
 		if graph:

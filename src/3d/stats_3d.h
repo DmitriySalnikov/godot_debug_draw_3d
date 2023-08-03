@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils_compiler.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -8,8 +8,8 @@ GODOT_WARNING_RESTORE()
 
 using namespace godot;
 
-class DebugDrawStats : public RefCounted {
-	GDCLASS(DebugDrawStats, RefCounted)
+class DebugDrawStats3D : public RefCounted {
+	GDCLASS(DebugDrawStats3D, RefCounted)
 
 protected:
 	static void _bind_methods();
@@ -42,7 +42,7 @@ public:                                      \
 
 #undef DEFINE_DEFAULT_PROP
 
-	DebugDrawStats(){};
+	DebugDrawStats3D(){};
 
 	void setup(
 			const int64_t &t_instances,

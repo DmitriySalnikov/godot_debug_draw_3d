@@ -1,10 +1,10 @@
-#include "draw_stats.h"
-#include "utils.h"
+#include "stats_3d.h"
+#include "utils/utils.h"
 
-void DebugDrawStats::_bind_methods() {
-#define REG_PROPERTY_NO_SET(name, type)                                              \
-	ClassDB::bind_method(D_METHOD(NAMEOF(get_##name)), &DebugDrawStats::get_##name); \
-	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &DebugDrawStats::set_##name); \
+void DebugDrawStats3D::_bind_methods() {
+#define REG_PROPERTY_NO_SET(name, type)                                                         \
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_##name)), &DebugDrawStats3D::get_##name);          \
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &DebugDrawStats3D::set_##name); \
 	ADD_PROPERTY(PropertyInfo(type, #name), NAMEOF(set_##name), NAMEOF(get_##name));
 #pragma region Parameters
 
@@ -22,5 +22,6 @@ void DebugDrawStats::_bind_methods() {
 	REG_PROPERTY_NO_SET(total_time_culling_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(total_time_spent_usec, Variant::INT);
 
+#undef REG_PROPERTY_NO_SET
 #pragma endregion
 }

@@ -1,8 +1,8 @@
-#include "data_graphs.h"
+#include "graphs.h"
+#include "config_2d.h"
 #include "debug_draw_2d.h"
-#include "debug_draw_config_2d.h"
-#include "math_utils.h"
-#include "utils.h"
+#include "utils/math_utils.h"
+#include "utils/utils.h"
 
 #include <limits.h>
 
@@ -703,7 +703,7 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, 
 		populate_nodes(&n);
 	}
 
-	Vector2 base_offset = owner->get_config_2d()->get_graphs_base_offset();
+	Vector2 base_offset = owner->get_config()->get_graphs_base_offset();
 	Rect2i base_rect[DebugDrawGraph::POSITION_MAX] = {
 		Rect2i(base_offset, Vector2i()), // left_top
 		Rect2i(Vector2(_vp_size.x - base_offset.x, base_offset.y), Vector2i()), // right_top

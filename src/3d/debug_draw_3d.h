@@ -1,6 +1,6 @@
 #pragma once
 
-#include "colors.h"
+#include "common/colors.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
@@ -17,7 +17,7 @@ using namespace godot;
 class DataGraphManager;
 class DebugDrawManager;
 class DebugDrawConfig3D;
-class DebugDrawStats;
+class DebugDrawStats3D;
 class DebugGeometryContainer;
 
 class DebugDraw3D : public Object {
@@ -46,7 +46,7 @@ private:
 	/// Custom 'Viewport' to use for frustum culling.
 	Viewport *custom_viewport = nullptr;
 
-	Ref<DebugDrawConfig3D> config_3d;
+	Ref<DebugDrawConfig3D> config;
 
 #pragma endregion // Exposed Parameter Values
 
@@ -74,8 +74,8 @@ public:
 	void set_debug_enabled(const bool &_state);
 	bool is_debug_enabled() const;
 
-	void set_config_3d(Ref<DebugDrawConfig3D> _cfg);
-	Ref<DebugDrawConfig3D> get_config_3d() const;
+	void set_config(Ref<DebugDrawConfig3D> _cfg);
+	Ref<DebugDrawConfig3D> get_config() const;
 
 	void set_custom_viewport(Viewport *_viewport);
 	Viewport *get_custom_viewport() const;
@@ -86,7 +86,7 @@ public:
 
 	/// Returns a dictionary with rendering statistics.
 	/// Some data can be delayed by 1 frame.
-	Ref<DebugDrawStats> get_render_stats();
+	Ref<DebugDrawStats3D> get_render_stats();
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL

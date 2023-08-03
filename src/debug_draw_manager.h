@@ -1,7 +1,6 @@
 #pragma once
 
-#include "colors.h"
-#include "geometry_generators.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.

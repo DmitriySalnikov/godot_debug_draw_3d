@@ -1,8 +1,7 @@
-#include "debug_draw_config_2d.h"
-#include "utils.h"
+#include "config_2d.h"
+#include "utils/utils.h"
 
-#include "data_graphs.h"
-#include "debug_geometry_container.h"
+#include "graphs.h"
 #include "grouped_text.h"
 
 #include <limits.h>

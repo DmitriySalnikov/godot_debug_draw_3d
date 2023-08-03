@@ -1,10 +1,11 @@
 #pragma once
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "colors.h"
+#include "common/colors.h"
 #include "geometry_generators.h"
-#include "math_utils.h"
 #include "render_instances.h"
+#include "utils/math_utils.h"
+#include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
@@ -25,7 +26,7 @@ GODOT_WARNING_RESTORE()
 
 using namespace godot;
 
-class DebugDrawStats;
+class DebugDrawStats3D;
 
 class DebugGeometryContainer {
 	friend class DebugDraw3D;
@@ -85,7 +86,7 @@ public:
 	void set_render_layer_mask(int32_t layers);
 	int32_t get_render_layer_mask() const;
 
-	Ref<DebugDrawStats> get_render_stats();
+	Ref<DebugDrawStats3D> get_render_stats();
 	void clear_3d_objects();
 };
 

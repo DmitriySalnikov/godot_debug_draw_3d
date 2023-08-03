@@ -1,7 +1,7 @@
 #pragma once
 
-#include "colors.h"
-#include "geometry_generators.h"
+#include "common/colors.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
@@ -20,7 +20,7 @@ class DataGraphManager;
 class DebugDrawManager;
 class DebugDrawConfig2D;
 class DebugDrawGraph;
-class DebugDrawStats;
+class DebugDrawStats2D;
 class GroupedText;
 
 class DebugDraw2D : public Object {
@@ -63,7 +63,7 @@ private:
 	/// Custom 'CanvasItem' to draw on it. Set to 'null' to disable.
 	Control *custom_canvas = nullptr;
 
-	Ref<DebugDrawConfig2D> config_2d;
+	Ref<DebugDrawConfig2D> config;
 
 #pragma endregion // Exposed Parameter Values
 
@@ -90,8 +90,8 @@ public:
 	void set_debug_enabled(const bool &_state);
 	bool is_debug_enabled() const;
 
-	void set_config_2d(Ref<DebugDrawConfig2D> _cfg);
-	Ref<DebugDrawConfig2D> get_config_2d() const;
+	void set_config(Ref<DebugDrawConfig2D> _cfg);
+	Ref<DebugDrawConfig2D> get_config() const;
 
 	void set_custom_canvas(Control *_canvas);
 	Control *get_custom_canvas() const;
@@ -101,7 +101,7 @@ public:
 
 	/// Returns a dictionary with rendering statistics.
 	/// Some data can be delayed by 1 frame.
-	Ref<DebugDrawStats> get_render_stats();
+	Ref<DebugDrawStats2D> get_render_stats();
 
 	/// Clear all 2D objects
 	void clear_2d_objects();
