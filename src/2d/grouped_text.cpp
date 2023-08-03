@@ -1,9 +1,8 @@
 #include "grouped_text.h"
-#include "debug_draw.h"
-#include "debug_draw_config_2d.h"
-#include "draw_cache.h"
-#include "math_utils.h"
-#include "utils.h"
+#include "config_2d.h"
+#include "debug_draw_2d.h"
+#include "utils/math_utils.h"
+#include "utils/utils.h"
 
 using namespace godot;
 
@@ -90,7 +89,7 @@ int TextGroup::get_text_size() {
 	return text_size;
 }
 
-TextGroup::TextGroup(class DebugDraw *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
+TextGroup::TextGroup(DebugDraw2D *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
 	DEV_PRINT_STD("New " NAMEOF(TextGroup) " created: %s\n", _title.utf8().get_data());
 
 	owner = _owner;
@@ -124,12 +123,12 @@ void TextGroup::cleanup_texts(const std::function<void()> &_update, const double
 void GroupedText::_create_new_default_groupd_if_needed() {
 	LOCK_GUARD(datalock);
 	if (!_current_text_group) {
-		_current_text_group = std::make_shared<TextGroup>(owner, "", 0, false, owner->get_config_2d()->get_text_foreground_color(), 0, owner->get_config_2d()->get_text_default_size());
+		_current_text_group = std::make_shared<TextGroup>(owner, "", 0, false, owner->get_config()->get_text_foreground_color(), 0, owner->get_config()->get_text_default_size());
 		_text_groups.insert(_current_text_group);
 	}
 }
 
-void GroupedText::init_group(DebugDraw *p_owner) {
+void GroupedText::init_group(DebugDraw2D *p_owner) {
 	owner = p_owner;
 	_current_text_group = nullptr;
 	item_for_title_of_groups = std::make_shared<TextGroupItem>(0.0f, "", "", 0, Colors::empty_color);
@@ -172,8 +171,8 @@ void GroupedText::begin_text_group(const String &_group_title, const int &_group
 		}
 	}
 
-	int new_title_size = _title_size > 0 ? _title_size : owner->get_config_2d()->get_text_default_size();
-	int new_text_size = _text_size > 0 ? _text_size : owner->get_config_2d()->get_text_default_size();
+	int new_title_size = _title_size > 0 ? _title_size : owner->get_config()->get_text_default_size();
+	int new_text_size = _text_size > 0 ? _text_size : owner->get_config()->get_text_default_size();
 
 	if (newGroup) {
 		newGroup->set_show_title(_show_title);
@@ -200,9 +199,9 @@ void GroupedText::end_text_group() {
 			_current_text_group = g;
 			_current_text_group->set_show_title(false);
 			_current_text_group->set_group_priority(0);
-			_current_text_group->set_group_color(owner->get_config_2d()->get_text_foreground_color());
-			_current_text_group->set_title_size(owner->get_config_2d()->get_text_default_size());
-			_current_text_group->set_text_size(owner->get_config_2d()->get_text_default_size());
+			_current_text_group->set_group_color(owner->get_config()->get_text_foreground_color());
+			_current_text_group->set_title_size(owner->get_config()->get_text_default_size());
+			_current_text_group->set_text_size(owner->get_config()->get_text_default_size());
 			break;
 		}
 	}
@@ -211,7 +210,7 @@ void GroupedText::end_text_group() {
 void GroupedText::set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration) {
 	double new_duration = _duration;
 	if (new_duration < 0) {
-		new_duration = owner->get_config_2d()->get_text_default_duration();
+		new_duration = owner->get_config()->get_text_default_duration();
 	}
 
 	String _strVal;
@@ -248,16 +247,16 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 	LOCK_GUARD(datalock);
 	static const String separator = " : ";
 
-	std::vector<DrawCachedRect> backgrounds;
-	std::vector<DrawCachedText> text_parts;
+	std::vector<DrawRectInstance> backgrounds;
+	std::vector<DrawTextInstance> text_parts;
 
 	real_t groups_height = 0;
 	{
-		Ref<Font> draw_font = owner->get_config_2d()->get_text_custom_font().is_null() ? _font : owner->get_config_2d()->get_text_custom_font();
+		Ref<Font> draw_font = owner->get_config()->get_text_custom_font().is_null() ? _font : owner->get_config()->get_text_custom_font();
 		Vector2 pos;
 		real_t right_side_multiplier = 0;
 
-		switch (owner->get_config_2d()->get_text_block_position()) {
+		switch (owner->get_config()->get_text_block_position()) {
 			case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_TOP:
 			case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_BOTTOM:
 				right_side_multiplier = -1;
@@ -285,18 +284,18 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 
 				const int font_size = t->is_group_title ? g->get_title_size() : g->get_text_size();
 				const Vector2 size = draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
-				const Vector2 text_padding = owner->get_config_2d()->get_text_padding();
+				const Vector2 text_padding = owner->get_config()->get_text_padding();
 				const Vector2 font_offset = Vector2(0, (real_t)draw_font->get_ascent(font_size)) + text_padding;
 
 				float size_right_revert = (size.x + text_padding.x * 2) * right_side_multiplier;
-				backgrounds.push_back(DrawCachedRect(
+				backgrounds.push_back(DrawRectInstance(
 						Rect2(Vector2(pos.x + size_right_revert, pos.y).floor(), Vector2(size.x + text_padding.x * 2, size.y + text_padding.y * 2).floor()),
-						owner->get_config_2d()->get_text_background_color()));
+						owner->get_config()->get_text_background_color()));
 
 				// Draw colored string
 				if ((t.get() && t->value_color == Colors::empty_color) || is_title_only) {
 					// Both parts with same color
-					text_parts.push_back(DrawCachedText(text, draw_font, font_size,
+					text_parts.push_back(DrawTextInstance(text, draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
 							g->get_group_color()));
 				} else {
@@ -304,11 +303,11 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 					String textSep = keyText + separator;
 					int64_t _keyLength = textSep.length();
 
-					text_parts.push_back(DrawCachedText(text.substr(0, _keyLength), draw_font, font_size,
+					text_parts.push_back(DrawTextInstance(text.substr(0, _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert, pos.y + font_offset.y).floor(),
 							g->get_group_color()));
 
-					text_parts.push_back(DrawCachedText(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
+					text_parts.push_back(DrawTextInstance(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
 							g->get_group_color()));
 				}
@@ -319,9 +318,9 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 		groups_height = pos.y;
 	}
 
-	Vector2 text_block_offset = owner->get_config_2d()->get_text_block_offset();
+	Vector2 text_block_offset = owner->get_config()->get_text_block_offset();
 	Vector2 pos;
-	switch (owner->get_config_2d()->get_text_block_position()) {
+	switch (owner->get_config()->get_text_block_position()) {
 		case DebugDrawConfig2D::BlockPosition::POSITION_LEFT_TOP:
 			pos = text_block_offset;
 			break;

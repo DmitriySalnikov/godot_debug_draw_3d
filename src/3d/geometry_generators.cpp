@@ -1,7 +1,5 @@
 #include "geometry_generators.h"
-#include "utils.h"
-
-#include <functional>
+#include "utils/utils.h"
 
 #pragma region Predefined Geometry Parts
 

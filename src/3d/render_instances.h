@@ -2,19 +2,20 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "math_utils.h"
-#include "utils.h"
+#include "utils/math_utils.h"
+#include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <array>
+#include <functional>
 
 namespace godot {
 class MultiMesh;
 }
-class DebugDrawStats;
+class DebugDrawStats3D;
 
 using namespace godot;
 
@@ -237,7 +238,7 @@ public:
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
-	Ref<DebugDrawStats> get_stats() const;
+	Ref<DebugDrawStats3D> get_stats() const;
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);

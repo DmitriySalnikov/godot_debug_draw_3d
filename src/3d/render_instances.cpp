@@ -2,7 +2,7 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "draw_stats.h"
+#include "stats_3d.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/mesh.hpp>
@@ -302,7 +302,7 @@ void GeometryPool::reset_visible_objects() {
 	lines.reset_visible_counter();
 }
 
-Ref<DebugDrawStats> GeometryPool::get_stats() const {
+Ref<DebugDrawStats3D> GeometryPool::get_stats() const {
 	size_t used_instances = 0;
 	for (auto &i : instances) {
 		used_instances += i._prev_used_instant;
@@ -316,7 +316,7 @@ Ref<DebugDrawStats> GeometryPool::get_stats() const {
 
 	size_t used_lines = lines._prev_used_instant + lines.used_delayed;
 
-	Ref<DebugDrawStats> stats;
+	Ref<DebugDrawStats3D> stats;
 	stats.instantiate();
 	stats->setup(
 			/* t_instances */ used_instances,

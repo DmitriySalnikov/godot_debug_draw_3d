@@ -3,6 +3,7 @@
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEBUG_ENABLED
 
+#include "utils/utils.h"
 #include "version.h"
 
 GODOT_WARNING_DISABLE()
@@ -125,6 +126,12 @@ AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
 
 	if (check_updates)
 		call_deferred(NAMEOF(init));
+}
+
+AssetLibraryUpdateChecker::~AssetLibraryUpdateChecker() {
+	if (UtilityFunctions::is_instance_valid(request))
+		request->queue_free();
+	request = nullptr;
 }
 
 #endif

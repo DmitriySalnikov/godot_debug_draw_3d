@@ -3,7 +3,7 @@
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEBUG_ENABLED
 
-#include "utils.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/http_request.hpp>
@@ -34,6 +34,7 @@ public:
 	void init();
 
 	AssetLibraryUpdateChecker();
+	~AssetLibraryUpdateChecker();
 };
 
 #endif

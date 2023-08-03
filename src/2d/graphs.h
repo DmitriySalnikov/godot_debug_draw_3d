@@ -1,7 +1,8 @@
 ﻿#pragma once
 
-#include "circular_buffer.h"
-#include "colors.h"
+#include "common/circular_buffer.h"
+#include "common/colors.h"
+#include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_item.hpp>
@@ -10,6 +11,8 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 #include <map>
+#include <mutex>
+#include <vector>
 
 using namespace godot;
 
@@ -233,10 +236,10 @@ public:
 class DataGraphManager {
 	std::vector<Ref<DebugDrawGraph> > graphs;
 	mutable std::recursive_mutex datalock;
-	class DebugDraw *owner = nullptr;
+	class DebugDraw2D *owner = nullptr;
 
 public:
-	DataGraphManager(class DebugDraw *root);
+	DataGraphManager(class DebugDraw2D *root);
 	~DataGraphManager();
 
 	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const;
