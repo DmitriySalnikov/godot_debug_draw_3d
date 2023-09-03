@@ -254,7 +254,7 @@ stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false
-size = Vector2i(2, 2)
+size = Vector2i(300, 300)
 render_target_update_mode = 0
 
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]

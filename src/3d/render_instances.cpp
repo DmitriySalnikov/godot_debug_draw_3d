@@ -219,7 +219,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 
 	size_t spent_timer = TIME()->get_ticks_usec();
 
-	// 1000 frustums. Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
+	// Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
 	size_t used_vertices = 0;
 
 	// pre calculate buffer size

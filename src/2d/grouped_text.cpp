@@ -32,11 +32,7 @@ bool TextGroupItem::update(const double &_expiration_time, const String &_key, c
 }
 
 bool TextGroupItem::is_expired() {
-	if (second_chance) {
-		second_chance = false;
-		return false;
-	}
-	return expiration_time > 0;
+	return expiration_time > 0 ? false : !second_chance;
 }
 
 void TextGroup::set_group_priority(int _val) {
@@ -109,6 +105,8 @@ void TextGroup::cleanup_texts(const std::function<void()> &_update, const double
 		k->expiration_time -= _delta;
 		if (k->is_expired()) {
 			keysToRemove.insert(k);
+		} else {
+			k->second_chance = false;
 		}
 	}
 
@@ -120,7 +118,7 @@ void TextGroup::cleanup_texts(const std::function<void()> &_update, const double
 		_update();
 }
 
-void GroupedText::_create_new_default_groupd_if_needed() {
+void GroupedText::_create_new_default_group_if_needed() {
 	LOCK_GUARD(datalock);
 	if (!_current_text_group) {
 		_current_text_group = std::make_shared<TextGroup>(owner, "", 0, false, owner->get_config()->get_text_foreground_color(), 0, owner->get_config()->get_text_default_size());
@@ -222,7 +220,7 @@ void GroupedText::set_text(const String &_key, const Variant &_value, const int 
 	{
 		LOCK_GUARD(datalock);
 
-		_create_new_default_groupd_if_needed();
+		_create_new_default_group_if_needed();
 
 		TextGroupItem_ptr item;
 
@@ -309,7 +307,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 
 					text_parts.push_back(DrawTextInstance(text.substr(_keyLength, text.length() - _keyLength), draw_font, font_size,
 							Vector2(pos.x + font_offset.x + size_right_revert + draw_font->get_string_size(textSep, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x, pos.y + font_offset.y).floor(),
-							g->get_group_color()));
+							t->value_color));
 				}
 				pos.y += size.y + text_padding.y * 2;
 			}

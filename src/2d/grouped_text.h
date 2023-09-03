@@ -108,7 +108,7 @@ class GroupedText {
 	class DebugDraw2D *owner = nullptr;
 	std::recursive_mutex datalock;
 
-	void _create_new_default_groupd_if_needed();
+	void _create_new_default_group_if_needed();
 
 public:
 	void init_group(class DebugDraw2D *p_owner);

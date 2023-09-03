@@ -34,6 +34,7 @@ var button_presses = {}
 var time := 0.0
 var time2 := 0.0
 var time3 := 0.0
+var time_text := 0.0
 
 func _ready() -> void:
 	_update_keys_just_press()
@@ -204,6 +205,7 @@ func _process(delta: float) -> void:
 	DebugDraw2D.config.text_custom_font = custom_font
 	
 	if test_text:
+		time_text -= delta
 		_text_tests()
 	
 	# Graphs
@@ -238,6 +240,10 @@ func _process(delta: float) -> void:
 
 
 func _text_tests():
+	if time_text < 0:
+		DebugDraw2D.set_text("Some delayed text", "for 2.5s", -1, Color.BLACK, 2.5) # it's supposed to show text for 2.5 seconds
+		time_text += 5
+	
 	DebugDraw2D.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
 	DebugDraw2D.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, text_groups_title_font_size, text_groups_text_font_size)
