@@ -196,6 +196,18 @@ func _deferred_init():
 	
 	$GC/VB/H/Button.disabled = false
 
+
+func _process(_delta):
+	pass
+	queue_redraw()
+
+func _draw():
+	pass
+	if Input.is_key_pressed(KEY_1):
+		draw_set_transform(Vector2(100,0), deg_to_rad(45))
+	draw_line(Vector2(0,10), Vector2(100, 10), Color.AQUA)
+	#draw_texture_rect_region(load(\"res://icon.svg\"), Rect2(Vector2(), Vector2(128,128)), Rect2(Vector2(), Vector2(128,128)))
+
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
 	var cfg = DebugDraw2D.get_graph(&\"FPS\")
 	if cfg:

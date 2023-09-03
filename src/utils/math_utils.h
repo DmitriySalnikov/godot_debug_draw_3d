@@ -24,6 +24,7 @@ public:
 	static bool is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::vector<Plane> &planes);
 	static real_t get_max_value(const Vector3 &value);
 	static real_t get_max_vector_length(const Vector3 &a, const Vector3 &b, const Vector3 &c);
+	static real_t get_max_vector_length(const Vector2 &a, const Vector2 &b);
 	static real_t get_max_basis_length(const Basis &b);
 };
 

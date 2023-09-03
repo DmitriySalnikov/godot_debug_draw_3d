@@ -89,6 +89,17 @@ func _process(delta: float) -> void:
 		$LagTest.visible = false
 		return
 	
+	## 2D
+	
+	DebugDraw2D.draw_set_transform_2d(Vector2(100,1), deg_to_rad(45), Vector2(0.5, 1))
+	DebugDraw2D.draw_line(Vector2(20,0), Vector2(100,0), Color.BROWN, 2, true)
+	var trans = DebugDraw2D.draw_set_transform_2d(Vector2(100,1), deg_to_rad(45), Vector2(0.5, 1))
+	DebugDraw2D.draw_line(Vector2(20,2), Vector2(100,2), Color.CADET_BLUE, -1, false)
+	if true:
+		var trans2 = DebugDraw2D.draw_set_transform_2d(Vector2(1,1), deg_to_rad(90))
+		DebugDraw2D.draw_line(Vector2(20,4), Vector2(100,4), Color.DARK_BLUE, -1, false)
+		trans = null
+	
 	$HitTest.visible = true
 	$LagTest.visible = true
 	

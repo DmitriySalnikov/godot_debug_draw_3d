@@ -2,7 +2,7 @@
 
 #include "config_3d.h"
 #include "debug_draw_manager.h"
-#include "debug_geometry_container.h"
+#include "geometry_container_3d.h"
 #include "geometry_generators.h"
 #include "stats_3d.h"
 #include "utils/utils.h"
@@ -225,7 +225,7 @@ void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color 
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(dgc->datalock);
 	dgc->geometry_pool.add_or_update_instance(
-			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
+			hd ? InstanceType::SphereHD : InstanceType::Sphere,
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
@@ -259,7 +259,7 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(dgc->datalock);
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::CYLINDERS,
+			InstanceType::Cylinder,
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
@@ -285,7 +285,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 		sb.position = transform.origin + transform.basis.get_scale() * 0.5f;
 	}
 	dgc->geometry_pool.add_or_update_instance(
-			is_box_centered ? InstanceType::CUBES_CENTERED : InstanceType::CUBES,
+			is_box_centered ? InstanceType::CubeCentered : InstanceType::Cube,
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
@@ -317,7 +317,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 		dgc->geometry_pool.add_or_update_line(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
 		dgc->geometry_pool.add_or_update_instance(
-				InstanceType::BILLBOARD_SQUARES,
+				InstanceType::BillboardSquare,
 				duration,
 				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
@@ -410,7 +410,7 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	t.origin = pos;
 
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::ARROWHEADS,
+			InstanceType::ArrowHead,
 			duration,
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
@@ -422,7 +422,7 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 	LOCK_GUARD(dgc->datalock);
 
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::ARROWHEADS,
+			InstanceType::ArrowHead,
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
@@ -473,7 +473,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 
 	LOCK_GUARD(dgc->datalock);
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::BILLBOARD_SQUARES,
+			InstanceType::BillboardSquare,
 			duration,
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
@@ -491,7 +491,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(dgc->datalock);
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::POSITIONS,
+			InstanceType::Position,
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,

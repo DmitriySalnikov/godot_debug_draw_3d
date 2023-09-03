@@ -11,6 +11,7 @@ GODOT_WARNING_RESTORE()
 
 #include <array>
 #include <functional>
+#include <queue>
 
 namespace godot {
 class MultiMesh;
@@ -19,15 +20,15 @@ class DebugDrawStats3D;
 
 using namespace godot;
 
-enum InstanceType : char {
-	CUBES,
-	CUBES_CENTERED,
-	ARROWHEADS,
-	BILLBOARD_SQUARES,
-	POSITIONS,
-	SPHERES,
-	SPHERES_HD,
-	CYLINDERS,
+enum class InstanceType : char {
+	Cube,
+	CubeCentered,
+	ArrowHead,
+	BillboardSquare,
+	Position,
+	Sphere,
+	SphereHD,
+	Cylinder,
 	ALL,
 };
 
@@ -41,33 +42,29 @@ public:
 	}
 };
 
-template <class TBounds>
 class DelayedRenderer {
 protected:
-	void _update(double exp_time, bool is_vis) {
-		expiration_time = exp_time;
-		is_used_one_time = false;
-		is_visible = is_vis;
-	}
+	void _update(double exp_time, bool is_vis);
 
 public:
 	double expiration_time = 0;
 	bool is_used_one_time = false;
 	bool is_visible = true;
-	TBounds bounds;
-	Color color;
 
 	DelayedRenderer() :
-			bounds(),
 			expiration_time(0),
 			is_used_one_time(true),
 			is_visible(false) {}
 
-	bool is_expired() const {
-		return expiration_time > 0 ? false : is_used_one_time;
-	}
+	bool is_expired() const;
 
-	bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
+	void update_expiration(double delta);
+};
+
+class DelayedRenderer3D : public DelayedRenderer {
+protected:
+	template <class TBounds>
+	_FORCE_INLINE_ bool update_visibility_internal(TBounds bounds, const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
 		if (_skip_expiration_check || !is_expired()) {
 			is_visible = false;
 
@@ -97,24 +94,29 @@ public:
 		return is_visible;
 	}
 
-	void update_expiration(double delta) {
-		if (!is_expired()) {
-			expiration_time -= delta;
-		}
-	}
+public:
+	virtual bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) = 0;
+
+	DelayedRenderer3D() :
+			DelayedRenderer() {}
 };
 
-class DelayedRendererInstance : public DelayedRenderer<SphereBounds> {
+class DelayedRendererInstance : public DelayedRenderer3D {
 public:
 	Transform3D transform;
-	InstanceType type = InstanceType::CUBES;
+	InstanceType type = InstanceType::Cube;
+	Color color;
+	SphereBounds bounds;
 
 	DelayedRendererInstance();
 	void update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds);
+	virtual bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) override;
 };
 
-class DelayedRendererLine : public DelayedRenderer<AABB> {
+class DelayedRendererLine : public DelayedRenderer3D {
 	std::vector<Vector3> lines;
+	Color color;
+	AABB bounds;
 
 public:
 	DelayedRendererLine();
@@ -123,102 +125,97 @@ public:
 	void set_lines(const std::vector<Vector3> &_lines);
 	const std::vector<Vector3> &get_lines() const;
 	AABB calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines);
+	virtual bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) override;
 };
 
 class GeometryPool {
 private:
-	template <class TInst>
+	template <class TInst, size_t InitialSize = 256>
 	struct ObjectsPool {
 		const real_t TIME_USED_TO_SHRINK_INSTANT = 10; // 10 sec
-		const real_t TIME_USED_TO_SHRINK_DELAYED = 15; // 15 sec
 
-		std::vector<TInst> instant = {};
-		std::vector<TInst> delayed = {};
-		int visible_objects = 0;
+		std::queue<std::shared_ptr<TInst> > buffer;
 
+		int64_t taken_instances = 0;
 		size_t used_instant = 0;
 		size_t _prev_used_instant = 0;
-		size_t _prev_not_expired_delayed = 0;
-		size_t used_delayed = 0;
 		double time_used_less_then_half_of_instant_pool = 0;
-		double time_used_less_then_quarter_of_delayed_pool = 0;
 
 		ObjectsPool() {
-			time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
-			time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
-		}
-
-		TInst *get(bool is_delayed) {
-			auto objs = is_delayed ? &delayed : &instant;
-			auto used = is_delayed ? &_prev_not_expired_delayed : &used_instant;
-
-			if (is_delayed) {
-				while (objs->size() != (*used)) {
-					if (((*objs)[*used]).is_expired()) {
-						return &(*objs)[(*used)++];
-					}
-					(*used)++;
-				}
-			} else {
-				if (objs->size() != (*used)) {
-					return &(*objs)[(*used)++];
-				}
+			for (size_t i = 0; i < InitialSize; i++) {
+				buffer.push(std::make_shared<TInst>());
 			}
 
-			objs->push_back(TInst());
-			return &(*objs)[(*used)++];
+			time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
+		}
+
+		~ObjectsPool() {
+			if (taken_instances > 0) {
+				DEV_PRINT_STD("%s<%s> created more objects than were returned.", NAMEOF(ObjectsPool), typeid(TInst).name());
+			}
+			else if (taken_instances > 0) {
+				DEV_PRINT_STD("%s<%s> got more objects than it created.", NAMEOF(ObjectsPool), typeid(TInst).name());
+			}
+		}
+
+		std::shared_ptr<TInst> get() {
+			taken_instances++;
+
+			if (!buffer.empty()) {
+				auto v = buffer.front();
+				buffer.pop();
+				return v;
+			}
+
+			return std::make_shared<TInst>();
+		}
+
+		void push_back(std::shared_ptr<TInst> inst) {
+			taken_instances--;
+			buffer.push(inst);
 		}
 
 		void reset_counter(double delta, int custom_type_of_buffer = 0) {
-			if (instant.size() && used_instant < (instant.size() * 0.5)) {
+			// TODO
+			return;
+
+			if (buffer.size() && used_instant < (buffer.size() * 0.5)) {
 				time_used_less_then_half_of_instant_pool -= delta;
 				if (time_used_less_then_half_of_instant_pool <= 0) {
 					time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
 
-					DEV_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
+					DEV_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), buffer.size(), used_instant, custom_type_of_buffer);
 
-					instant.resize(used_instant);
+					while (buffer.size() > used_instant) {
+						buffer.pop();
+					}
 				}
 			} else {
 				time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
 			}
 
 			used_instant = 0;
-			_prev_not_expired_delayed = 0;
-
-			if (delayed.size() && used_delayed < (delayed.size() * 0.25)) {
-				time_used_less_then_quarter_of_delayed_pool -= delta;
-				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
-					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
-
-					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
-
-					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });
-					delayed.resize(used_delayed);
-				}
-			} else {
-				time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
-			}
-		}
-
-		void reset_visible_counter() {
-			visible_objects = 0;
 		}
 
 		void clear_pools() {
-			instant.clear();
-			delayed.clear();
+			while (!buffer.empty()) {
+				buffer.pop();
+			}
 			used_instant = 0;
-			used_delayed = 0;
 			_prev_used_instant = 0;
-			_prev_not_expired_delayed = 0;
 			time_used_less_then_half_of_instant_pool = 0;
-
-			reset_visible_counter();
 		}
 	};
 
-	ObjectsPool<DelayedRendererInstance> instances[InstanceType::ALL] = {};
+	template<class TInst>
+	class RenderingObjectPoolContainer {
+		ObjectsPool<DelayedRendererInstance> instances;
+		ObjectsPool<DelayedRendererInstance> instant;
+		ObjectsPool<DelayedRendererInstance> delayed;
+
+	};
+
+	ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::ALL] = {};
 	ObjectsPool<DelayedRendererLine> lines;
 
 	uint64_t time_spent_to_fill_buffers_of_instances = 0;
@@ -234,19 +231,19 @@ public:
 	~GeometryPool() {
 	}
 
-	void fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes);
+	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes);
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
 	Ref<DebugDrawStats3D> get_stats() const;
 	void clear_pool();
-	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
-	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
+	void for_each_instance(const std::function<void(std::shared_ptr<DelayedRendererInstance>)> &_func);
+	void for_each_line(const std::function<void(std::shared_ptr<DelayedRendererLine>)> &_func);
 	void update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
 	void update_expiration(double _delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
-	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(std::shared_ptr<DelayedRendererInstance>)> &_custom_upd = nullptr);
+	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(std::shared_ptr<DelayedRendererLine>)> _custom_upd = nullptr);
 };
 
 #endif

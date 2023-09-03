@@ -175,37 +175,40 @@
     <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2d\graphs.cpp">
+    <ClCompile Include="2d\config_2d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="2d\debug_draw_2d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="2d\config_2d.cpp">
+    <ClCompile Include="2d\geometry_container_2d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="2d\stats_2d.cpp">
+    <ClCompile Include="2d\graphs.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="2d\grouped_text.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="3d\debug_draw_3d.cpp">
+    <ClCompile Include="2d\stats_2d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="3d\config_3d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="3d\debug_geometry_container.cpp">
+    <ClCompile Include="3d\debug_draw_3d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="3d\stats_3d.cpp">
+    <ClCompile Include="3d\geometry_container_3d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="3d\geometry_generators.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="3d\render_instances.cpp">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
+    <ClCompile Include="3d\stats_3d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
     <ClCompile Include="common\colors.cpp">
@@ -227,37 +230,40 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="2d\graphs.h">
+    <ClInclude Include="2d\config_2d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="2d\debug_draw_2d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="2d\config_2d.h">
+    <ClInclude Include="2d\geometry_container_2d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="2d\stats_2d.h">
+    <ClInclude Include="2d\graphs.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="2d\grouped_text.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="3d\debug_draw_3d.h">
+    <ClInclude Include="2d\stats_2d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="3d\config_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="3d\debug_geometry_container.h">
+    <ClInclude Include="3d\debug_draw_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="3d\stats_3d.h">
+    <ClInclude Include="3d\geometry_container_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="3d\geometry_generators.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="3d\render_instances.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="3d\stats_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="common\circular_buffer.h">
@@ -270,6 +276,10 @@
     <ClInclude Include="editor\asset_library_update_checker.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="common\raw_data_buffer.h" />
+    <ClInclude Include="utils\compiler.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
     <ClInclude Include="editor\editor_menu_extensions.h" />
     <ClInclude Include="editor\generate_csharp_bindings.h" />
     <ClInclude Include="gen\editor_resources.gen.h" />
@@ -277,9 +287,6 @@
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="utils\utils.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
-    <ClInclude Include="utils\compiler.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="version.h" />

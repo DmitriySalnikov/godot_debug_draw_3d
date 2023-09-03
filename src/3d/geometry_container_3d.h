@@ -41,7 +41,7 @@ class DebugGeometryContainer {
 			mesh.unref();
 		}
 	};
-	MultiMeshStorage multi_mesh_storage[InstanceType::ALL] = {};
+	MultiMeshStorage multi_mesh_storage[(int)InstanceType::ALL] = {};
 
 	struct ImmediateMeshStorage {
 		RID instance;

@@ -1,8 +1,6 @@
 #include "config_3d.h"
 #include "utils/utils.h"
 
-#include "debug_geometry_container.h"
-
 #include <limits.h>
 
 void DebugDrawConfig3D::_bind_methods() {

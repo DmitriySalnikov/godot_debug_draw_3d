@@ -69,6 +69,12 @@ real_t MathUtils::get_max_vector_length(const Vector3 &a, const Vector3 &b, cons
 	return Math::max(a_l, Math::max(b_l, c_l));
 }
 
+real_t MathUtils::get_max_vector_length(const Vector2 &a, const Vector2 &b) {
+	real_t a_l = a.length();
+	real_t b_l = b.length();
+	return Math::max(a_l, b_l);
+}
+
 real_t MathUtils::get_max_basis_length(const Basis &b) {
 	real_t a_l = b.get_column(0).length();
 	real_t b_l = b.get_column(1).length();

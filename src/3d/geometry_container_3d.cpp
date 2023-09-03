@@ -1,4 +1,4 @@
-#include "debug_geometry_container.h"
+#include "geometry_container_3d.h"
 
 #ifndef DISABLE_DEBUG_RENDERING
 #include "config_3d.h"
@@ -42,14 +42,14 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
-		CreateMMI(InstanceType::CUBES, NAMEOF(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices));
-		CreateMMI(InstanceType::CUBES_CENTERED, NAMEOF(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices));
-		CreateMMI(InstanceType::ARROWHEADS, NAMEOF(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices));
-		CreateMMI(InstanceType::BILLBOARD_SQUARES, NAMEOF(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices));
-		CreateMMI(InstanceType::POSITIONS, NAMEOF(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices));
-		CreateMMI(InstanceType::SPHERES, NAMEOF(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
-		CreateMMI(InstanceType::SPHERES_HD, NAMEOF(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
-		CreateMMI(InstanceType::CYLINDERS, NAMEOF(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
+		CreateMMI(InstanceType::Cube, NAMEOF(mmi_cubes), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::CubeCentered, NAMEOF(mmi_cubes_centered), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices));
+		CreateMMI(InstanceType::ArrowHead, NAMEOF(mmi_arrowheads), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices));
+		CreateMMI(InstanceType::BillboardSquare, NAMEOF(mmi_billboard_squares), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices));
+		CreateMMI(InstanceType::Position, NAMEOF(mmi_positions), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices));
+		CreateMMI(InstanceType::Sphere, NAMEOF(mmi_spheres), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::SphereHD, NAMEOF(mmi_spheres_hd), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO)));
+		CreateMMI(InstanceType::Cylinder, NAMEOF(mmi_cylinders), CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(52, 1, 1, Vector3_ZERO, 4)));
 
 		set_render_layer_mask(1);
 	}
@@ -69,7 +69,7 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, const String &name, Re
 
 	Ref<MultiMesh> new_mm;
 	new_mm.instantiate();
-	new_mm->set_name(String::num_int64(type));
+	new_mm->set_name(String::num_int64((int)type));
 
 	new_mm->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
 	new_mm->set_use_colors(true);
@@ -84,7 +84,7 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, const String &name, Re
 	new_mat->set_shading_mode(BaseMaterial3D::SHADING_MODE_UNSHADED);
 	new_mat->set_flag(StandardMaterial3D::Flags::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
-	if (type == InstanceType::BILLBOARD_SQUARES) {
+	if (type == InstanceType::BillboardSquare) {
 		new_mat->set_billboard_mode(StandardMaterial3D::BillboardMode::BILLBOARD_ENABLED);
 		new_mat->set_flag(StandardMaterial3D::Flags::FLAG_BILLBOARD_KEEP_SCALE, true);
 	}
@@ -95,8 +95,8 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, const String &name, Re
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	multi_mesh_storage[type].instance = mmi;
-	multi_mesh_storage[type].mesh = new_mm;
+	multi_mesh_storage[(int)type].instance = mmi;
+	multi_mesh_storage[(int)type].mesh = new_mm;
 }
 
 Ref<ArrayMesh> DebugGeometryContainer::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices, const PackedColorArray &colors) {
@@ -225,7 +225,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	if (owner->get_config()->is_visible_instance_bounds()) {
 		std::vector<std::pair<Vector3, real_t> > new_instances;
 
-		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
+		auto draw_instance_spheres = [&new_instances](std::shared_ptr<DelayedRendererInstance> o) {
 			if (!o->is_visible || o->is_expired())
 				return;
 			new_instances.push_back({ o->bounds.position, o->bounds.Radius });
@@ -236,7 +236,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		// Draw custom sphere for 1 frame
 		for (auto &i : new_instances) {
 			geometry_pool.add_or_update_instance(
-					InstanceType::SPHERES_HD,
+					InstanceType::SphereHD,
 					0,
 					Transform3D(Basis().scaled(Vector3_ONE * i.second * 2), i.first),
 					Colors::debug_bounds,
@@ -244,7 +244,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 					[](auto d) { d->is_used_one_time = true; });
 		}
 
-		geometry_pool.for_each_line([this](DelayedRendererLine *o) {
+		geometry_pool.for_each_line([this](std::shared_ptr<DelayedRendererLine> o) {
 			if (!o->is_visible || o->is_expired())
 				return;
 
@@ -252,7 +252,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			MathUtils::get_diagonal_vectors(o->bounds.position, o->bounds.position + o->bounds.size, bottom, top, diag);
 
 			geometry_pool.add_or_update_instance(
-					InstanceType::CUBES,
+					InstanceType::Cube,
 					0,
 					Transform3D(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
@@ -265,8 +265,8 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
 
 	// Update MultiMeshInstances
-	std::array<Ref<MultiMesh> *, InstanceType::ALL> meshes;
-	for (int i = 0; i < InstanceType::ALL; i++) {
+	std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> meshes;
+	for (int i = 0; i < (int)InstanceType::ALL; i++) {
 		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
 
