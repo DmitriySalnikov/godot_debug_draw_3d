@@ -1,22 +1,23 @@
-diff --git a/SConstruct b/SConstruct
-index 27ee137..d46292c 100644
---- a/SConstruct
-+++ b/SConstruct
-@@ -6,6 +6,8 @@ import sys
- import subprocess
+diff --git a/tools/godotcpp.py b/tools/godotcpp.py
+index 60cd34b..6815eaa 100644
+--- a/tools/godotcpp.py
++++ b/tools/godotcpp.py
+@@ -6,6 +6,8 @@ from SCons.Builder import Builder
+ 
  from binding_generator import scons_generate_bindings, scons_emit_files
- from SCons.Errors import UserError
+ 
 +sys.path.insert(0, "../patches")
 +import unity_tools
  
- EnsureSConsVersion(4, 0)
- 
-@@ -215,6 +217,8 @@ bindings = env.GenerateBindings(
-     [get_api_file(env), os.path.join(get_gdextension_dir(env), "gdextension_interface.h"), "binding_generator.py"],
- )
- 
-+bindings = unity_tools.generate_unity_build(bindings, "godot-cpp_")
+ def add_sources(sources, dir, extension):
+     for f in os.listdir(dir):
+@@ -282,6 +284,9 @@ def _godot_cpp(env):
+             "binding_generator.py",
+         ],
+     )
 +
- scons_cache_path = os.environ.get("SCONS_CACHE")
- if scons_cache_path is not None:
-     CacheDir(scons_cache_path)
++    bindings = unity_tools.generate_unity_build(bindings, "godot-cpp_")
++
+     # Forces bindings regeneration.
+     if env["generate_bindings"]:
+         env.AlwaysBuild(bindings)

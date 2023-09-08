@@ -1,5 +1,5 @@
 diff --git a/binding_generator.py b/binding_generator.py
-index 6e47e7bcb..44c8fe75d 100644
+index 49664d1..f31ab54 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
 @@ -97,9 +97,10 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
@@ -15,7 +15,7 @@ index 6e47e7bcb..44c8fe75d 100644
          header_filename = include_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".hpp")
          source_filename = source_gen_folder / "classes" / (camel_to_snake(engine_class["name"]) + ".cpp")
          if headers:
-@@ -1036,21 +1037,23 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
+@@ -1038,21 +1039,23 @@ def generate_engine_classes_bindings(api, output_dir, use_template_get_node):
  
      # First create map of classes and singletons.
      for class_api in api["classes"]:
@@ -44,7 +44,7 @@ index 6e47e7bcb..44c8fe75d 100644
          # Check used classes for header include.
          used_classes = set()
          fully_used_classes = set()
-@@ -1242,7 +1245,7 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+@@ -1244,7 +1247,7 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
      if len(fully_used_classes) > 0:
          result.append("")
  
@@ -53,7 +53,7 @@ index 6e47e7bcb..44c8fe75d 100644
          result.append("#include <godot_cpp/core/class_db.hpp>")
          result.append("")
          result.append("#include <type_traits>")
-@@ -1263,7 +1266,10 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+@@ -1265,7 +1268,10 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
      inherits = class_api["inherits"] if "inherits" in class_api else "Wrapped"
      result.append(f"class {class_name} : public {inherits} {{")
  
@@ -65,7 +65,7 @@ index 6e47e7bcb..44c8fe75d 100644
      result.append("")
  
      result.append("public:")
-@@ -1421,6 +1427,51 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
+@@ -1423,6 +1429,51 @@ def generate_engine_class_header(class_api, used_classes, fully_used_classes, us
                  result.append(f'VARIANT_ENUM_CAST({class_name}::{enum_api["name"]});')
          result.append("")
  
@@ -117,7 +117,7 @@ index 6e47e7bcb..44c8fe75d 100644
      result.append(f"#endif // ! {header_guard}")
  
      return "\n".join(result)
-@@ -2288,6 +2339,7 @@ def escape_identifier(id):
+@@ -2319,6 +2370,7 @@ def escape_identifier(id):
          "operator": "_operator",
          "typeof": "type_of",
          "typename": "type_name",
@@ -126,10 +126,10 @@ index 6e47e7bcb..44c8fe75d 100644
      if id in cpp_keywords_map:
          return cpp_keywords_map[id]
 diff --git a/include/godot_cpp/classes/wrapped.hpp b/include/godot_cpp/classes/wrapped.hpp
-index f2efbd091..d297945d6 100644
+index 9a01672..d2f5ca6 100644
 --- a/include/godot_cpp/classes/wrapped.hpp
 +++ b/include/godot_cpp/classes/wrapped.hpp
-@@ -305,7 +305,7 @@ public:
+@@ -306,7 +306,7 @@ public:
  	};
  
  // Don't use this for your classes, use GDCLASS() instead.
@@ -138,7 +138,7 @@ index f2efbd091..d297945d6 100644
  private:                                                                                                                   \
  	void operator=(const m_class &p_rval) {}                                                                               \
                                                                                                                             \
-@@ -353,7 +353,7 @@ public:
+@@ -354,7 +354,7 @@ public:
  	static void initialize_class() {}                                                                                      \
                                                                                                                             \
  	static ::godot::StringName &get_class_static() {                                                                       \
@@ -147,7 +147,7 @@ index f2efbd091..d297945d6 100644
  		return string_name;                                                                                                \
  	}                                                                                                                      \
                                                                                                                             \
-@@ -378,6 +378,9 @@ public:
+@@ -379,6 +379,9 @@ public:
  		_gde_binding_free_callback,                                                                                        \
  		_gde_binding_reference_callback,                                                                                   \
  	};                                                                                                                     \
@@ -159,7 +159,7 @@ index f2efbd091..d297945d6 100644
  
  #endif // GODOT_WRAPPED_HPP
 diff --git a/include/godot_cpp/core/class_db.hpp b/include/godot_cpp/core/class_db.hpp
-index 0802a45dc..35fb05310 100644
+index b1625bf..26dfb7e 100644
 --- a/include/godot_cpp/core/class_db.hpp
 +++ b/include/godot_cpp/core/class_db.hpp
 @@ -38,6 +38,8 @@
@@ -171,7 +171,7 @@ index 0802a45dc..35fb05310 100644
  #include <list>
  #include <set>
  #include <string>
-@@ -137,6 +139,8 @@ class ClassDB {
+@@ -146,6 +148,8 @@ public:
  
  	static void initialize(GDExtensionInitializationLevel p_level);
  	static void deinitialize(GDExtensionInitializationLevel p_level);
@@ -181,10 +181,10 @@ index 0802a45dc..35fb05310 100644
  
  #define BIND_CONSTANT(m_constant) \
 diff --git a/src/core/class_db.cpp b/src/core/class_db.cpp
-index 159c03142..e12e569a2 100644
+index e8bb40c..cfd065e 100644
 --- a/src/core/class_db.cpp
 +++ b/src/core/class_db.cpp
-@@ -310,7 +310,18 @@ GDExtensionClassCallVirtual ClassDB::get_virtual_func(void *p_userdata, GDExtens
+@@ -318,7 +318,18 @@ GDExtensionClassCallVirtual ClassDB::get_virtual_func(void *p_userdata, GDExtens
  
  const GDExtensionInstanceBindingCallbacks *ClassDB::get_instance_binding_callbacks(const StringName &p_class) {
  	std::unordered_map<StringName, const GDExtensionInstanceBindingCallbacks *>::iterator callbacks_it = instance_binding_callbacks.find(p_class);
