@@ -7,10 +7,6 @@ compatibility_minimum = "4.1"
 
 # example.x86_64 = { "relative or absolute path to the dependency" : "the path relative to the exported project", }
 
-# macos.editor = { }
-# windows.editor.x86_64 = { }
-# linux.editor.x86_64 = { }
-
 macos = { }
 windows.x86_64 = { }
 linux.x86_64 = { }
@@ -31,13 +27,9 @@ android.template_release.x86_64 = { }
 
 [libraries]
 
-# macos.editor = "libs/libdd3d.macos.editor.universal.dylib"
-# windows.editor.x86_64 = "libs/libdd3d.windows.editor.x86_64.dll"
-# linux.editor.x86_64 = "libs/libdd3d.linux.editor.x86_64.so"
-
-macos = "libs/libdd3d.macos.template_debug.universal.dylib"
-windows.x86_64 = "libs/libdd3d.windows.template_debug.x86_64.dll"
-linux.x86_64 = "libs/libdd3d.linux.template_debug.x86_64.so"
+macos = "libs/libdd3d.macos.editor.universal.dylib"
+windows.x86_64 = "libs/libdd3d.windows.editor.x86_64.dll"
+linux.x86_64 = "libs/libdd3d.linux.editor.x86_64.so"
 
 android.arm32 = "libs/libdd3d.android.template_debug.arm32.so"
 android.arm64 = "libs/libdd3d.android.template_debug.arm64.so"
