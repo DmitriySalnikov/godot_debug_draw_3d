@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="godot::String">
+		<AlternativeType Name="godot::StringName"/>
+		<DisplayString>{str._cowdata._ptr,na}</DisplayString>
+		<StringView>str._cowdata._ptr</StringView>
+	</Type>
+</AutoVisualizer>

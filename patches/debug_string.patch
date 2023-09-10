@@ -1,153 +1,77 @@
 diff --git a/binding_generator.py b/binding_generator.py
-index 7634942..6cae1eb 100644
+index 49664d1..d125d11 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -365,6 +365,11 @@ def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_cl
-         result.append("#include <godot_cpp/variant/char_string.hpp>")
-         result.append("#include <godot_cpp/variant/char_utils.hpp>")
- 
-+    if class_name == "String" or class_name == "StringName":
-+        result.append("#ifdef DEV_ENABLED")
-+        result.append("#include <string>")
-+        result.append("#endif")
-+
-     if class_name == "PackedStringArray":
-         result.append("#include <godot_cpp/variant/string.hpp>")
-     if class_name == "PackedColorArray":
-@@ -401,9 +406,22 @@ def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_cl
-         result.append("")
- 
+@@ -407,6 +407,10 @@ def generate_builtin_class_header(builtin_api, size, used_classes, fully_used_cl
      result.append(f"class {class_name} {{")
-+
      result.append(f"\tstatic constexpr size_t {snake_class_name}_SIZE = {size};")
      result.append(f"\tuint8_t opaque[{snake_class_name}_SIZE] = {{}};")
- 
-+    if class_name == "PackedByteArray":
-+        result.append("#ifdef DEV_ENABLED")
-+        result.append("public:")
-+        result.append("\tstatic bool is_ready;")
-+        result.append("private:")
-+        result.append("#endif")
-+
 +    if class_name == "String" or class_name == "StringName":
 +        result.append("#ifdef DEV_ENABLED")
-+        result.append("\tstd::string debug_str;")
++        result.append("\tCharString str;")
 +        result.append("#endif")
-+
+ 
      result.append("")
      result.append("\tfriend class Variant;")
-     if class_name == "String":
-@@ -782,6 +800,11 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
- 
-     result.append("}")
- 
-+    if class_name == "PackedByteArray":
-+        result.append("#ifdef DEV_ENABLED")
-+        result.append("bool PackedByteArray::is_ready = false;")
-+        result.append("#endif")
-+
-     result.append(f"void {class_name}::init_bindings() {{")
- 
-     # StringName's constructor internally uses String, so it constructor must be ready !
-@@ -845,6 +868,10 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
-                     f'\t_method_bindings.operator_{get_operator_id_name(operator["name"])} = internal::gde_interface->variant_get_ptr_operator_evaluator(GDEXTENSION_VARIANT_OP_{get_operator_id_name(operator["name"]).upper()}, {enum_type_name}, GDEXTENSION_VARIANT_TYPE_NIL);'
-                 )
- 
-+    if class_name == "PackedByteArray":
-+        result.append("#ifdef DEV_ENABLED")
-+        result.append("\tis_ready = true;")
-+        result.append("#endif")
-     result.append("}")
-     result.append("")
- 
-@@ -881,6 +908,14 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
+@@ -885,6 +889,13 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
              method_call += ");"
  
              result.append(method_call)
-+
-+            if (class_name == "String" or class_name == "StringName") and "arguments" in constructor:
++            if class_name == "String" or class_name == "StringName" :
 +                result.append("#ifdef DEV_ENABLED")
-+                result.append("\tif (PackedByteArray::is_ready && length()){")
-+                result.append("\t\tdebug_str = std::string(reinterpret_cast<const char*>(to_utf8_buffer().ptr()), to_utf8_buffer().size());")
-+                result.append("\t}")
++                if class_name == "StringName":
++                    result.append("\tstr = String(*this).utf8();")
++                else:
++                    result.append("\tstr = utf8();")
 +                result.append("#endif")
-+
              result.append("}")
              result.append("")
  
-@@ -890,6 +925,12 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
-         result.append(
-             f"\tinternal::_call_builtin_constructor(_method_bindings.constructor_{copy_constructor_index}, &opaque, &other);"
+@@ -896,6 +907,13 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
          )
-+        if class_name == "String" or class_name == "StringName":
-+            result.append("#ifdef DEV_ENABLED")
-+            result.append("\tif (PackedByteArray::is_ready && length()){")
-+            result.append("\t\tdebug_str = std::string(reinterpret_cast<const char*>(to_utf8_buffer().ptr()), to_utf8_buffer().size());")
-+            result.append("\t}")
-+            result.append("#endif")
      else:
          result.append("\tstd::swap(opaque, other.opaque);")
++    if class_name == "String" or class_name == "StringName":
++        result.append("#ifdef DEV_ENABLED")
++        if class_name == "StringName":
++            result.append("\tstr = String(*this).utf8();")
++        else:
++            result.append("\tstr = utf8();")
++        result.append("#endif")
      result.append("}")
-@@ -1000,6 +1041,12 @@ def generate_builtin_class_source(builtin_api, size, used_classes, fully_used_cl
-         result.append(
-             f"\tinternal::_call_builtin_constructor(_method_bindings.constructor_{copy_constructor_index}, &opaque, {arg_name});"
-         )
-+        if class_name == "String" or class_name == "StringName":
-+            result.append("#ifdef DEV_ENABLED")
-+            result.append("\tif (PackedByteArray::is_ready && length()){")
-+            result.append("\t\tdebug_str = std::string(reinterpret_cast<const char*>(to_utf8_buffer().ptr()), to_utf8_buffer().size());")
-+            result.append("\t}")
-+            result.append("#endif")
-         result.append("\treturn *this;")
-         result.append("}")
-         result.append("")
+     result.append("")
+ 
 diff --git a/src/variant/char_string.cpp b/src/variant/char_string.cpp
-index bd0bc3f..39dd06a 100644
+index 856037c..c21b714 100644
 --- a/src/variant/char_string.cpp
 +++ b/src/variant/char_string.cpp
-@@ -32,6 +32,7 @@
- 
- #include <godot_cpp/core/memory.hpp>
- #include <godot_cpp/variant/node_path.hpp>
-+#include <godot_cpp/variant/packed_byte_array.hpp>
- #include <godot_cpp/variant/string.hpp>
- #include <godot_cpp/variant/string_name.hpp>
- 
-@@ -154,18 +155,38 @@ CharWideString::~CharWideString() {
+@@ -158,18 +158,30 @@ template class CharStringT<wchar_t>;
  
  String::String(const char *from) {
- 	internal::gde_interface->string_new_with_latin1_chars(_native_ptr(), from);
+ 	internal::gdextension_interface_string_new_with_latin1_chars(_native_ptr(), from);
 +#ifdef DEV_ENABLED
-+	if (PackedByteArray::is_ready && length()) {
-+		debug_str = std::string(reinterpret_cast<const char *>(to_utf8_buffer().ptr()), to_utf8_buffer().size());
-+	}
++	str = utf8();
 +#endif
  }
  
  String::String(const wchar_t *from) {
- 	internal::gde_interface->string_new_with_wide_chars(_native_ptr(), from);
+ 	internal::gdextension_interface_string_new_with_wide_chars(_native_ptr(), from);
 +#ifdef DEV_ENABLED
-+	if (PackedByteArray::is_ready && length()) {
-+		debug_str = std::string(reinterpret_cast<const char *>(to_utf8_buffer().ptr()), to_utf8_buffer().size());
-+	}
++	str = utf8();
 +#endif
  }
  
  String::String(const char16_t *from) {
- 	internal::gde_interface->string_new_with_utf16_chars(_native_ptr(), from);
+ 	internal::gdextension_interface_string_new_with_utf16_chars(_native_ptr(), from);
 +#ifdef DEV_ENABLED
-+	if (PackedByteArray::is_ready && length()) {
-+		debug_str = std::string(reinterpret_cast<const char *>(to_utf8_buffer().ptr()), to_utf8_buffer().size());
-+	}
++	str = utf8();
 +#endif
  }
  
  String::String(const char32_t *from) {
- 	internal::gde_interface->string_new_with_utf32_chars(_native_ptr(), from);
+ 	internal::gdextension_interface_string_new_with_utf32_chars(_native_ptr(), from);
 +#ifdef DEV_ENABLED
-+	if (PackedByteArray::is_ready && length()) {
-+		debug_str = std::string(reinterpret_cast<const char *>(to_utf8_buffer().ptr()), to_utf8_buffer().size());
-+	}
++	str = utf8();
 +#endif
  }
  
