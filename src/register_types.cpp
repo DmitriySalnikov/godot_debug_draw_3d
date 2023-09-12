@@ -10,16 +10,25 @@
 #include "debug_draw_manager.h"
 #include "utils/utils.h"
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/editor_plugin.hpp>
+GODOT_WARNING_RESTORE()
+
 using namespace godot;
 
 DebugDrawManager *debug_draw_manager = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
+#include "editor/editor_menu_extensions.h"
+#include "editor/generate_csharp_bindings.h"
+
 #include "editor/asset_library_update_checker.h"
 Ref<AssetLibraryUpdateChecker> upd_checker;
 #endif
 #endif
+
+// TODO: test android debug symbols
 
 /** GDExtension Initialize **/
 void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
@@ -43,8 +52,11 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		ClassDB::register_class<DebugDrawMenuExtensionPlugin>();
+		EditorPlugins::add_by_type<DebugDrawMenuExtensionPlugin>();
+
 		ClassDB::register_class<AssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
 	}
@@ -64,9 +76,10 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		upd_checker.unref();
+		EditorPlugins::remove_by_type<DebugDrawMenuExtensionPlugin>();
 	}
 #endif
 #endif

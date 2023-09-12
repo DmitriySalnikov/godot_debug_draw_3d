@@ -186,8 +186,7 @@ func _ready() -> void:
 		$GC/VB/HSlider2.value = test.buffer_size
 	await get_tree().create_timer(0.2).timeout
 	
-	# TODO: temp disabled
-	$GC/VB/H/Button.disabled = true
+	$GC/VB/H/Button.disabled = false
 
 
 func _process(_delta):
@@ -529,7 +528,6 @@ text = "FPS Graph enabled"
 
 [node name="Button" type="Button" parent="Settings/GC/VB/H"]
 layout_mode = 2
-disabled = true
 text = "Switch to C#"
 
 [node name="FPSMS" type="CheckBox" parent="Settings/GC/VB"]
