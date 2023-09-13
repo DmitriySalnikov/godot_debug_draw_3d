@@ -390,7 +390,9 @@ void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, cons
 void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
 	if (path.size() < 2) {
-		PRINT_ERROR("Line path must contains at least 2 points. " + String::num_int64(path.size()) + " is not enough.");
+		if (path.size() == 1) {
+			PRINT_ERROR("Line path must contains at least 2 points.");
+		}
 		return;
 	}
 

@@ -12,16 +12,33 @@ GODOT_WARNING_RESTORE()
 
 // add auto-braces
 #define TAB() auto tab_##__LINE__ = tab()
+#define IFDEF(cond) auto ifdef_##__LINE__ = ifdef(cond)
+#define DD3D_ENABLED_STR "DEBUG || FORCED_DD3D"
+#define IFDEF_DD3D_ENABLED() auto ifdef_##__LINE__ = ifdef(DD3D_ENABLED_STR)
+#define IFELSE() line("#else", 0)
 
 GenerateCSharpBindingsPlugin::IndentGuard::IndentGuard(GenerateCSharpBindingsPlugin *_owner) {
 	owner = _owner;
 	owner->line("{");
-	owner->indent += "    ";
+	owner->indent += owner->indent_template;
 }
 
 GenerateCSharpBindingsPlugin::IndentGuard::~IndentGuard() {
-	owner->indent = owner->indent.substr(0, owner->indent.length() - 4);
-	owner->line("}");
+	if (owner) {
+		owner->indent = owner->indent.substr(0, owner->indent.length() - owner->indent_template.length());
+		owner->line("}");
+	}
+}
+
+GenerateCSharpBindingsPlugin::IfDefGuard::IfDefGuard(GenerateCSharpBindingsPlugin *_owner, const String &ifdef_condition) {
+	owner = _owner;
+	owner->line(FMT_STR("#if {0}", ifdef_condition), 0);
+}
+
+GenerateCSharpBindingsPlugin::IfDefGuard::~IfDefGuard() {
+	if (owner) {
+		owner->line("#endif", 0);
+	}
 }
 
 bool GenerateCSharpBindingsPlugin::is_need_to_update() {
@@ -86,7 +103,6 @@ void GenerateCSharpBindingsPlugin::generate() {
 
 	line("using Godot;");
 	line("using System;");
-	line("using System.Collections.Generic;");
 
 	is_shift_pressed = true;
 
@@ -296,6 +312,7 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 				line("Instance = _instance;");
 			}
 
+			line();
 			line("public void Dispose()");
 			{
 				TAB();
@@ -303,9 +320,11 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 				line("Instance = null;");
 			}
 		} else {
+			line();
 			line(FMT_STR("public {0}(GodotObject _instance) : base (_instance) {}", cls));
 		}
 
+		line();
 		line(FMT_STR("public {0}() : this((GodotObject)ClassDB.Instantiate(\"{0}\")) { }", cls));
 	}
 	line();
@@ -401,17 +420,34 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 			call_args = ", " + call_args;
 		}
 
-		if (!return_data.is_void) {
-			String int_convert = return_data.is_enum ? "(long)" : "";
+		{
+			auto method_body = [&]() {
+				if (!return_data.is_void) {
+					String int_convert = return_data.is_enum ? "(long)" : "";
 
-			// TODO replace by factory
-			if (is_need_wrapper) {
-				line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
+					if (is_need_wrapper) {
+						line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
+					} else {
+						line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
+					}
+				} else {
+					line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
+				}
+			};
+
+			if (is_property) {
+				method_body();
 			} else {
-				line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
+				IFDEF_DD3D_ENABLED();
+
+				method_body();
+				if (!return_data.is_void) {
+					IFELSE();
+					line("return default;");
+				} else {
+					// Nothing to do
+				}
 			}
-		} else {
-			line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
 		}
 	}
 	line();
@@ -781,8 +817,12 @@ String GenerateCSharpBindingsPlugin::arguments_string_call(const TypedArray<Dict
 	return String(", ").join(arg_strs);
 }
 
-void GenerateCSharpBindingsPlugin::line(const String &str) {
-	opened_file->store_string(indent);
+void GenerateCSharpBindingsPlugin::line(const String &str, int indent_override) {
+	if (indent_override < 0) {
+		opened_file->store_string(indent);
+	} else {
+		opened_file->store_string(indent_template.repeat(indent_override));
+	}
 	opened_file->store_string(str);
 	opened_file->store_8('\n');
 }
@@ -813,5 +853,10 @@ GenerateCSharpBindingsPlugin::IndentGuard GenerateCSharpBindingsPlugin::tab() {
 	return IndentGuard(this);
 }
 
+GenerateCSharpBindingsPlugin::IfDefGuard GenerateCSharpBindingsPlugin::ifdef(const String &ifdef_cond) {
+	return IfDefGuard(this, ifdef_cond);
+}
+
 #undef TAB
+#undef IFDEF
 #endif

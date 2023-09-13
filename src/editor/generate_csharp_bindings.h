@@ -16,11 +16,22 @@ using namespace godot;
 
 class GenerateCSharpBindingsPlugin {
 	class IndentGuard {
-		GenerateCSharpBindingsPlugin *owner;
+		GenerateCSharpBindingsPlugin *owner = nullptr;
 
 	public:
+		IndentGuard(){};
 		IndentGuard(GenerateCSharpBindingsPlugin *_owner);
 		~IndentGuard();
+	};
+
+	class IfDefGuard {
+		GenerateCSharpBindingsPlugin *owner = nullptr;
+
+	public:
+		IfDefGuard(){};
+		IfDefGuard(GenerateCSharpBindingsPlugin *_owner, const String &ifdef_condition);
+
+		~IfDefGuard();
 	};
 
 	struct PropertyMethods {
@@ -82,6 +93,7 @@ class GenerateCSharpBindingsPlugin {
 
 	String output_directory = "res://addons/debug_draw_3d/csharp";
 	String api_file_name = "DebugDrawGeneratedAPI.cs";
+	String indent_template = "    ";
 	String indent;
 	Ref<FileAccess> opened_file;
 	Ref<FileAccess> opened_log_file;
@@ -155,10 +167,11 @@ private:
 	DefaultData arguments_get_formatted_value(const ArgumentData &arg_data, const Variant &def_val);
 	String arguments_string_decl(const TypedArray<Dictionary> &args, bool with_defaults, std::vector<DefaultData> def_args_data = {});
 	String arguments_string_call(const TypedArray<Dictionary> &args, const std::vector<DefaultData> &def_remap);
-	void line(const String &str = "");
+	void line(const String &str = "", int indent_override = -1);
 	void log(const String &str = "", const int &indent = 0);
 	void log_warning(const String &str = "", const int &indent = 0);
 	IndentGuard tab();
+	IfDefGuard ifdef(const String &ifdef_cond);
 };
 
 #endif
