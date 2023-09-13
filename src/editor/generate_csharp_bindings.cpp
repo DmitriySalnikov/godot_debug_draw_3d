@@ -63,8 +63,8 @@ void GenerateCSharpBindingsPlugin::generate() {
 	const String out_path = output_directory.path_join(api_file_name);
 	const String out_log_path = output_directory.path_join("log.txt");
 
+	ERR_FAIL_COND(DirAccess::make_dir_recursive_absolute(output_directory) != Error::OK);
 	auto dir = DirAccess::open(output_directory);
-	ERR_FAIL_COND(dir->make_dir_recursive(output_directory) != Error::OK);
 
 	// Clear tmp files
 	PackedStringArray files = dir->get_files();
