@@ -46,4 +46,8 @@ public:
 	void init();
 	virtual void _process(double delta) override;
 	virtual void _exit_tree() override;
+
+#ifdef TOOLS_ENABLED
+	void try_to_update_cs_bindings();
+#endif
 };

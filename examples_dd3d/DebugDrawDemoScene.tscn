@@ -253,7 +253,7 @@ stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false
-size = Vector2i(300, 300)
+size = Vector2i(2, 2)
 render_target_update_mode = 0
 
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]
@@ -337,7 +337,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4103, 0, 6.71577)
 [node name="Box3" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 10.5182)
 
-[node name="BoxOutOfDistabceCulling" type="Node3D" parent="."]
+[node name="BoxOutOfDistanceCulling" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.608, 0.344, -16.314)
 
 [node name="AABB" type="Node3D" parent="."]

@@ -5,6 +5,10 @@
 #include "3d/debug_draw_3d.h"
 #include "utils/utils.h"
 
+#ifdef DEBUG_ENABLED
+#include "editor/generate_csharp_bindings.h"
+#endif
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/config_file.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
@@ -63,6 +67,8 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
+		debug_draw_3d_singleton->clear_3d_objects();
+		debug_draw_2d_singleton->clear_2d_objects();
 	}
 
 	is_current_scene_is_null = _is_scene_null;
@@ -165,6 +171,11 @@ void DebugDrawManager::_integrate_into_engine() {
 	debug_draw_3d_singleton->_set_base_world_node(SCENE_ROOT());
 	_connect_scene_changed();
 #endif
+
+#ifdef TOOLS_ENABLED
+	if (IS_EDITOR_HINT())
+		try_to_update_cs_bindings();
+#endif
 }
 
 DebugDrawManager::DebugDrawManager() {
@@ -177,6 +188,8 @@ DebugDrawManager::~DebugDrawManager() {
 void DebugDrawManager::init() {
 	// Draw everything after calls from scripts to avoid lagging
 	set_process_priority(INT32_MAX);
+
+	Engine::get_singleton()->register_singleton(NAMEOF(DebugDrawManager), this);
 
 	debug_draw_3d_singleton = memnew(DebugDraw3D);
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw3D), debug_draw_3d_singleton);
@@ -205,6 +218,8 @@ void DebugDrawManager::_process(double delta) {
 void DebugDrawManager::_exit_tree() {
 	is_closing = true;
 
+	Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDrawManager));
+
 	if (debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw3D));
 		Engine::get_singleton()->unregister_singleton("Dbg3");
@@ -219,3 +234,13 @@ void DebugDrawManager::_exit_tree() {
 		debug_draw_2d_singleton = nullptr;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+void DebugDrawManager::try_to_update_cs_bindings() {
+	auto g = GenerateCSharpBindingsPlugin();
+	if (g.is_need_to_update()) {
+		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");
+		g.generate();
+	}
+}
+#endif

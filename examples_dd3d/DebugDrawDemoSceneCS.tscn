@@ -6,9 +6,6 @@
 [node name="DebugDrawDemoSceneCS" instance=ExtResource("2")]
 script = ExtResource("2_ipqea")
 
-[node name="Viewport" parent="Panel/ViewportContainer" index="0"]
-size = Vector2i(2, 2)
-
 [node name="a" parent="AABB" index="0"]
 transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.74623e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, -0.5468, -2.45083, -0.991707)
 

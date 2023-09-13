@@ -552,27 +552,27 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_MAX) {
 		_ci->draw_string(draw_font,
 				pos + Vector2(4, (real_t)draw_font->get_ascent(get_text_size()) - 1).floor(),
-				String("max: {0} {1}").format(Array::make(format_float(max, precision), get_text_suffix())),
+				FMT_STR("max: {0} {1}", format_float(max, precision), get_text_suffix()),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
 	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_AVG) {
 		_ci->draw_string(draw_font,
 				(pos + Vector2(4, (graph_size.y * 0.5f + (real_t)get_text_size() * 0.5f - 2))).floor(),
-				String("avg: {0} {1}").format(Array::make(format_float(avg, precision), get_text_suffix())),
+				FMT_STR("avg: {0} {1}", format_float(avg, precision), get_text_suffix()),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
 	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_MIN) {
 		_ci->draw_string(draw_font,
 				(pos + Vector2(4, graph_size.y - 3)).floor(),
-				String("min: {0} {1}").format(Array::make(format_float(min, precision), get_text_suffix())),
+				FMT_STR("min: {0} {1}",format_float(min, precision), get_text_suffix()),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
 	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_CURRENT) {
 		// `space` at the end of the line to offset from the border
-		String text = String("{0} {1} ").format(Array::make(format_float((buffer_data->size() > 1 ? buffer_data->get(buffer_data->size() - 2) : 0), precision), get_text_suffix()));
+		String text = FMT_STR("{0} {1} ", format_float((buffer_data->size() > 1 ? buffer_data->get(buffer_data->size() - 2) : 0), precision), get_text_suffix());
 		_ci->draw_string(draw_font,
 				(pos + Vector2(graph_size.x - draw_font->get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, get_text_size()).x, graph_size.y * 0.5f + get_text_size() * 0.5f - 2)).floor(),
 				text,
@@ -600,11 +600,11 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 
 	_ci->draw_string(draw_font,
 			pos + Vector2(4, (real_t)draw_font->get_ascent(get_text_size()) - 1).floor() + Vector2(100, 0),
-			String("{0}c / {1}t").format(Array::make(format_float(graph_range.max, 1), format_float(graph_range.max - _center_offset, 1))),
+			FMT_STR("{0}c / {1}t", format_float(graph_range.max, 1), format_float(graph_range.max - _center_offset, 1)),
 			godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Colors::black);
 	_ci->draw_string(draw_font,
 			(pos + Vector2(4, graph_size.y - 3)).floor() + Vector2(100, 0),
-			String("{0}c / {1}t").format(Array::make(format_float(graph_range.min, 1), format_float(graph_range.min + _center_offset, 1))),
+			FMT_STR("{0}c / {1}t", format_float(graph_range.min, 1), format_float(graph_range.min + _center_offset, 1)),
 			godot::HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Colors::black);
 #endif
 

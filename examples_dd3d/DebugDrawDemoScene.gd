@@ -30,7 +30,7 @@ extends Node3D
 @export var graph_frame_time_mode := true
 @export var graph_is_enabled := true
 
-var button_presses = {}
+var button_presses := {}
 var time := 0.0
 var time2 := 0.0
 var time3 := 0.0
@@ -48,16 +48,25 @@ func _ready() -> void:
 
 
 func _is_key_just_pressed(key):
-	return button_presses[key] != Input.is_key_pressed(key) and Input.is_key_pressed(key)
+	if (button_presses[key] == 1):
+		button_presses[key] = 2
+		return true
+	return false
 
 
 func _update_keys_just_press():
-	button_presses[KEY_LEFT] = Input.is_key_pressed(KEY_LEFT)
-	button_presses[KEY_UP] = Input.is_key_pressed(KEY_UP)
-	button_presses[KEY_F1] = Input.is_key_pressed(KEY_F1)
+	var set_key = func (k: Key): return (1 if button_presses[k] == 0 else button_presses[k]) if Input.is_key_pressed(k) else 0
+	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
+	button_presses[KEY_UP] = set_key.call(KEY_UP)
+	button_presses[KEY_F1] = set_key.call(KEY_F1)
 
 
 func _process(delta: float) -> void:
+	_update_keys_just_press()
+	
+	if _is_key_just_pressed(KEY_F1):
+		zylann_example = !zylann_example
+	
 	# Zylann's example :D
 	if zylann_example:
 		DebugDraw2D.clear_graphs()
@@ -91,8 +100,6 @@ func _process(delta: float) -> void:
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Some property toggles
-	if _is_key_just_pressed(KEY_F1):
-		zylann_example = !zylann_example
 	if _is_key_just_pressed(KEY_LEFT):
 		DebugDraw3D.config.use_frustum_culling = !DebugDraw3D.config.use_frustum_culling
 	if _is_key_just_pressed(KEY_UP):
@@ -102,7 +109,6 @@ func _process(delta: float) -> void:
 		DebugDraw3D.config.cull_by_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
 	else:
 		DebugDraw3D.config.cull_by_distance = start_culling_distance
-	_update_keys_just_press()
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -128,7 +134,7 @@ func _process(delta: float) -> void:
 	DebugDraw3D.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
 	
-	DebugDraw3D.draw_box_xf($BoxOutOfDistabceCulling.global_transform, Color.RED)
+	DebugDraw3D.draw_box_xf($BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
 	DebugDraw3D.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
 	DebugDraw3D.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
@@ -257,7 +263,7 @@ func _text_tests():
 	if text_groups_show_stats:
 		DebugDraw2D.begin_text_group("-- Stats --", 3, Color.WHEAT)
 		
-		var render_stats := DebugDraw2D.get_render_stats()
+		var render_stats := DebugDraw3D.get_render_stats()
 		if render_stats:
 			DebugDraw2D.set_text("Total", render_stats.total_geometry)
 			DebugDraw2D.set_text("Instances", render_stats.instances, 1)

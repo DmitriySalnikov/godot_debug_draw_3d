@@ -1,3 +1,5 @@
+#ifdef TOOLS_ENABLED
+
 #include "editor_menu_extensions.h"
 #include "generate_csharp_bindings.h"
 #include "utils/utils.h"
@@ -57,3 +59,5 @@ DebugDrawMenuExtensionPlugin::DebugDrawMenuExtensionPlugin() {
 
 	menu_item_name = "Debug Draw";
 }
+
+#endif

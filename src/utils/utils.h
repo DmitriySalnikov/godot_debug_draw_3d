@@ -36,13 +36,18 @@ typedef godot::PackedFloat32Array PackedRealArray;
 #if DEV_ENABLED
 #define DEV_PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
 #define DEV_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
+#define DEV_PRINT_STD_F(format, ...) Utils::logv(format, false, true, ##__VA_ARGS__)
 #define DEV_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
+#define DEV_PRINT_STD_ERR_F(format, ...) Utils::logv(format, true, true, ##__VA_ARGS__)
 #else
 #define DEV_PRINT(text)
 #define DEV_PRINT_STD(format, ...)
+#define DEV_PRINT_STD_F(format, ...)
 #define DEV_PRINT_STD_ERR(format, ...)
+#define DEV_PRINT_STD_ERR_F(format, ...)
 #endif
 
+#define FMT_STR(str, ...) String(str).format(Array::make(__VA_ARGS__))
 #define PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
 #define PRINT_ERROR(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify())
 #define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), false, true)

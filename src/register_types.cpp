@@ -79,7 +79,7 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		upd_checker.unref();
-		EditorPlugins::remove_by_type<DebugDrawMenuExtensionPlugin>();
+		//EditorPlugins::remove_by_type<DebugDrawMenuExtensionPlugin>();
 	}
 #endif
 #endif

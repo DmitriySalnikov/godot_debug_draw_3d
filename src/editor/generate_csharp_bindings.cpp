@@ -1,16 +1,17 @@
+#ifdef TOOLS_ENABLED
+
 #include "generate_csharp_bindings.h"
 #include "utils/utils.h"
+#include "version.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/input.hpp>
 GODOT_WARNING_RESTORE()
 
 // add auto-braces
 #define TAB() auto tab_##__LINE__ = tab()
-#define FMT_STR(str, ...) String(str).format(Array::make(__VA_ARGS__))
-
-// TODO first line must be a dd3d version to check and auto generate api
 
 GenerateCSharpBindingsPlugin::IndentGuard::IndentGuard(GenerateCSharpBindingsPlugin *_owner) {
 	owner = _owner;
@@ -23,21 +24,44 @@ GenerateCSharpBindingsPlugin::IndentGuard::~IndentGuard() {
 	owner->line("}");
 }
 
-void GenerateCSharpBindingsPlugin::generate() {
-	const String out_dir = "res://addons/debug_draw_3d/csharp";
-	const String out_path = out_dir.path_join("api.cs");
-	const String out_log_path = out_dir.path_join("log.txt");
+bool GenerateCSharpBindingsPlugin::is_need_to_update() {
+	if (!ClassDB::class_exists("CSharpScript"))
+		return false;
 
-	auto dir = DirAccess::open(out_dir);
-	ERR_FAIL_COND(dir->make_dir_recursive(out_dir) != Error::OK);
+	const String api_path = output_directory.path_join(api_file_name);
+	if (FileAccess::file_exists(api_path)) {
+		auto file = FileAccess::open(api_path, FileAccess::READ);
+		ERR_FAIL_COND_V(FileAccess::get_open_error() != Error::OK, false);
+
+		String first_line = file->get_line();
+		if (first_line.begins_with("/// ")) {
+			String ver = first_line.substr(4);
+			return !(ver.strip_edges() == DD3D_VERSION_STR);
+		}
+	}
+	return true;
+}
+
+void GenerateCSharpBindingsPlugin::generate() {
+	const String out_path = output_directory.path_join(api_file_name);
+	const String out_log_path = output_directory.path_join("log.txt");
+
+	auto dir = DirAccess::open(output_directory);
+	ERR_FAIL_COND(dir->make_dir_recursive(output_directory) != Error::OK);
 
 	// Clear tmp files
 	PackedStringArray files = dir->get_files();
 	for (int i = 0; i < files.size(); i++) {
 		String f = files[i];
-		if ((f.begins_with("api") || f.begins_with("log")) && f.ends_with(".tmp")) {
+		if ((f.begins_with("Deb") || f.begins_with("log")) && f.ends_with(".tmp")) {
 			dir->remove(f);
 		}
+	}
+
+	// First, delete the old file to check for locks
+	if (FileAccess::file_exists(out_path)) {
+		PRINT("Attempt to delete an old file: " + out_path);
+		ERR_FAIL_COND(dir->remove(out_path) != Error::OK);
 	}
 
 	opened_file = FileAccess::open(out_path, FileAccess::ModeFlags::WRITE);
@@ -56,24 +80,49 @@ void GenerateCSharpBindingsPlugin::generate() {
 			"DebugDrawStats3D",
 			"DebugDrawConfig3D",
 			"DebugDrawManager"));
+	singletons = Engine::get_singleton()->get_singleton_list();
+
+	generate_header();
 
 	line("using Godot;");
 	line("using System;");
 	line("using System.Collections.Generic;");
 
+	is_shift_pressed = true;
+
 	log("Generation of bindings started, output file: " + out_path);
 	log("Log file: " + out_log_path);
+	log("Hold Shift to print information on the Output panel when manually starting generation via the 'Project - Tools - Debug Draw' menu");
 
+	is_shift_pressed = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+
+	remap_data remapped_data;
 	for (int i = 0; i < generate_for_classes.size(); i++) {
-		generate_class(generate_for_classes[i]);
+		generate_class(generate_for_classes[i], remapped_data);
 	}
+
+	line();
+	generate_class_utilities(remapped_data);
+
+	is_shift_pressed = true;
+
+	log("The generation process is completed!");
 }
 
-void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls) {
+void GenerateCSharpBindingsPlugin::generate_header() {
+	line(FMT_STR("/// {0}", DD3D_VERSION_STR));
+	line("/// ////////////////////////////////////////////////");
+	line("/// THIS FILE HAS BEEN GENERATED.");
+	line("/// THE CHANGES IN THIS FILE WILL BE OVERWRITTEN");
+	line("/// AFTER THE UPDATE OR AFTER THE RESTART!");
+	line("/// ////////////////////////////////////////////////");
+	line();
+}
+
+void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_data &remapped_data) {
 	log("Class: " + cls, 1);
 
 	StringName parent_name = ClassDB::get_parent_class(cls);
-	PackedStringArray singletons = Engine::get_singleton()->get_singleton_list();
 	PackedStringArray enum_names = ClassDB::class_get_enum_list(cls, true);
 	TypedArray<Dictionary> methods = ClassDB::class_get_method_list(cls, true);
 	TypedArray<Dictionary> signals = ClassDB::class_get_signal_list(cls, true);
@@ -87,9 +136,9 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls) {
 	// class DebugDrawFPSGraph : DebugDrawGraph
 	String static_modifier_str = is_singleton ? "static " : "";
 	if (is_preserved_inheritance) {
-		line(static_modifier_str + "internal class " + cls + " : " + parent_name);
+		line(FMT_STR("internal class {0} : {1}", cls, parent_name));
 	} else {
-		line(static_modifier_str + "internal class " + cls);
+		line(FMT_STR("{0}internal class {1}{2}", static_modifier_str, cls, is_singleton ? "" : " : IDisposable"));
 	}
 
 	{
@@ -160,7 +209,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls) {
 					continue;
 				}
 
-				generate_method(cls, methods[i], is_singleton, is_property);
+				generate_method(cls, methods[i], is_singleton, is_property, remapped_data);
 			}
 		}
 
@@ -168,6 +217,49 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls) {
 		{
 			log("Properties...", 2);
 			generate_properties(cls, properties, properties_map, is_singleton);
+		}
+	}
+}
+
+void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &remapped_data) {
+	log("DebugDraw utilities:", 1);
+
+	line("internal static class _DebugDrawUtils_");
+	{
+		TAB();
+
+		log("Arguments remap...", 2);
+		// Default data
+		generate_default_arguments_remap(remapped_data);
+
+		// Factory
+		log("Class factory...", 2);
+		{
+			line("public static object CreateWrapperFromObject(GodotObject _instance)");
+			{
+				TAB();
+				line("if (_instance == null)");
+				{
+					TAB();
+					line("return null;");
+				}
+
+				line("switch(_instance.GetClass())");
+				{
+					TAB();
+					for (int i = 0; i < generate_for_classes.size(); i++) {
+						StringName cls = generate_for_classes[i];
+						if (!singletons.has(cls)) {
+							line(FMT_STR("case \"{0}\":", cls));
+							{
+								TAB();
+								line(FMT_STR("return new {0}(_instance);", cls));
+							}
+						}
+					}
+				}
+				line("throw new NotImplementedException();");
+			}
 		}
 	}
 }
@@ -195,10 +287,23 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 		}
 	} else {
 		if (!inheritance) {
-			line("public readonly GodotObject Instance;");
-			line(FMT_STR("public {0}(GodotObject _inst) => Instance = _inst;", cls));
+			line("public GodotObject Instance { get; private set; }");
+			line(FMT_STR("public {0}(GodotObject _instance)", cls));
+			{
+				TAB();
+				line("if (_instance == null) throw new ArgumentNullException(\"_instance\");");
+				line("if (!ClassDB.IsParentClass(_instance.GetClass(), GetType().Name)) throw new ArgumentException(\"\\\"_instance\\\" has the wrong type.\");");
+				line("Instance = _instance;");
+			}
+
+			line("public void Dispose()");
+			{
+				TAB();
+				line("Instance.Dispose();");
+				line("Instance = null;");
+			}
 		} else {
-			line(FMT_STR("public {0}(GodotObject _inst) : base (_inst) {}", cls));
+			line(FMT_STR("public {0}(GodotObject _instance) : base (_instance) {}", cls));
 		}
 
 		line(FMT_STR("public {0}() : this((GodotObject)ClassDB.Instantiate(\"{0}\")) { }", cls));
@@ -234,8 +339,35 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 		TAB();
 
 		PackedStringArray enum_values = ClassDB::class_get_enum_constants(cls, enm, true);
+
+		String prefix;
+		bool has_prefix = false;
+		if (enum_values.size()) {
+			String first_enum = enum_values[0];
+			auto test_split = first_enum.split("_");
+
+			for (int i = 0; i < enum_values.size() - 1; i++) {
+				auto split = first_enum.rsplit("_", i);
+				String test_prefix = split[0];
+
+				bool full_match = true;
+				for (int j = 1; j < enum_values.size(); j++) {
+					if (!enum_values[j].begins_with(test_prefix)) {
+						full_match = false;
+						break;
+					}
+				}
+
+				if (full_match) {
+					prefix = test_prefix;
+					has_prefix = true;
+				}
+			}
+		}
+
 		for (int i = 0; i < enum_values.size(); i++) {
-			line(FMT_STR("{0} = {1},", enum_values[i], ClassDB::class_get_integer_constant(cls, enum_values[i])));
+			String enum_new_name = enum_values[i].substr(prefix.length()).to_pascal_case();
+			line(FMT_STR("{0} = {1},", enum_new_name, ClassDB::class_get_integer_constant(cls, enum_values[i])));
 			added_items++;
 		}
 	}
@@ -245,7 +377,7 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 	}
 }
 
-void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, bool is_property) {
+void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, bool is_property, remap_data &remapped_data) {
 	String name = (String)method["name"];
 
 	log(name, 3);
@@ -258,7 +390,7 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 	String access_str = is_property ? "private" : "public";
 	String prop_prefix = is_property ? "prop_" : "";
 
-	std::vector<DefaultData> default_args = arguments_parse_values(method["args"], method["default_args"]);
+	std::vector<DefaultData> default_args = arguments_parse_values(method["args"], method["default_args"], remapped_data);
 
 	line(FMT_STR("{0} {1}{2} {3}{4}({5})", access_str, static_modifier_str, return_data.type_name, prop_prefix, ((String)method["name"]).to_pascal_case(), arguments_string_decl(method["args"], true, default_args)));
 	{
@@ -272,13 +404,28 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 		if (!return_data.is_void) {
 			String int_convert = return_data.is_enum ? "(long)" : "";
 
+			// TODO replace by factory
 			if (is_need_wrapper) {
-				line(FMT_STR("return new {0}((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
+				line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
 			} else {
 				line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
 			}
 		} else {
 			line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
+		}
+	}
+	line();
+}
+
+void GenerateCSharpBindingsPlugin::generate_default_arguments_remap(const remap_data &remapped_data) {
+	if (!remapped_data.size())
+		return;
+
+	line("public static class DefaultArgumentsData");
+	{
+		TAB();
+		for (const auto &it : remapped_data) {
+			line(FMT_STR("public static readonly {0} {1} = {2};", it.second.type_name, it.first, it.second.arg_string));
 		}
 	}
 	line();
@@ -309,9 +456,12 @@ GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argumen
 	Variant::Type var_type = (Variant::Type)(int)arg["type"];
 
 	if (!class_name.is_empty()) {
+		// Enum
 		if (var_type == Variant::INT) {
 			return ArgumentData(name, var_type, class_name, true);
-		} else if (class_name == StringName("Object"))
+		}
+		// Rename Object
+		else if (class_name == StringName("Object"))
 			return ArgumentData(name, var_type, StringName("GodotObject"));
 
 		return ArgumentData(name, var_type, class_name);
@@ -329,14 +479,27 @@ GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argumen
 	return argument_parse(Utils::make_dict("class_name", class_name, "name", name, "type", type));
 }
 
-std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlugin::arguments_parse_values(const TypedArray<Dictionary> &args, const Array &def_args) {
+std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlugin::arguments_parse_values(const TypedArray<Dictionary> &args, const Array &def_args, remap_data &remapped_data) {
 	std::vector<DefaultData> res;
+
 	int start_idx = (int)(args.size() - def_args.size());
-
-	// TODO create storage for default values!
-
 	for (int i = start_idx; i < args.size(); i++) {
-		res.push_back(arguments_get_formatted_value(argument_parse(args[i]), def_args[i - start_idx]));
+		DefaultData dd = arguments_get_formatted_value(argument_parse(args[i]), def_args[i - start_idx]);
+		if (dd.is_need_remap) {
+			String remap_name = FMT_STR("arg_{0}", (int)remapped_data.size());
+			for (const auto &it : remapped_data) {
+				if (it.second.is_equal_data(dd)) {
+					remap_name = it.first;
+					log(FMT_STR("{0} will be remapped to {1}", dd.name, it.first), 4);
+				}
+			}
+
+			remapped_data[remap_name] = dd;
+			dd.arg_string = "_DebugDrawUtils_.DefaultArgumentsData." + remap_name;
+			res.push_back(dd);
+		} else {
+			res.push_back(dd);
+		}
 	}
 
 // Debug default strings
@@ -355,167 +518,191 @@ std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlu
 
 GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::arguments_get_formatted_value(const ArgumentData &arg_data, const Variant &def_val) {
 	if (arg_data.is_enum) {
-		return DefaultData(arg_data.name, false, FMT_STR("({0}){1}", arg_data.type_name, def_val));
-	} else if (arg_data.type) {
-
+		return DefaultData(arg_data.name, arg_data.type_name, false, FMT_STR("({0}){1}", arg_data.type_name, def_val));
+	} else {
 #define IS_DEF(_type)    \
 	_type val = def_val; \
 	bool _need_remap = (val != _type())
 
 		switch (arg_data.type) {
-			case godot::Variant::NIL:
-				break;
-				return DefaultData(arg_data.name, false, FMT_STR("{0}", "\"Not possible?\""));
+			case godot::Variant::NIL: // aka Variant
+				if (def_val.get_type() == 0) {
+					return DefaultData(arg_data, false, "default");
+				} else {
+					ArgumentData tmp_arg = arg_data;
+					tmp_arg.type = def_val.get_type();
+					DefaultData dd = arguments_get_formatted_value(tmp_arg, def_val);
+
+					return DefaultData(dd.name, arg_data.type_name, true, FMT_STR("(Variant)({0})", dd.arg_string));
+				}
 				break;
 			case godot::Variant::BOOL:
-				return DefaultData(arg_data.name, false, FMT_STR("{0}", def_val ? "true" : "false"));
+				return DefaultData(arg_data, false, FMT_STR("{0}", def_val ? "true" : "false"));
 			case godot::Variant::INT:
-				return DefaultData(arg_data.name, false, FMT_STR("{0}", def_val));
+				return DefaultData(arg_data, false, FMT_STR("{0}", def_val));
 				break;
 			case godot::Variant::FLOAT: {
-				return DefaultData(arg_data.name, false, FMT_STR("{0}f", def_val));
+				return DefaultData(arg_data, false, FMT_STR("{0}f", def_val));
 				break;
 			}
 			case godot::Variant::STRING: {
-				return DefaultData(arg_data.name, false, FMT_STR("\"{0}\"", def_val));
+				return DefaultData(arg_data, false, FMT_STR("\"{0}\"", def_val));
 				break;
 			}
 			case godot::Variant::STRING_NAME: {
-				return DefaultData(arg_data.name, true, FMT_STR("new StringName(\"{0}\")", def_val), true);
+				IS_DEF(StringName);
+				return DefaultData(arg_data, _need_remap, FMT_STR("new StringName(\"{0}\")", val), true);
 				break;
 			}
 			case godot::Variant::NODE_PATH: {
-				return DefaultData(arg_data.name, true, FMT_STR("new NodePath(\"{0}\")", def_val), true);
+				IS_DEF(NodePath);
+				return DefaultData(arg_data, _need_remap, FMT_STR("new NodePath(\"{0}\")", val), true);
 				break;
 			}
 
 			case godot::Variant::VECTOR2: {
 				IS_DEF(Vector2);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector2({0}f, {1}f)", val.x, val.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2({0}f, {1}f)", val.x, val.y));
 				break;
 			}
 			case godot::Variant::VECTOR2I: {
 				IS_DEF(Vector2i);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector2I({0}, {1})", val.x, val.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2I({0}, {1})", val.x, val.y));
 				break;
 			}
 			case godot::Variant::RECT2: {
 				IS_DEF(Rect2);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Rect2({0}f, {1}f, {2}f, {3}f)", val.position.x, val.position.y, val.size.x, val.size.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2({0}f, {1}f, {2}f, {3}f)", val.position.x, val.position.y, val.size.x, val.size.y));
 				break;
 			}
 			case godot::Variant::RECT2I: {
 				IS_DEF(Rect2i);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Rect2I({0}, {1}, {2}, {3})", val.position.x, val.position.y, val.size.x, val.size.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2I({0}, {1}, {2}, {3})", val.position.x, val.position.y, val.size.x, val.size.y));
 				break;
 			}
 			case godot::Variant::VECTOR3: {
 				IS_DEF(Vector3);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector3({0}f, {1}f, {2}f)", val.x, val.y, val.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3({0}f, {1}f, {2}f)", val.x, val.y, val.z));
 				break;
 			}
 			case godot::Variant::VECTOR3I: {
 				IS_DEF(Vector3i);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector3I({0}, {1}, {2})", val.x, val.y, val.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3I({0}, {1}, {2})", val.x, val.y, val.z));
 				break;
 			}
 			case godot::Variant::TRANSFORM2D: {
 				IS_DEF(Transform2D);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Transform2D(new Vector2({0}f, {1}f), new Vector2({2}f, {3}f), new Vector2({4}f, {5}f))", val.columns[0].x, val.columns[0].y, val.columns[1].x, val.columns[1].y, val.columns[2].x, val.columns[2].y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform2D(new Vector2({0}f, {1}f), new Vector2({2}f, {3}f), new Vector2({4}f, {5}f))", val.columns[0].x, val.columns[0].y, val.columns[1].x, val.columns[1].y, val.columns[2].x, val.columns[2].y));
 				break;
 			}
 			case godot::Variant::VECTOR4: {
 				IS_DEF(Vector4);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector4({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
 				break;
 			}
 			case godot::Variant::VECTOR4I: {
 				IS_DEF(Vector4i);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Vector4I({0}, {1}, {2}, {3})", val.x, val.y, val.z, val.w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4I({0}, {1}, {2}, {3})", val.x, val.y, val.z, val.w));
 				break;
 			}
 			case godot::Variant::PLANE: {
 				IS_DEF(Plane);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Plane({0}f, {1}f, {2}f, {3}f)", val.normal.x, val.normal.y, val.normal.z, val.d));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Plane({0}f, {1}f, {2}f, {3}f)", val.normal.x, val.normal.y, val.normal.z, val.d));
 				break;
 			}
 			case godot::Variant::QUATERNION: {
 				IS_DEF(Quaternion);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Quaternion({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Quaternion({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
 				break;
 			}
 			case godot::Variant::AABB: {
 				IS_DEF(AABB);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Aabb(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f))", val.position.x, val.position.y, val.position.z, val.size.x, val.size.y, val.size.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Aabb(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f))", val.position.x, val.position.y, val.position.z, val.size.x, val.size.y, val.size.z));
 				break;
 			}
 			case godot::Variant::BASIS: {
 				IS_DEF(Basis);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Basis(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f))", val.rows[0].x, val.rows[1].x, val.rows[2].x, val.rows[0].y, val.rows[1].y, val.rows[2].y, val.rows[0].z, val.rows[1].z, val.rows[2].z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Basis(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f))", val.rows[0].x, val.rows[1].x, val.rows[2].x, val.rows[0].y, val.rows[1].y, val.rows[2].y, val.rows[0].z, val.rows[1].z, val.rows[2].z));
 				break;
 			}
 			case godot::Variant::TRANSFORM3D: {
 				IS_DEF(Transform3D);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Transform3D(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f), new Vector3({9}f, {10}f, {11}f))", val.basis.rows[0].x, val.basis.rows[1].x, val.basis.rows[2].x, val.basis.rows[0].y, val.basis.rows[1].y, val.basis.rows[2].y, val.basis.rows[0].z, val.basis.rows[1].z, val.basis.rows[2].z, val.origin.x, val.origin.y, val.origin.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform3D(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f), new Vector3({9}f, {10}f, {11}f))", val.basis.rows[0].x, val.basis.rows[1].x, val.basis.rows[2].x, val.basis.rows[0].y, val.basis.rows[1].y, val.basis.rows[2].y, val.basis.rows[0].z, val.basis.rows[1].z, val.basis.rows[2].z, val.origin.x, val.origin.y, val.origin.z));
 				break;
 			}
 			case godot::Variant::PROJECTION: {
 				IS_DEF(Projection);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Projection(new Vector4({0}f, {1}f, {2}f, {3}f), new Vector4({4}f, {5}f, {6}f, {7}f), new Vector4({8}f, {9}f, {10}f, {11}f), new Vector4({12}f, {13}f, {14}f, {15}f))", val.columns[0].x, val.columns[0].y, val.columns[0].z, val.columns[0].w, val.columns[1].x, val.columns[1].y, val.columns[1].z, val.columns[1].w, val.columns[2].x, val.columns[2].y, val.columns[2].z, val.columns[2].w, val.columns[3].x, val.columns[3].y, val.columns[3].z, val.columns[3].w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Projection(new Vector4({0}f, {1}f, {2}f, {3}f), new Vector4({4}f, {5}f, {6}f, {7}f), new Vector4({8}f, {9}f, {10}f, {11}f), new Vector4({12}f, {13}f, {14}f, {15}f))", val.columns[0].x, val.columns[0].y, val.columns[0].z, val.columns[0].w, val.columns[1].x, val.columns[1].y, val.columns[1].z, val.columns[1].w, val.columns[2].x, val.columns[2].y, val.columns[2].z, val.columns[2].w, val.columns[3].x, val.columns[3].y, val.columns[3].z, val.columns[3].w));
 				break;
 			}
 			case godot::Variant::COLOR: {
 				IS_DEF(Color);
-				return DefaultData(arg_data.name, _need_remap, FMT_STR("new Color({0}f, {1}f, {2}f, {3}f)", val.r, val.g, val.b, val.a));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Color({0}f, {1}f, {2}f, {3}f)", val.r, val.g, val.b, val.a));
 				break;
 			}
 			case godot::Variant::RID: {
 				IS_DEF(RID);
 				if (_need_remap)
 					log_warning(FMT_STR("'RID' can't have a default value: {0}", arg_data.name), 4);
-				return DefaultData(arg_data.name, false, "default");
+				return DefaultData(arg_data, false, "default");
 				break;
 			}
 			case godot::Variant::OBJECT: {
 				if ((Object *)def_val != nullptr)
 					log_warning(FMT_STR("'Object' can't have a default value: {0}", arg_data.name), 4);
-				return DefaultData(arg_data.name, false, "null");
+				return DefaultData(arg_data, false, "null");
 				break;
 			}
 			case godot::Variant::CALLABLE: {
 				IS_DEF(Callable);
 				if (_need_remap)
 					log_warning(FMT_STR("'Callable' can't have a default value: {0}", arg_data.name), 4);
-				return DefaultData(arg_data.name, false, "default");
+				return DefaultData(arg_data, false, "default");
 				break;
 			}
 			case godot::Variant::SIGNAL: {
 				IS_DEF(Signal);
 				if (_need_remap)
 					log_warning(FMT_STR("'Signal' can't have a default value: {0}", arg_data.name), 4);
-				return DefaultData(arg_data.name, false, "default");
+				return DefaultData(arg_data, false, "default");
 				break;
 			}
 
-			case godot::Variant::DICTIONARY:
-			case godot::Variant::ARRAY:
-
-#define PACKED_ARRAY(_type, _var_type)                                                                                                       \
-	{                                                                                                                                        \
-		_type val = def_val;                                                                                                                 \
-		if (!val.size()) {                                                                                                                   \
-			return DefaultData(arg_data.name, false, "default");                                                                             \
-		} else {                                                                                                                             \
-			PackedStringArray strs;                                                                                                          \
-			for (int i = 0; i < val.size(); i++) {                                                                                           \
-				DefaultData data = arguments_get_formatted_value(argument_parse("", "", _var_type), val[i]);                                 \
-				strs.append(data.arg_string);                                                                                                \
-			}                                                                                                                                \
-			return DefaultData(arg_data.name, true, FMT_STR("new {0} {{1}}", types_map[def_val.get_type()], String(", ").join(strs)), true); \
-		}                                                                                                                                    \
-		break;                                                                                                                               \
+#define PACKED_ARRAY(_type, _var_type)                                                                                                  \
+	{                                                                                                                                   \
+		_type val = def_val;                                                                                                            \
+		if (!val.size()) {                                                                                                              \
+			return DefaultData(arg_data, false, "default");                                                                             \
+		} else {                                                                                                                        \
+			PackedStringArray strs;                                                                                                     \
+			for (int i = 0; i < val.size(); i++) {                                                                                      \
+				DefaultData data = arguments_get_formatted_value(argument_parse("", "", _var_type), val[i]);                            \
+				strs.append(data.arg_string);                                                                                           \
+			}                                                                                                                           \
+			return DefaultData(arg_data, true, FMT_STR("new {0} {{1}}", types_map[def_val.get_type()], String(", ").join(strs)), true); \
+		}                                                                                                                               \
+		break;                                                                                                                          \
 	}
 
+			case godot::Variant::DICTIONARY: {
+				Dictionary val = def_val;
+				if (!val.size()) {
+					return DefaultData(arg_data, false, "default");
+				} else {
+					PackedStringArray strs;
+					Array keys = val.keys();
+					Array values = val.values();
+					for (int i = 0; i < val.size(); i++) {
+						DefaultData data_k = arguments_get_formatted_value(argument_parse("", "", keys[i].get_type()), keys[i]);
+						DefaultData data_v = arguments_get_formatted_value(argument_parse("", "", values[i].get_type()), values[i]);
+						strs.append(FMT_STR("{ {0}, {1} }", data_k.arg_string, data_v.arg_string));
+					}
+					return DefaultData(arg_data, true, String("new {0} {{1}}").format(Array::make(types_map[def_val.get_type()], String(", ").join(strs))), true);
+				}
+				break;
+			};
+			case godot::Variant::ARRAY:
+				PACKED_ARRAY(Array, val[i].get_type());
 			case godot::Variant::PACKED_BYTE_ARRAY:
 				PACKED_ARRAY(PackedByteArray, Variant::INT);
 			case godot::Variant::PACKED_INT32_ARRAY:
@@ -541,7 +728,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 #undef IS_DEF
 	}
 
-	return DefaultData("[no name]", false, "\"Error\"");
+	return DefaultData("[no name]", "[no type]", false, "\"Error\"");
 }
 
 String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dictionary> &args, bool with_defaults, std::vector<DefaultData> def_args_data) {
@@ -602,13 +789,22 @@ void GenerateCSharpBindingsPlugin::line(const String &str) {
 
 void GenerateCSharpBindingsPlugin::log(const String &str, const int &indent) {
 	String val = String("  ").repeat(indent) + str;
-	PRINT(val);
+	if (is_shift_pressed) {
+		PRINT(val);
+	} else {
+		DEV_PRINT_STD_F((val + "\n").utf8());
+	}
 	opened_log_file->store_string(val);
 	opened_log_file->store_8('\n');
 }
 
 void GenerateCSharpBindingsPlugin::log_warning(const String &str, const int &indent) {
-	PRINT(String("  ").repeat(indent) + "WARNING: " + str);
+	String s = String("  ").repeat(indent) + "WARNING: " + str;
+	if (is_shift_pressed) {
+		PRINT(s);
+	} else {
+		DEV_PRINT_STD_F((s + "\n").utf8());
+	}
 	opened_log_file->store_string(String("  ").repeat(indent) + str);
 	opened_log_file->store_8('\n');
 }
@@ -618,4 +814,4 @@ GenerateCSharpBindingsPlugin::IndentGuard GenerateCSharpBindingsPlugin::tab() {
 }
 
 #undef TAB
-#undef FMT_STR
+#endif
