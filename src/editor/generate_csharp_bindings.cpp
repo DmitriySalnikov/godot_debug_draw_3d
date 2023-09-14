@@ -352,7 +352,6 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 	log(enm, 3);
 
 	int added_items = 0;
-	// TODO flags?
 	line(FMT_STR("public enum {0} : long", enm));
 	{
 		TAB();
@@ -859,4 +858,7 @@ GenerateCSharpBindingsPlugin::IfDefGuard GenerateCSharpBindingsPlugin::ifdef(con
 
 #undef TAB
 #undef IFDEF
+#undef DD3D_ENABLED_STR
+#undef IFDEF_DD3D_ENABLED
+#undef IFELSE
 #endif

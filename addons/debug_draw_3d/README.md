@@ -132,6 +132,10 @@ Most likely, when exporting a release version of a game, you don't want to expor
 
 ![export_features](/images/export_features.png)
 
+In C#, these tags are not taken into account at the moment. So you will have to manually specify `FORCED_DD3D`.
+
+![csharp_compilation_symbols](/images/csharp_compilation_symbols.png)
+
 ## Known issues and limitations
 
 Enabling occlusion culing can lower fps instead of increasing it. At the moment I do not know how to speed up the calculation of the visibility of objects.
@@ -151,3 +155,29 @@ The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
 
 `DebugDrawDemoScene.tscn` in play mode
 ![screenshot_3](/images/screenshot_3.png)
+
+## Build
+
+As well as for the engine itself, you will need to configure the [environment](https://docs.godotengine.org/en/4.1/contributing/development/compiling/index.html).
+And also you need to apply several patches:
+
+```bash
+cd godot-cpp
+git apply --ignore-space-change --ignore-whitespace ../patches/always_build_fix.patch
+git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
+# Optional
+## Build only the necessary classes
+git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
+## Faster build
+git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
+```
+
+Then you can just run scons as usual:
+
+```bash
+# build for the current system.
+# target=editor is used for both the editor and the debug template.
+scons target=editor dev_build=yes debug_symbols=yes
+# build for the android. ANDROID_NDK_ROOT is required in your environment variables.
+scons platform=android target=template_release arch=arm64v8
+```
