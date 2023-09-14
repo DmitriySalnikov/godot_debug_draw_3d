@@ -6,9 +6,6 @@
 #include "stats_3d.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/main_loop.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 GODOT_WARNING_RESTORE()
 

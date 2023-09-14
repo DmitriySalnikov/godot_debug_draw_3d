@@ -188,7 +188,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dLagTest.Visible = true;
 
         // Testing the rendering layers by showing the image from the second camera inside the 2D panel
-        // DebugDraw3D.Config.geometry_render_layers = 1 if !Input.IsKeyPressed(KEY_SHIFT) else 0b10010
+        DebugDraw3D.Config.GeometryRenderLayers = !Input.IsKeyPressed(Key.Shift) ? 1 : 0b10010;
         dPanel.Visible = Input.IsKeyPressed(Key.Shift);
         DebugDraw2D.CustomCanvas = Input.IsKeyPressed(Key.Shift) ? dCustomCanvas : null;
 

@@ -3,8 +3,6 @@
 #include "common/colors.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
-#include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
@@ -332,7 +330,7 @@ public:
 	/// camera: Camera node
 	/// color: Color
 	/// duration: Duration of existence in seconds
-	void draw_camera_frustum(const class Camera3D *camera, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_camera_frustum(const class godot::Camera3D *camera, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/// Draw camera frustum area
 	/// cameraFrustum: Array of frustum planes

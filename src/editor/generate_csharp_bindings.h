@@ -34,18 +34,19 @@ class GenerateCSharpBindingsPlugin {
 		~IfDefGuard();
 	};
 
-	struct PropertyMethods {
-		String type_name;
-		String set;
-		String get;
-	};
-
 	struct ArgumentData {
 		String name;
 		String type_name;
 		Variant::Type type;
 		bool is_void;
 		bool is_enum;
+
+		ArgumentData() :
+				name("[NOT INITIALIZED]"),
+				type_name("[NOT INITIALIZED]"),
+				type(Variant::NIL),
+				is_void(false),
+				is_enum(false) {}
 
 		ArgumentData(const String &_name, Variant::Type _type, const String &_type_name, bool _enum = false) :
 				name(_name),
@@ -158,9 +159,9 @@ private:
 	void generate_wrapper(const StringName &cls, bool is_static, bool inheritance = false);
 	void generate_constants(const StringName &cls);
 	void generate_enum(const StringName &cls, const StringName &enm);
-	void generate_method(const StringName &cls, const Dictionary &method, bool is_static, bool is_property, remap_data &remapped_data);
+	void generate_method(const StringName &cls, const Dictionary &method, bool is_static, remap_data &remapped_data);
 	void generate_default_arguments_remap(const remap_data &remapped_data);
-	void generate_properties(const StringName &cls, const TypedArray<Dictionary> &props, std::map<String, PropertyMethods> setget_map, bool is_static);
+	void generate_properties(const StringName &cls, const TypedArray<Dictionary> &props, std::map<String, ArgumentData> setget_map, bool is_static);
 	ArgumentData argument_parse(const Dictionary &arg, bool is_return = false);
 	ArgumentData argument_parse(const StringName &class_name, const String &name, const Variant::Type type);
 	std::vector<DefaultData> arguments_parse_values(const TypedArray<Dictionary> &args, const Array &def_args, remap_data &remapped_data);

@@ -7,12 +7,9 @@
 #include "version.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/scene_tree_timer.hpp>
-#include <godot_cpp/classes/window.hpp>
 GODOT_WARNING_RESTORE()
 
 using namespace godot;

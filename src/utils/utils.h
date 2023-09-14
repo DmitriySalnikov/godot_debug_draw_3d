@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/circular_buffer.h"
 #include "compiler.h"
 
 #include <algorithm>
@@ -16,7 +15,10 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/main_loop.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>

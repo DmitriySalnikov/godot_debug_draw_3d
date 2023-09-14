@@ -89,7 +89,7 @@ func _process(delta: float) -> void:
 	$LagTest.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
-	#DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
+	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
 	DebugDraw2D.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	

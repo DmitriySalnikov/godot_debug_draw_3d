@@ -9,17 +9,16 @@
 #include "3d/stats_3d.h"
 #include "debug_draw_manager.h"
 #include "utils/utils.h"
-
-GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/editor_plugin.hpp>
-GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 DebugDrawManager *debug_draw_manager = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef TOOLS_ENABLED
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/editor_plugin.hpp>
+GODOT_WARNING_RESTORE()
+
 #include "editor/editor_menu_extensions.h"
 #include "editor/generate_csharp_bindings.h"
 

@@ -6,7 +6,6 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/input.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -143,7 +142,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 	TypedArray<Dictionary> methods = ClassDB::class_get_method_list(cls, true);
 	TypedArray<Dictionary> signals = ClassDB::class_get_signal_list(cls, true);
 	TypedArray<Dictionary> properties = ClassDB::class_get_property_list(cls, true);
-	std::map<String, PropertyMethods> properties_map;
+	std::map<String, ArgumentData> properties_map;
 
 	bool is_preserved_inheritance = generate_for_classes.has(parent_name);
 	bool is_singleton = singletons.has(cls);
@@ -184,10 +183,37 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 		{
 			log("Methods...", 2);
 
+			TypedArray<String> is_property;
+
+			for (int i = 0; i < methods.size(); i++) {
+				String name = ((Dictionary)methods[i])["name"];
+
+				for (int j = 0; j < properties.size(); j++) {
+					String prop_name = ((Dictionary)properties[j])["name"];
+					auto split = name.split("_", true, 1);
+					if (split.size() == 2 && split[1] == prop_name) {
+						is_property.append(name);
+
+						std::map<String, ArgumentData>::iterator it = properties_map.find(prop_name);
+						if (it == properties_map.end()) {
+							properties_map[prop_name] = ArgumentData();
+							it = properties_map.find(prop_name);
+						}
+
+						if (name.begins_with("set")) {
+						} else {
+							ArgumentData data = argument_parse(((Dictionary)methods[i])["return"]);
+							data.name = prop_name;
+							(*it).second = data;
+						}
+					}
+				}
+			}
+
 			int added = 0;
 			for (int i = 0; i < methods.size(); i++) {
 				String name = ((Dictionary)methods[i])["name"];
-				if (!name.begins_with("_")) {
+				if (!name.begins_with("_") && !is_property.has(name)) {
 					added++;
 					line(FMT_STR("private static readonly StringName __{0} = \"{1}\";", name, name));
 				}
@@ -197,35 +223,14 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 				line();
 
 			for (int i = 0; i < methods.size(); i++) {
-				bool is_property = false;
 				String name = ((Dictionary)methods[i])["name"];
-
-				for (int j = 0; j < properties.size(); j++) {
-					String prop_name = ((Dictionary)properties[j])["name"];
-					auto split = name.split("_", true, 1);
-					if (split.size() == 2 && split[1] == prop_name) {
-						is_property = true;
-
-						std::map<String, PropertyMethods>::iterator it = properties_map.find(prop_name);
-						if (it == properties_map.end()) {
-							properties_map[prop_name] = {};
-							it = properties_map.find(prop_name);
-						}
-
-						if (name.begins_with("set")) {
-							(*it).second.set = name;
-						} else {
-							(*it).second.get = name;
-							(*it).second.type_name = argument_parse(((Dictionary)methods[i])["return"]).type_name;
-						}
-					}
-				}
 
 				if (name.begins_with("_")) {
 					continue;
 				}
 
-				generate_method(cls, methods[i], is_singleton, is_property, remapped_data);
+				if (!is_property.has(name))
+					generate_method(cls, methods[i], is_singleton, remapped_data);
 			}
 		}
 
@@ -395,7 +400,7 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 	}
 }
 
-void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, bool is_property, remap_data &remapped_data) {
+void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, remap_data &remapped_data) {
 	String name = (String)method["name"];
 
 	log(name, 3);
@@ -405,12 +410,10 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 	bool is_need_wrapper = generate_for_classes.has(return_data.type_name);
 
 	String static_modifier_str = is_static ? "static " : "";
-	String access_str = is_property ? "private" : "public";
-	String prop_prefix = is_property ? "prop_" : "";
 
 	std::vector<DefaultData> default_args = arguments_parse_values(method["args"], method["default_args"], remapped_data);
 
-	line(FMT_STR("{0} {1}{2} {3}{4}({5})", access_str, static_modifier_str, return_data.type_name, prop_prefix, ((String)method["name"]).to_pascal_case(), arguments_string_decl(method["args"], true, default_args)));
+	line(FMT_STR("public {0}{1} {2}({3})", static_modifier_str, return_data.type_name, ((String)method["name"]).to_pascal_case(), arguments_string_decl(method["args"], true, default_args)));
 	{
 		TAB();
 
@@ -420,32 +423,25 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 		}
 
 		{
-			auto method_body = [&]() {
-				if (!return_data.is_void) {
-					String int_convert = return_data.is_enum ? "(long)" : "";
+			IFDEF_DD3D_ENABLED();
 
-					if (is_need_wrapper) {
-						line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
-					} else {
-						line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
-					}
+			if (!return_data.is_void) {
+				String int_convert = return_data.is_enum ? "(long)" : "";
+
+				if (is_need_wrapper) {
+					line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
 				} else {
-					line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
+					line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
 				}
-			};
-
-			if (is_property) {
-				method_body();
 			} else {
-				IFDEF_DD3D_ENABLED();
+				line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
+			}
 
-				method_body();
-				if (!return_data.is_void) {
-					IFELSE();
-					line("return default;");
-				} else {
-					// Nothing to do
-				}
+			if (!return_data.is_void) {
+				IFELSE();
+				line("return default;");
+			} else {
+				// Nothing to do
 			}
 		}
 	}
@@ -466,20 +462,40 @@ void GenerateCSharpBindingsPlugin::generate_default_arguments_remap(const remap_
 	line();
 }
 
-void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, const TypedArray<Dictionary> &props, std::map<String, PropertyMethods> setget_map, bool is_static) {
+void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, const TypedArray<Dictionary> &props, std::map<String, ArgumentData> setget_map, bool is_static) {
+	// ClassDB SetGet is faster than calling set/get methods
+	// Iterations: 100000
+	// Methods Get: 50,967 ms
+	// Methods Set: 60,477 ms
+	// ClassDB_SetGet Get: 28,660 ms
+	// ClassDB_SetGet Set: 26,918 ms
+
 	for (int i = 0; i < props.size(); i++) {
-		Dictionary prop = props[i];
-		ArgumentData prop_info = argument_parse(prop);
-		PropertyMethods setget = setget_map[prop_info.name];
+		String name = ((Dictionary)props[i])["name"];
+		line(FMT_STR("private static readonly StringName __prop_{0} = \"{1}\";", name, name));
+	}
+	line();
+
+	for (int i = 0; i < props.size(); i++) {
+		ArgumentData setget = setget_map[((Dictionary)props[i])["name"]];
+		bool is_need_wrapper = generate_for_classes.has(setget.type_name);
 		String static_modifier_str = is_static ? "static " : "";
 
-		log(prop_info.name, 3);
+		log(setget.name, 3);
 
-		line(FMT_STR("public {0}{1} {2}", static_modifier_str, setget.type_name, prop_info.name.to_pascal_case()));
+		line(FMT_STR("public {0}{1} {2}", static_modifier_str, setget.type_name, setget.name.to_pascal_case()));
 		{
 			TAB();
-			line(FMT_STR("get => prop_{0}();", setget.get.to_pascal_case()));
-			line(FMT_STR("set => prop_{0}(value);", setget.set.to_pascal_case()));
+			if (is_need_wrapper) {
+				line(FMT_STR("get => new {0}((GodotObject)ClassDB.ClassGetProperty(Instance, __prop_{1}));", setget.type_name, setget.name));
+				line(FMT_STR("set => ClassDB.ClassSetProperty(Instance, __prop_{0}, value.Instance);", setget.name));
+			} else if (setget.is_enum) {
+				line(FMT_STR("get => ({0})(long)ClassDB.ClassGetProperty(Instance, __prop_{1});", setget.type_name, setget.name));
+				line(FMT_STR("set => ClassDB.ClassSetProperty(Instance, __prop_{0}, (long)value);", setget.name));
+			} else {
+				line(FMT_STR("get => ({0})ClassDB.ClassGetProperty(Instance, __prop_{1});", setget.type_name, setget.name));
+				line(FMT_STR("set => ClassDB.ClassSetProperty(Instance, __prop_{0}, value);", setget.name));
+			}
 		}
 		line();
 	}

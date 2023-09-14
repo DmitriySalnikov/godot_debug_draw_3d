@@ -8,18 +8,8 @@
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/config_file.hpp>
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/label.hpp>
-#include <godot_cpp/classes/main_loop.hpp>
-#include <godot_cpp/classes/node2d.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
-#include <godot_cpp/classes/window.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <limits.h>

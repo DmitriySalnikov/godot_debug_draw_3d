@@ -4,12 +4,11 @@
 #include "utils/compiler.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/camera3d.hpp> // TODO: need to be removed with vararg functions in release build.
+#include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
-#include <godot_cpp/classes/sub_viewport.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <memory>
