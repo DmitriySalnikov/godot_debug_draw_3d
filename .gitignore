@@ -25,7 +25,6 @@ __pycache__
 *.exp
 *.lib
 *.a
-*.vcxproj.filters
 *.vcxproj.user
 *.os
 *.out
@@ -37,5 +36,5 @@ used_classes.json
 obj/
 bin/
 /libs/
-addons/debug_draw_3d/libs/win/*.lib
+addons/debug_draw_3d/libs/~*
 addons/debug_draw_3d/csharp/*

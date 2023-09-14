@@ -280,7 +280,7 @@
     <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="..\patches\debug_strings.natvis" />
+    <Natvis Include="debug_strings.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

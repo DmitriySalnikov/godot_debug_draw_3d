@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="debug_draw_manager.cpp" />
+    <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="editor\asset_library_update_checker.cpp">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\editor_menu_extensions.cpp">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="editor\generate_csharp_bindings.cpp">
+      <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\debug_draw_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\config_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\debug_geometry_container.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\stats_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\geometry_generators.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\render_instances.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\math_utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="utils\utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\graphs.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\debug_draw_2d.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\config_2d.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\stats_2d.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="2d\grouped_text.cpp">
+      <Filter>2d</Filter>
+    </ClCompile>
+    <ClCompile Include="common\colors.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="debug_draw_manager.h" />
+    <ClInclude Include="version.h" />
+    <ClInclude Include="editor\asset_library_update_checker.h">
+      <Filter>editor</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\editor_menu_extensions.h">
+      <Filter>editor</Filter>
+    </ClInclude>
+    <ClInclude Include="editor\generate_csharp_bindings.h">
+      <Filter>editor</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\debug_draw_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\config_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\debug_geometry_container.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\stats_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\geometry_generators.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\render_instances.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\math_utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\compiler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\graphs.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\debug_draw_2d.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\config_2d.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\stats_2d.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="2d\grouped_text.h">
+      <Filter>2d</Filter>
+    </ClInclude>
+    <ClInclude Include="common\circular_buffer.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\colors.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="debug_strings.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="default_sources.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="editor">
+      <UniqueIdentifier>{022da338-6462-45ae-aa3f-851130901411}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3d">
+      <UniqueIdentifier>{b34bab66-d8bd-41af-8969-8b853fa6a501}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{6e821295-ce65-4bf9-b814-0f3ff2b9efa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2d">
+      <UniqueIdentifier>{8266bb27-448d-487c-ba67-1f6c38070234}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{87e7b343-fa76-432d-b2da-61939bc2e98e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
