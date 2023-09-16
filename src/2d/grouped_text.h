@@ -118,6 +118,9 @@ public:
 	void end_text_group();
 	void set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration);
 	void draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size);
+
+	size_t get_text_group_count();
+	size_t get_text_line_total_count();
 };
 
 #endif

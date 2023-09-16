@@ -223,6 +223,8 @@ process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 start_culling_distance = 55.0
+text_groups_show_stats = true
+text_groups_show_stats_2d = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
@@ -253,7 +255,7 @@ stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false
-size = Vector2i(2, 2)
+size = Vector2i(300, 300)
 render_target_update_mode = 0
 
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]

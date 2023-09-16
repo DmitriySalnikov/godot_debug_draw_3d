@@ -11,7 +11,8 @@ extends Node3D
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
-@export var text_groups_show_stats := true
+@export var text_groups_show_stats := false
+@export var text_groups_show_stats_2d := false
 @export var text_groups_position := DebugDrawConfig2D.POSITION_LEFT_TOP
 @export var text_groups_offset := Vector2i(8, 8)
 @export var text_groups_padding := Vector2i(3, 1)
@@ -19,7 +20,7 @@ extends Node3D
 @export_range(1, 100) var text_groups_title_font_size := 14
 @export_range(1, 100) var text_groups_text_font_size := 12
 
-@export_category("Graphs")
+@export_group("Graphs", "graph")
 @export var graph_offset := Vector2i(8, 8)
 @export var graph_size := Vector2i(200, 80)
 @export_range(1, 100) var graph_title_font_size := 14
@@ -222,7 +223,7 @@ func _process(delta: float) -> void:
 			DebugDraw2D.get_graph(&"FPS").offset = Vector2i(0, 64)
 	
 	# Adding more graphs
-	if test_graphs:
+	if test_graphs and DebugDraw2D.debug_enabled:
 		_graph_test()
 	else:
 		_remove_graphs()
@@ -260,11 +261,11 @@ func _text_tests():
 	DebugDraw2D.set_text("Rendered frames", Engine.get_frames_drawn())
 	DebugDraw2D.end_text_group()
 	
-	if text_groups_show_stats:
+	if text_groups_show_stats or text_groups_show_stats_2d:
 		DebugDraw2D.begin_text_group("-- Stats --", 3, Color.WHEAT)
 		
 		var render_stats := DebugDraw3D.get_render_stats()
-		if render_stats:
+		if render_stats && text_groups_show_stats:
 			DebugDraw2D.set_text("Total", render_stats.total_geometry)
 			DebugDraw2D.set_text("Instances", render_stats.instances, 1)
 			DebugDraw2D.set_text("Lines", render_stats.lines, 2)
@@ -279,6 +280,16 @@ func _text_tests():
 			DebugDraw2D.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 9)
 			DebugDraw2D.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 10)
 			DebugDraw2D.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 11)
+		
+		if text_groups_show_stats && text_groups_show_stats_2d:
+			DebugDraw2D.set_text("----", null, 19)
+		
+		var render_stats_2d := DebugDraw2D.get_render_stats()
+		if render_stats_2d && text_groups_show_stats_2d:
+			DebugDraw2D.set_text("Text groups", render_stats_2d.overlay_text_groups, 20)
+			DebugDraw2D.set_text("Text lines", render_stats_2d.overlay_text_lines, 21)
+			DebugDraw2D.set_text("Graphs total", render_stats_2d.overlay_graphs_total, 22)
+			DebugDraw2D.set_text("Graphs enabled", render_stats_2d.overlay_graphs_enabled, 23)
 			
 		DebugDraw2D.end_text_group()
 	
@@ -340,6 +351,12 @@ func _graph_test():
 	_create_graph(&"fps10", true, false, DebugDrawGraph.TEXT_ALL, &"fps8", DebugDrawGraph.SIDE_TOP)
 	# warning-ignore:return_value_discarded
 	_create_graph(&"fps11", true, true, DebugDrawGraph.TEXT_ALL, &"fps9", DebugDrawGraph.SIDE_RIGHT)
+	# warning-ignore:return_value_discarded
+	_create_graph(&"fps13", true, true, DebugDrawGraph.TEXT_ALL, &"", DebugDrawGraph.SIDE_RIGHT)
+	if not DebugDraw2D.get_graph(&"fps13"):
+		return
+	
+	DebugDraw2D.get_graph(&"fps13").enabled = false
 	
 	# If graphs exists, then more tests are done
 	DebugDraw2D.get_graph(&"Sin Wave!").data_getter = Callable(self, &"_get_sin_wave_for_graph")
@@ -394,6 +411,7 @@ func _remove_graphs():
 	DebugDraw2D.remove_graph(&"fps10")
 	DebugDraw2D.remove_graph(&"fps11")
 	DebugDraw2D.remove_graph(&"fps12")
+	DebugDraw2D.remove_graph(&"fps13")
 
 
 func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side := DebugDrawGraph.SIDE_BOTTOM, pos = DebugDrawGraph.POSITION_LEFT_BOTTOM, size := Vector2i(256, 60), font = null) -> DebugDrawGraph:

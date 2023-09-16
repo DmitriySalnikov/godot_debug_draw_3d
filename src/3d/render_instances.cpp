@@ -11,6 +11,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/time.hpp>
 GODOT_WARNING_RESTORE()
 
+// TODO too big buffer constantly shrinking
 template <class T, size_t _TStepSize>
 struct TempBigBuffer {
 private:

@@ -11,10 +11,6 @@ GODOT_WARNING_RESTORE()
 
 // add auto-braces
 #define TAB() auto tab_##__LINE__ = tab()
-#define IFDEF(cond) auto ifdef_##__LINE__ = ifdef(cond)
-#define DD3D_ENABLED_STR "DEBUG || FORCED_DD3D"
-#define IFDEF_DD3D_ENABLED() auto ifdef_##__LINE__ = ifdef(DD3D_ENABLED_STR)
-#define IFELSE() line("#else", 0)
 
 GenerateCSharpBindingsPlugin::IndentGuard::IndentGuard(GenerateCSharpBindingsPlugin *_owner) {
 	owner = _owner;
@@ -26,17 +22,6 @@ GenerateCSharpBindingsPlugin::IndentGuard::~IndentGuard() {
 	if (owner) {
 		owner->indent = owner->indent.substr(0, owner->indent.length() - owner->indent_template.length());
 		owner->line("}");
-	}
-}
-
-GenerateCSharpBindingsPlugin::IfDefGuard::IfDefGuard(GenerateCSharpBindingsPlugin *_owner, const String &ifdef_condition) {
-	owner = _owner;
-	owner->line(FMT_STR("#if {0}", ifdef_condition), 0);
-}
-
-GenerateCSharpBindingsPlugin::IfDefGuard::~IfDefGuard() {
-	if (owner) {
-		owner->line("#endif", 0);
 	}
 }
 
@@ -249,6 +234,25 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 	{
 		TAB();
 
+		// TODO if merged https://github.com/godotengine/godot/pull/53920, replace by only conditional compilation
+		// Runtime check with disabled debug is 2-3 times slower than conditional compilation
+		// Iterations = 10000
+		// Call IF: 0,083 ms
+		// Call DEF: 0,045 ms
+		//
+		// Iterations = 100000
+		// Call IF: 1,246 ms
+		// Call DEF: 0,496 ms
+
+		line("const bool is_debug_enabled =");
+		line("#if DEBUG", 0);
+		line("true;");
+		line("#else", 0);
+		line("false;");
+		line("#endif", 0);
+		line("public static readonly bool IsCallEnabled = is_debug_enabled || OS.HasFeature(\"forced_dd3d\");");
+		line();
+
 		log("Arguments remap...", 2);
 		// Default data
 		generate_default_arguments_remap(remapped_data);
@@ -423,25 +427,36 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 		}
 
 		{
-			IFDEF_DD3D_ENABLED();
+			line("#if !DEBUG && !FORCED_DD3D", 0);
+			line("if (_DebugDrawUtils_.IsCallEnabled)");
+			line("#endif", 0);
+			{
+				TAB();
+				line("#if (!DEBUG || FORCED_DD3D) || (DEBUG && !FORCED_DD3D)", 0);
+				if (!return_data.is_void) {
+					String int_convert = return_data.is_enum ? "(long)" : "";
 
-			if (!return_data.is_void) {
-				String int_convert = return_data.is_enum ? "(long)" : "";
-
-				if (is_need_wrapper) {
-					line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
+					if (is_need_wrapper) {
+						line(FMT_STR("return ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)Instance?.Call(__{1}{2}));", return_data.type_name, name, call_args));
+					} else {
+						line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
+					}
 				} else {
-					line(FMT_STR("return ({0})({1}Instance?.Call(__{2}{3}));", return_data.type_name, int_convert, name, call_args));
+					line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
 				}
-			} else {
-				line(FMT_STR("Instance?.Call(__{0}{1});", name, call_args));
+				line("#endif", 0);
 			}
 
 			if (!return_data.is_void) {
-				IFELSE();
-				line("return default;");
-			} else {
-				// Nothing to do
+				line("#if !DEBUG && !FORCED_DD3D", 0);
+				line("else");
+				line("#endif", 0);
+				{
+					TAB();
+					line("#if !DEBUG && !FORCED_DD3D", 0);
+					line("return default;");
+					line("#endif", 0);
+				}
 			}
 		}
 	}
@@ -868,13 +883,5 @@ GenerateCSharpBindingsPlugin::IndentGuard GenerateCSharpBindingsPlugin::tab() {
 	return IndentGuard(this);
 }
 
-GenerateCSharpBindingsPlugin::IfDefGuard GenerateCSharpBindingsPlugin::ifdef(const String &ifdef_cond) {
-	return IfDefGuard(this, ifdef_cond);
-}
-
 #undef TAB
-#undef IFDEF
-#undef DD3D_ENABLED_STR
-#undef IFDEF_DD3D_ENABLED
-#undef IFELSE
 #endif

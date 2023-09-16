@@ -350,4 +350,21 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 	}
 }
 
+size_t GroupedText::get_text_group_count() {
+	LOCK_GUARD(datalock);
+	return _text_groups.size();
+}
+
+size_t GroupedText::get_text_line_total_count() {
+	LOCK_GUARD(datalock);
+	size_t total = 0;
+	for (const auto &g : _text_groups) {
+		total += g->Texts.size();
+		if (g->is_show_title()) {
+			total++;
+		}
+	}
+	return total;
+}
+
 #endif

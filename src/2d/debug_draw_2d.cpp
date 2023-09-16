@@ -212,8 +212,20 @@ Control *DebugDraw2D::get_custom_canvas() const {
 #pragma region Draw Functions
 
 Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
-	// TODO: add 2d version
+#ifndef DISABLE_DEBUG_RENDERING
+	Ref<DebugDrawStats2D> stats;
+	stats.instantiate();
+	stats->setup(
+			grouped_text->get_text_group_count(),
+			grouped_text->get_text_line_total_count(),
+
+			data_graphs->get_graphs_enabled(),
+			data_graphs->get_graphs_total());
+
+	return stats;
+#else
 	return Ref<DebugDrawStats2D>();
+#endif
 }
 
 void DebugDraw2D::clear_2d_objects() {
@@ -235,12 +247,22 @@ void DebugDraw2D::clear_2d_objects() {
 	if (!obj || NEED_LEAVE) return; \
 	obj->func(__VA_ARGS__)
 
+#define FORCE_CALL_TO_2D(obj, func, ...) \
+	if (!obj) return;                    \
+	obj->func(__VA_ARGS__)
+
 #define CALL_TO_2D_RET(obj, func, def, ...) \
 	if (!obj || NEED_LEAVE) return def;     \
 	return obj->func(__VA_ARGS__)
+
+#define FORCE_CALL_TO_2D_RET(obj, func, def, ...) \
+	if (!obj) return def;                         \
+	return obj->func(__VA_ARGS__)
 #else
 #define CALL_TO_2D(obj, func, ...) return
+#define FORCE_CALL_TO_2D(obj, func, ...) return
 #define CALL_TO_2D_RET(obj, func, def, ...) return def
+#define FORCE_CALL_TO_2D_RET(obj, func, def, ...) return def
 #endif
 
 void DebugDraw2D::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title, int title_size, int text_size) {
@@ -271,19 +293,19 @@ void DebugDraw2D::graph_update_data(const StringName &title, real_t data) {
 }
 
 void DebugDraw2D::remove_graph(const StringName &title) {
-	CALL_TO_2D(data_graphs, remove_graph, title);
+	FORCE_CALL_TO_2D(data_graphs, remove_graph, title);
 }
 
 void DebugDraw2D::clear_graphs() {
-	CALL_TO_2D(data_graphs, clear_graphs);
+	FORCE_CALL_TO_2D(data_graphs, clear_graphs);
 }
 
 Ref<DebugDrawGraph> DebugDraw2D::get_graph(const StringName &title) {
-	CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDrawGraph>(), title);
+	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDrawGraph>(), title);
 }
 
 PackedStringArray DebugDraw2D::get_graph_names() {
-	CALL_TO_2D_RET(data_graphs, get_graph_names, PackedStringArray());
+	FORCE_CALL_TO_2D_RET(data_graphs, get_graph_names, PackedStringArray());
 }
 
 #pragma endregion // Graphs

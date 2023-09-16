@@ -132,7 +132,7 @@ Most likely, when exporting a release version of a game, you don't want to expor
 
 ![export_features](/images/export_features.png)
 
-In C#, these tags are not taken into account at the moment. So you will have to manually specify `FORCED_DD3D`.
+In C#, these tags are not taken into account at compile time, so the Release build will use Runtime checks to disable draw calls. If you want to avoid this, you can manually specify the `FORCED_DD3D` symbol.
 
 ![csharp_compilation_symbols](/images/csharp_compilation_symbols.png)
 

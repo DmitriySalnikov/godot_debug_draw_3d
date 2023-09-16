@@ -58,7 +58,6 @@ public:
 	};
 
 	struct graph_interpolated_values_range {
-	public:
 		double shrink_weight_max, shrink_weight_min;
 		double upd_timer_max, upd_timer_min, max_timer_delay;
 		double min, max, avg;
@@ -251,6 +250,8 @@ public:
 	void clear_graphs();
 	Ref<DebugDrawGraph> get_graph(const StringName &_title) const;
 	PackedStringArray get_graph_names() const;
+	size_t get_graphs_enabled() const;
+	size_t get_graphs_total() const;
 };
 
 #endif

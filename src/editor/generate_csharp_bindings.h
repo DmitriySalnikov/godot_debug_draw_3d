@@ -24,16 +24,6 @@ class GenerateCSharpBindingsPlugin {
 		~IndentGuard();
 	};
 
-	class IfDefGuard {
-		GenerateCSharpBindingsPlugin *owner = nullptr;
-
-	public:
-		IfDefGuard(){};
-		IfDefGuard(GenerateCSharpBindingsPlugin *_owner, const String &ifdef_condition);
-
-		~IfDefGuard();
-	};
-
 	struct ArgumentData {
 		String name;
 		String type_name;
@@ -172,7 +162,6 @@ private:
 	void log(const String &str = "", const int &indent = 0);
 	void log_warning(const String &str = "", const int &indent = 0);
 	IndentGuard tab();
-	IfDefGuard ifdef(const String &ifdef_cond);
 };
 
 #endif

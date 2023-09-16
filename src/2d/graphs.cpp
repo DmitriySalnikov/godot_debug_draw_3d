@@ -566,7 +566,7 @@ DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font
 	if (get_show_text_flags() & DebugDrawGraph::TextFlags::TEXT_MIN) {
 		_ci->draw_string(draw_font,
 				(pos + Vector2(4, graph_size.y - 3)).floor(),
-				FMT_STR("min: {0} {1}",format_float(min, precision), get_text_suffix()),
+				FMT_STR("min: {0} {1}", format_float(min, precision), get_text_suffix()),
 				godot::HORIZONTAL_ALIGNMENT_LEFT, -1, get_text_size(), get_text_color());
 	}
 
@@ -824,6 +824,21 @@ PackedStringArray DataGraphManager::get_graph_names() const {
 		res.append(i->get_title());
 	}
 	return res;
+}
+
+size_t DataGraphManager::get_graphs_enabled() const {
+	LOCK_GUARD(datalock);
+	size_t total = 0;
+	for (auto &g : graphs) {
+		if (g->is_enabled())
+			total++;
+	}
+	return total;
+}
+
+size_t DataGraphManager::get_graphs_total() const {
+	LOCK_GUARD(datalock);
+	return graphs.size();
 }
 
 #endif
