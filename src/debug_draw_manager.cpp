@@ -20,9 +20,17 @@ DebugDrawManager *DebugDrawManager::singleton = nullptr;
 using namespace godot;
 
 void DebugDrawManager::_bind_methods() {
+#define REG_CLASS_NAME DebugDrawManager
+
 	// ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDrawManager::_on_scene_changed);
+
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
+
+	REG_PROP_BOOL(debug_enabled);
+
+#undef REG_CLASS_NAME
 }
 
 Node *DebugDrawManager::_get_current_scene() {
@@ -58,8 +66,8 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
-		debug_draw_3d_singleton->clear_objects();
-		debug_draw_2d_singleton->clear_objects();
+		debug_draw_3d_singleton->clear_all();
+		debug_draw_2d_singleton->clear_all();
 	}
 
 	is_current_scene_is_null = _is_scene_null;
@@ -165,7 +173,7 @@ void DebugDrawManager::_integrate_into_engine() {
 
 #ifdef TOOLS_ENABLED
 	if (IS_EDITOR_HINT())
-		try_to_update_cs_bindings();
+		_try_to_update_cs_bindings();
 #endif
 }
 
@@ -174,6 +182,22 @@ DebugDrawManager::DebugDrawManager() {
 
 DebugDrawManager::~DebugDrawManager() {
 	UNASSIGN_SINGLETON(DebugDrawManager);
+}
+
+void DebugDrawManager::clear_all() {
+	debug_draw_2d_singleton->clear_all();
+	debug_draw_3d_singleton->clear_all();
+}
+
+void DebugDrawManager::set_debug_enabled(bool value) {
+	debug_enabled = value;
+	if (!value) {
+		clear_all();
+	}
+}
+
+bool DebugDrawManager::is_debug_enabled() const {
+	return debug_enabled;
 }
 
 void DebugDrawManager::init() {
@@ -195,8 +219,10 @@ void DebugDrawManager::init() {
 
 void DebugDrawManager::_process(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
-	DebugDraw3D::get_singleton()->process(get_process_delta_time());
-	DebugDraw2D::get_singleton()->process(get_process_delta_time());
+	if (debug_enabled) {
+		DebugDraw3D::get_singleton()->process(get_process_delta_time());
+		DebugDraw2D::get_singleton()->process(get_process_delta_time());
+	}
 #endif
 
 	log_flush_time += get_process_delta_time();
@@ -227,7 +253,7 @@ void DebugDrawManager::_exit_tree() {
 }
 
 #ifdef TOOLS_ENABLED
-void DebugDrawManager::try_to_update_cs_bindings() {
+void DebugDrawManager::_try_to_update_cs_bindings() {
 	auto g = GenerateCSharpBindingsPlugin();
 	if (g.is_need_to_update()) {
 		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");

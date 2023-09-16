@@ -173,10 +173,16 @@ extends Control
 
 @export var switch_to_scene = \"\"
 
-func _ready() -> void:
+var frames := 0
+
+func _process(_delta):
+	frames += 1
+	if frames == 3:
+		_deferred_init()
+		set_process(false)
+
+func _deferred_init():
 	$GC/VB/H/Button.disabled = true
-	await get_tree().process_frame
-	await get_tree().process_frame
 	
 	var test := DebugDraw2D.get_graph(&\"FPS\")
 	if test:
@@ -184,18 +190,11 @@ func _ready() -> void:
 		$GC/VB/FPSMS.button_pressed = test.frame_time_mode
 		$GC/VB/HSlider.value = test.size.x
 		$GC/VB/HSlider2.value = test.buffer_size
-	await get_tree().create_timer(0.2).timeout
+	
+	if get_tree():
+		await get_tree().create_timer(0.2).timeout
 	
 	$GC/VB/H/Button.disabled = false
-
-
-func _process(_delta):
-	pass
-	#queue_redraw()
-
-func _draw():
-	pass
-	#draw_texture_rect_region(load(\"res://icon.svg\"), Rect2(Vector2(), Vector2(128,128)), Rect2(Vector2(), Vector2(128,128)))
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
 	var cfg = DebugDraw2D.get_graph(&\"FPS\")
@@ -248,7 +247,6 @@ grow_vertical = 0
 
 [node name="ViewportContainer" type="SubViewportContainer" parent="Panel"]
 layout_mode = 2
-stretch = true
 
 [node name="Viewport" type="SubViewport" parent="Panel/ViewportContainer"]
 handle_input_locally = false

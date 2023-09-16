@@ -18,6 +18,7 @@ protected:
 	static void _bind_methods();
 
 	double log_flush_time = 0;
+	bool debug_enabled = true;
 	bool is_closing = false;
 	bool is_current_scene_is_null = true;
 
@@ -30,6 +31,10 @@ protected:
 
 	void _integrate_into_engine();
 
+#ifdef TOOLS_ENABLED
+	void _try_to_update_cs_bindings();
+#endif
+
 public:
 	DebugDrawManager();
 	~DebugDrawManager();
@@ -38,11 +43,11 @@ public:
 		return singleton;
 	};
 
+	void clear_all();
+	void set_debug_enabled(bool value);
+	bool is_debug_enabled() const;
+
 	void init();
 	virtual void _process(double delta) override;
 	virtual void _exit_tree() override;
-
-#ifdef TOOLS_ENABLED
-	void try_to_update_cs_bindings();
-#endif
 };

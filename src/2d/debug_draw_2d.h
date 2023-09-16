@@ -46,8 +46,13 @@ private:
 	std::unique_ptr<DataGraphManager> data_graphs;
 #endif
 
+#ifndef DISABLE_DEBUG_RENDERING
+	void _finish_frame_and_update();
+#endif
+
 	void _on_canvas_marked_dirty();
 	void _on_canvas_item_draw(Control *ci);
+	inline bool _is_enabled_override() const;
 
 	void process(double delta);
 
@@ -101,7 +106,7 @@ public:
 	Ref<DebugDrawStats2D> get_render_stats();
 
 	/// Clear all 2D objects
-	void clear_objects();
+	void clear_all();
 
 #pragma region Text
 

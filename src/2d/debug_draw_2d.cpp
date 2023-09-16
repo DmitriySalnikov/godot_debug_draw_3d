@@ -13,7 +13,7 @@ GODOT_WARNING_RESTORE()
 
 #include <limits.h>
 
-#define NEED_LEAVE (!debug_enabled)
+#define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw2D *DebugDraw2D::singleton = nullptr;
 
@@ -36,7 +36,7 @@ void DebugDraw2D::_bind_methods() {
 #undef REG_CLASS_NAME
 
 #pragma region Draw Functions
-	ClassDB::bind_method(D_METHOD(NAMEOF(clear_objects)), &DebugDraw2D::clear_objects);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDraw2D::clear_all);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw2D::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(NAMEOF(end_text_group)), &DebugDraw2D::end_text_group);
@@ -108,6 +108,12 @@ void DebugDraw2D::process(double delta) {
 	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
+	_finish_frame_and_update();
+#endif
+}
+
+#ifndef DISABLE_DEBUG_RENDERING
+void DebugDraw2D::_finish_frame_and_update() {
 	if (_canvas_need_update) {
 		if (!UtilityFunctions::is_instance_valid(custom_canvas) && UtilityFunctions::is_instance_valid(default_canvas))
 			default_canvas->queue_redraw();
@@ -118,8 +124,8 @@ void DebugDraw2D::process(double delta) {
 		_canvas_need_update = false;
 		grouped_text->end_text_group();
 	}
-#endif
 }
+#endif
 
 void DebugDraw2D::_on_canvas_marked_dirty() {
 	mark_canvas_dirty();
@@ -134,6 +140,10 @@ void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
 #else
 	return;
 #endif
+}
+
+bool DebugDraw2D::_is_enabled_override() const {
+	return debug_enabled && DebugDrawManager::get_singleton()->is_debug_enabled();
 }
 
 void DebugDraw2D::mark_canvas_dirty() {
@@ -157,7 +167,7 @@ void DebugDraw2D::set_debug_enabled(const bool &_state) {
 	debug_enabled = _state;
 
 	if (!_state) {
-		clear_objects();
+		clear_all();
 	}
 }
 
@@ -228,12 +238,13 @@ Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
 #endif
 }
 
-void DebugDraw2D::clear_objects() {
+void DebugDraw2D::clear_all() {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!grouped_text || !data_graphs) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_dirty();
+	_finish_frame_and_update();
 #else
 	return;
 #endif

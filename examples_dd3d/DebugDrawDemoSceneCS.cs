@@ -42,6 +42,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         { Key.Left, 0 },
         { Key.Up, 0 },
         { Key.F1, 0 },
+        { Key.Key1, 0 },
+        { Key.Key2, 0 },
+        { Key.Key3, 0 },
     };
 
     double time = 0.0;
@@ -157,6 +160,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         button_presses[Key.Left] = set(Key.Left);
         button_presses[Key.Up] = set(Key.Up);
         button_presses[Key.F1] = set(Key.F1);
+        button_presses[Key.Key1] = set(Key.Key1);
+        button_presses[Key.Key2] = set(Key.Key2);
+        button_presses[Key.Key3] = set(Key.Key3);
     }
 
     public override void _Process(double delta)
@@ -194,9 +200,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw2D.CustomCanvas = Input.IsKeyPressed(Key.Shift) ? dCustomCanvas : null;
 
         // More property toggles
-        DebugDraw3D.Config.Freeze3dRender = Input.IsKeyPressed(Key.Enter);
-        DebugDraw3D.DebugEnabled = !Input.IsKeyPressed(Key.Down);
-        DebugDraw2D.DebugEnabled = !Input.IsKeyPressed(Key.Down);
+        DebugDraw3D.Config.Freeze3dRender = Input.IsKeyPressed(Key.Down);
         DebugDraw3D.Config.VisibleInstanceBounds = Input.IsKeyPressed(Key.Right);
 
         // Some property toggles
@@ -205,6 +209,13 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (_is_key_just_pressed(Key.Up))
             DebugDraw3D.Config.ForceUseCameraFromScene = !DebugDraw3D.Config.ForceUseCameraFromScene;
+
+        if (_is_key_just_pressed(Key.Key1))
+            DebugDraw3D.DebugEnabled = !DebugDraw3D.DebugEnabled;
+        if (_is_key_just_pressed(Key.Key2))
+            DebugDraw2D.DebugEnabled = !DebugDraw2D.DebugEnabled;
+        if (_is_key_just_pressed(Key.Key3))
+            DebugDrawManager.DebugEnabled = !DebugDrawManager.DebugEnabled;
 
 
         if (Engine.IsEditorHint())
@@ -406,9 +417,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         DebugDraw2D.SetText("FPS", $"{Engine.GetFramesPerSecond():F2}", 0, Colors.Gold);
         DebugDraw2D.BeginTextGroup("-- First Group --", 2, Colors.LimeGreen, true, text_groups_title_font_size, text_groups_text_font_size);
-        DebugDraw2D.SetText("Simple text", new Variant()); // TODO need fix in api.cs!
+        DebugDraw2D.SetText("Simple text");
         DebugDraw2D.SetText("Text", "Value", 0, Colors.Aquamarine);
-        DebugDraw2D.SetText("Text out of order", new Variant(), -1, Colors.Silver); // TODO need fix in api.cs!
+        DebugDraw2D.SetText("Text out of order", null, -1, Colors.Silver);
         DebugDraw2D.BeginTextGroup("-- Second Group --", 1, Colors.Beige);
         DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn());
         DebugDraw2D.EndTextGroup();
@@ -456,9 +467,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         {
             DebugDraw2D.BeginTextGroup("controls", 1024, Colors.White, false);
             DebugDraw2D.SetText("Shift: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
-            DebugDraw2D.SetText("Enter: freeze render", DebugDraw3D.Config.Freeze3dRender, 2);
+            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 2);
             DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 3);
-            DebugDraw2D.SetText("Down: toggle debug", DebugDraw2D.DebugEnabled, 4);
+            DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 4);
             DebugDraw2D.SetText("Left: toggle frustum culling", DebugDraw3D.Config.UseFrustumCulling, 5);
             DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 6);
         }

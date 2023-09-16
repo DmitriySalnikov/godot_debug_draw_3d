@@ -60,6 +60,9 @@ func _update_keys_just_press():
 	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
 	button_presses[KEY_UP] = set_key.call(KEY_UP)
 	button_presses[KEY_F1] = set_key.call(KEY_F1)
+	button_presses[KEY_1] = set_key.call(KEY_1)
+	button_presses[KEY_2] = set_key.call(KEY_2)
+	button_presses[KEY_3] = set_key.call(KEY_3)
 
 
 func _process(delta: float) -> void:
@@ -95,9 +98,7 @@ func _process(delta: float) -> void:
 	DebugDraw2D.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	
 	# More property toggles
-	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_ENTER)
-	DebugDraw3D.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
-	DebugDraw2D.debug_enabled = !Input.is_key_pressed(KEY_DOWN)
+	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
 	
 	# Some property toggles
@@ -105,6 +106,14 @@ func _process(delta: float) -> void:
 		DebugDraw3D.config.use_frustum_culling = !DebugDraw3D.config.use_frustum_culling
 	if _is_key_just_pressed(KEY_UP):
 		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
+	
+	if _is_key_just_pressed(KEY_1):
+		DebugDraw3D.debug_enabled = !DebugDraw3D.debug_enabled
+	if _is_key_just_pressed(KEY_2):
+		DebugDraw2D.debug_enabled = !DebugDraw2D.debug_enabled
+	if _is_key_just_pressed(KEY_3):
+		DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
+	
 	
 	if Engine.is_editor_hint():
 		DebugDraw3D.config.cull_by_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
@@ -296,9 +305,9 @@ func _text_tests():
 	if text_groups_show_hints:
 		DebugDraw2D.begin_text_group("controls", 1024, Color.WHITE, false)
 		DebugDraw2D.set_text("Shift: change render layers", DebugDraw3D.config.geometry_render_layers, 1)
-		DebugDraw2D.set_text("Enter: freeze render", DebugDraw3D.config.freeze_3d_render, 2)
+		DebugDraw2D.set_text("Down: freeze render", DebugDraw3D.config.freeze_3d_render, 2)
 		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 3)
-		DebugDraw2D.set_text("Down: toggle debug", DebugDraw2D.debug_enabled, 4)
+		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 4)
 		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 5)
 		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 6)
 

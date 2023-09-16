@@ -34,6 +34,7 @@ private:
 #endif
 
 	void _set_base_world_node(Node *world_base);
+	inline bool _is_enabled_override() const;
 
 	void process(double delta);
 
@@ -94,7 +95,7 @@ public:
 #endif
 
 	/// Clear all 3D objects
-	void clear_objects();
+	void clear_all();
 
 #pragma region Spheres
 
