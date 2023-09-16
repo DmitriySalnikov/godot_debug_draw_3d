@@ -36,7 +36,7 @@ void DebugDraw2D::_bind_methods() {
 #undef REG_CLASS_NAME
 
 #pragma region Draw Functions
-	ClassDB::bind_method(D_METHOD(NAMEOF(clear_2d_objects)), &DebugDraw2D::clear_2d_objects);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_objects)), &DebugDraw2D::clear_objects);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw2D::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(NAMEOF(end_text_group)), &DebugDraw2D::end_text_group);
@@ -157,7 +157,7 @@ void DebugDraw2D::set_debug_enabled(const bool &_state) {
 	debug_enabled = _state;
 
 	if (!_state) {
-		clear_2d_objects();
+		clear_objects();
 	}
 }
 
@@ -228,9 +228,9 @@ Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
 #endif
 }
 
-void DebugDraw2D::clear_2d_objects() {
+void DebugDraw2D::clear_objects() {
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!grouped_text || !data_graphs || !is_ready) return;
+	if (!grouped_text || !data_graphs) return;
 	grouped_text->clear_text();
 	data_graphs->clear_graphs();
 	mark_canvas_dirty();

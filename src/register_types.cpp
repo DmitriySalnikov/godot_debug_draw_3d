@@ -27,8 +27,6 @@ Ref<AssetLibraryUpdateChecker> upd_checker;
 #endif
 #endif
 
-// TODO: test android debug symbols
-
 /** GDExtension Initialize **/
 void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {

@@ -94,7 +94,7 @@ public:
 #endif
 
 	/// Clear all 3D objects
-	void clear_3d_objects();
+	void clear_objects();
 
 #pragma region Spheres
 

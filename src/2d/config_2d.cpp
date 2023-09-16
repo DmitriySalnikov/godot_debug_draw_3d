@@ -45,7 +45,6 @@ void DebugDrawConfig2D::_bind_methods() {
 }
 
 DebugDrawConfig2D::~DebugDrawConfig2D() {
-	text_custom_font.unref();
 }
 
 DebugDrawConfig2D::DebugDrawConfig2D() {

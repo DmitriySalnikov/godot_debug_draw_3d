@@ -58,8 +58,8 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
-		debug_draw_3d_singleton->clear_3d_objects();
-		debug_draw_2d_singleton->clear_2d_objects();
+		debug_draw_3d_singleton->clear_objects();
+		debug_draw_2d_singleton->clear_objects();
 	}
 
 	is_current_scene_is_null = _is_scene_null;

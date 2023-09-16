@@ -34,7 +34,7 @@ void DebugDraw3D::_bind_methods() {
 #undef REG_CLASS_NAME
 
 #pragma region Draw Functions
-	ClassDB::bind_method(D_METHOD(NAMEOF(clear_3d_objects)), &DebugDraw3D::clear_3d_objects);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_objects)), &DebugDraw3D::clear_objects);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw3D::draw_sphere, 0.5f, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw3D::draw_sphere_xf, Colors::empty_color, 0);
@@ -147,7 +147,7 @@ void DebugDraw3D::set_debug_enabled(const bool &_state) {
 	debug_enabled = _state;
 
 	if (!_state) {
-		clear_3d_objects();
+		clear_objects();
 	}
 }
 
@@ -189,7 +189,7 @@ Ref<DebugDrawStats3D> DebugDraw3D::get_render_stats() {
 #endif
 }
 
-void DebugDraw3D::clear_3d_objects() {
+void DebugDraw3D::clear_objects() {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!dgc) return;
 	dgc->clear_3d_objects();

@@ -535,10 +535,11 @@ GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argumen
 		return ArgumentData(name, var_type, types_map[var_type]);
 	}
 
-	if (is_return)
+	if (is_return) {
 		return ArgumentData(name, var_type, "void");
-	else
+	} else {
 		return ArgumentData(name, var_type, "Variant");
+	}
 }
 
 GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argument_parse(const StringName &class_name, const String &name, const Variant::Type type) {
@@ -593,7 +594,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 		switch (arg_data.type) {
 			case godot::Variant::NIL: // aka Variant
 				if (def_val.get_type() == 0) {
-					return DefaultData(arg_data, false, "default");
+					return DefaultData(arg_data, true, "default");
 				} else {
 					ArgumentData tmp_arg = arg_data;
 					tmp_arg.type = def_val.get_type();
@@ -801,12 +802,12 @@ String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dict
 	PackedStringArray arg_strs;
 	for (int i = 0; i < args.size(); i++) {
 		ArgumentData arg_data = argument_parse(args[i]);
-		arg_data = argument_parse(args[i]);
 
 		DefaultData *def_data = nullptr;
 		for (auto &it : def_args_data) {
 			if (it.name == arg_data.name) {
 				def_data = &it;
+				break;
 			}
 		}
 

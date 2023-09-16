@@ -13,7 +13,8 @@ class DebugDrawMenuExtensionPlugin : public EditorPlugin {
 	GDCLASS(DebugDrawMenuExtensionPlugin, EditorPlugin)
 
 	enum MenuItemId {
-		GENERATE_CSHARP_BINDING = 1,
+		OPEN_LIBRARY_SITE = 1,
+		GENERATE_CSHARP_BINDING = 2,
 	};
 
 	String menu_item_name;
@@ -26,8 +27,6 @@ public:
 	// Ref<Texture2D> _get_plugin_icon() const override;
 	void _enter_tree() override;
 	void _exit_tree() override;
-	void _enable_plugin() override;
-	void _disable_plugin() override;
 
 	void _on_id_pressed(MenuItemId id);
 

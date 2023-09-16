@@ -19,6 +19,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [ExportGroup("Text groups", "text_groups")]
     [Export] bool text_groups_show_hints = true;
     [Export] bool text_groups_show_stats = true;
+    [Export] bool text_groups_show_stats_2d = true;
     [Export] DebugDrawConfig2D.BlockPosition text_groups_position = DebugDrawConfig2D.BlockPosition.LeftTop;
     [Export] Vector2I text_groups_offset = new Vector2I(8, 8);
     [Export] Vector2I text_groups_padding = new Vector2I(3, 1);
@@ -26,7 +27,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export(PropertyHint.Range, "1, 100")] int text_groups_title_font_size = 14;
     [Export(PropertyHint.Range, "1, 100")] int text_groups_text_font_size = 12;
 
-    [ExportGroup("Graphs")]
+    [ExportGroup("Graphs", "graph")]
     [Export] Vector2I graph_offset = new Vector2I(8, 8);
     [Export] Vector2I graph_size = new Vector2I(200, 80);
     [Export(PropertyHint.Range, "1, 100")] int graph_title_font_size = 14;
@@ -417,7 +418,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
             DebugDraw2D.BeginTextGroup("-- Stats --", 3, Colors.Wheat);
             var render_stats = DebugDraw3D.GetRenderStats();
 
-            if (render_stats != null)
+            if (render_stats != null && text_groups_show_stats)
             {
                 DebugDraw2D.SetText("Total", render_stats.TotalGeometry);
                 DebugDraw2D.SetText("Instances", render_stats.Instances, 1);
@@ -433,6 +434,20 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 DebugDraw2D.SetText("Filling lines buffer", $"{(render_stats.TimeFillingBuffersLinesUsec / 1000.0):F2} ms", 9);
                 DebugDraw2D.SetText("Filling time", $"{(render_stats.TotalTimeFillingBuffersUsec / 1000.0):F2} ms", 10);
                 DebugDraw2D.SetText("Total time", $"{(render_stats.TotalTimeSpentUsec / 1000.0):F2} ms", 11);
+            }
+
+            if (text_groups_show_stats && text_groups_show_stats_2d)
+            {
+                DebugDraw2D.SetText("----", null, 19);
+            }
+
+            var render_stats_2d = DebugDraw2D.GetRenderStats();
+            if (render_stats_2d != null && text_groups_show_stats_2d)
+            {
+                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 20);
+                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 21);
+                DebugDraw2D.SetText("Graphs total", render_stats_2d.OverlayGraphsTotal, 22);
+                DebugDraw2D.SetText("Graphs enabled", render_stats_2d.OverlayGraphsEnabled, 23);
             }
             DebugDraw2D.EndTextGroup();
         }

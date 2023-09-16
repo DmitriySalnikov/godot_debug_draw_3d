@@ -46,8 +46,6 @@ private:
 	std::unique_ptr<DataGraphManager> data_graphs;
 #endif
 
-	bool is_ready = false;
-
 	void _on_canvas_marked_dirty();
 	void _on_canvas_item_draw(Control *ci);
 
@@ -103,7 +101,7 @@ public:
 	Ref<DebugDrawStats2D> get_render_stats();
 
 	/// Clear all 2D objects
-	void clear_2d_objects();
+	void clear_objects();
 
 #pragma region Text
 

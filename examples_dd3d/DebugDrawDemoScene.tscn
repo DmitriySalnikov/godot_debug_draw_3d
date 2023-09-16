@@ -214,7 +214,6 @@ func _on_HSlider2_value_changed(value: float) -> void:
 	get_parent().graph_buffer_size = int(value)
 
 func _on_Button_pressed() -> void:
-	DebugDraw2D.clear_2d_objects()
 	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
 "
 
@@ -223,8 +222,6 @@ process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 start_culling_distance = 55.0
-text_groups_show_stats = true
-text_groups_show_stats_2d = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
