@@ -1,0 +1,9 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Copied files for testing
+examples_dd3d/
+addons/
+
+# Exported builds
+build/
