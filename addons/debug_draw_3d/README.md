@@ -4,7 +4,7 @@
 
 This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in `C++` and can be used with `GDScript` or `C#`.
 
-Based on my previous addon, which was developed only for C# https://github.com/DmitriySalnikov/godot_debug_draw_cs, and which was inspired by Zylann's GDScript addon https://github.com/Zylann/godot_debug_draw
+Based on my previous addon, which was developed [only for C#](https://github.com/DmitriySalnikov/godot_debug_draw_cs), and which was inspired by [Zylann's GDScript addon](https://github.com/Zylann/godot_debug_draw)
 
 ## [Godot 3 version](https://github.com/DmitriySalnikov/godot_debug_draw_3d/tree/godot_3)
 
@@ -52,6 +52,18 @@ Precompiled for:
 * Linux
 * macOS
 * Android
+* Web (WebAssembly)
+
+## [Interactive Web Demo](https://dmitriysalnikov.github.io/godot_debug_draw_3d/)
+
+[![screenshot_web](/images/screenshot_web.png)](https://dmitriysalnikov.github.io/godot_debug_draw_3d/)
+
+Thanks to Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) ([#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24))
+
+> **Warning**
+>
+> * The web version uses `OpenGL`, which in `Godot 4.1` incorrectly assigns colors to the last rendered geometry instances.
+> * Firefox most likely can't run this demo
 
 ## Download
 
@@ -146,6 +158,8 @@ The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
 
+[OpenGL: The last instance of MultiMesh incorrectly sets the color](https://github.com/godotengine/godot/issues/71897)
+
 **The version for Godot 4.0 requires explicitly specifying the exact data types, otherwise errors may occur.**
 
 ## More screenshots
@@ -170,6 +184,8 @@ git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 ## Faster build
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
+## Fixes for JavaScript/Web support
+git apply --ignore-space-change --ignore-whitespace ../patches/fixed_javascript_build.patch
 ```
 
 Then you can just run scons as usual:
@@ -181,3 +197,13 @@ scons target=editor dev_build=yes debug_symbols=yes
 # build for the android. ANDROID_NDK_ROOT is required in your environment variables.
 scons platform=android target=template_release arch=arm64v8
 ```
+
+### JavaScript/Web build
+
+If you have problems running the Web version of your project, you can try using the scripts and tips from [this page (WIP)](https://gist.github.com/DmitriySalnikov).
+
+If you too want to add an [Interactive Demo](https://dmitriysalnikov.github.io/godot_debug_draw_3d/) to your GitHub repository, then you can see how Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) added this feature to this repository in PR [#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24)!
+
+In short, you need to activate `Extension Support` when exporting and add the [gzuidhof/coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker) to the \<head\> and to the export folder. Then you will need to somehow publish a demo on the GitHub pages, as for example done in [#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24/files#diff-46a620e221376649fe75b0aaf2f607fee47f0d47db1d37bc08bb4a5f11b1af98).
+
+![export_web_for_github](images/export_web_for_github.png)
