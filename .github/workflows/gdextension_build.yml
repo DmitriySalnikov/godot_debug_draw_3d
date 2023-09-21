@@ -1,15 +1,9 @@
 name: 🛠️ GDExtension Build
 on:
   push:
-    paths:
-      [
-        src/**,
-        .github/**,
-        "!.github/**/util_*",
-        "patches/**",
-        lib_utils.py,
-        SConstruct,
-      ]
+    paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
+  pull_request:
+    paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
   workflow_dispatch:
   repository_dispatch:
 

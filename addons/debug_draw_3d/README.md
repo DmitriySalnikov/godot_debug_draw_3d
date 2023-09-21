@@ -12,11 +12,11 @@ Based on my previous addon, which was developed [only for C#](https://github.com
 
 Your support adds motivation to develop my public projects.
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I53VZ2D)
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://paypal.me/dmitriysalnikov)
+[<img src="https://www.donationalerts.com/img/brand/donationalerts.svg" alt="DonationAlerts" width=120px/>](https://www.donationalerts.com/r/dmitriysalnikov)
 
 [<img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/QIWI_logo.svg" alt="qiwi" width=90px/>](https://qiwi.com/n/DMITRIYSALNIKOV)
+
+[<img src="https://static.boosty.to/assets/images/boostyDomainLogo.5Vlxt.svg" alt="Boosty" width=120px/>](https://boosty.to/dmitriysalnikov/donate)
 
 ## Features
 
