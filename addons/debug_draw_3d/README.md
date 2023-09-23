@@ -12,8 +12,6 @@ Based on my previous addon, which was developed [only for C#](https://github.com
 
 Your support adds motivation to develop my public projects.
 
-[<img src="https://www.donationalerts.com/img/brand/donationalerts.svg" alt="DonationAlerts" width=120px/>](https://www.donationalerts.com/r/dmitriysalnikov)
-
 [<img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/QIWI_logo.svg" alt="qiwi" width=90px/>](https://qiwi.com/n/DMITRIYSALNIKOV)
 
 [<img src="https://static.boosty.to/assets/images/boostyDomainLogo.5Vlxt.svg" alt="Boosty" width=120px/>](https://boosty.to/dmitriysalnikov/donate)
