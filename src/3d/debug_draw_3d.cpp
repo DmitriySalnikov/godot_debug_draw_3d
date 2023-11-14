@@ -103,7 +103,6 @@ DebugDraw3D::~DebugDraw3D() {
 	dgc.reset();
 #endif
 
-	config.unref();
 	root_node = nullptr;
 }
 

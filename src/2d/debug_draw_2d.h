@@ -32,7 +32,6 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	// 2d
-	CanvasLayer *_canvas_layer = nullptr;
 	bool _canvas_need_update = true;
 	Ref<Font> _font;
 

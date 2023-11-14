@@ -29,6 +29,7 @@ protected:
 	void _connect_scene_changed();
 	void _on_scene_changed(bool _is_scene_null);
 
+	void _add_to_tree();
 	void _integrate_into_engine();
 
 #ifdef TOOLS_ENABLED
@@ -49,5 +50,6 @@ public:
 
 	void init();
 	virtual void _process(double delta) override;
+	virtual void _ready() override;
 	virtual void _exit_tree() override;
 };

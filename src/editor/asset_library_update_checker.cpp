@@ -9,7 +9,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/classes/scene_tree_timer.hpp>
 GODOT_WARNING_RESTORE()
 
 using namespace godot;
@@ -23,12 +22,13 @@ void AssetLibraryUpdateChecker::_bind_methods() {
 #undef REG_CLASS_NAME
 }
 
-void AssetLibraryUpdateChecker::request_completed(int result, int response_code, PackedStringArray headers, PackedByteArray body) {
-	request->queue_free();
-	request = nullptr;
-
-	if (response_code != 200)
-		return;
+#include <godot_cpp/classes/os.hpp>
+void AssetLibraryUpdateChecker::request_completed(PackedByteArray body) {
+	if (http_thread.joinable()) {
+		is_thread_closing = true;
+		http_thread.join();
+		http.unref();
+	}
 
 	Dictionary dict = JSON::parse_string(body.get_string_from_utf8());
 	String ver = dict["version_string"];
@@ -97,14 +97,103 @@ void AssetLibraryUpdateChecker::request_completed(int result, int response_code,
 }
 
 void AssetLibraryUpdateChecker::init() {
-	if (!IS_EDITOR_HINT())
-		return;
+	http.instantiate();
 
-	request = memnew(HTTPRequest);
-	SCENE_ROOT()->add_child(request);
+	http_thread = std::thread([&]() {
+		Error err = Error::OK;
 
-	request->connect("request_completed", Callable(this, NAMEOF(request_completed)));
-	request->request(godot_asset_api + String::num_int64(addon_id));
+		if (http.is_valid() && !is_thread_closing) {
+			http->connect_to_host(godot_domain);
+
+			err = http->poll();
+			if (err != Error::OK) {
+				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to initialize connection. Error: {0}", UtilityFunctions::error_string(err)));
+				return;
+			}
+		} else {
+			return;
+		}
+
+		HTTPClient::Status prev_status = HTTPClient::STATUS_DISCONNECTED;
+		while (http.is_valid() && !is_thread_closing) {
+			err = http->poll();
+			if (err != Error::OK) {
+				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to connect. Error: {0}", UtilityFunctions::error_string(err)));
+				return;
+			}
+
+			HTTPClient::Status status = http->get_status();
+			switch (status) {
+				case godot::HTTPClient::STATUS_DISCONNECTED:
+				case godot::HTTPClient::STATUS_CONNECTION_ERROR:
+				case godot::HTTPClient::STATUS_CANT_RESOLVE:
+				case godot::HTTPClient::STATUS_CANT_CONNECT:
+				case godot::HTTPClient::STATUS_TLS_HANDSHAKE_ERROR:
+					PRINT_ERROR(FMT_STR("DebugDraw Updater: Connection error: {0}", status));
+					return;
+				case godot::HTTPClient::STATUS_RESOLVING:
+				case godot::HTTPClient::STATUS_CONNECTING:
+				case godot::HTTPClient::STATUS_REQUESTING:
+				case godot::HTTPClient::STATUS_BODY:
+				default:
+					if (status != prev_status) {
+						DEV_PRINT(FMT_STR("DebugDraw Updater: Connecting status: {0}", status));
+					}
+					break;
+				case godot::HTTPClient::STATUS_CONNECTED:
+					goto connected;
+			}
+			prev_status = status;
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+
+		if (http.is_null() || is_thread_closing) {
+			return;
+		}
+
+	connected:
+
+		String request_url = "/asset-library/api/asset/" + String::num_int64(addon_id);
+		err = http->request(HTTPClient::METHOD_GET, request_url, PackedStringArray());
+		if (err != Error::OK) {
+			PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to create a request. Error: {0}", UtilityFunctions::error_string(err)));
+			return;
+		}
+
+		while (http.is_valid() && !is_thread_closing) {
+
+			err = http->poll();
+			if (err != Error::OK) {
+				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to get a response from \"{0}\". Error: {1}", godot_domain + request_url, UtilityFunctions::error_string(err)));
+				return;
+			}
+
+			HTTPClient::ResponseCode code = (HTTPClient::ResponseCode)http->get_response_code();
+			if (code == HTTPClient::ResponseCode::RESPONSE_OK) {
+				PackedByteArray res;
+				PackedByteArray tmp = http->read_response_body_chunk();
+				while (!tmp.is_empty() && !is_thread_closing) {
+					res.append_array(tmp);
+					if (http->get_status() != HTTPClient::STATUS_BODY) {
+						break;
+					}
+					tmp = http->read_response_body_chunk();
+				}
+
+				call_deferred(NAMEOF(request_completed), res);
+				return;
+			} else {
+				if (code != 0) {
+					PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to get a response from \"{0}\". Code: {1}", godot_domain + request_url, code));
+					return;
+				}
+			}
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		}
+
+		DEV_PRINT(FMT_STR("DebugDraw Updater: Thread finished"));
+	});
 }
 
 AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
@@ -114,21 +203,23 @@ AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
 	root_settings_section = String(Utils::root_settings_section) + "updates/";
 	changes_page = "https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases";
 
-	godot_asset_api = "https://godotengine.org/asset-library/api/asset/";
-	godot_asset_page = "https://godotengine.org/asset-library/asset/";
+	godot_domain = "https://godotengine.org";
+	godot_asset_api = godot_domain + "/asset-library/api/asset/";
+	godot_asset_page = godot_domain + "/asset-library/asset/";
 
 	DEFINE_SETTING_READ_ONLY(root_settings_section + "addon_version", DD3D_VERSION_STR, Variant::STRING);
 	DEFINE_SETTING_READ_ONLY(root_settings_section + "addon_page", godot_asset_page + String::num_int64(addon_id), Variant::STRING);
 	DEFINE_SETTING_AND_GET(bool check_updates, root_settings_section + "check_for_updates", true, Variant::BOOL);
 
-	if (check_updates)
+	if (IS_EDITOR_HINT() && check_updates)
 		call_deferred(NAMEOF(init));
 }
 
 AssetLibraryUpdateChecker::~AssetLibraryUpdateChecker() {
-	if (UtilityFunctions::is_instance_valid(request))
-		request->queue_free();
-	request = nullptr;
+	if (http_thread.joinable()) {
+		is_thread_closing = true;
+		http_thread.join();
+	}
 }
 
 #endif

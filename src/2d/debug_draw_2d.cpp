@@ -73,8 +73,6 @@ DebugDraw2D::~DebugDraw2D() {
 	UNASSIGN_SINGLETON(DebugDraw2D);
 
 #ifndef DISABLE_DEBUG_RENDERING
-	_font.unref();
-
 	data_graphs.reset();
 	grouped_text.reset();
 
@@ -84,18 +82,14 @@ DebugDraw2D::~DebugDraw2D() {
 		custom_canvas->queue_redraw();
 
 	if (!IS_EDITOR_HINT()) {
-		if (UtilityFunctions::is_instance_valid(_canvas_layer))
-			_canvas_layer->queue_free();
 		if (UtilityFunctions::is_instance_valid(default_canvas))
 			default_canvas->queue_free();
 
-		_canvas_layer = nullptr;
 		default_canvas = nullptr;
 	}
 #endif
 
 	root_node = nullptr;
-	config.unref();
 }
 
 void DebugDraw2D::process(double delta) {

@@ -24,6 +24,7 @@ void DebugDrawManager::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawManager
 
 	// ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_add_to_tree)), &DebugDrawManager::_add_to_tree);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDrawManager::_on_scene_changed);
 
@@ -76,7 +77,7 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 #endif
 }
 
-void DebugDrawManager::_integrate_into_engine() {
+void DebugDrawManager::_add_to_tree() {
 	// Assigned here because it is created inside the `GDExtension Initialize` function.
 	// 1. Create in Initialize and assign Singleton
 	// 2. Call class constructor after Initialize to get default values of properties
@@ -86,6 +87,11 @@ void DebugDrawManager::_integrate_into_engine() {
 
 	SCENE_ROOT()->add_child(this);
 	SCENE_ROOT()->move_child(this, 0);
+
+	// Then wait for `_ready` to continue
+}
+
+void DebugDrawManager::_integrate_into_engine() {
 	set_process(true);
 
 	// Need to be call 'deferred'
@@ -152,10 +158,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		f->store_string(Utils::get_scene_tree_as_string(res->get_parent()->get_parent()));
 		*/
 	} else {
-		// Create canvas item and canvas layer
-		auto _canvas_layer = memnew(CanvasLayer);
-		_canvas_layer->set_layer(64);
-		debug_draw_2d_singleton->_canvas_layer = _canvas_layer;
+		set_layer(64);
 
 		auto default_canvas = memnew(Control);
 		default_canvas->set_name("DebugDrawDefaultCanvas");
@@ -163,8 +166,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 		debug_draw_2d_singleton->default_canvas = default_canvas;
 
-		add_child(_canvas_layer);
-		_canvas_layer->add_child(default_canvas);
+		add_child(default_canvas);
 	}
 
 	debug_draw_2d_singleton->set_custom_canvas(debug_draw_2d_singleton->custom_canvas);
@@ -220,7 +222,7 @@ void DebugDrawManager::init() {
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw2D), debug_draw_2d_singleton);
 	Engine::get_singleton()->register_singleton("Dbg2", debug_draw_2d_singleton);
 
-	call_deferred(NAMEOF(_integrate_into_engine));
+	call_deferred(NAMEOF(_add_to_tree));
 }
 
 void DebugDrawManager::_process(double delta) {
@@ -248,10 +250,17 @@ void DebugDrawManager::_process(double delta) {
 	}
 }
 
+void DebugDrawManager::_ready() {
+	// HACK Call deferred to avoid setting the instance of `config` as a standard parameter value
+	call_deferred(NAMEOF(_integrate_into_engine));
+}
+
 void DebugDrawManager::_exit_tree() {
 	is_closing = true;
 
-	Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDrawManager));
+	if (Engine::get_singleton()->has_singleton(NAMEOF(DebugDrawManager))) {
+		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDrawManager));
+	}
 
 	if (debug_draw_3d_singleton) {
 		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw3D));

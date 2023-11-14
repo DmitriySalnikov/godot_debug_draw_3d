@@ -74,4 +74,9 @@ DebugDrawMenuExtensionPlugin::DebugDrawMenuExtensionPlugin() {
 	menu_item_name = "Debug Draw";
 }
 
+DebugDrawMenuExtensionPlugin::~DebugDrawMenuExtensionPlugin() {
+	DEV_PRINT(NAMEOF(DebugDrawMenuExtensionPlugin) " deconstructor");
+	//remove_tool_menu_item(menu_item_name);
+}
+
 #endif

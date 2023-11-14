@@ -32,6 +32,7 @@ public:
 	void _on_id_pressed(MenuItemId id);
 
 	DebugDrawMenuExtensionPlugin();
+	~DebugDrawMenuExtensionPlugin();
 };
 
 // Register but not expose to GDScript
