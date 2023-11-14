@@ -3,6 +3,9 @@
   <ItemGroup>
     <ClCompile Include="debug_draw_manager.cpp" />
     <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="gen\editor_resources.gen.cpp">
+      <Filter>gen</Filter>
+    </ClCompile>
     <ClCompile Include="editor\asset_library_update_checker.cpp">
       <Filter>editor</Filter>
     </ClCompile>
@@ -58,6 +61,9 @@
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="gen\editor_resources.gen.h">
+      <Filter>gen</Filter>
+    </ClInclude>
     <ClInclude Include="editor\asset_library_update_checker.h">
       <Filter>editor</Filter>
     </ClInclude>
@@ -123,20 +129,23 @@
     <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="gen">
+      <UniqueIdentifier>{1a8048be-fc09-4529-a762-b7023d364296}</UniqueIdentifier>
+    </Filter>
     <Filter Include="editor">
-      <UniqueIdentifier>{022da338-6462-45ae-aa3f-851130901411}</UniqueIdentifier>
+      <UniqueIdentifier>{19bc93ad-656f-449d-a72e-981f5848716d}</UniqueIdentifier>
     </Filter>
     <Filter Include="3d">
-      <UniqueIdentifier>{b34bab66-d8bd-41af-8969-8b853fa6a501}</UniqueIdentifier>
+      <UniqueIdentifier>{c39ccef7-9ef3-4fbb-9844-d5e5b2e97b51}</UniqueIdentifier>
     </Filter>
     <Filter Include="utils">
-      <UniqueIdentifier>{6e821295-ce65-4bf9-b814-0f3ff2b9efa9}</UniqueIdentifier>
+      <UniqueIdentifier>{59428385-d293-452e-948a-6e1ac5bab0a4}</UniqueIdentifier>
     </Filter>
     <Filter Include="2d">
-      <UniqueIdentifier>{8266bb27-448d-487c-ba67-1f6c38070234}</UniqueIdentifier>
+      <UniqueIdentifier>{abfb64ff-0ae9-4a48-a301-3cbb051264d2}</UniqueIdentifier>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{87e7b343-fa76-432d-b2da-61939bc2e98e}</UniqueIdentifier>
+      <UniqueIdentifier>{f8a128a9-229e-4586-aed3-b0f259bfe7a9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -3,7 +3,6 @@
 #include "common/colors.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 GODOT_WARNING_RESTORE()

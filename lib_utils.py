@@ -68,6 +68,8 @@ def get_library_object(env, arguments=None, gen_help=None):
     # store all obj's in a dedicated folder
     env["SHOBJPREFIX"] = "#obj/"
 
+    generate_sources_for_resources(env, src)
+
     # some additional tags
     additional_tags = ""
     if "release" in env["target"] and env["force_enabled_dd3d"]:
@@ -92,3 +94,42 @@ def get_library_object(env, arguments=None, gen_help=None):
         env.Append(LIBS=[library_full_name])
 
     return env
+
+
+def generate_sources_for_resources(env, src_out):
+    files = [
+        "images/icon_3d_32.png"
+    ]
+    generate_resources_cpp_h_files(files, "editor_resources.gen", src_out if "editor" in env["target"] else [])
+
+
+def generate_resources_cpp_h_files(input_files, output_no_ext, src_out):
+    gen_dir = "gen/"
+    out_dir = src_folder + "/" + gen_dir
+    Path(out_dir).mkdir(parents=True, exist_ok=True)
+
+    cpp_name = output_no_ext + ".cpp"
+    h_name = output_no_ext + ".h"
+
+    src_out.append(gen_dir + cpp_name)
+
+    with open(out_dir + cpp_name, "w+") as cpp_file, open(out_dir + h_name, "w+") as h_file:
+        h_file.write("#pragma once\n\n")
+        h_file.write("#include <array>\n\n")
+        h_file.write("namespace DD3DEditorResources {\n")
+
+        cpp_file.write(f"#include \"{h_name}\"\n\n")
+        cpp_file.write("namespace DD3DEditorResources {\n")
+
+        for input_file in input_files:
+            file_name_escaped = input_file.replace(".", "_").replace("/", "_").replace("\\", "_").replace(":", "_")
+            with open(input_file, "rb") as input_file:
+                binary_data = input_file.read()
+
+            cpp_array = ", ".join([f"{byte}" for byte in binary_data])
+            cpp_file.write(f"\tconst std::array<unsigned char, {len(binary_data)}> {file_name_escaped} = {{ {cpp_array} }};\n")
+
+            h_file.write(f"\textern const std::array<unsigned char, {len(binary_data)}> {file_name_escaped};\n")
+
+        h_file.write("}\n")
+        cpp_file.write("}\n")

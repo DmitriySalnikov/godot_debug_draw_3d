@@ -1,4 +1,4 @@
-![icon](/images/icon.png)
+![icon](/images/icon_3d_128.png)
 
 # Debug drawing utility for Godot
 

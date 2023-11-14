@@ -5,8 +5,13 @@
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/popup_menu.hpp>
+#include "gen/editor_resources.gen.h"
+#include <godot_cpp/classes/image.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/popup_menu.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/theme.hpp>
 GODOT_WARNING_RESTORE()
 
 void DebugDrawMenuExtensionPlugin::_bind_methods() {
@@ -28,6 +33,16 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	menu->add_item("Generate C# bindings", GENERATE_CSHARP_BINDING);
 
 	add_tool_submenu_item(menu_item_name, menu);
+
+	// HACK to change item icon
+	PopupMenu *parent = cast_to<PopupMenu>(menu->get_parent());
+
+	Ref<Image> img;
+	img.instantiate();
+	img->load_png_from_buffer(Utils::convert_to_pool_array<PackedByteArray>(DD3DEditorResources::images_icon_3d_32_png));
+	int icon_size = parent->get_theme_constant("class_icon_size", "Editor");
+	parent->add_theme_constant_override("icon_max_width", icon_size ? icon_size : 16);
+	parent->set_item_icon(parent->get_item_count() - 1, ImageTexture::create_from_image(img));
 }
 
 void DebugDrawMenuExtensionPlugin::_exit_tree() {

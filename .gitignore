@@ -31,10 +31,16 @@ __pycache__
 
 used_classes.json
 
+*.blend[0-9]
+*.blend[0-9][0-9]
+
+*.scor
+*.scor.*
 .import/
 .mono/
 obj/
 bin/
 /libs/
+src/gen/*
 addons/debug_draw_3d/libs/~*
 addons/debug_draw_3d/csharp/*

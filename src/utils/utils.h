@@ -27,12 +27,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/variant/utility_functions.hpp>
 GODOT_WARNING_RESTORE()
 
-#if REAL_T_IS_DOUBLE
-typedef godot::PackedFloat64Array PackedRealArray;
-#else
-typedef godot::PackedFloat32Array PackedRealArray;
-#endif
-
 #pragma region PRINTING
 
 #if DEV_ENABLED

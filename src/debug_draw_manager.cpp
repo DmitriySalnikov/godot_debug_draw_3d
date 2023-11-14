@@ -196,6 +196,7 @@ void DebugDrawManager::set_debug_enabled(bool value) {
 	}
 }
 
+// TODO add project settings to default state of debug
 bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
 }
