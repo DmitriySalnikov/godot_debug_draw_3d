@@ -12,6 +12,7 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/standard_material3d.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -185,8 +186,10 @@ DebugDrawManager::~DebugDrawManager() {
 }
 
 void DebugDrawManager::clear_all() {
-	debug_draw_2d_singleton->clear_all();
-	debug_draw_3d_singleton->clear_all();
+	if (debug_draw_2d_singleton)
+		debug_draw_2d_singleton->clear_all();
+	if (debug_draw_3d_singleton)
+		debug_draw_3d_singleton->clear_all();
 }
 
 void DebugDrawManager::set_debug_enabled(bool value) {
@@ -196,12 +199,14 @@ void DebugDrawManager::set_debug_enabled(bool value) {
 	}
 }
 
-// TODO add project settings to default state of debug
 bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
 }
 
 void DebugDrawManager::init() {
+	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + "initial_debug_state", true, Variant::BOOL);
+	set_debug_enabled(initial_debug_state);
+
 	// Draw everything after calls from scripts to avoid lagging
 	set_process_priority(INT32_MAX);
 
@@ -219,6 +224,16 @@ void DebugDrawManager::init() {
 }
 
 void DebugDrawManager::_process(double delta) {
+	// To discover what causes the constant look here:
+	// https://github.com/godotengine/godot/blob/baf6b4634d08bc3e193a38b86e96945052002f64/servers/rendering/rendering_server_default.h#L104
+	// Replace _changes_changed's body with:
+	// __declspec(noinline) void RenderingServerDefault::_changes_changed() {
+	//	#if 0
+	//		auto *asd = memnew(Object);
+	//		memdelete(asd);
+	//	#endif
+	//	}
+
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
 		DebugDraw3D::get_singleton()->process(get_process_delta_time());

@@ -132,8 +132,12 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, Instanc
 
 		PackedFloat32Array a = get_raw_data((InstanceType)i);
 
-		mesh->set_instance_count((int)(a.size() / INSTANCE_DATA_FLOAT_COUNT));
-		mesh->set_visible_instance_count(-1);
+		int new_size = (int)(a.size() / INSTANCE_DATA_FLOAT_COUNT);
+		if (mesh->get_instance_count() != new_size) {
+			mesh->set_instance_count(new_size);
+			mesh->set_visible_instance_count(-1);
+		}
+
 		if (a.size()) {
 			mesh->set_buffer(a);
 		}

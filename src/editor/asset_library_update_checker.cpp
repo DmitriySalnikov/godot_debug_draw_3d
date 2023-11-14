@@ -111,7 +111,7 @@ AssetLibraryUpdateChecker::AssetLibraryUpdateChecker() {
 	addon_id = 1766;
 	addon_name = "Debug Draw 3D";
 	repository_name = "godot_debug_draw_3d";
-	root_settings_section = "debug_draw_3d/settings/";
+	root_settings_section = String(Utils::root_settings_section) + "updates/";
 	changes_page = "https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases";
 
 	godot_asset_api = "https://godotengine.org/asset-library/api/asset/";

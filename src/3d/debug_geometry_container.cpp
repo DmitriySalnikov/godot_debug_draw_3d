@@ -147,6 +147,7 @@ Node *DebugGeometryContainer::get_world() {
 	return scene_world_node;
 }
 
+// TODO add mark_dirty for 3d to reduce editor updates if only delayed shapes are displayed.
 void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(datalock);
 
@@ -154,12 +155,14 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	if (owner->get_config()->is_freeze_3d_render())
 		return;
 
-	immediate_mesh_storage.mesh->clear_surfaces();
+	if (immediate_mesh_storage.mesh->get_surface_count())
+		immediate_mesh_storage.mesh->clear_surfaces();
 
 	// Return if nothing to do
 	if (!owner->is_debug_enabled()) {
 		for (auto &item : multi_mesh_storage) {
-			item.mesh->set_visible_instance_count(0);
+			if (item.mesh->get_visible_instance_count())
+				item.mesh->set_visible_instance_count(0);
 		}
 		geometry_pool.reset_counter(delta);
 		geometry_pool.reset_visible_objects();
@@ -291,12 +294,14 @@ Ref<DebugDrawStats3D> DebugGeometryContainer::get_render_stats() {
 
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
 	LOCK_GUARD(datalock);
-	RenderingServer *rs = RS();
-	for (auto &mmi : multi_mesh_storage)
-		rs->instance_set_layer_mask(mmi.instance, layers);
+	if (render_layers != layers) {
+		RenderingServer *rs = RS();
+		for (auto &mmi : multi_mesh_storage)
+			rs->instance_set_layer_mask(mmi.instance, layers);
 
-	rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
-	render_layers = layers;
+		rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
+		render_layers = layers;
+	}
 }
 
 int32_t DebugGeometryContainer::get_render_layer_mask() const {

@@ -157,6 +157,8 @@ class Utils {
 #endif
 
 public:
+	static const char *root_settings_section;
+
 	static void logv(const char *p_format, bool p_err, bool p_force_print, ...);
 	static void print_logs();
 

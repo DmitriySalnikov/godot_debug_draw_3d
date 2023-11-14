@@ -7,6 +7,7 @@ using namespace godot;
 #if DEBUG_ENABLED
 std::queue<Utils::LogData> Utils::log_buffer;
 #endif
+const char *Utils::root_settings_section = "debug_draw_3d/settings/";
 
 void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 #if DEBUG_ENABLED
