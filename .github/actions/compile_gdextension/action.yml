@@ -2,7 +2,7 @@ name: Build GDExtension
 description: Build GDExtension library
 inputs:
   platform:
-    description: Target platform (linux|macos|windows|android|ios|javascript)
+    description: Target platform (linux|macos|windows|android|ios|web)
     required: true
   target:
     description: Compilation target (editor|template_release|template_debug)
@@ -68,9 +68,7 @@ runs:
       run: |
         echo "::group::🛠️ GDExtesion Compilation 🛠️"
         cd godot-cpp
-        git apply --ignore-space-change --ignore-whitespace ../patches/always_build_fix.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
-        git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
         cd ..
         scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
@@ -80,7 +78,7 @@ runs:
         echo "::endgroup::"
 
     - name: Prepare artifact Unix
-      if: runner.os != 'Windows' && inputs.platform != 'android' && inputs.platform != 'javascript'
+      if: runner.os != 'Windows' && inputs.platform != 'android' && inputs.platform != 'web'
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then

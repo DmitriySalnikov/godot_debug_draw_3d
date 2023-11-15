@@ -161,20 +161,14 @@ jobs:
         with:
           version: ${{env.EM_VERSION}}
 
-      - shell: bash
-        run: |
-          cd godot-cpp
-          git apply --ignore-space-change --ignore-whitespace ../patches/fixed_javascript_build.patch
-          cd ..
-
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
-          platform: javascript
+          platform: web
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          artifact: javascript
+          artifact: web
           additional: lto=yes
 
   # ============================================

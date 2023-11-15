@@ -11,12 +11,13 @@ using namespace godot;
 
 class DebugDrawMenuExtensionPlugin : public EditorPlugin {
 	GDCLASS(DebugDrawMenuExtensionPlugin, EditorPlugin)
-
+public:
 	enum MenuItemId {
 		OPEN_LIBRARY_SITE = 1,
 		GENERATE_CSHARP_BINDING = 2,
 	};
 
+private:
 	String menu_item_name;
 
 protected:

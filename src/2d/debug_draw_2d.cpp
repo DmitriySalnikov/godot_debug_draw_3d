@@ -8,7 +8,6 @@
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/standard_material3d.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <limits.h>

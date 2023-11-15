@@ -175,15 +175,11 @@ And also you need to apply several patches:
 
 ```bash
 cd godot-cpp
-git apply --ignore-space-change --ignore-whitespace ../patches/always_build_fix.patch
-git apply --ignore-space-change --ignore-whitespace ../patches/1165.patch
 # Optional
 ## Build only the necessary classes
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 ## Faster build
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
-## Fixes for JavaScript/Web support
-git apply --ignore-space-change --ignore-whitespace ../patches/fixed_javascript_build.patch
 ```
 
 Then you can just run scons as usual:
