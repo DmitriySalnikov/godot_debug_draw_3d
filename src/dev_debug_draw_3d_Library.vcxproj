@@ -218,6 +218,7 @@
     <ClCompile Include="editor\editor_menu_extensions.cpp" />
     <ClCompile Include="editor\generate_csharp_bindings.cpp" />
     <ClCompile Include="gen\editor_resources.gen.cpp" />
+    <ClCompile Include="gen\shared_resources.gen.cpp" />
     <ClCompile Include="register_types.cpp" />
     <ClCompile Include="utils\math_utils.cpp">
       <DeploymentContent>false</DeploymentContent>
@@ -273,6 +274,7 @@
     <ClInclude Include="editor\editor_menu_extensions.h" />
     <ClInclude Include="editor\generate_csharp_bindings.h" />
     <ClInclude Include="gen\editor_resources.gen.h" />
+    <ClInclude Include="gen\shared_resources.gen.h" />
     <ClInclude Include="utils\math_utils.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

@@ -192,21 +192,39 @@ public:
 	}
 
 	template <class TPool, class TContainer>
-	static TPool convert_to_pool_array(TContainer &arr) {
+	static TPool convert_to_packed_array(TContainer &arr) {
 		TPool p;
 		if (arr.size() > 0) {
-			p.resize((int)arr.size());
+			p.resize(arr.size());
 			memcpy(p.ptrw(), arr.data(), sizeof(arr[0]) * arr.size());
 		}
 		return p;
 	}
 
-	template <class TPool, class TVal>
-	static TPool convert_to_pool_array(const TVal *arr, const size_t &size) {
+	template <class TPool, class TContainer>
+	static TPool convert_to_packed_array_diffrent_types(TContainer &arr) {
 		TPool p;
-		if (size > 0) {
-			p.resize((int)size);
-			memcpy(p.ptrw(), arr, sizeof(TVal) * size);
+		p.resize(1);
+		long s = sizeof(p[0]);
+		p.resize(0);
+
+		if (arr.size() > 0) {
+			p.resize(arr.size() * sizeof(arr[0]) / s);
+			memcpy(p.ptrw(), arr.data(), sizeof(arr[0]) * arr.size());
+		}
+		return p;
+	}
+
+	template <class TPool, class TContainer>
+	static TPool convert_packed_array_to_diffrent_types(TContainer &arr) {
+		TPool p;
+		p.resize(1);
+		long s = sizeof(p[0]);
+		p.resize(0);
+
+		if (arr.size() > 0) {
+			p.resize(arr.size() * sizeof(arr[0]) / s);
+			memcpy(p.ptrw(), arr.ptr(), sizeof(arr[0]) * arr.size());
 		}
 		return p;
 	}

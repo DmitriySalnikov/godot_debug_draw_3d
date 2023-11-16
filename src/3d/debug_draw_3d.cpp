@@ -3,13 +3,13 @@
 #include "config_3d.h"
 #include "debug_draw_manager.h"
 #include "debug_geometry_container.h"
+#include "gen/shared_resources.gen.h"
 #include "geometry_generators.h"
 #include "stats_3d.h"
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <limits.h>
@@ -91,6 +91,8 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	root_node = root;
 	set_config(nullptr);
 
+	_load_materials();
+
 #ifndef DISABLE_DEBUG_RENDERING
 	dgc = std::make_unique<DebugGeometryContainer>(this);
 #endif
@@ -101,6 +103,15 @@ DebugDraw3D::~DebugDraw3D() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 	dgc.reset();
+
+	shader_unshaded_mat.unref();
+	shader_unshaded_code.unref();
+
+	shader_billboard_mat.unref();
+	shader_billboard_code.unref();
+
+	shader_extendable_mat.unref();
+	shader_extendable_code.unref();
 #endif
 
 	root_node = nullptr;
@@ -110,6 +121,25 @@ void DebugDraw3D::process(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	// Update 3D debug
 	dgc->update_geometry(delta);
+#endif
+}
+
+void DebugDraw3D::_load_materials() {
+#ifndef DISABLE_DEBUG_RENDERING
+	shader_unshaded_code.instantiate();
+	shader_unshaded_code->set_code(DD3DResources::src_resources_basic_unshaded_gdshader);
+	shader_unshaded_mat.instantiate();
+	shader_unshaded_mat->set_shader(shader_unshaded_code);
+
+	shader_extendable_code.instantiate();
+	shader_extendable_code->set_code(DD3DResources::src_resources_extendable_meshes_gdshader);
+	shader_extendable_mat.instantiate();
+	shader_extendable_mat->set_shader(shader_extendable_code);
+
+	shader_billboard_code.instantiate();
+	shader_billboard_code->set_code(DD3DResources::src_resources_billboard_unshaded_gdshader);
+	shader_billboard_mat.instantiate();
+	shader_billboard_mat->set_shader(shader_billboard_code);
 #endif
 }
 
@@ -135,6 +165,30 @@ void DebugDraw3D::set_custom_editor_viewport(std::vector<SubViewport *> _viewpor
 
 std::vector<SubViewport *> DebugDraw3D::get_custom_editor_viewports() {
 	return custom_editor_viewports;
+}
+
+Ref<ShaderMaterial> DebugDraw3D::get_basic_unshaded_material() {
+#ifndef DISABLE_DEBUG_RENDERING
+	return shader_unshaded_mat;
+#else
+	return Ref<ShaderMaterial>();
+#endif
+}
+
+Ref<ShaderMaterial> DebugDraw3D::get_billboard_unshaded_material() {
+#ifndef DISABLE_DEBUG_RENDERING
+	return shader_billboard_mat;
+#else
+	return Ref<ShaderMaterial>();
+#endif
+}
+
+Ref<ShaderMaterial> DebugDraw3D::get_extendable_material() {
+#ifndef DISABLE_DEBUG_RENDERING
+	return shader_extendable_mat;
+#else
+	return Ref<ShaderMaterial>();
+#endif
 }
 
 void DebugDraw3D::set_empty_color(const Color &_col) {

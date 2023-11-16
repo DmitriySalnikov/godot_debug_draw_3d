@@ -18,7 +18,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/multi_mesh_instance3d.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/texture.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -31,6 +31,12 @@ class DebugDrawStats3D;
 class DebugGeometryContainer {
 	friend class DebugDraw3D;
 	class DebugDraw3D *owner;
+
+	enum class UsingShaderType {
+		Wireframe,
+		Billboard,
+		Expandable,
+	};
 
 	struct MultiMeshStorage {
 		RID instance;
@@ -46,7 +52,7 @@ class DebugGeometryContainer {
 	struct ImmediateMeshStorage {
 		RID instance;
 		Ref<ArrayMesh> mesh;
-		Ref<StandardMaterial3D> material;
+		Ref<ShaderMaterial> material;
 
 		~ImmediateMeshStorage() {
 			RS()->free_rid(instance);
@@ -60,17 +66,7 @@ class DebugGeometryContainer {
 	Node *scene_world_node = nullptr;
 	int32_t render_layers = 1;
 
-	void CreateMMI(InstanceType type, const String &name, Ref<ArrayMesh> mesh);
-
-	template <class TVertices, class TIndices = std::array<int, 0>, class TColors = std::array<Color, 0> >
-	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const TVertices &vertices, const TIndices &indices = {}, const TColors &colors = {}) {
-		return CreateMesh(type,
-				Utils::convert_to_pool_array<PackedVector3Array>(vertices),
-				Utils::convert_to_pool_array<PackedInt32Array>(indices),
-				Utils::convert_to_pool_array<PackedColorArray>(colors));
-	}
-
-	Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {});
+	void CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh);
 
 	std::recursive_mutex datalock;
 

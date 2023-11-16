@@ -138,13 +138,21 @@ def get_library_object(env, arguments=None, gen_help=None):
 
 
 def generate_sources_for_resources(env, src_out):
-    files = [
-        "images/icon_3d_32.png"
+    # Array of (path, is_text)
+    editor_files = [
+        ("images/icon_3d_32.png", False),
     ]
-    generate_resources_cpp_h_files(files, "editor_resources.gen", src_out if "editor" in env["target"] else [])
+    generate_resources_cpp_h_files(editor_files, "DD3DEditorResources", "editor_resources.gen", src_out if "editor" in env["target"] else [])
+
+    shared_files = [
+        ("src/resources/extendable_meshes.gdshader", True),
+        ("src/resources/basic_unshaded.gdshader", True),
+        ("src/resources/billboard_unshaded.gdshader", True),
+    ]
+    generate_resources_cpp_h_files(shared_files, "DD3DResources", "shared_resources.gen", src_out)
 
 
-def generate_resources_cpp_h_files(input_files, output_no_ext, src_out):
+def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_out):
     gen_dir = "gen/"
     out_dir = src_folder + "/" + gen_dir
     Path(out_dir).mkdir(parents=True, exist_ok=True)
@@ -157,20 +165,40 @@ def generate_resources_cpp_h_files(input_files, output_no_ext, src_out):
     with open(out_dir + cpp_name, "w+") as cpp_file, open(out_dir + h_name, "w+") as h_file:
         h_file.write("#pragma once\n\n")
         h_file.write("#include <array>\n\n")
-        h_file.write("namespace DD3DEditorResources {\n")
+        h_file.write(f"namespace {namespace} {{\n")
 
         cpp_file.write(f"#include \"{h_name}\"\n\n")
-        cpp_file.write("namespace DD3DEditorResources {\n")
+        cpp_file.write(f"namespace {namespace} {{\n")
 
-        for input_file in input_files:
-            file_name_escaped = input_file.replace(".", "_").replace("/", "_").replace("\\", "_").replace(":", "_")
-            with open(input_file, "rb") as input_file:
-                binary_data = input_file.read()
+        for input_file_touple in input_files:
+            is_text = input_file_touple[1]
+            input_file_path = input_file_touple[0]
+            file_name_escaped = input_file_path.replace(".", "_").replace("/", "_").replace("\\", "_").replace(":", "_")
 
-            cpp_array = ", ".join([f"{byte}" for byte in binary_data])
-            cpp_file.write(f"\tconst std::array<unsigned char, {len(binary_data)}> {file_name_escaped} = {{ {cpp_array} }};\n")
+            if is_text:
+                try:
+                    with open(input_file_path, "r") as file:
+                        text_data = file.read()
+                except UnicodeDecodeError:
+                    try:
+                        with open(input_file_path, "r", encoding="utf-8") as file:
+                            text_data = file.read()
+                    except UnicodeDecodeError as e:
+                        print("Skipping file due to 'UnicodeDecodeError' exception: " +
+                              (input_file_path).resolve().as_posix() + "\nException: " + str(e))
+                        continue
 
-            h_file.write(f"\textern const std::array<unsigned char, {len(binary_data)}> {file_name_escaped};\n")
+                cpp_file.write(f"\tconst char *{file_name_escaped} = R\"({text_data})\";\n\n")
+
+                h_file.write(f"\textern const char *{file_name_escaped};\n")
+            else:
+                with open(input_file_touple[0], "rb") as input_file:
+                    binary_data = input_file.read()
+
+                cpp_array = ", ".join([f"{byte}" for byte in binary_data])
+                cpp_file.write(f"\tconst std::array<unsigned char, {len(binary_data)}> {file_name_escaped} = {{ {cpp_array} }};\n\n")
+
+                h_file.write(f"\textern const std::array<unsigned char, {len(binary_data)}> {file_name_escaped};\n")
 
         h_file.write("}\n")
         cpp_file.write("}\n")

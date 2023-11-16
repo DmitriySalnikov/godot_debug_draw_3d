@@ -28,6 +28,7 @@ enum InstanceType : char {
 	SPHERES,
 	SPHERES_HD,
 	CYLINDERS,
+	CUBE_VOLUMETRIC,
 	ALL,
 };
 

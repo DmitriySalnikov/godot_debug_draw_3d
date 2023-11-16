@@ -39,7 +39,7 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 
 	Ref<Image> img;
 	img.instantiate();
-	img->load_png_from_buffer(Utils::convert_to_pool_array<PackedByteArray>(DD3DEditorResources::images_icon_3d_32_png));
+	img->load_png_from_buffer(Utils::convert_to_packed_array<PackedByteArray>(DD3DEditorResources::images_icon_3d_32_png));
 	int icon_size = parent->get_theme_constant("class_icon_size", "Editor");
 	parent->add_theme_constant_override("icon_max_width", icon_size ? icon_size : 16);
 	parent->set_item_icon(parent->get_item_count() - 1, ImageTexture::create_from_image(img));

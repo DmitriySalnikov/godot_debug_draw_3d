@@ -4,6 +4,8 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/shader.hpp>
+#include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -21,17 +23,29 @@ class DebugDraw3D : public Object {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
-	static DebugDraw3D *singleton;
 
 private:
+	static DebugDraw3D *singleton;
+
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
+
+	// Default materials and shaders
+	Ref<ShaderMaterial> shader_unshaded_mat;
+	Ref<Shader> shader_unshaded_code;
+
+	Ref<ShaderMaterial> shader_billboard_mat;
+	Ref<Shader> shader_billboard_code;
+
+	Ref<ShaderMaterial> shader_extendable_mat;
+	Ref<Shader> shader_extendable_code;
 #endif
 
+	void _load_materials();
 	void _set_base_world_node(Node *world_base);
 	inline bool _is_enabled_override() const;
 
@@ -64,6 +78,10 @@ public:
 	Node *get_root_node();
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
+
+	Ref<ShaderMaterial> get_basic_unshaded_material();
+	Ref<ShaderMaterial> get_billboard_unshaded_material();
+	Ref<ShaderMaterial> get_extendable_material();
 
 #pragma region Exposed Parameters
 	void set_empty_color(const Color &_col);

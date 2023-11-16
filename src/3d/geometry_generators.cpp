@@ -1,5 +1,6 @@
 #include "geometry_generators.h"
 #include "utils/utils.h"
+using namespace godot;
 
 #pragma region Predefined Geometry Parts
 
@@ -163,6 +164,137 @@ const std::array<int, 6> GeometryGenerator::PositionIndices{
 
 #pragma endregion
 
+Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices, const PackedColorArray &colors, const PackedVector3Array &normals, const PackedFloat32Array &custom0, BitField<Mesh::ArrayFormat> flags) {
+	Ref<ArrayMesh> mesh;
+	mesh.instantiate();
+	Array a;
+	a.resize((int)ArrayMesh::ArrayType::ARRAY_MAX);
+
+	a[(int)ArrayMesh::ArrayType::ARRAY_VERTEX] = vertices;
+	if (indices.size())
+		a[(int)ArrayMesh::ArrayType::ARRAY_INDEX] = indices;
+	if (colors.size())
+		a[(int)ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
+	if (normals.size())
+		a[(int)ArrayMesh::ArrayType::ARRAY_NORMAL] = normals;
+	if (custom0.size())
+		a[(int)ArrayMesh::ArrayType::ARRAY_CUSTOM0] = custom0;
+
+	mesh->add_surface_from_arrays(type, a, Array(), Dictionary(), flags);
+
+	return mesh;
+}
+
+Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh) {
+	Array arrs = mesh->surface_get_arrays(0);
+	PackedVector3Array vertexes = arrs[ArrayMesh::ArrayType::ARRAY_VERTEX];
+	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
+	PackedInt32Array indexes = arrs[ArrayMesh::ArrayType::ARRAY_INDEX];
+
+	ERR_FAIL_COND_V(vertexes.size() % 2 != 0, Ref<ArrayMesh>());
+	// TODO re-enable
+	// ERR_FAIL_COND_V(vertexes.size() != normals.size(), Ref<ArrayMesh>());
+
+	PackedVector3Array res_vertexes;
+	PackedVector3Array res_custom0;
+	PackedInt32Array res_indexes;
+
+	if (indexes.size()) {
+		for (int i = 0; i < indexes.size(); i += 2) {
+			GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], true ? Vector3(0, 1, 0.0001) : normals[indexes[i]], res_vertexes, res_custom0, res_indexes);
+		}
+	} else {
+		for (int i = 0; i < vertexes.size(); i += 2) {
+			GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], true ? Vector3(0, 1, 0.0001) : normals[i], res_vertexes, res_custom0, res_indexes);
+		}
+	}
+
+	return CreateMesh(
+			Mesh::PRIMITIVE_TRIANGLES,
+			res_vertexes,
+			res_indexes,
+			PackedColorArray(),
+			PackedVector3Array(),
+			Utils::convert_packed_array_to_diffrent_types<PackedFloat32Array>(res_custom0),
+			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
+}
+
+void GeometryGenerator::GenerateVolumetricSegment(Vector3 a, Vector3 b, Vector3 normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes) {
+	bool debug_size = false;
+	Vector3 dir = (b - a).normalized();
+
+	Vector3 right = dir.cross(normal_up.rotated(dir, Math::deg_to_rad(45.0f))).normalized();
+	Vector3 left = right * -1;
+	Vector3 up = dir.cross(left).normalized();
+	Vector3 down = up * -1;
+
+	Vector3 h_right = right * 0.5;
+	Vector3 h_left = left * 0.5;
+	Vector3 h_up = up * 0.5;
+	Vector3 h_down = down * 0.5;
+
+	Vector3 mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
+
+	int64_t base = vertexes.size();
+	// Start X
+	vertexes.push_back(a + right * mult);
+	vertexes.push_back(a + left * mult);
+	vertexes.push_back(a + up * mult);
+	vertexes.push_back(a + down * mult);
+	// End X
+	vertexes.push_back(b + right * mult);
+	vertexes.push_back(b + left * mult);
+	vertexes.push_back(b + up * mult);
+	vertexes.push_back(b + down * mult);
+
+	// Horizontal plane
+	indexes.append(base + 0);
+	indexes.append(base + 1);
+	indexes.append(base + 4);
+	indexes.append(base + 1);
+	indexes.append(base + 5);
+	indexes.append(base + 4);
+	// Vertical plane
+	indexes.append(base + 2);
+	indexes.append(base + 3);
+	indexes.append(base + 6);
+	indexes.append(base + 3);
+	indexes.append(base + 7);
+	indexes.append(base + 6);
+
+	// Start cap
+	indexes.append(base + 0);
+	indexes.append(base + 1);
+	indexes.append(base + 2);
+	indexes.append(base + 0);
+	indexes.append(base + 3);
+	indexes.append(base + 1);
+	// End cap
+	indexes.append(base + 4);
+	indexes.append(base + 6);
+	indexes.append(base + 5);
+	indexes.append(base + 4);
+	indexes.append(base + 5);
+	indexes.append(base + 7);
+
+	indexes.append(2);
+	indexes.append(3);
+	indexes.append(6);
+	indexes.append(3);
+	indexes.append(7);
+	indexes.append(6);
+
+	custom0.push_back(h_right);
+	custom0.push_back(h_left);
+	custom0.push_back(h_up);
+	custom0.push_back(h_down);
+
+	custom0.push_back(h_right);
+	custom0.push_back(h_left);
+	custom0.push_back(h_up);
+	custom0.push_back(h_down);
+}
+
 std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
 	std::vector<Vector3> res;
 	res.resize(CubeIndices.size());
@@ -191,46 +323,6 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(const std::arra
 		res[i] = cube[CubeIndices[i]];
 
 	return res;
-}
-
-std::vector<Vector3> GeometryGenerator::CreateCubeLines(const Vector3 &position, const Quaternion &rotation, const Vector3 &size, const bool &centered_box, const bool &with_diagonals) {
-	Vector3 scaled[8];
-	std::vector<Vector3> res_with_diags;
-	res_with_diags.resize(CubeWithDiagonalsIndices.size());
-	std::vector<Vector3> res;
-	res.resize(CubeIndices.size());
-
-	bool dont_rot = rotation == Quaternion_IDENTITY;
-
-	std::function<Vector3(int)> get;
-	if (centered_box) {
-		if (dont_rot)
-			get = [&size, &position](int idx) { return CenteredCubeVertices[idx] * size + position; };
-		else
-			get = [&size, &position, &rotation](int idx) { return rotation.xform(CenteredCubeVertices[idx] * size) + position; };
-	} else {
-		if (dont_rot)
-			get = [&size, &position](int idx) { return CubeVertices[idx] * size + position; };
-		else
-			get = [&size, &position, &rotation](int idx) { return rotation.xform(CubeVertices[idx] * size) + position; };
-	}
-
-	for (int i = 0; i < 8; i++)
-		scaled[i] = get(i);
-
-	if (with_diagonals) {
-		{
-			for (int i = 0; i < CubeWithDiagonalsIndices.size(); i++)
-				res_with_diags[i] = scaled[CubeWithDiagonalsIndices[i]];
-		}
-		return res_with_diags;
-	} else {
-		{
-			for (int i = 0; i < CubeIndices.size(); i++)
-				res[i] = scaled[CubeIndices[i]];
-		}
-		return res;
-	}
 }
 
 std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position) {

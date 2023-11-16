@@ -2,6 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="debug_draw_manager.cpp" />
+    <ClCompile Include="gen\shared_resources.gen.cpp">
+      <Filter>gen</Filter>
+    </ClCompile>
     <ClCompile Include="register_types.cpp" />
     <ClCompile Include="gen\editor_resources.gen.cpp">
       <Filter>gen</Filter>
@@ -60,6 +63,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
+    <ClInclude Include="gen\shared_resources.gen.h">
+      <Filter>gen</Filter>
+    </ClInclude>
     <ClInclude Include="version.h" />
     <ClInclude Include="gen\editor_resources.gen.h">
       <Filter>gen</Filter>
@@ -126,26 +132,26 @@
     <Natvis Include="debug_strings.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="default_sources.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="gen">
-      <UniqueIdentifier>{1a8048be-fc09-4529-a762-b7023d364296}</UniqueIdentifier>
+      <UniqueIdentifier>{8430e6fa-e0b0-4fea-adec-0637de7c0a05}</UniqueIdentifier>
     </Filter>
     <Filter Include="editor">
-      <UniqueIdentifier>{19bc93ad-656f-449d-a72e-981f5848716d}</UniqueIdentifier>
+      <UniqueIdentifier>{b5004f62-7cf6-43c4-8a65-32ed5c896d6a}</UniqueIdentifier>
     </Filter>
     <Filter Include="3d">
-      <UniqueIdentifier>{c39ccef7-9ef3-4fbb-9844-d5e5b2e97b51}</UniqueIdentifier>
+      <UniqueIdentifier>{09f9832d-9d61-4dc9-b717-ae51b219090b}</UniqueIdentifier>
     </Filter>
     <Filter Include="utils">
-      <UniqueIdentifier>{59428385-d293-452e-948a-6e1ac5bab0a4}</UniqueIdentifier>
+      <UniqueIdentifier>{e0cfdda3-62c1-4198-99c3-b5d2983327c1}</UniqueIdentifier>
     </Filter>
     <Filter Include="2d">
-      <UniqueIdentifier>{abfb64ff-0ae9-4a48-a301-3cbb051264d2}</UniqueIdentifier>
+      <UniqueIdentifier>{aebaf487-eccc-4dfa-a1e5-93b0458bab66}</UniqueIdentifier>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{f8a128a9-229e-4586-aed3-b0f259bfe7a9}</UniqueIdentifier>
+      <UniqueIdentifier>{463d3845-6105-4768-b06b-676296dc1659}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="default_sources.json" />
   </ItemGroup>
 </Project>
