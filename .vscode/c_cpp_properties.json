@@ -9,13 +9,13 @@
                 "${workspaceFolder}/godot-cpp/gen/include"
             ],
             "defines": [
-                "_DEBUG",
                 "DEBUG_ENABLED",
                 "UNICODE",
                 "_UNICODE",
                 "GDEXTENSION_LIBRARY",
                 "NOMINMAX",
-                "TYPED_METHOD_BIND"
+                "TYPED_METHOD_BIND",
+                "HOT_RELOAD_ENABLED"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",

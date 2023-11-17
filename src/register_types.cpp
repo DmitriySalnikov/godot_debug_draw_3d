@@ -66,7 +66,7 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		// If this library is disabled manually before deleting the scene tree,
 		// then an attempt is made to delete this node manually.
-		if (UtilityFunctions::is_instance_valid(debug_draw_manager)) {
+		if (Engine::get_singleton()->get_main_loop() && UtilityFunctions::is_instance_valid(debug_draw_manager)) {
 			memdelete(debug_draw_manager);
 		}
 		debug_draw_manager = nullptr;
@@ -76,7 +76,7 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		upd_checker.unref();
-		//EditorPlugins::remove_by_type<DebugDrawMenuExtensionPlugin>();
+		// EditorPlugins::remove_by_type<DebugDrawMenuExtensionPlugin>();
 	}
 #endif
 #endif

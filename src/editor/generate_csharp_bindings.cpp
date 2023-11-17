@@ -87,6 +87,7 @@ void GenerateCSharpBindingsPlugin::generate() {
 
 	line("using Godot;");
 	line("using System;");
+	line("using System.Linq;");
 
 	is_shift_pressed = true;
 
@@ -138,7 +139,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 	if (is_preserved_inheritance) {
 		line(FMT_STR("internal class {0} : {1}", cls, parent_name));
 	} else {
-		line(FMT_STR("{0}internal class {1}{2}", static_modifier_str, cls, is_singleton ? "" : " : IDisposable"));
+		line(FMT_STR("{0}internal class {1}{2}", static_modifier_str, cls, is_singleton ? "" : " : _DebugDrawInstanceWrapper_"));
 	}
 
 	{
@@ -230,9 +231,88 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &remapped_data) {
 	log("DebugDraw utilities:", 1);
 
+	line("internal class _DebugDrawInstanceWrapper_ : IDisposable");
+	{
+		TAB();
+		line("public GodotObject Instance { get; protected set; }");
+		line();
+		line("public _DebugDrawInstanceWrapper_(GodotObject _instance)");
+		{
+			TAB();
+			line("if (_instance == null) throw new ArgumentNullException(\"_instance\");");
+			line("if (!ClassDB.IsParentClass(_instance.GetClass(), GetType().Name)) throw new ArgumentException(\"\\\"_instance\\\" has the wrong type.\");");
+			line("Instance = _instance;");
+			line();
+
+			if (is_generate_unload_event) {
+				line("#if DEBUG", 0);
+				line("_DebugDrawUtils_.ExtensionUnloading += OnUnloading;");
+				line("#endif", 0);
+			}
+		}
+		if (is_generate_unload_event) {
+			line();
+			line("#if DEBUG", 0);
+			line("void OnUnloading()");
+			{
+				TAB();
+#ifdef DEV_ENABLED
+				line("if (Instance != null)");
+				{
+					TAB();
+					line("GD.Print($\"Unload {GetType()}, {Instance.NativeInstance}\");");
+				}
+#endif
+				line("try");
+				{
+					TAB();
+					line("_DebugDrawUtils_.ExtensionUnloading -= OnUnloading;");
+				}
+				line("catch {}");
+				line("Instance = null;");
+			}
+			line("#endif", 0);
+		}
+		line();
+		line("public void Dispose()");
+		{
+			TAB();
+			line("Instance.Dispose();");
+			line("Instance = null;");
+		}
+		line();
+		line("public void ClearNativePointer()");
+		{
+			TAB();
+			line("Instance = null;");
+		}
+	}
+	line();
+
 	line("internal static class _DebugDrawUtils_");
 	{
 		TAB();
+
+		if (is_generate_unload_event) {
+			line("#if DEBUG", 0);
+			line("public static event Action ExtensionUnloading");
+			{
+				TAB();
+				line("add");
+				{
+					TAB();
+					line("Engine.GetSingleton(\"DebugDrawManager\").Connect(\"extension_unloading\", Callable.From(value), (uint)GodotObject.ConnectFlags.OneShot);");
+				}
+
+				line("remove");
+				{
+					TAB();
+					line("Engine.GetSingleton(\"DebugDrawManager\").Disconnect(\"extension_unloading\", Callable.From(value));");
+				}
+			}
+			line("#endif", 0);
+			line();
+		}
 
 		// TODO if merged https://github.com/godotengine/godot/pull/53920, replace by only conditional compilation
 		// Runtime check with disabled debug is 2-3 times slower than conditional compilation
@@ -260,6 +340,10 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 		// Factory
 		log("Class factory...", 2);
 		{
+			line("static System.Collections.Generic.Dictionary<ulong, _DebugDrawInstanceWrapper_> cached_instances = new();");
+			line("static DateTime previous_clear_time = DateTime.Now;");
+			line();
+
 			line("public static object CreateWrapperFromObject(GodotObject _instance)");
 			{
 				TAB();
@@ -268,6 +352,28 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 					TAB();
 					line("return null;");
 				}
+
+				line("");
+				line("ulong id = _instance.GetInstanceId();");
+				line("if (cached_instances.ContainsKey(id))");
+				{
+					TAB();
+					line("return cached_instances[id];");
+				}
+				line("");
+				line("if ((DateTime.Now - previous_clear_time).TotalSeconds > 1)");
+				{
+					TAB();
+					line("var query = cached_instances.Where((i) => GodotObject.IsInstanceIdValid(i.Key)).ToArray();");
+					line("foreach (var i in query)");
+					{
+						TAB();
+						line("i.Value.ClearNativePointer();");
+						line("cached_instances.Remove(i.Key);");
+					}
+					line("previous_clear_time = DateTime.Now;");
+				}
+				line("");
 
 				line("switch(_instance.GetClass())");
 				{
@@ -278,7 +384,9 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 							line(FMT_STR("case \"{0}\":", cls));
 							{
 								TAB();
-								line(FMT_STR("return new {0}(_instance);", cls));
+								line(FMT_STR("_DebugDrawInstanceWrapper_ new_instance = new {0}(_instance);", cls));
+								line("cached_instances[id] = new_instance;");
+								line("return new_instance;");
 							}
 						}
 					}
@@ -292,6 +400,13 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool is_static, bool inheritance) {
 	if (is_static) {
 		String lowered_name = cls;
+
+		if (is_generate_unload_event) {
+			line("#if DEBUG", 0);
+			line("static bool _is_connected = false;");
+			line("#endif", 0);
+		}
+
 		line("private static GodotObject _instance;");
 		line("public static GodotObject Instance");
 
@@ -300,6 +415,17 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 			line("get");
 			{
 				TAB();
+				if (is_generate_unload_event) {
+					line("#if DEBUG", 0);
+					line("if (!_is_connected)");
+					{
+						TAB();
+						line("_DebugDrawUtils_.ExtensionUnloading += OnUnloading;");
+						line("_is_connected = true;");
+					}
+					line("#endif", 0);
+					line();
+				}
 				{
 					line("if (!GodotObject.IsInstanceValid(_instance))");
 					{
@@ -310,29 +436,31 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 				}
 			}
 		}
-	} else {
-		if (!inheritance) {
-			line("public GodotObject Instance { get; private set; }");
-			line(FMT_STR("public {0}(GodotObject _instance)", cls));
-			{
-				TAB();
-				line("if (_instance == null) throw new ArgumentNullException(\"_instance\");");
-				line("if (!ClassDB.IsParentClass(_instance.GetClass(), GetType().Name)) throw new ArgumentException(\"\\\"_instance\\\" has the wrong type.\");");
-				line("Instance = _instance;");
-			}
 
+		if (is_generate_unload_event) {
 			line();
-			line("public void Dispose()");
+
+			line("#if DEBUG", 0);
+			line("static void OnUnloading()");
 			{
 				TAB();
-				line("Instance.Dispose();");
-				line("Instance = null;");
+#ifdef DEV_ENABLED
+				line("GD.Print(\"Unload " + cls + "\");");
+#endif
+				line("try");
+				{
+					TAB();
+					line("_DebugDrawUtils_.ExtensionUnloading -= OnUnloading;");
+				}
+				line("catch {}");
+				line("_instance = null;");
+				line("_is_connected = false;");
 			}
-		} else {
+			line("#endif", 0);
 			line();
-			line(FMT_STR("public {0}(GodotObject _instance) : base (_instance) {}", cls));
 		}
-
+	} else {
+		line(FMT_STR("public {0}(GodotObject _instance) : base (_instance) {}", cls));
 		line();
 		line(FMT_STR("public {0}() : this((GodotObject)ClassDB.Instantiate(\"{0}\")) { }", cls));
 	}
@@ -502,7 +630,7 @@ void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, co
 		{
 			TAB();
 			if (is_need_wrapper) {
-				line(FMT_STR("get => new {0}((GodotObject)ClassDB.ClassGetProperty(Instance, __prop_{1}));", setget.type_name, setget.name));
+				line(FMT_STR("get => ({0})_DebugDrawUtils_.CreateWrapperFromObject((GodotObject)ClassDB.ClassGetProperty(Instance, __prop_{1}));", setget.type_name, setget.name));
 				line(FMT_STR("set => ClassDB.ClassSetProperty(Instance, __prop_{0}, value.Instance);", setget.name));
 			} else if (setget.is_enum) {
 				line(FMT_STR("get => ({0})(long)ClassDB.ClassGetProperty(Instance, __prop_{1});", setget.type_name, setget.name));
@@ -735,20 +863,20 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 				break;
 			}
 
-#define PACKED_ARRAY(_type, _var_type)                                                                                                  \
-	{                                                                                                                                   \
-		_type val = def_val;                                                                                                            \
-		if (!val.size()) {                                                                                                              \
-			return DefaultData(arg_data, false, "default");                                                                             \
-		} else {                                                                                                                        \
-			PackedStringArray strs;                                                                                                     \
-			for (int i = 0; i < val.size(); i++) {                                                                                      \
-				DefaultData data = arguments_get_formatted_value(argument_parse("", "", _var_type), val[i]);                            \
-				strs.append(data.arg_string);                                                                                           \
-			}                                                                                                                           \
-			return DefaultData(arg_data, true, FMT_STR("new {0} {{1}}", types_map[def_val.get_type()], String(", ").join(strs)), true); \
-		}                                                                                                                               \
-		break;                                                                                                                          \
+#define PACKED_ARRAY(_type, _var_type)                                                                                                    \
+	{                                                                                                                                     \
+		_type val = def_val;                                                                                                              \
+		if (!val.size()) {                                                                                                                \
+			return DefaultData(arg_data, false, "default");                                                                               \
+		} else {                                                                                                                          \
+			PackedStringArray strs;                                                                                                       \
+			for (int i = 0; i < val.size(); i++) {                                                                                        \
+				DefaultData data = arguments_get_formatted_value(argument_parse("", "", _var_type), val[i]);                              \
+				strs.append(data.arg_string);                                                                                             \
+			}                                                                                                                             \
+			return DefaultData(arg_data, true, FMT_STR("new {0} { {1} }", types_map[def_val.get_type()], String(", ").join(strs)), true); \
+		}                                                                                                                                 \
+		break;                                                                                                                            \
 	}
 
 			case godot::Variant::DICTIONARY: {
@@ -764,7 +892,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 						DefaultData data_v = arguments_get_formatted_value(argument_parse("", "", values[i].get_type()), values[i]);
 						strs.append(FMT_STR("{ {0}, {1} }", data_k.arg_string, data_v.arg_string));
 					}
-					return DefaultData(arg_data, true, String("new {0} {{1}}").format(Array::make(types_map[def_val.get_type()], String(", ").join(strs))), true);
+					return DefaultData(arg_data, true, String("new {0} { {1} }").format(Array::make(types_map[def_val.get_type()], String(", ").join(strs))), true);
 				}
 				break;
 			};

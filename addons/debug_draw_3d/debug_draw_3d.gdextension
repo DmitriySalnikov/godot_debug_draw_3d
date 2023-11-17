@@ -1,7 +1,8 @@
 [configuration]
 
 entry_symbol = "debug_draw_3d_library_init"
-compatibility_minimum = "4.1"
+compatibility_minimum = "4.1.3"
+reloadable = false
 
 [dependencies]
 

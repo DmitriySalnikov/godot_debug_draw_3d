@@ -115,9 +115,6 @@ jobs:
         arch: [arm32, arm64, x86_32, x86_64]
         target: [template_debug, template_release]
 
-    env:
-      ANDROID_NDK_ROOT: /usr/local/lib/android/sdk/ndk/23.2.8568313
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
