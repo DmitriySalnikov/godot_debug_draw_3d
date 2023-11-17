@@ -20,6 +20,8 @@ DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
 using namespace godot;
 
+const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
+
 void DebugDrawManager::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawManager
 
@@ -31,6 +33,8 @@ void DebugDrawManager::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
 
 	REG_PROP_BOOL(debug_enabled);
+
+	ADD_SIGNAL(MethodInfo(s_extension_unloading));
 
 #undef REG_CLASS_NAME
 }
@@ -275,6 +279,8 @@ void DebugDrawManager::_exit_tree() {
 		memdelete(debug_draw_2d_singleton);
 		debug_draw_2d_singleton = nullptr;
 	}
+
+	emit_signal(s_extension_unloading);
 }
 
 #ifdef TOOLS_ENABLED

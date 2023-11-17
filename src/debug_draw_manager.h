@@ -37,6 +37,9 @@ protected:
 #endif
 
 public:
+
+	static const char *s_extension_unloading;
+
 	DebugDrawManager();
 	~DebugDrawManager();
 

@@ -91,6 +91,7 @@ class GenerateCSharpBindingsPlugin {
 	TypedArray<StringName> generate_for_classes;
 	PackedStringArray singletons;
 	bool is_shift_pressed = false;
+	bool is_generate_unload_event = false;
 	typedef std::map<String, DefaultData> remap_data;
 
 	std::map<Variant::Type, String> types_map = {
