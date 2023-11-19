@@ -18,7 +18,6 @@ class AssetLibraryUpdateChecker : public RefCounted {
 	GDCLASS(AssetLibraryUpdateChecker, RefCounted)
 
 private:
-
 	std::thread http_thread;
 	bool is_thread_closing = false;
 	Ref<HTTPClient> http = nullptr;

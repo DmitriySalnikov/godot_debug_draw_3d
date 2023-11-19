@@ -283,10 +283,10 @@ transform = Transform3D(10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.9
 
 [node name="LinePathAnim" type="AnimationPlayer" parent="."]
 root_node = NodePath("../LinePath")
+autoplay = "New Anim"
 libraries = {
 "": SubResource("AnimationLibrary_nj4nv")
 }
-autoplay = "New Anim"
 
 [node name="LinePath" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8)
@@ -328,6 +328,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6349, 0.625214, -5.81358)
 
 [node name="Box1" type="Node3D" parent="."]
 transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.0141019, 0.556318, -0.0303774, 1.91619, -14.007, 0, 2.794)
+rotation_edit_mode = 2
 
 [node name="Box2" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4103, 0, 6.71577)
@@ -452,11 +453,10 @@ transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 
 target_position = Vector3(0, -3.464, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
-callback_mode_process = 0
+autoplay = "New Anim"
 libraries = {
 "": SubResource("AnimationLibrary_vh8ml")
 }
-autoplay = "New Anim"
 
 [node name="LagTest" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473)

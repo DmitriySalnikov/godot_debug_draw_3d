@@ -128,6 +128,17 @@ const std::array<int, 18> GeometryGenerator::ArrowheadIndices{
 	4,
 };
 
+const std::array<int, 18> GeometryGenerator::ArrowheadIndicesSimplified{
+	0,
+	1,
+	0,
+	2,
+	0,
+	3,
+	0,
+	4,
+};
+
 const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertices{
 	Vector3(0.5f, 0.5f, 0),
 	Vector3(0.5f, -0.5f, 0),
@@ -185,7 +196,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const Pac
 	return mesh;
 }
 
-Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh) {
+Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_caps) {
 	Array arrs = mesh->surface_get_arrays(0);
 	PackedVector3Array vertexes = arrs[ArrayMesh::ArrayType::ARRAY_VERTEX];
 	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
@@ -201,11 +212,11 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 
 	if (indexes.size()) {
 		for (int i = 0; i < indexes.size(); i += 2) {
-			GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], true ? Vector3(0, 1, 0.0001) : normals[indexes[i]], res_vertexes, res_custom0, res_indexes);
+			GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], true ? Vector3(0, 1, 0.0001f) : normals[indexes[i]], res_vertexes, res_custom0, res_indexes, add_caps);
 		}
 	} else {
 		for (int i = 0; i < vertexes.size(); i += 2) {
-			GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], true ? Vector3(0, 1, 0.0001) : normals[i], res_vertexes, res_custom0, res_indexes);
+			GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], true ? Vector3(0, 1, 0.0001f) : normals[i], res_vertexes, res_custom0, res_indexes, add_caps);
 		}
 	}
 
@@ -219,7 +230,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
-void GeometryGenerator::GenerateVolumetricSegment(Vector3 a, Vector3 b, Vector3 normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes) {
+void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, const bool &add_caps) {
 	bool debug_size = false;
 	Vector3 dir = (b - a).normalized();
 
@@ -227,11 +238,6 @@ void GeometryGenerator::GenerateVolumetricSegment(Vector3 a, Vector3 b, Vector3 
 	Vector3 left = right * -1;
 	Vector3 up = dir.cross(left).normalized();
 	Vector3 down = up * -1;
-
-	Vector3 h_right = right * 0.5;
-	Vector3 h_left = left * 0.5;
-	Vector3 h_up = up * 0.5;
-	Vector3 h_down = down * 0.5;
 
 	Vector3 mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
 
@@ -262,37 +268,32 @@ void GeometryGenerator::GenerateVolumetricSegment(Vector3 a, Vector3 b, Vector3 
 	indexes.append(base + 7);
 	indexes.append(base + 6);
 
-	// Start cap
-	indexes.append(base + 0);
-	indexes.append(base + 1);
-	indexes.append(base + 2);
-	indexes.append(base + 0);
-	indexes.append(base + 3);
-	indexes.append(base + 1);
-	// End cap
-	indexes.append(base + 4);
-	indexes.append(base + 6);
-	indexes.append(base + 5);
-	indexes.append(base + 4);
-	indexes.append(base + 5);
-	indexes.append(base + 7);
+	if (add_caps) {
+		// Start cap
+		indexes.append(base + 0);
+		indexes.append(base + 1);
+		indexes.append(base + 2);
+		indexes.append(base + 0);
+		indexes.append(base + 3);
+		indexes.append(base + 1);
+		// End cap
+		indexes.append(base + 4);
+		indexes.append(base + 6);
+		indexes.append(base + 5);
+		indexes.append(base + 4);
+		indexes.append(base + 5);
+		indexes.append(base + 7);
+	}
 
-	indexes.append(2);
-	indexes.append(3);
-	indexes.append(6);
-	indexes.append(3);
-	indexes.append(7);
-	indexes.append(6);
+	custom0.push_back(right);
+	custom0.push_back(left);
+	custom0.push_back(up);
+	custom0.push_back(down);
 
-	custom0.push_back(h_right);
-	custom0.push_back(h_left);
-	custom0.push_back(h_up);
-	custom0.push_back(h_down);
-
-	custom0.push_back(h_right);
-	custom0.push_back(h_left);
-	custom0.push_back(h_up);
-	custom0.push_back(h_down);
+	custom0.push_back(right);
+	custom0.push_back(left);
+	custom0.push_back(up);
+	custom0.push_back(down);
 }
 
 std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
@@ -325,9 +326,9 @@ std::vector<Vector3> GeometryGenerator::CreateCameraFrustumLines(const std::arra
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position) {
-	int lats = _lats;
-	int lons = _lons;
+std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position, const int &subdivide) {
+	int lats = _lats * subdivide;
+	int lons = _lons * subdivide;
 
 	if (lats < 2)
 		lats = 2;
@@ -356,30 +357,31 @@ std::vector<Vector3> GeometryGenerator::CreateSphereLines(const int &_lats, cons
 			float x1 = cos(lng1);
 			float y1 = sin(lng1);
 
-			Vector3 v[4]{
+			Vector3 v[3]{
 				Vector3(x1 * zr0, z0, y1 * zr0) * radius + position,
 				Vector3(x1 * zr1, z1, y1 * zr1) * radius + position,
-				Vector3(x0 * zr1, z1, y0 * zr1) * radius + position,
 				Vector3(x0 * zr0, z0, y0 * zr0) * radius + position
 			};
 
-			res[total++] = v[0];
-			res[total++] = v[1];
-			res[total++] = v[2];
+			if (j % subdivide == 0) {
+				res[total++] = v[0];
+				res[total++] = v[1];
+			}
 
-			res[total++] = v[2];
-			res[total++] = v[3];
-			res[total++] = v[0];
+			if (i % subdivide == 0) {
+				res[total++] = v[2];
+				res[total++] = v[0];
+			}
 		}
 	}
 	return res;
 }
 
-std::vector<Vector3> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const Vector3 &position, const int &draw_edge_each_n_step) {
+std::vector<Vector3> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const Vector3 &position, const int &subdivide) {
 	real_t angle = 360.f / edges;
 
 	std::vector<Vector3> points;
-	points.reserve(4 * (size_t)edges + (((size_t)edges / (size_t)draw_edge_each_n_step) * 2));
+	points.reserve(4 * (size_t)edges + (((size_t)edges * (size_t)subdivide) * 2));
 
 	Vector3 d = Vector3(0, height, 0);
 	for (int i = 0; i < edges; i++) {
@@ -397,7 +399,7 @@ std::vector<Vector3> GeometryGenerator::CreateCylinderLines(const int &edges, co
 		points.push_back(b - d);
 
 		// Edge
-		if (i % draw_edge_each_n_step == 0) {
+		if (i % subdivide == 0) {
 			points.push_back(a + d);
 			points.push_back(a - d);
 		}

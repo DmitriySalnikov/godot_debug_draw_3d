@@ -159,6 +159,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         var set = (Key k) => Input.IsKeyPressed(k) ? (button_presses[k] == 0 ? 1 : button_presses[k]) : 0;
         button_presses[Key.Left] = set(Key.Left);
         button_presses[Key.Up] = set(Key.Up);
+        button_presses[Key.Ctrl] = set(Key.Ctrl);
         button_presses[Key.F1] = set(Key.F1);
         button_presses[Key.Key1] = set(Key.Key1);
         button_presses[Key.Key2] = set(Key.Key2);
@@ -209,6 +210,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (_is_key_just_pressed(Key.Up))
             DebugDraw3D.Config.ForceUseCameraFromScene = !DebugDraw3D.Config.ForceUseCameraFromScene;
+
+        if (_is_key_just_pressed(Key.Ctrl))
+            if (!Engine.IsEditorHint())
+                GetViewport().Msaa3D = GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? Viewport.Msaa.Disabled : Viewport.Msaa.Msaa4X;
 
         if (_is_key_just_pressed(Key.Key1))
             DebugDraw3D.DebugEnabled = !DebugDraw3D.DebugEnabled;
@@ -467,11 +472,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
         {
             DebugDraw2D.BeginTextGroup("controls", 1024, Colors.White, false);
             DebugDraw2D.SetText("Shift: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
-            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 2);
-            DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 3);
-            DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 4);
-            DebugDraw2D.SetText("Left: toggle frustum culling", DebugDraw3D.Config.UseFrustumCulling, 5);
-            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 6);
+            DebugDraw2D.SetText("Ctrl: change render layers", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
+            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 3);
+            DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
+            DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
+            DebugDraw2D.SetText("Left: toggle frustum culling", DebugDraw3D.Config.UseFrustumCulling, 6);
+            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 7);
         }
     }
 

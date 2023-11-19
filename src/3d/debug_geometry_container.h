@@ -68,8 +68,6 @@ class DebugGeometryContainer {
 
 	void CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh);
 
-	std::recursive_mutex datalock;
-
 public:
 	DebugGeometryContainer(class DebugDraw3D *root);
 	~DebugGeometryContainer();

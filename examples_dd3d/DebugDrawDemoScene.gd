@@ -59,6 +59,7 @@ func _update_keys_just_press():
 	var set_key = func (k: Key): return (1 if button_presses[k] == 0 else button_presses[k]) if Input.is_key_pressed(k) else 0
 	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
 	button_presses[KEY_UP] = set_key.call(KEY_UP)
+	button_presses[KEY_CTRL] = set_key.call(KEY_CTRL)
 	button_presses[KEY_F1] = set_key.call(KEY_F1)
 	button_presses[KEY_1] = set_key.call(KEY_1)
 	button_presses[KEY_2] = set_key.call(KEY_2)
@@ -106,6 +107,9 @@ func _process(delta: float) -> void:
 		DebugDraw3D.config.use_frustum_culling = !DebugDraw3D.config.use_frustum_culling
 	if _is_key_just_pressed(KEY_UP):
 		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
+	if _is_key_just_pressed(KEY_CTRL):
+		if !Engine.is_editor_hint():
+			get_viewport().msaa_3d = Viewport.MSAA_DISABLED if get_viewport().msaa_3d == Viewport.MSAA_4X else Viewport.MSAA_4X
 	
 	if _is_key_just_pressed(KEY_1):
 		DebugDraw3D.debug_enabled = !DebugDraw3D.debug_enabled
@@ -305,11 +309,12 @@ func _text_tests():
 	if text_groups_show_hints:
 		DebugDraw2D.begin_text_group("controls", 1024, Color.WHITE, false)
 		DebugDraw2D.set_text("Shift: change render layers", DebugDraw3D.config.geometry_render_layers, 1)
-		DebugDraw2D.set_text("Down: freeze render", DebugDraw3D.config.freeze_3d_render, 2)
-		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 3)
-		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 4)
-		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 5)
-		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 6)
+		DebugDraw2D.set_text("Ctrl: toggle anti-aliasing", "MSAA 4x" if get_viewport().msaa_3d == Viewport.MSAA_4X else "Disabled", 2)
+		DebugDraw2D.set_text("Down: freeze render", DebugDraw3D.config.freeze_3d_render, 3)
+		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 4)
+		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 5)
+		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 6)
+		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 7)
 
 
 func _more_tests():

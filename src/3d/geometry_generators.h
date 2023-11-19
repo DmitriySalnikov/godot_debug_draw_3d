@@ -16,7 +16,7 @@ using namespace godot;
 
 class GeometryGenerator {
 private:
-	static void GenerateVolumetricSegment(Vector3 a, Vector3 b, Vector3 normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes);
+	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, const bool &add_caps = true);
 
 public:
 #pragma region Predefined Geometry Parts
@@ -27,6 +27,7 @@ public:
 	const static std::array<int, 36> CubeWithDiagonalsIndices;
 	const static std::array<Vector3, 6> ArrowheadVertices;
 	const static std::array<int, 18> ArrowheadIndices;
+	const static std::array<int, 18> ArrowheadIndicesSimplified;
 	const static std::array<Vector3, 4> CenteredSquareVertices;
 	const static std::array<int, 6> SquareIndices;
 	const static std::array<Vector3, 6> PositionVertices;
@@ -47,11 +48,11 @@ public:
 
 	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
 
-	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh);
+	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_caps = true);
 
 	static std::vector<Vector3> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
 	// TODO like in cylinder add more lines and draw_edge_each_n_step to make them more precise
-	static std::vector<Vector3> CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position);
-	static std::vector<Vector3> CreateCylinderLines(const int &edges, const float &radius, const float &height, const Vector3 &position, const int &draw_edge_each_n_step = 1);
+	static std::vector<Vector3> CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const Vector3 &position, const int &subdivide = 1);
+	static std::vector<Vector3> CreateCylinderLines(const int &edges, const float &radius, const float &height, const Vector3 &position, const int &subdivide = 1);
 	static std::vector<Vector3> CreateLinesFromPath(const PackedVector3Array &path);
 };

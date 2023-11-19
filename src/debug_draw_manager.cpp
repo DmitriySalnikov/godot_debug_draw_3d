@@ -24,6 +24,7 @@ const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
 void DebugDrawManager::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawManager
 
+	// TODO USE CALLABLE_MP!
 	// ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_add_to_tree)), &DebugDrawManager::_add_to_tree);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);

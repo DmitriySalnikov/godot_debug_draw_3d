@@ -150,9 +150,15 @@ def generate_sources_for_resources(env, src_out):
         ("src/resources/billboard_unshaded.gdshader", True),
     ]
     generate_resources_cpp_h_files(shared_files, "DD3DResources", "shared_resources.gen", src_out)
+    print("The generation of C++ sources with the contents of resources has been completed")
+    print()
 
 
 def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_out):
+    print(f"Generating sources '{output_no_ext}.[cpp/h]' with content from resources:")
+    print("\n".join([f"{i[0]} as {'text' if i[1] else 'binary'}" for i in input_files]))
+    print()
+
     gen_dir = "gen/"
     out_dir = src_folder + "/" + gen_dir
     Path(out_dir).mkdir(parents=True, exist_ok=True)

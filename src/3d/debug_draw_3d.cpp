@@ -10,6 +10,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/input.hpp>
 GODOT_WARNING_RESTORE()
 
 #include <limits.h>
@@ -94,6 +95,10 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	_load_materials();
 
 #ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEV_ENABLED
+	DEV_PRINT_STD_F("To regenerate the 3D geometry press the \"%s\" action\n", reload_action_name);
+#endif
+
 	dgc = std::make_unique<DebugGeometryContainer>(this);
 #endif
 }
@@ -119,6 +124,18 @@ DebugDraw3D::~DebugDraw3D() {
 
 void DebugDraw3D::process(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEV_ENABLED
+	if (Input::get_singleton()->is_action_just_pressed(reload_action_name)) {
+		LOCK_GUARD(datalock);
+		Node *old_world = dgc->get_world();
+		dgc.reset();
+
+		_load_materials();
+		dgc = std::make_unique<DebugGeometryContainer>(this);
+		dgc->set_world(old_world);
+	}
+#endif
+
 	// Update 3D debug
 	dgc->update_geometry(delta);
 #endif
@@ -277,7 +294,7 @@ void DebugDraw3D::draw_sphere_base(const Vector3 &position, const real_t &radius
 
 void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color &color, const real_t &duration, const bool &hd) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_instance(
 			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
 			duration,
@@ -311,7 +328,7 @@ void DebugDraw3D::draw_sphere_hd_xf(const Transform3D &transform, const Color &c
 
 void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::CYLINDERS,
 			duration,
@@ -330,7 +347,7 @@ void DebugDraw3D::draw_box(const Vector3 &position, const Vector3 &size, const C
 
 void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	/// It's possible to use less space to contain box, but this method works better in more cases
 	SphereBounds sb(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CubeRadiusForSphere);
@@ -365,7 +382,7 @@ void DebugDraw3D::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &
 
 void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const Vector3 &hit, const bool &is_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	if (is_hit) {
 		dgc->geometry_pool.add_or_update_line(duration, { start, hit }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 		dgc->geometry_pool.add_or_update_line(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
@@ -383,7 +400,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 
 void DebugDraw3D::draw_line_hit_offset(const Vector3 &start, const Vector3 &end, const bool &is_hit, const real_t &unit_offset_of_hit, const real_t &hit_size, const Color &hit_color, const Color &after_hit_color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	if (is_hit && unit_offset_of_hit >= 0 && unit_offset_of_hit <= 1) {
 		draw_line_hit(start, end, ((end - start).normalized() * start.distance_to(end) * unit_offset_of_hit + start), is_hit, hit_size, hit_color, after_hit_color, duration);
 	} else {
@@ -395,13 +412,13 @@ void DebugDraw3D::draw_line_hit_offset(const Vector3 &start, const Vector3 &end,
 
 void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, { a, b }, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	if (lines.size() % 2 != 0) {
 		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
@@ -418,7 +435,7 @@ void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color
 
 void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	if (lines.size() % 2 != 0) {
 		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
@@ -430,7 +447,7 @@ void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &c
 
 void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, { origin, origin + direction * length }, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
@@ -443,7 +460,7 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 		return;
 	}
 
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, GeometryGenerator::CreateLinesFromPath(path), IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 }
 
@@ -452,7 +469,7 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 
 void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	Vector3 dir = (b - a);
 	real_t size = (is_absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
 	Vector3 pos = b - dir.normalized() * size;
@@ -473,7 +490,7 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 
 void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::ARROWHEADS,
@@ -485,7 +502,7 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 
 void DebugDraw3D::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, { a, b }, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
 	create_arrow(a, b, color, arrow_size, is_absolute_size, duration);
@@ -498,7 +515,7 @@ void DebugDraw3D::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction
 
 void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, GeometryGenerator::CreateLinesFromPath(path), IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
 	for (int i = 0; i < path.size() - 1; i++) {
@@ -525,7 +542,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	Transform3D t(Basis(), position);
 	t.basis.scale(Vector3_ONE * size);
 
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::BILLBOARD_SQUARES,
 			duration,
@@ -543,7 +560,7 @@ void DebugDraw3D::draw_points(const PackedVector3Array &points, const real_t &si
 
 void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::POSITIONS,
 			duration,
@@ -554,7 +571,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 
 void DebugDraw3D::draw_gizmo(const Transform3D &transform, const Color &color, const bool &is_centered, const real_t &duration) {
 	CHECK_BEFORE_CALL();
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	bool is_color_empty = IS_DEFAULT_COLOR(color);
 #define COLOR(axis) is_color_empty ? Colors::axis_##axis : color
@@ -587,7 +604,7 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &_su
 #define MAX_SUBDIVISIONS 1024 * 1024
 	ERR_FAIL_COND(_subdivision.x > MAX_SUBDIVISIONS);
 	ERR_FAIL_COND(_subdivision.y > MAX_SUBDIVISIONS);
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 
 	Vector2i subdivision = _subdivision.abs();
 	subdivision = Vector2i(Math::clamp(subdivision.x, 1, MAX_SUBDIVISIONS), Math::clamp(subdivision.y, 1, MAX_SUBDIVISIONS));
@@ -622,7 +639,7 @@ void DebugDraw3D::draw_camera_frustum_planes_c(const std::array<Plane, 6> &plane
 	CHECK_BEFORE_CALL();
 	auto lines = GeometryGenerator::CreateCameraFrustumLines(planes);
 
-	LOCK_GUARD(dgc->datalock);
+	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_line(duration, lines, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 

@@ -10,6 +10,7 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 #include <memory>
+#include <mutex>
 
 using namespace godot;
 
@@ -23,6 +24,7 @@ class DebugDraw3D : public Object {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
+	friend DebugGeometryContainer;
 
 private:
 	static DebugDraw3D *singleton;
@@ -31,6 +33,11 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
+#ifdef DEV_ENABLED
+	const char *reload_action_name = "ui_end";
+#endif
+	std::recursive_mutex datalock;
+
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
