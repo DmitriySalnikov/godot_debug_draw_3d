@@ -122,15 +122,37 @@ jobs:
           lfs: true
           submodules: recursive
 
+      - name: Install Android NDK r23
+        uses: nttld/setup-ndk@v1.4.1
+        id: setup-ndk
+        with:
+          ndk-version: r23
+          add-to-path: true
+          local-cache: true
+
+      # TODO revisit after some updates of nttld/setup-ndk
+      - name: Restore Android Symlinks
+        run: |
+          directory="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+          find "$directory" -type l | while read link; do
+              current_target=$(readlink "$link")
+              new_target="$directory/$(basename "$current_target")"
+              ln -sf "$new_target" "$link"
+              echo "Changed $(basename "$link") from $current_target to $new_target"
+          done
+
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
+        env:
+          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
         with:
           platform: android
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android
-          additional: lto=yes
+          additional: lto=yes ANDROID_HOME=""
 
   # ============================================
 
