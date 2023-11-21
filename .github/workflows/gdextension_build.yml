@@ -122,12 +122,12 @@ jobs:
           lfs: true
           submodules: recursive
 
-      - name: Install Android NDK r23
+      - name: Install Android NDK r23c
         uses: nttld/setup-ndk@v1.4.1
         id: setup-ndk
         with:
-          ndk-version: r23
-          add-to-path: true
+          ndk-version: r23c
+          link-to-sdk: true
           local-cache: true
 
       # TODO revisit after some updates of nttld/setup-ndk
@@ -144,15 +144,13 @@ jobs:
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
-        env:
-          ANDROID_NDK_ROOT: ${{ steps.setup-ndk.outputs.ndk-path }}
         with:
           platform: android
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           artifact: android
-          additional: lto=yes ANDROID_HOME=""
+          additional: lto=yes
 
   # ============================================
 
