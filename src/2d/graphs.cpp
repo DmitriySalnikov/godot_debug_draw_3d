@@ -387,6 +387,7 @@ Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDr
 				pos.y = pos.y - graph_size.y - graph_offset.y;
 				break;
 			case GraphPosition::POSITION_RIGHT_BOTTOM:
+			default:
 				pos.x = pos.x - graph_size.x - graph_offset.x;
 				pos.y = pos.y - graph_size.y - graph_offset.y;
 				break;
@@ -406,6 +407,7 @@ Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDr
 				pos.x = _rects.full.position.x + _rects.full.size.x + graph_offset.x;
 				break;
 			case GraphSide::SIDE_BOTTOM:
+			default:
 				if (is_right)
 					pos.x = _rects.full.position.x + _rects.full.size.x - graph_size.x;
 				pos.y = _rects.full.position.y + _rects.full.size.y + graph_offset.y;

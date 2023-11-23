@@ -33,12 +33,12 @@ GODOT_WARNING_RESTORE()
 #if DEV_ENABLED
 #define DEV_PRINT(text, ...) godot::UtilityFunctions::print(FMT_STR(godot::Variant(text), ##__VA_ARGS__))
 // TODO rework. rename to "Fast logs". use without DEV?
-#define DEV_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
+#define DEV_PRINT_STD(format, ...) Utils::_logv(false, false, format, ##__VA_ARGS__)
 // Forced
-#define DEV_PRINT_STD_F(format, ...) Utils::logv(format, false, true, ##__VA_ARGS__)
-#define DEV_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
+#define DEV_PRINT_STD_F(format, ...) Utils::_logv(false, true, format, ##__VA_ARGS__)
+#define DEV_PRINT_STD_ERR(format, ...) Utils::_logv(true, false, format, ##__VA_ARGS__)
 // Forced
-#define DEV_PRINT_STD_ERR_F(format, ...) Utils::logv(format, true, true, ##__VA_ARGS__)
+#define DEV_PRINT_STD_ERR_F(format, ...) Utils::_logv(true, true, format, ##__VA_ARGS__)
 #else
 #define DEV_PRINT(text, ...)
 #define DEV_PRINT_STD(format, ...)
@@ -164,7 +164,7 @@ class Utils {
 public:
 	static const char *root_settings_section;
 
-	static void logv(const char *p_format, bool p_err, bool p_force_print, ...);
+	static void _logv(bool p_err, bool p_force_print, const char *p_format, ...);
 	static void print_logs();
 
 	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
@@ -199,23 +199,30 @@ public:
 	template <class TPool, class TContainer>
 	static TPool convert_to_packed_array(TContainer &arr) {
 		TPool p;
-		if (arr.size() > 0) {
-			p.resize(arr.size());
-			memcpy(p.ptrw(), arr.data(), sizeof(arr[0]) * arr.size());
+		if (!arr.empty()) {
+			auto *data = arr.data();
+			if (data) {
+				p.resize(arr.size());
+				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
+			}
 		}
 		return p;
 	}
 
 	template <class TPool, class TContainer>
 	static TPool convert_to_packed_array_diffrent_types(TContainer &arr) {
+
 		TPool p;
 		p.resize(1);
 		long s = sizeof(p[0]);
 		p.resize(0);
 
-		if (arr.size() > 0) {
-			p.resize(arr.size() * sizeof(arr[0]) / s);
-			memcpy(p.ptrw(), arr.data(), sizeof(arr[0]) * arr.size());
+		if (!arr.empty()) {
+			auto *data = arr.data();
+			if (data) {
+				p.resize(arr.size() * sizeof(arr[0]) / s);
+				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
+			}
 		}
 		return p;
 	}
@@ -227,9 +234,12 @@ public:
 		long s = sizeof(p[0]);
 		p.resize(0);
 
-		if (arr.size() > 0) {
-			p.resize(arr.size() * sizeof(arr[0]) / s);
-			memcpy(p.ptrw(), arr.ptr(), sizeof(arr[0]) * arr.size());
+		if (!arr.is_empty()) {
+			auto *data = arr.ptr();
+			if (data) {
+				p.resize(arr.size() * sizeof(arr[0]) / s);
+				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
+			}
 		}
 		return p;
 	}

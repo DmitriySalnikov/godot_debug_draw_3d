@@ -259,6 +259,8 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 			case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_BOTTOM:
 				right_side_multiplier = -1;
 				break;
+			default:
+				break;
 		}
 
 		std::vector<TextGroup_ptr> ordered_groups = Utils::order_by(_text_groups,

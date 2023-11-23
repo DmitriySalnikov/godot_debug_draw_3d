@@ -28,10 +28,11 @@
 												 : n))
 #define MSVC_WARNING_RESTORE(n) __pragma(warning(default \
 												 : n))
-
 #else
+
 #define GODOT_WARNING_DISABLE(n)
 #define GODOT_WARNING_RESTORE(n)
+
 #define MSVC_WARNING_DISABLE(n)
 #define MSVC_WARNING_RESTORE(n)
 #endif

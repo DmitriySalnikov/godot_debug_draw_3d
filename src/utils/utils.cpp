@@ -9,7 +9,7 @@ std::queue<Utils::LogData> Utils::log_buffer;
 #endif
 const char *Utils::root_settings_section = "debug_draw_3d/settings/";
 
-void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
+void Utils::_logv(bool p_err, bool p_force_print, const char *p_format, ...) {
 #if DEBUG_ENABLED
 
 	const int static_buf_size = 512;
@@ -17,7 +17,7 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 	char *buf = static_buf;
 
 	va_list list_copy;
-	va_start(list_copy, (const char *)p_force_print);
+	va_start(list_copy, p_format);
 
 	va_list p_list;
 	va_copy(p_list, list_copy);
