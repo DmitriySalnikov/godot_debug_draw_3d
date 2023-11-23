@@ -22,6 +22,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/core/property_info.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -30,13 +31,16 @@ GODOT_WARNING_RESTORE()
 #pragma region PRINTING
 
 #if DEV_ENABLED
-#define DEV_PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
+#define DEV_PRINT(text, ...) godot::UtilityFunctions::print(FMT_STR(godot::Variant(text), ##__VA_ARGS__))
+// TODO rework. rename to "Fast logs". use without DEV?
 #define DEV_PRINT_STD(format, ...) Utils::logv(format, false, false, ##__VA_ARGS__)
+// Forced
 #define DEV_PRINT_STD_F(format, ...) Utils::logv(format, false, true, ##__VA_ARGS__)
 #define DEV_PRINT_STD_ERR(format, ...) Utils::logv(format, true, false, ##__VA_ARGS__)
+// Forced
 #define DEV_PRINT_STD_ERR_F(format, ...) Utils::logv(format, true, true, ##__VA_ARGS__)
 #else
-#define DEV_PRINT(text)
+#define DEV_PRINT(text, ...)
 #define DEV_PRINT_STD(format, ...)
 #define DEV_PRINT_STD_F(format, ...)
 #define DEV_PRINT_STD_ERR(format, ...)
@@ -44,9 +48,9 @@ GODOT_WARNING_RESTORE()
 #endif
 
 #define FMT_STR(str, ...) String(str).format(Array::make(__VA_ARGS__))
-#define PRINT(text) godot::UtilityFunctions::print(godot::Variant(text))
-#define PRINT_ERROR(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify())
-#define PRINT_WARNING(text) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, godot::Variant(text).stringify(), false, true)
+#define PRINT(text, ...) godot::UtilityFunctions::print(FMT_STR(godot::Variant(text), ##__VA_ARGS__))
+#define PRINT_ERROR(text, ...) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, FMT_STR(godot::Variant(text).stringify(), ##__VA_ARGS__))
+#define PRINT_WARNING(text, ...) godot::_err_print_error(__FUNCTION__, godot::get_file_name_in_repository(__FILE__).utf8().get_data(), __LINE__, FMT_STR(godot::Variant(text).stringify(), ##__VA_ARGS__), false, true)
 
 namespace godot {
 static String get_file_name_in_repository(const String &name) {
@@ -67,15 +71,16 @@ static String get_file_name_in_repository(const String &name) {
 // e.g. #define REG_CLASS_NAME DebugDraw3D
 // REG_METHOD("draw_box")
 
-#define REG_METHOD(name) ClassDB::bind_method(D_METHOD(#name), &REG_CLASS_NAME::name)
-#define REG_METHOD_ARGS(name, ...) ClassDB::bind_method(D_METHOD(#name, __VA_ARGS__), &REG_CLASS_NAME::name)
+#define REG_METHOD(name, ...) ClassDB::bind_method(D_METHOD(#name, ##__VA_ARGS__), &REG_CLASS_NAME::name)
 
-#define REG_PROP_BASE(name, type, getter)                                                     \
+#define REG_PROP_BASE(name, getter, prop_info)                                                \
 	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &REG_CLASS_NAME::set_##name); \
 	ClassDB::bind_method(D_METHOD(NAMEOF(getter##name)), &REG_CLASS_NAME::getter##name);      \
-	ADD_PROPERTY(PropertyInfo(type, #name), NAMEOF(set_##name), NAMEOF(getter##name));
-#define REG_PROP(name, type) REG_PROP_BASE(name, type, get_)
-#define REG_PROP_BOOL(name) REG_PROP_BASE(name, Variant::BOOL, is_)
+	ADD_PROPERTY(prop_info, NAMEOF(set_##name), NAMEOF(getter##name));
+/// name, type, hint, hint_string, usage
+#define REG_PROP(name, type, ...) REG_PROP_BASE(name, get_, PropertyInfo(type, #name, ##__VA_ARGS__))
+/// name, type, hint, hint_string, usage
+#define REG_PROP_BOOL(name, ...) REG_PROP_BASE(name, is_, PropertyInfo(Variant::BOOL, #name, ##__VA_ARGS__))
 
 #pragma endregion !BINDING REGISTRATION
 

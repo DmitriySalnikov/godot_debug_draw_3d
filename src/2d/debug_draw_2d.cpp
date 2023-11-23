@@ -24,12 +24,12 @@ void DebugDraw2D::_bind_methods() {
 
 #pragma region Parameters
 
-	REG_PROP(empty_color, Variant::COLOR);
-	REG_PROP_BOOL(debug_enabled);
+	REG_PROP(empty_color, Variant::COLOR, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+	REG_PROP_BOOL(debug_enabled, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(config, Variant::OBJECT);
+	REG_PROP(config, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(custom_canvas, Variant::OBJECT);
+	REG_PROP(custom_canvas, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
 #pragma endregion
 #undef REG_CLASS_NAME

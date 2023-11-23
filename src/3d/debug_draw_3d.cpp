@@ -19,17 +19,36 @@ GODOT_WARNING_RESTORE()
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
 
+void DDScopedConfig3D::_bind_methods() {
+#define REG_CLASS_NAME DDScopedConfig3D
+	REG_PROP(empty_color, Variant::COLOR);
+#undef REG_CLASS_NAME
+}
+
+DDScopedConfig3D::DDScopedConfig3D() {
+	// TODO check for the first create() for properties defaults
+	// TODO add this check for DD3D and DD2D to avoid warnings
+	DEV_PRINT_STD_ERR(NAMEOF(DDScopedConfig3D) " must be called with arguments!\n");
+}
+
+DDScopedConfig3D::DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DDScopedConfig3D *parent) {
+}
+
+DDScopedConfig3D::~DDScopedConfig3D() {
+}
+
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
 
 #pragma region Parameters
 
-	REG_PROP(empty_color, Variant::COLOR);
-	REG_PROP_BOOL(debug_enabled);
+	// HACK PROPERTY_USAGE_NONE disable "Instantiated OBJECT used as default value" warning
+	REG_PROP(empty_color, Variant::COLOR, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+	REG_PROP_BOOL(debug_enabled, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(config, Variant::OBJECT);
+	REG_PROP(config, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(custom_viewport, Variant::OBJECT);
+	REG_PROP(custom_viewport, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
 #pragma endregion
 #undef REG_CLASS_NAME
@@ -95,9 +114,7 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	_load_materials();
 
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEV_ENABLED
-	DEV_PRINT_STD_F("To regenerate the 3D geometry press the \"%s\" action\n", reload_action_name);
-#endif
+	DEV_PRINT_STD("To regenerate the 3D geometry press the \"%s\" action\n", reload_action_name);
 
 	dgc = std::make_unique<DebugGeometryContainer>(this);
 #endif
@@ -139,6 +156,26 @@ void DebugDraw3D::process(double delta) {
 	// Update 3D debug
 	dgc->update_geometry(delta);
 #endif
+}
+
+Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
+	static std::atomic<uint64_t> create_counter = 0;
+	create_counter++;
+
+	return Ref<DDScopedConfig3D>();
+}
+
+DDScopedConfig3D *DebugDraw3D::get_transform_for_current_thread() {
+	return nullptr;
+}
+
+void DebugDraw3D::register_scoped_config(uint64_t guard_id, uint64_t thread_id, DDScopedConfig3D *cfg) {
+}
+
+void DebugDraw3D::unregister_scoped_config(uint64_t guard_id, uint64_t thread_id) {
+}
+
+void DebugDraw3D::clear_scoped_configs() {
 }
 
 void DebugDraw3D::_load_materials() {

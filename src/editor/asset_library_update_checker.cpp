@@ -107,7 +107,7 @@ void AssetLibraryUpdateChecker::init() {
 
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to initialize connection. Error: {0}", UtilityFunctions::error_string(err)));
+				PRINT_ERROR("DebugDraw Updater: Failed to initialize connection. Error: {0}", UtilityFunctions::error_string(err));
 				return;
 			}
 		} else {
@@ -118,7 +118,7 @@ void AssetLibraryUpdateChecker::init() {
 		while (http.is_valid() && !is_thread_closing) {
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to connect. Error: {0}", UtilityFunctions::error_string(err)));
+				PRINT_ERROR("DebugDraw Updater: Failed to connect. Error: {0}", UtilityFunctions::error_string(err));
 				return;
 			}
 
@@ -129,7 +129,7 @@ void AssetLibraryUpdateChecker::init() {
 				case godot::HTTPClient::STATUS_CANT_RESOLVE:
 				case godot::HTTPClient::STATUS_CANT_CONNECT:
 				case godot::HTTPClient::STATUS_TLS_HANDSHAKE_ERROR:
-					PRINT_ERROR(FMT_STR("DebugDraw Updater: Connection error: {0}", status));
+					PRINT_ERROR("DebugDraw Updater: Connection error: {0}", status);
 					return;
 				case godot::HTTPClient::STATUS_RESOLVING:
 				case godot::HTTPClient::STATUS_CONNECTING:
@@ -137,7 +137,7 @@ void AssetLibraryUpdateChecker::init() {
 				case godot::HTTPClient::STATUS_BODY:
 				default:
 					if (status != prev_status) {
-						DEV_PRINT(FMT_STR("DebugDraw Updater: Connecting status: {0}", status));
+						DEV_PRINT_STD("DebugDraw Updater: Connecting status: %d\n", status);
 					}
 					break;
 				case godot::HTTPClient::STATUS_CONNECTED:
@@ -156,7 +156,7 @@ void AssetLibraryUpdateChecker::init() {
 		String request_url = "/asset-library/api/asset/" + String::num_int64(addon_id);
 		err = http->request(HTTPClient::METHOD_GET, request_url, PackedStringArray());
 		if (err != Error::OK) {
-			PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to create a request. Error: {0}", UtilityFunctions::error_string(err)));
+			PRINT_ERROR("DebugDraw Updater: Failed to create a request. Error: {0}", UtilityFunctions::error_string(err));
 			return;
 		}
 
@@ -164,7 +164,7 @@ void AssetLibraryUpdateChecker::init() {
 
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to get a response from \"{0}\". Error: {1}", godot_domain + request_url, UtilityFunctions::error_string(err)));
+				PRINT_ERROR("DebugDraw Updater: Failed to get a response from \"{0}\". Error: {1}", godot_domain + request_url, UtilityFunctions::error_string(err));
 				return;
 			}
 
@@ -184,7 +184,7 @@ void AssetLibraryUpdateChecker::init() {
 				return;
 			} else {
 				if (code != 0) {
-					PRINT_ERROR(FMT_STR("DebugDraw Updater: Failed to get a response from \"{0}\". Code: {1}", godot_domain + request_url, code));
+					PRINT_ERROR("DebugDraw Updater: Failed to get a response from \"{0}\". Code: {1}", godot_domain + request_url, code);
 					return;
 				}
 			}
@@ -192,7 +192,7 @@ void AssetLibraryUpdateChecker::init() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
-		DEV_PRINT(FMT_STR("DebugDraw Updater: Thread finished"));
+		DEV_PRINT_STD("DebugDraw Updater: Thread finished\n");
 	});
 }
 

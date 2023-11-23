@@ -24,9 +24,7 @@ const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
 void DebugDrawManager::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawManager
 
-	// TODO USE CALLABLE_MP!
-	// ClassDB::bind_method(D_METHOD(NAMEOF(get_title)), &DebugDrawGraph::get_title);
-	ClassDB::bind_method(D_METHOD(NAMEOF(_add_to_tree)), &DebugDrawManager::_add_to_tree);
+	// TODO use CALLABLE_MP in 4.2!
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDrawManager::_on_scene_changed);
 
@@ -81,7 +79,7 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 #endif
 }
 
-void DebugDrawManager::_add_to_tree() {
+void DebugDrawManager::_integrate_into_engine() {
 	// Assigned here because it is created inside the `GDExtension Initialize` function.
 	// 1. Create in Initialize and assign Singleton
 	// 2. Call class constructor after Initialize to get default values of properties
@@ -92,13 +90,8 @@ void DebugDrawManager::_add_to_tree() {
 	SCENE_ROOT()->add_child(this);
 	SCENE_ROOT()->move_child(this, 0);
 
-	// Then wait for `_ready` to continue
-}
-
-void DebugDrawManager::_integrate_into_engine() {
 	set_process(true);
 
-	// Need to be call 'deferred'
 	debug_draw_3d_singleton->init(this);
 	debug_draw_2d_singleton->init(this);
 
@@ -226,7 +219,7 @@ void DebugDrawManager::init() {
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw2D), debug_draw_2d_singleton);
 	Engine::get_singleton()->register_singleton("Dbg2", debug_draw_2d_singleton);
 
-	call_deferred(NAMEOF(_add_to_tree));
+	call_deferred(NAMEOF(_integrate_into_engine));
 }
 
 void DebugDrawManager::_process(double delta) {
@@ -252,11 +245,6 @@ void DebugDrawManager::_process(double delta) {
 		log_flush_time -= 0.25f;
 		Utils::print_logs();
 	}
-}
-
-void DebugDrawManager::_ready() {
-	// HACK Call deferred to avoid setting the instance of `config` as a standard parameter value
-	call_deferred(NAMEOF(_integrate_into_engine));
 }
 
 void DebugDrawManager::_exit_tree() {

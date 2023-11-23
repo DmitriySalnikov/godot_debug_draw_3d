@@ -39,6 +39,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDraw3D>();
 		ClassDB::register_class<DebugDrawStats3D>();
 		ClassDB::register_class<DebugDrawConfig3D>();
+		ClassDB::register_class<DDScopedConfig3D>();
 
 		ClassDB::register_class<DebugDrawManager>();
 

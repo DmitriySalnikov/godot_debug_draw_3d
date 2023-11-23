@@ -60,16 +60,16 @@ void Utils::print_logs() {
 		auto &l = log_buffer.front();
 		if (l.repeat > 1) {
 			if (l.is_error) {
-				fprintf(stderr, "[x%d] %s", l.repeat, l.text.c_str());
+				fprintf(stderr, "[Error] [x%d] %s", l.repeat, l.text.c_str());
 			} else {
-				printf("[x%d] %s", l.repeat, l.text.c_str());
+				printf("[Info] [x%d] %s", l.repeat, l.text.c_str());
 				// fflush(stdout);
 			}
 		} else {
 			if (l.is_error) {
-				fprintf(stderr, l.text.c_str());
+				fprintf(stderr, "[Error] %s", l.text.c_str());
 			} else {
-				printf(l.text.c_str());
+				printf("[Info] %s", l.text.c_str());
 				// fflush(stdout);
 			}
 		}

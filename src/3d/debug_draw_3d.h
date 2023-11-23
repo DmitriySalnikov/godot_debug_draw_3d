@@ -20,7 +20,34 @@ class DebugDrawConfig3D;
 class DebugDrawStats3D;
 class DebugGeometryContainer;
 
-class DebugDraw3D : public Object {
+class DDScopedConfig3D : public RefCounted {
+	GDCLASS(DDScopedConfig3D, RefCounted)
+
+protected:
+	static void _bind_methods();
+	uint64_t thread_id = 0;
+	uint64_t guard_id = 0;
+	void set_empty_color(const Color &_col){};
+	Color get_empty_color() const { return Color(); };
+
+public:
+	DDScopedConfig3D();
+	DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DDScopedConfig3D *parent);
+	~DDScopedConfig3D();
+};
+
+template <class TCfgStorage>
+class ScopedStorage {
+private:
+	virtual TCfgStorage *get_transform_for_current_thread() = 0;
+
+public:
+	virtual void register_scoped_config(uint64_t guard_id, uint64_t thread_id, TCfgStorage *cfg) = 0;
+	virtual void unregister_scoped_config(uint64_t guard_id, uint64_t thread_id) = 0;
+	virtual void clear_scoped_configs() = 0;
+};
+
+class DebugDraw3D : public Object, public ScopedStorage<DDScopedConfig3D> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
@@ -31,6 +58,9 @@ private:
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
+
+	// Inherited via ScopedStorage
+	DDScopedConfig3D *get_transform_for_current_thread() override;
 
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEV_ENABLED
@@ -81,6 +111,13 @@ public:
 	static DebugDraw3D *get_singleton() {
 		return singleton;
 	};
+
+	Ref<DDScopedConfig3D> new_scoped_config();
+
+	// Inherited via ScopedStorage
+	void register_scoped_config(uint64_t guard_id, uint64_t thread_id, DDScopedConfig3D *cfg) override;
+	void unregister_scoped_config(uint64_t guard_id, uint64_t thread_id) override;
+	void clear_scoped_configs() override;
 
 	Node *get_root_node();
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
