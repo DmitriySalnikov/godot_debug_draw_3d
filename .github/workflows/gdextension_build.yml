@@ -5,6 +5,11 @@ on:
   pull_request:
     paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
   workflow_dispatch:
+    inputs:
+      use_cache:
+        description: Use Cache
+        default: true
+        type: boolean
   repository_dispatch:
 
 # Stop the same workflow actions
@@ -42,6 +47,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{format('{0}', inputs.use_cache)}} # Cast to string
           artifact: windows
           additional: lto=yes
 
@@ -71,6 +77,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{format('{0}', inputs.use_cache)}}
           artifact: linux
           additional: lto=yes
 
@@ -100,6 +107,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{format('{0}', inputs.use_cache)}}
           artifact: macos
           additional: lto=yes macos_deployment_target=10.14
 
@@ -149,6 +157,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{format('{0}', inputs.use_cache)}}
           artifact: android
           additional: lto=yes
 
@@ -185,6 +194,7 @@ jobs:
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{format('{0}', inputs.use_cache)}}
           artifact: web
           additional: lto=yes
 
@@ -207,6 +217,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: extracted_files
+
+      - name: Remove `gdextension_libs` if the action was restarted
+        run: |
+          rm -rf extracted_files/gdextension_libs/
 
       - name: Store all libraries in one directory
         run: |

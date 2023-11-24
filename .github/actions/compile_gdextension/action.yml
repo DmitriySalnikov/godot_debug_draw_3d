@@ -6,19 +6,26 @@ inputs:
     required: true
   target:
     description: Compilation target (editor|template_release|template_debug)
+    required: true
     default: "release"
   arch:
     description: Arch (universal|x86_32|x86_64|arm32|arm64|rv64|ppc32|ppc64|wasm32)
+    required: true
     default: ""
+  output_libs_path:
+    description: Path to compiled libraries
+    required: true
+    default: "bin"
+  use_cache:
+    description: Use cache
+    default: "true"
+  artifact:
+    description: Artifact name
+    required: true
+    default: "bin"
   additional:
     description: Any additional arguments
     default: ""
-  artifact:
-    description: Artifact name
-    default: "bin"
-  output_libs_path:
-    description: Path to compiled libraries
-    default: "bin"
 runs:
   using: "composite"
   steps:
@@ -29,6 +36,7 @@ runs:
         echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
 
     - name: Restore .scons_cache directory
+      if: inputs.use_cache != 'false'
       uses: actions/cache/restore@v3
       with:
         path: ${{env.SCONS_CACHE}}
@@ -102,6 +110,7 @@ runs:
         path: ${{inputs.output_libs_path}}/*
 
     - name: Save .scons_cache directory
+      if: inputs.use_cache != 'false'
       uses: actions/cache/save@v3
       with:
         path: ${{env.SCONS_CACHE}}
