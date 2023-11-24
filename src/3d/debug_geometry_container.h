@@ -7,6 +7,8 @@
 #include "utils/math_utils.h"
 #include "utils/utils.h"
 
+#include <map>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/camera3d.hpp>
@@ -21,9 +23,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/texture.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <map>
-
 using namespace godot;
 
 class DebugDrawStats3D;

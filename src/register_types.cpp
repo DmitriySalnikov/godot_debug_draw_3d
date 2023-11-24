@@ -5,11 +5,11 @@
 #include "2d/graphs.h"
 #include "2d/stats_2d.h"
 #include "3d/config_3d.h"
+#include "3d/config_scoped_3d.h"
 #include "3d/debug_draw_3d.h"
 #include "3d/stats_3d.h"
 #include "debug_draw_manager.h"
 #include "utils/utils.h"
-using namespace godot;
 
 DebugDrawManager *debug_draw_manager = nullptr;
 
@@ -26,6 +26,7 @@ GODOT_WARNING_RESTORE()
 Ref<AssetLibraryUpdateChecker> upd_checker;
 #endif
 #endif
+using namespace godot;
 
 /** GDExtension Initialize **/
 void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
@@ -55,6 +56,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDrawMenuExtensionPlugin>();
 		EditorPlugins::add_by_type<DebugDrawMenuExtensionPlugin>();
 
+		// TODO register as unexposed
 		ClassDB::register_class<AssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
 	}

@@ -5,12 +5,11 @@
 #include "debug_draw_3d.h"
 #include "stats_3d.h"
 
+#include <array>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/world3d.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <array>
-
 using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {

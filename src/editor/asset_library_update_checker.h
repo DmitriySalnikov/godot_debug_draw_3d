@@ -11,7 +11,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/http_client.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 class AssetLibraryUpdateChecker : public RefCounted {

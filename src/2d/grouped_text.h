@@ -3,17 +3,16 @@
 
 #include "utils/compiler.h"
 
-GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
-GODOT_WARNING_RESTORE()
-
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <unordered_set>
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/font.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
+GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class TextGroupItem {

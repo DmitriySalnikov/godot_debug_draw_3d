@@ -6,7 +6,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/editor_plugin.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 class DebugDrawMenuExtensionPlugin : public EditorPlugin {

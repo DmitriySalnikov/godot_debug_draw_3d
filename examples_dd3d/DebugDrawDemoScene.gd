@@ -67,6 +67,20 @@ func _update_keys_just_press():
 
 
 func _process(delta: float) -> void:
+	DebugDraw3D.scoped_config().set_thickness(10)
+	print("def ", DebugDraw3D.scoped_config().get_thickness())
+	var s11 = DebugDraw3D.new_scoped_config()
+	print("over ", s11.get_thickness())
+	s11.set_thickness(1)
+	print("over changed ", s11.get_thickness())
+	print("def recheck ", DebugDraw3D.scoped_config().get_thickness())
+	if true:
+		var s13 = DebugDraw3D.new_scoped_config()
+		s13.set_thickness(2)
+		print("scope ", s13.get_thickness())
+	print("def recheck 2 ", DebugDraw3D.scoped_config().get_thickness())
+	print("over recheck ", s11.get_thickness())
+	
 	_update_keys_just_press()
 	
 	if _is_key_just_pressed(KEY_F1):

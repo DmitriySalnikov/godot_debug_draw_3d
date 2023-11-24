@@ -11,7 +11,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 class GenerateCSharpBindingsPlugin {

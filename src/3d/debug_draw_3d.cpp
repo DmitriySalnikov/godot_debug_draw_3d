@@ -8,34 +8,17 @@
 #include "stats_3d.h"
 #include "utils/utils.h"
 
+#include <limits.h>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <godot_cpp/classes/os.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <limits.h>
 
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
-
-void DDScopedConfig3D::_bind_methods() {
-#define REG_CLASS_NAME DDScopedConfig3D
-	REG_PROP(empty_color, Variant::COLOR);
-#undef REG_CLASS_NAME
-}
-
-DDScopedConfig3D::DDScopedConfig3D() {
-	// TODO check for the first create() for properties defaults
-	// TODO add this check for DD3D and DD2D to avoid warnings
-	DEV_PRINT_STD_ERR(NAMEOF(DDScopedConfig3D) " must be called with arguments!\n");
-}
-
-DDScopedConfig3D::DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DDScopedConfig3D *parent) {
-}
-
-DDScopedConfig3D::~DDScopedConfig3D() {
-}
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
@@ -51,7 +34,6 @@ void DebugDraw3D::_bind_methods() {
 	REG_PROP(custom_viewport, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
 #pragma endregion
-#undef REG_CLASS_NAME
 
 #pragma region Draw Functions
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDraw3D::clear_all);
@@ -100,7 +82,11 @@ void DebugDraw3D::_bind_methods() {
 
 #pragma endregion // Draw Functions
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(get_render_stats)), &DebugDraw3D::get_render_stats);
+	REG_METHOD(get_render_stats);
+	REG_METHOD(new_scoped_config);
+	REG_METHOD(scoped_config);
+
+#undef REG_CLASS_NAME
 }
 
 DebugDraw3D::DebugDraw3D() {
@@ -110,6 +96,7 @@ DebugDraw3D::DebugDraw3D() {
 void DebugDraw3D::init(DebugDrawManager *root) {
 	root_node = root;
 	set_config(nullptr);
+	default_scoped_config.instantiate();
 
 	_load_materials();
 
@@ -155,27 +142,88 @@ void DebugDraw3D::process(double delta) {
 
 	// Update 3D debug
 	dgc->update_geometry(delta);
+
 #endif
+
+	// TODO avoid in release
+	_clear_scoped_configs();
 }
 
 Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
+	LOCK_GUARD(scoped_datalock);
 	static std::atomic<uint64_t> create_counter = 0;
 	create_counter++;
 
-	return Ref<DDScopedConfig3D>();
+	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
+	Ref<DDScopedConfig3D> res = memnew(
+			DDScopedConfig3D(
+					thread,
+					create_counter,
+					scoped_config_for_current_thread(),
+					std::bind(&DebugDraw3D::_unregister_scoped_config, this, std::placeholders::_1, std::placeholders::_2)));
+
+	_register_scoped_config(thread, create_counter, res.ptr());
+	return res;
 }
 
-DDScopedConfig3D *DebugDraw3D::get_transform_for_current_thread() {
-	return nullptr;
+DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
+	LOCK_GUARD(scoped_datalock);
+	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
+
+	if (cached_scoped_configs.find(thread) != cached_scoped_configs.end()) {
+		return cached_scoped_configs[thread];
+	}
+
+	if (scoped_configs.find(thread) != scoped_configs.end()) {
+		const auto &cfgs = scoped_configs[thread];
+		if (!cfgs.empty()) {
+			DDScopedConfig3D *tmp = cfgs.back().second;
+			cached_scoped_configs[thread] = tmp;
+			return tmp;
+		}
+	}
+
+	cached_scoped_configs[thread] = default_scoped_config.ptr();
+	return default_scoped_config.ptr();
 }
 
-void DebugDraw3D::register_scoped_config(uint64_t guard_id, uint64_t thread_id, DDScopedConfig3D *cfg) {
+Ref<DDScopedConfig3D> DebugDraw3D::scoped_config() {
+	return default_scoped_config;
 }
 
-void DebugDraw3D::unregister_scoped_config(uint64_t guard_id, uint64_t thread_id) {
+void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id, DDScopedConfig3D *cfg) {
+	LOCK_GUARD(scoped_datalock);
+
+	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
+	scoped_configs[thread_id].push_back(ScopedPairIdConfig(guard_id, cfg));
+
+	// Update cached value
+	cached_scoped_configs[thread] = cfg;
 }
 
-void DebugDraw3D::clear_scoped_configs() {
+void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) {
+	LOCK_GUARD(scoped_datalock);
+
+	auto &cfgs = scoped_configs[thread_id];
+	auto res = std::find_if(cfgs.rbegin(), cfgs.rend(), [&guard_id](const ScopedPairIdConfig &i) { return i.first == guard_id; });
+
+	if (res != cfgs.rend()) {
+		cfgs.erase(--res.base());
+
+		// Update cached value
+		if (!cfgs.empty()) {
+			cached_scoped_configs[thread_id] = cfgs.back().second;
+		} else {
+			cached_scoped_configs[thread_id] = default_scoped_config.ptr();
+		}
+	}
+}
+
+void DebugDraw3D::_clear_scoped_configs() {
+	LOCK_GUARD(scoped_datalock);
+
+	cached_scoped_configs.clear();
+	scoped_configs.clear();
 }
 
 void DebugDraw3D::_load_materials() {

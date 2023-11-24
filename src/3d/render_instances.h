@@ -5,19 +5,18 @@
 #include "utils/math_utils.h"
 #include "utils/utils.h"
 
+#include <array>
+#include <functional>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <array>
-#include <functional>
+using namespace godot;
 
 namespace godot {
 class MultiMesh;
 }
 class DebugDrawStats3D;
-
-using namespace godot;
 
 enum InstanceType : char {
 	CUBES,

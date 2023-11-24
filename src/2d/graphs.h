@@ -4,16 +4,15 @@
 #include "common/colors.h"
 #include "utils/compiler.h"
 
+#include <map>
+#include <mutex>
+#include <vector>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <map>
-#include <mutex>
-#include <vector>
-
 using namespace godot;
 
 class DataGraphManager;

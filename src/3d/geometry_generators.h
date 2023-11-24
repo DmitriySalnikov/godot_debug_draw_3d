@@ -3,15 +3,14 @@
 #include "utils/compiler.h"
 #include "utils/utils.h"
 
+#include <array>
+#include <vector>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <array>
-#include <vector>
-
 using namespace godot;
 
 class GeometryGenerator {

@@ -3,16 +3,15 @@
 #include "common/colors.h"
 #include "utils/compiler.h"
 
+#include <memory>
+
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/canvas_item.hpp>
 #include <godot_cpp/classes/canvas_layer.hpp>
+#include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <memory>
-
 using namespace godot;
 
 class DataGraphManager;

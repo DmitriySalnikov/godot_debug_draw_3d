@@ -7,10 +7,10 @@
 #include "stats_2d.h"
 #include "utils/utils.h"
 
+#include <limits.h>
+
 GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
-
-#include <limits.h>
 
 #define NEED_LEAVE (!_is_enabled_override())
 

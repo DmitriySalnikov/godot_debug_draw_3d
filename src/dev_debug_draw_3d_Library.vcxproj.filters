@@ -60,6 +60,9 @@
     <ClCompile Include="common\colors.cpp">
       <Filter>common</Filter>
     </ClCompile>
+    <ClCompile Include="3d\config_scoped_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
@@ -126,6 +129,12 @@
     </ClInclude>
     <ClInclude Include="common\colors.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\i_scoped_storage.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\config_scoped_3d.h">
+      <Filter>3d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

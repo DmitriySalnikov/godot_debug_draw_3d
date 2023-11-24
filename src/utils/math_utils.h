@@ -2,13 +2,12 @@
 
 #include "compiler.h"
 
+#include <vector>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/variant/builtin_types.hpp>
 GODOT_WARNING_RESTORE()
-
-#include <vector>
-
 using namespace godot;
 
 class MathUtils {
