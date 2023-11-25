@@ -20,6 +20,8 @@ private:
 public:
 #pragma region Predefined Geometry Parts
 
+	const static std::array<Vector3, 2> LineVertices;
+
 	const static std::array<Vector3, 8> CenteredCubeVertices;
 	const static std::array<Vector3, 8> CubeVertices;
 	const static std::array<int, 24> CubeIndices;

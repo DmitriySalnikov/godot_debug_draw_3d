@@ -156,8 +156,6 @@ The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
 
-[OpenGL: The last instance of MultiMesh incorrectly sets the color](https://github.com/godotengine/godot/issues/71897)
-
 **The version for Godot 4.0 requires explicitly specifying the exact data types, otherwise errors may occur.**
 
 ## More screenshots
@@ -171,7 +169,7 @@ The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
 ## Build
 
 As well as for the engine itself, you will need to configure the [environment](https://docs.godotengine.org/en/4.1/contributing/development/compiling/index.html).
-And also you need to apply several patches:
+And also you may need to apply several patches:
 
 ```bash
 cd godot-cpp
@@ -180,6 +178,8 @@ cd godot-cpp
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 ## Faster build
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
+## Hide useless function exports. Can greatly reduce the size of libraries
+git apply --ignore-space-change --ignore-whitespace ../patches/visibilty_hidden.patch
 ```
 
 Then you can just run scons as usual:
@@ -188,8 +188,11 @@ Then you can just run scons as usual:
 # build for the current system.
 # target=editor is used for both the editor and the debug template.
 scons target=editor dev_build=yes debug_symbols=yes
-# build for the android. ANDROID_NDK_ROOT is required in your environment variables.
+# Android build. ANDROID_NDK_ROOT is required in your environment variables.
+# Or ANDROID_HOME with 'ndk/23.2.8568313' installed.
 scons platform=android target=template_release arch=arm64v8
+# Web build. GDExtension for Web currently works best with Emscripten '3.1.39'
+scons platform=web target=template_debug
 ```
 
 ### JavaScript/Web build

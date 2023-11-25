@@ -92,6 +92,11 @@ const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndices{
 	// 2, 5,
 };
 
+const std::array<Vector3, 2> GeometryGenerator::LineVertices{
+	Vector3(0, 0, 0),
+	Vector3(0, 0, -1),
+};
+
 const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertices{
 	Vector3(0, 0, -1),
 	Vector3(0, 0.25f, 0),
@@ -230,6 +235,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
+// TODO GENERATE NORMALs!!!!
 void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_up, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, const bool &add_caps) {
 	bool debug_size = false;
 	Vector3 dir = (b - a).normalized();
@@ -238,6 +244,11 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 	Vector3 left = right * -1;
 	Vector3 up = dir.cross(left).normalized();
 	Vector3 down = up * -1;
+
+	right /= Math::sqrt(2.0f);
+	left /= Math::sqrt(2.0f);
+	up /= Math::sqrt(2.0f);
+	down /= Math::sqrt(2.0f);
 
 	Vector3 mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
 

@@ -18,16 +18,39 @@ class MultiMesh;
 }
 class DebugDrawStats3D;
 
-enum InstanceType : char {
-	CUBES,
-	CUBES_CENTERED,
-	ARROWHEADS,
-	BILLBOARD_SQUARES,
-	POSITIONS,
-	SPHERES,
-	SPHERES_HD,
-	CYLINDERS,
+enum class ConvertableInstanceType : char {
+	CUBE,
+	CUBE_CENTERED,
+	ARROWHEAD,
+	POSITION,
+	SPHERE,
+	SPHERE_HD,
+	CYLINDER,
+};
+
+enum class InstanceType : char {
+	// Basic wireframe
+	CUBE,
+	CUBE_CENTERED,
+	ARROWHEAD,
+	POSITION,
+	SPHERE,
+	SPHERE_HD,
+	CYLINDER,
+
+	// Volumetric from wireframes
+	LINE_VOLUMETRIC,
 	CUBE_VOLUMETRIC,
+	CUBE_CENTERED_VOLUMETRIC,
+	ARROWHEAD_VOLUMETRIC,
+	POSITION_VOLUMETRIC,
+	SPHERE_VOLUMETRIC,
+	SPHERE_HD_VOLUMETRIC,
+	CYLINDER_VOLUMETRIC,
+
+	// Solid geometry
+	BILLBOARD_SQUARE,
+
 	ALL,
 };
 
@@ -55,7 +78,6 @@ public:
 	bool is_used_one_time = false;
 	bool is_visible = true;
 	TBounds bounds;
-	Color color;
 
 	DelayedRenderer() :
 			bounds(),
@@ -80,6 +102,7 @@ public:
 				}
 			}
 
+			// TODO mb move to draw_* for instant draws
 			if (t_frustums.size()) {
 				for (const auto &frustum : t_frustums) {
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
@@ -104,19 +127,54 @@ public:
 	}
 };
 
+class InstanceTransformAndData3D {
+	Vector3 basis_x;
+	float origin_x;
+	Vector3 basis_y;
+	float origin_y;
+	Vector3 basis_z;
+	float origin_z;
+	Color color;
+	Color custom;
+
+public:
+	InstanceTransformAndData3D() :
+			basis_x(Vector3()),
+			origin_x(0),
+			basis_y(Vector3()),
+			origin_y(0),
+			basis_z(Vector3()),
+			origin_z(0),
+			color(Color()),
+			custom(Color()) {}
+
+	InstanceTransformAndData3D(const Transform3D &p_xf, const Color &p_color, const Color &p_custom) :
+			basis_x(p_xf.basis[0]),
+			origin_x(p_xf.origin.x),
+			basis_y(p_xf.basis[1]),
+			origin_y(p_xf.origin.y),
+			basis_z(p_xf.basis[2]),
+			origin_z(p_xf.origin.z),
+			color(p_color),
+			custom(p_custom) {}
+};
+
 class DelayedRendererInstance : public DelayedRenderer<SphereBounds> {
 public:
-	Transform3D transform;
-	InstanceType type = InstanceType::CUBES;
+	InstanceTransformAndData3D data;
+	InstanceType type = InstanceType::CUBE;
 
 	DelayedRendererInstance();
-	void update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds);
+	void update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds);
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
 	std::vector<Vector3> lines;
 
 public:
+	Color color;
+	Color customColor;
+
 	DelayedRendererLine();
 	void update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col);
 
@@ -218,7 +276,7 @@ private:
 		}
 	};
 
-	ObjectsPool<DelayedRendererInstance> instances[InstanceType::ALL] = {};
+	ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::ALL] = {};
 	ObjectsPool<DelayedRendererLine> lines;
 
 	uint64_t time_spent_to_fill_buffers_of_instances = 0;
@@ -234,7 +292,7 @@ public:
 	~GeometryPool() {
 	}
 
-	void fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes);
+	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes);
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
@@ -245,7 +303,7 @@ public:
 	void update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
 	void update_expiration(double _delta);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
 	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };
 

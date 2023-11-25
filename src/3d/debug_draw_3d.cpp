@@ -143,13 +143,12 @@ void DebugDraw3D::process(double delta) {
 	// Update 3D debug
 	dgc->update_geometry(delta);
 
-#endif
-
-	// TODO avoid in release
 	_clear_scoped_configs();
+#endif
 }
 
 Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
+#ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(scoped_datalock);
 	static std::atomic<uint64_t> create_counter = 0;
 	create_counter++;
@@ -164,9 +163,13 @@ Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
 
 	_register_scoped_config(thread, create_counter, res.ptr());
 	return res;
+#else
+	return default_scoped_config;
+#endif
 }
 
-DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
+Ref<DDScopedConfig3D> DebugDraw3D::scoped_config_for_current_thread() {
+#ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(scoped_datalock);
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
 
@@ -184,14 +187,83 @@ DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
 	}
 
 	cached_scoped_configs[thread] = default_scoped_config.ptr();
-	return default_scoped_config.ptr();
+#endif
+	return default_scoped_config;
 }
+
+#ifndef DISABLE_DEBUG_RENDERING
+DebugDraw3D::GeometryType DebugDraw3D::_scoped_config_get_geometry_type(DDScopedConfig3D *cfg) {
+	if (cfg->get_thickness() != 0) {
+		return GeometryType::Volumetric;
+	}
+	// TODO solid
+	return GeometryType::Wireframe;
+}
+
+Color DebugDraw3D::_scoped_config_to_custom(DDScopedConfig3D *cfg) {
+	if (_scoped_config_get_geometry_type(cfg) == GeometryType::Volumetric)
+		return Color(cfg->get_thickness(), 0, 0, 0);
+
+	return Color();
+}
+
+InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType type, DDScopedConfig3D *cfg) {
+	switch (_scoped_config_get_geometry_type(cfg)) {
+		case GeometryType::Wireframe: {
+			switch (type) {
+				case ConvertableInstanceType::CUBE:
+					return InstanceType::CUBE;
+				case ConvertableInstanceType::CUBE_CENTERED:
+					return InstanceType::CUBE_CENTERED;
+				case ConvertableInstanceType::ARROWHEAD:
+					return InstanceType::ARROWHEAD;
+				case ConvertableInstanceType::POSITION:
+					return InstanceType::POSITION;
+				case ConvertableInstanceType::SPHERE:
+					return InstanceType::SPHERE;
+				case ConvertableInstanceType::SPHERE_HD:
+					return InstanceType::SPHERE_HD;
+				case ConvertableInstanceType::CYLINDER:
+					return InstanceType::CYLINDER;
+				default:
+					break;
+			}
+		}
+		case GeometryType::Volumetric: {
+			switch (type) {
+				case ConvertableInstanceType::CUBE:
+					return InstanceType::CUBE_VOLUMETRIC;
+				case ConvertableInstanceType::CUBE_CENTERED:
+					return InstanceType::CUBE_CENTERED_VOLUMETRIC;
+				case ConvertableInstanceType::ARROWHEAD:
+					return InstanceType::ARROWHEAD_VOLUMETRIC;
+				case ConvertableInstanceType::POSITION:
+					return InstanceType::POSITION_VOLUMETRIC;
+				case ConvertableInstanceType::SPHERE:
+					return InstanceType::SPHERE_VOLUMETRIC;
+				case ConvertableInstanceType::SPHERE_HD:
+					return InstanceType::SPHERE_HD_VOLUMETRIC;
+				case ConvertableInstanceType::CYLINDER:
+					return InstanceType::CYLINDER_VOLUMETRIC;
+				default:
+					break;
+			}
+		}
+		default:
+			break;
+	}
+
+	// Crash here...
+	return InstanceType(-1);
+}
+#endif
 
 Ref<DDScopedConfig3D> DebugDraw3D::scoped_config() {
 	return default_scoped_config;
 }
 
 void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id, DDScopedConfig3D *cfg) {
+#ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(scoped_datalock);
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
@@ -199,9 +271,11 @@ void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id,
 
 	// Update cached value
 	cached_scoped_configs[thread] = cfg;
+#endif
 }
 
 void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) {
+#ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(scoped_datalock);
 
 	auto &cfgs = scoped_configs[thread_id];
@@ -217,13 +291,16 @@ void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_i
 			cached_scoped_configs[thread_id] = default_scoped_config.ptr();
 		}
 	}
+#endif
 }
 
 void DebugDraw3D::_clear_scoped_configs() {
+#ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(scoped_datalock);
 
 	cached_scoped_configs.clear();
 	scoped_configs.clear();
+#endif
 }
 
 void DebugDraw3D::_load_materials() {
@@ -380,11 +457,15 @@ void DebugDraw3D::draw_sphere_base(const Vector3 &position, const real_t &radius
 void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color &color, const real_t &duration, const bool &hd) {
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(datalock);
+
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			hd ? InstanceType::SPHERES_HD : InstanceType::SPHERES,
+			_scoped_config_type_convert(hd ? ConvertableInstanceType::SPHERE_HD : ConvertableInstanceType::SPHERE, scfg.ptr()),
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.51f));
 }
 
@@ -414,11 +495,15 @@ void DebugDraw3D::draw_sphere_hd_xf(const Transform3D &transform, const Color &c
 void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(datalock);
+
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::CYLINDERS,
+			_scoped_config_type_convert(ConvertableInstanceType::CYLINDER, scfg.ptr()),
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CylinderRadiusForSphere));
 }
 
@@ -440,11 +525,15 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 	if (!is_box_centered) {
 		sb.position = transform.origin + transform.basis.get_scale() * 0.5f;
 	}
+
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			is_box_centered ? InstanceType::CUBES_CENTERED : InstanceType::CUBES,
+			_scoped_config_type_convert(is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE, scfg.ptr()),
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			sb);
 }
 
@@ -472,11 +561,14 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 		dgc->geometry_pool.add_or_update_line(duration, { start, hit }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 		dgc->geometry_pool.add_or_update_line(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
+		Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 		dgc->geometry_pool.add_or_update_instance(
-				InstanceType::BILLBOARD_SQUARES,
+				InstanceType::BILLBOARD_SQUARE,
 				duration,
 				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
+				Color(), // Just a plane, no need to store custom data
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size));
 	} else {
 		dgc->geometry_pool.add_or_update_line(duration, { start, end }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
@@ -495,6 +587,7 @@ void DebugDraw3D::draw_line_hit_offset(const Vector3 &start, const Vector3 &end,
 
 #pragma region Normal
 
+// TODO add volumetric
 void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(datalock);
@@ -565,11 +658,14 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	t.scale(Vector3_ONE * (size));
 	t.origin = pos;
 
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::ARROWHEADS,
+			_scoped_config_type_convert(ConvertableInstanceType::ARROWHEAD, scfg.ptr()),
 			duration,
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(t.origin - t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 
@@ -577,11 +673,14 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(datalock);
 
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::ARROWHEADS,
+			_scoped_config_type_convert(ConvertableInstanceType::ARROWHEAD, scfg.ptr()),
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(transform.origin - transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
@@ -628,11 +727,15 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	t.basis.scale(Vector3_ONE * size);
 
 	LOCK_GUARD(datalock);
+
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::BILLBOARD_SQUARES,
+			InstanceType::BILLBOARD_SQUARE,
 			duration,
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size));
 }
 
@@ -646,11 +749,15 @@ void DebugDraw3D::draw_points(const PackedVector3Array &points, const real_t &si
 void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color, const real_t &duration) {
 	CHECK_BEFORE_CALL();
 	LOCK_GUARD(datalock);
+
+	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
 	dgc->geometry_pool.add_or_update_instance(
-			InstanceType::POSITIONS,
+			_scoped_config_type_convert(ConvertableInstanceType::POSITION, scfg.ptr()),
 			duration,
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,
+			_scoped_config_to_custom(scfg.ptr()),
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
 

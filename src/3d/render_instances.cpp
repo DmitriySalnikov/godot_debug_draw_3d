@@ -16,7 +16,7 @@ template <class T, size_t _TStepSize>
 struct TempBigBuffer {
 private:
 	T m_buffer;
-	int m_accesses_before_shrink = InstanceType::ALL * 60; // try to shrink after 60 frames
+	int m_accesses_before_shrink = (int)InstanceType::ALL * 60; // try to shrink after 60 frames
 	int m_shrink_timer;
 
 public:
@@ -50,6 +50,7 @@ public:
 		return m_buffer.ptrw();
 	}
 
+	// TODO stupid and slow as it makes a COPY of all memory..
 	inline auto slice(int64_t begin, int64_t end = 2147483647) {
 		return m_buffer.slice(begin, end);
 	}
@@ -60,13 +61,12 @@ DelayedRendererInstance::DelayedRendererInstance() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
 }
 
-void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds) {
+void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds) {
 	_update(_exp_time, true);
 
 	type = _type;
 	bounds = _bounds;
-	transform = _transform;
-	color = _col;
+	data = InstanceTransformAndData3D(_transform, _col, _custom_col);
 }
 
 DelayedRendererLine::DelayedRendererLine() :
@@ -124,12 +124,13 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 	}
 }
 
-void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, InstanceType::ALL> &t_meshes) {
+void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes) {
 	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec();
 
 	for (size_t i = 0; i < t_meshes.size(); i++) {
 		auto &mesh = *t_meshes[i];
 
+		// TODO hot delete[]
 		PackedFloat32Array a = get_raw_data((InstanceType)i);
 
 		int new_size = (int)(a.size() / INSTANCE_DATA_FLOAT_COUNT);
@@ -139,6 +140,11 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, Instanc
 		}
 
 		if (a.size()) {
+			// TODO PR for native pointer!
+			// TODO try to change condition to >= and not !=
+			// ERROR:
+			// Condition "p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache)" is true.at : RendererRD::MeshStorage::multimesh_set_buffer(servers\rendering\renderer_rd\storage_rd\mesh_storage.cpp : 1764)
+
 			mesh->set_buffer(a);
 		}
 	}
@@ -147,7 +153,7 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, Instanc
 }
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
-	auto &inst = instances[_type];
+	auto &inst = instances[(int)_type];
 
 	size_t buffer_size = (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
 	thread_local static auto temp_buffer = TempBigBuffer<PackedFloat32Array, 128 * 1024>();
@@ -163,14 +169,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 			last_added++;
 
 			// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
-			real_t *transform = reinterpret_cast<real_t *>(&o.transform);
-			memcpy(w + id + 0, transform + 0, 3 * sizeof(real_t));
-			*(w + id + 3) = transform[9];
-			memcpy(w + id + 4, transform + 3, 3 * sizeof(real_t));
-			*(w + id + 7) = transform[10];
-			memcpy(w + id + 8, transform + 6, 3 * sizeof(real_t));
-			*(w + id + 11) = transform[11];
-			memcpy(w + id + 12, reinterpret_cast<real_t *>(&o.color), 4 * sizeof(real_t));
+			memcpy(w + id, reinterpret_cast<real_t *>(&o.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
 
 			/*w[id + 0] = o.transform.basis.rows[0][0];
 			w[id + 1] = o.transform.basis.rows[0][1];
@@ -188,7 +187,6 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 			w[id + 13] = o.color[1];
 			w[id + 14] = o.color[2];
 			w[id + 15] = o.color[3];*/
-			// TODO: mb use custom data to implement volumetric shapes...
 		};
 
 		for (size_t i = 0; i < inst.used_instant; i++) {
@@ -295,7 +293,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 void GeometryPool::reset_counter(double _delta) {
 	lines.reset_counter(_delta);
 
-	for (int i = 0; i < InstanceType::ALL; i++) {
+	for (int i = 0; i < (int)InstanceType::ALL; i++) {
 		instances[i].reset_counter(_delta, i);
 	}
 }
@@ -434,9 +432,9 @@ void GeometryPool::scan_visible_instances() {
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
-	DelayedRendererInstance *inst = instances[_type].get(_exp_time > 0);
-	inst->update(_exp_time, _type, _transform, _col, _bounds);
+void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
+	DelayedRendererInstance *inst = instances[(int)_type].get(_exp_time > 0);
+	inst->update(_exp_time, _type, _transform, _col, _custom_col, _bounds);
 	if (_custom_upd)
 		_custom_upd(inst);
 }

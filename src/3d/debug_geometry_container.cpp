@@ -38,50 +38,57 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
 		auto array_mesh_cube = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices);
-		CreateMMI(InstanceType::CUBE_VOLUMETRIC, UsingShaderType::Wireframe, NAMEOF(mmi_cubes), array_mesh_cube);
+		CreateMMI(InstanceType::CUBE, UsingShaderType::Wireframe, NAMEOF(mmi_cubes), array_mesh_cube);
 
 		auto array_mesh_cube_center = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices);
-		// CreateMMI(InstanceType::CUBES_CENTERED, UsingShaderType::Wireframe, NAMEOF(mmi_cubes_centered), array_mesh_cube_center);
+		CreateMMI(InstanceType::CUBE_CENTERED, UsingShaderType::Wireframe, NAMEOF(mmi_cubes_centered), array_mesh_cube_center);
 
 		auto array_mesh_arrow_head = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices);
-		// CreateMMI(InstanceType::ARROWHEADS, UsingShaderType::Wireframe, NAMEOF(mmi_arrowheads), array_mesh_arrow_head);
-
-		auto array_mesh_billboard = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices);
-		CreateMMI(InstanceType::BILLBOARD_SQUARES, UsingShaderType::Billboard, NAMEOF(mmi_billboard_squares), array_mesh_billboard);
+		CreateMMI(InstanceType::ARROWHEAD, UsingShaderType::Wireframe, NAMEOF(mmi_arrowheads), array_mesh_arrow_head);
 
 		auto array_mesh_pos = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices);
-		// CreateMMI(InstanceType::POSITIONS, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
+		CreateMMI(InstanceType::POSITION, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
 
 		auto array_mesh_sphere = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO, 2));
-		// CreateMMI(InstanceType::SPHERES, UsingShaderType::Wireframe, NAMEOF(mmi_spheres), array_mesh_sphere);
+		CreateMMI(InstanceType::SPHERE, UsingShaderType::Wireframe, NAMEOF(mmi_spheres), array_mesh_sphere);
 
 		auto array_mesh_sphere_hd = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO, 2));
-		// CreateMMI(InstanceType::SPHERES_HD, UsingShaderType::Wireframe, NAMEOF(mmi_spheres_hd), array_mesh_sphere_hd);
+		CreateMMI(InstanceType::SPHERE_HD, UsingShaderType::Wireframe, NAMEOF(mmi_spheres_hd), array_mesh_sphere_hd);
 
 		auto array_mesh_cylinder = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(14, 1, 1, Vector3_ZERO, 2));
-		// CreateMMI(InstanceType::CYLINDERS, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder);
+		CreateMMI(InstanceType::CYLINDER, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder);
+
+		// VOLUMETRIC
+
+		auto array_mesh_line_volumetric = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices);
+		CreateMMI(InstanceType::LINE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_line_volumetric);
 
 		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube);
-		CreateMMI(InstanceType::CUBES, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_cube_volumetric);
+		CreateMMI(InstanceType::CUBE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_cube_volumetric);
 
 		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center);
-		CreateMMI(InstanceType::CUBES_CENTERED, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_cube_centered_volumetric);
-
-		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere, false);
-		CreateMMI(InstanceType::SPHERES, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_sphere_volumetric);
+		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_centered_volumetric), array_mesh_cube_centered_volumetric);
 
 		auto array_mesh_arrow_head_simple = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndicesSimplified);
 		auto array_mesh_arrow_head_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_arrow_head_simple);
-		CreateMMI(InstanceType::ARROWHEADS, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_arrow_head_volumetric);
+		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_arrowheads_volumetric), array_mesh_arrow_head_volumetric);
 
 		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos);
-		CreateMMI(InstanceType::POSITIONS, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_pos_volumetric);
+		CreateMMI(InstanceType::POSITION_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_positions_volumetric), array_mesh_pos_volumetric);
+
+		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere, false);
+		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_volumetric), array_mesh_sphere_volumetric);
 
 		auto array_mesh_sphere_hd_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere_hd, false);
-		CreateMMI(InstanceType::SPHERES_HD, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_sphere_hd_volumetric);
+		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_hd_volumetric), array_mesh_sphere_hd_volumetric);
 
 		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder, false);
-		CreateMMI(InstanceType::CYLINDERS, UsingShaderType::Expandable, NAMEOF(TEST_CUBE_VOLUMETRIC), array_mesh_cylinder_volumetric);
+		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cylinders_volumetric), array_mesh_cylinder_volumetric);
+
+		// SOLID
+
+		auto array_mesh_billboard = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices);
+		CreateMMI(InstanceType::BILLBOARD_SQUARE, UsingShaderType::Billboard, NAMEOF(mmi_billboard_squares), array_mesh_billboard);
 
 		set_render_layer_mask(1);
 	}
@@ -101,12 +108,12 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 
 	Ref<MultiMesh> new_mm;
 	new_mm.instantiate();
-	new_mm->set_name(String::num_int64(type));
+	new_mm->set_name(String::num_int64((int)type));
 
 	new_mm->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
 	new_mm->set_use_colors(true);
 	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-	new_mm->set_use_custom_data(false);
+	new_mm->set_use_custom_data(true);
 	new_mm->set_mesh(mesh);
 
 	rs->instance_set_base(mmi, new_mm->get_rid());
@@ -130,8 +137,8 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	multi_mesh_storage[type].instance = mmi;
-	multi_mesh_storage[type].mesh = new_mm;
+	multi_mesh_storage[(int)type].instance = mmi;
+	multi_mesh_storage[(int)type].mesh = new_mm;
 }
 
 void DebugGeometryContainer::set_world(Node *new_world) {
@@ -254,10 +261,11 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		// Draw custom sphere for 1 frame
 		for (auto &i : new_instances) {
 			geometry_pool.add_or_update_instance(
-					InstanceType::SPHERES_HD,
+					InstanceType::SPHERE,
 					0,
 					Transform3D(Basis().scaled(Vector3_ONE * i.second * 2), i.first),
 					Colors::debug_bounds,
+					Color(),
 					SphereBounds(i.first, i.second),
 					[](auto d) { d->is_used_one_time = true; });
 		}
@@ -270,10 +278,11 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			MathUtils::get_diagonal_vectors(o->bounds.position, o->bounds.position + o->bounds.size, bottom, top, diag);
 
 			geometry_pool.add_or_update_instance(
-					InstanceType::CUBES,
+					InstanceType::CUBE,
 					0,
 					Transform3D(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
+					Color(),
 					SphereBounds(bottom + diag * 0.5f, abs(diag.length() * 0.5f)),
 					[](auto d) { d->is_used_one_time = true; });
 		});
@@ -283,8 +292,8 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
 
 	// Update MultiMeshInstances
-	std::array<Ref<MultiMesh> *, InstanceType::ALL> meshes;
-	for (int i = 0; i < InstanceType::ALL; i++) {
+	std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> meshes;
+	for (int i = 0; i < (int)InstanceType::ALL; i++) {
 		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
 

@@ -13,7 +13,7 @@ using namespace godot;
 template <class TCfgStorage>
 class IScopedStorage {
 private:
-	virtual TCfgStorage *scoped_config_for_current_thread() = 0;
+	virtual Ref<TCfgStorage> scoped_config_for_current_thread() = 0;
 
 public:
 	typedef std::function<void(uint64_t, uint64_t)> unregister_func;

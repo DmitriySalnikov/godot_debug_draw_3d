@@ -21,13 +21,27 @@ class DataGraphManager;
 class DebugDrawManager;
 class DebugDrawConfig3D;
 class DebugDrawStats3D;
+
+#ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
+enum class InstanceType : char;
+enum class ConvertableInstanceType : char;
+#endif
 
 class DebugDraw3D : public Object, public IScopedStorage<DDScopedConfig3D> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
+
+#ifndef DISABLE_DEBUG_RENDERING
 	friend DebugGeometryContainer;
+
+	enum GeometryType{
+		Wireframe,
+		Volumetric,
+		Solid,
+	};
+#endif
 
 private:
 	static DebugDraw3D *singleton;
@@ -36,16 +50,18 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	Ref<DDScopedConfig3D> default_scoped_config;
+
+#ifndef DISABLE_DEBUG_RENDERING
 	typedef std::pair<uint64_t, DDScopedConfig3D *> ScopedPairIdConfig;
 	// stores thread id and array of id's with ptrs
-	// TODO in release use only default_scoped_config
 	std::map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
 	std::map<uint64_t, DDScopedConfig3D *> cached_scoped_configs;
 	std::recursive_mutex scoped_datalock;
+#endif
 
 	// Inherited via IScopedStorage
-	DDScopedConfig3D *scoped_config_for_current_thread() override;
+	Ref<DDScopedConfig3D> scoped_config_for_current_thread() override;
 
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEV_ENABLED
@@ -65,6 +81,11 @@ private:
 
 	Ref<ShaderMaterial> shader_extendable_mat;
 	Ref<Shader> shader_extendable_code;
+
+	// Internal use of raw pointer to avoid ref/unref
+	Color _scoped_config_to_custom(DDScopedConfig3D *cfg);
+	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DDScopedConfig3D *cfg);
+	GeometryType _scoped_config_get_geometry_type(DDScopedConfig3D *cfg);
 #endif
 
 	void _load_materials();

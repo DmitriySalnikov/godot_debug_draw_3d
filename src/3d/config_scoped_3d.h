@@ -26,6 +26,8 @@ public:
 	real_t get_thickness();
 
 	DDScopedConfig3D();
-	DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DDScopedConfig3D *parent, const unregister_func p_unreg);
+
+	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
+	DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const Ref<DDScopedConfig3D> parent, const unregister_func p_unreg);
 	~DDScopedConfig3D();
 };

@@ -54,7 +54,11 @@ def msvc_pdb_rename(env, lib_full_name):
     new_name = (Path(env["addon_output_dir"]) / lib_full_name).as_posix()
     max_files = 256
 
-    onlyfiles = [f for f in os.listdir(Path(env["addon_output_dir"])) if os.path.isfile(os.path.join(Path(env["addon_output_dir"]), f))]
+    onlyfiles = [
+        f
+        for f in os.listdir(Path(env["addon_output_dir"]))
+        if os.path.isfile(os.path.join(Path(env["addon_output_dir"]), f))
+    ]
     for of in onlyfiles:
         if of.endswith(".pdb") and of.startswith(lib_full_name):
             try:
@@ -142,7 +146,9 @@ def generate_sources_for_resources(env, src_out):
     editor_files = [
         ("images/icon_3d_32.png", False),
     ]
-    generate_resources_cpp_h_files(editor_files, "DD3DEditorResources", "editor_resources.gen", src_out if "editor" in env["target"] else [])
+    generate_resources_cpp_h_files(
+        editor_files, "DD3DEditorResources", "editor_resources.gen", src_out if "editor" in env["target"] else []
+    )
 
     shared_files = [
         ("src/resources/extendable_meshes.gdshader", True),
@@ -150,6 +156,7 @@ def generate_sources_for_resources(env, src_out):
         ("src/resources/billboard_unshaded.gdshader", True),
     ]
     generate_resources_cpp_h_files(shared_files, "DD3DResources", "shared_resources.gen", src_out)
+
     print("The generation of C++ sources with the contents of resources has been completed")
     print()
 
@@ -173,7 +180,7 @@ def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_ou
         h_file.write("#include <array>\n\n")
         h_file.write(f"namespace {namespace} {{\n")
 
-        cpp_file.write(f"#include \"{h_name}\"\n\n")
+        cpp_file.write(f'#include "{h_name}"\n\n')
         cpp_file.write(f"namespace {namespace} {{\n")
 
         for input_file_touple in input_files:
@@ -190,11 +197,15 @@ def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_ou
                         with open(input_file_path, "r", encoding="utf-8") as file:
                             text_data = file.read()
                     except UnicodeDecodeError as e:
-                        print("Skipping file due to 'UnicodeDecodeError' exception: " +
-                              (input_file_path).resolve().as_posix() + "\nException: " + str(e))
+                        print(
+                            "Skipping file due to 'UnicodeDecodeError' exception: "
+                            + (input_file_path).resolve().as_posix()
+                            + "\nException: "
+                            + str(e)
+                        )
                         continue
 
-                cpp_file.write(f"\tconst char *{file_name_escaped} = R\"({text_data})\";\n\n")
+                cpp_file.write(f'\tconst char *{file_name_escaped} = R"({text_data})";\n\n')
 
                 h_file.write(f"\textern const char *{file_name_escaped};\n")
             else:
@@ -202,7 +213,9 @@ def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_ou
                     binary_data = input_file.read()
 
                 cpp_array = ", ".join([f"{byte}" for byte in binary_data])
-                cpp_file.write(f"\tconst std::array<unsigned char, {len(binary_data)}> {file_name_escaped} = {{ {cpp_array} }};\n\n")
+                cpp_file.write(
+                    f"\tconst std::array<unsigned char, {len(binary_data)}> {file_name_escaped} = {{ {cpp_array} }};\n\n"
+                )
 
                 h_file.write(f"\textern const std::array<unsigned char, {len(binary_data)}> {file_name_escaped};\n")
 
