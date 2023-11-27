@@ -2,8 +2,6 @@
 
 #include "utils/compiler.h"
 
-#include <memory>
-
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_layer.hpp>
 GODOT_WARNING_RESTORE()

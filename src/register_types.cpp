@@ -20,7 +20,6 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 #include "editor/editor_menu_extensions.h"
-#include "editor/generate_csharp_bindings.h"
 
 #include "editor/asset_library_update_checker.h"
 Ref<AssetLibraryUpdateChecker> upd_checker;

@@ -10,8 +10,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/image_texture.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/popup_menu.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/theme.hpp>
 GODOT_WARNING_RESTORE()
 
 void DebugDrawMenuExtensionPlugin::_bind_methods() {

@@ -228,6 +228,7 @@ InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType ty
 				default:
 					break;
 			}
+			break;
 		}
 		case GeometryType::Volumetric: {
 			switch (type) {
@@ -248,6 +249,7 @@ InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType ty
 				default:
 					break;
 			}
+			break;
 		}
 		default:
 			break;

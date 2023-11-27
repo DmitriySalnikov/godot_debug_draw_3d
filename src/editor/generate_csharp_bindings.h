@@ -7,8 +7,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;

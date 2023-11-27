@@ -17,6 +17,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/main_loop.hpp>
 #include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/core/binder_common.hpp>
@@ -89,9 +90,6 @@ static String get_file_name_in_repository(const String &name) {
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())
-#define RS() RenderingServer::get_singleton()
-#define TIME() Time::get_singleton()
-#define ENGINE() Engine::get_singleton()
 
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
 

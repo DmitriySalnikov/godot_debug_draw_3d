@@ -9,11 +9,9 @@
 #include <mutex>
 
 GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
-#include <godot_cpp/classes/weak_ref.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 

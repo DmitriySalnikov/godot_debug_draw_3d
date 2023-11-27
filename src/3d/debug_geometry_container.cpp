@@ -3,18 +3,21 @@
 #ifndef DISABLE_DEBUG_RENDERING
 #include "config_3d.h"
 #include "debug_draw_3d.h"
+#include "geometry_generators.h"
 #include "stats_3d.h"
 
 #include <array>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 	owner = root;
-	RenderingServer *rs = RS();
+	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Create wireframe mesh drawer
 	{
@@ -102,7 +105,7 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 }
 
 void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh) {
-	RenderingServer *rs = RS();
+	RenderingServer *rs = RenderingServer::get_singleton();
 
 	RID mmi = rs->instance_create();
 
@@ -143,7 +146,7 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 
 void DebugGeometryContainer::set_world(Node *new_world) {
 	scene_world_node = new_world;
-	RenderingServer *rs = RS();
+	RenderingServer *rs = RenderingServer::get_singleton();
 	RID scenario;
 	Viewport *viewport = Object::cast_to<Viewport>(new_world);
 	if (viewport) {
@@ -312,7 +315,7 @@ Ref<DebugDrawStats3D> DebugGeometryContainer::get_render_stats() {
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
 	LOCK_GUARD(owner->datalock);
 	if (render_layers != layers) {
-		RenderingServer *rs = RS();
+		RenderingServer *rs = RenderingServer::get_singleton();
 		for (auto &mmi : multi_mesh_storage)
 			rs->instance_set_layer_mask(mmi.instance, layers);
 

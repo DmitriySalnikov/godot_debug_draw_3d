@@ -6,7 +6,6 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 

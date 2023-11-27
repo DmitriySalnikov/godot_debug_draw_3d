@@ -7,7 +7,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
-#include <godot_cpp/classes/texture.hpp>
 #include <godot_cpp/classes/time.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -125,7 +124,7 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 }
 
 void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes) {
-	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec();
+	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec();
 
 	for (size_t i = 0; i < t_meshes.size(); i++) {
 		auto &mesh = *t_meshes[i];
@@ -149,7 +148,7 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)In
 		}
 	}
 
-	time_spent_to_fill_buffers_of_instances = TIME()->get_ticks_usec() - time_spent_to_fill_buffers_of_instances;
+	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec() - time_spent_to_fill_buffers_of_instances;
 }
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
@@ -220,7 +219,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
 		return;
 
-	size_t spent_timer = TIME()->get_ticks_usec();
+	size_t spent_timer = Time::get_singleton()->get_ticks_usec();
 
 	// Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
 	size_t used_vertices = 0;
@@ -287,7 +286,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
 
-	time_spent_to_fill_buffers_of_lines = TIME()->get_ticks_usec() - spent_timer;
+	time_spent_to_fill_buffers_of_lines = Time::get_singleton()->get_ticks_usec() - spent_timer;
 }
 
 void GeometryPool::reset_counter(double _delta) {
@@ -369,33 +368,33 @@ void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_f
 	uint64_t instant_time = 0;
 	uint64_t delayed_time = 0;
 	for (auto &t : instances) { // loop over instance types
-		uint64_t i_t = TIME()->get_ticks_usec();
+		uint64_t i_t = Time::get_singleton()->get_ticks_usec();
 
 		for (size_t i = 0; i < t.used_instant; i++)
 			t.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
-		instant_time += TIME()->get_ticks_usec() - i_t;
-		uint64_t d_t = TIME()->get_ticks_usec();
+		instant_time += Time::get_singleton()->get_ticks_usec() - i_t;
+		uint64_t d_t = Time::get_singleton()->get_ticks_usec();
 
 		for (size_t i = 0; i < t.delayed.size(); i++)
 			t.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
-		delayed_time += TIME()->get_ticks_usec() - d_t;
+		delayed_time += Time::get_singleton()->get_ticks_usec() - d_t;
 	}
 
 	// loop over lines
-	time_spent_to_cull_instant = TIME()->get_ticks_usec();
+	time_spent_to_cull_instant = Time::get_singleton()->get_ticks_usec();
 
 	for (size_t i = 0; i < lines.used_instant; i++)
 		lines.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
-	time_spent_to_cull_instant = TIME()->get_ticks_usec() - time_spent_to_cull_instant + instant_time;
-	time_spent_to_cull_delayed = TIME()->get_ticks_usec();
+	time_spent_to_cull_instant = Time::get_singleton()->get_ticks_usec() - time_spent_to_cull_instant + instant_time;
+	time_spent_to_cull_delayed = Time::get_singleton()->get_ticks_usec();
 
 	for (size_t i = 0; i < lines.delayed.size(); i++)
 		lines.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
-	time_spent_to_cull_delayed = TIME()->get_ticks_usec() - time_spent_to_cull_delayed + delayed_time;
+	time_spent_to_cull_delayed = Time::get_singleton()->get_ticks_usec() - time_spent_to_cull_delayed + delayed_time;
 }
 
 void GeometryPool::update_expiration(double _delta) {

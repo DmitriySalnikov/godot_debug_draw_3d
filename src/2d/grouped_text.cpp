@@ -1,7 +1,6 @@
 #include "grouped_text.h"
 #include "config_2d.h"
 #include "debug_draw_2d.h"
-#include "utils/math_utils.h"
 #include "utils/utils.h"
 
 using namespace godot;

@@ -1,9 +1,6 @@
 #include "config_2d.h"
 #include "utils/utils.h"
 
-#include "graphs.h"
-#include "grouped_text.h"
-
 #include <limits.h>
 
 const char *DebugDrawConfig2D::s_marked_dirty = "marked_dirty";

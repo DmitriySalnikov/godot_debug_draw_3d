@@ -1,5 +1,4 @@
 #include "stats_2d.h"
-#include "utils/utils.h"
 
 void DebugDrawStats2D::_bind_methods() {
 #define REG_PROPERTY_NO_SET(name, type)                                                         \

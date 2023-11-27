@@ -1,27 +1,13 @@
 #pragma once
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "common/colors.h"
-#include "geometry_generators.h"
 #include "render_instances.h"
-#include "utils/math_utils.h"
-#include "utils/utils.h"
-
-#include <map>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/array_mesh.hpp>
-#include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/mesh.hpp>
-#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
-#include <godot_cpp/classes/multi_mesh_instance3d.hpp>
-#include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
-#include <godot_cpp/classes/texture.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -42,7 +28,7 @@ class DebugGeometryContainer {
 		Ref<MultiMesh> mesh;
 
 		~MultiMeshStorage() {
-			RS()->free_rid(instance);
+			RenderingServer::get_singleton()->free_rid(instance);
 			mesh.unref();
 		}
 	};
@@ -54,7 +40,7 @@ class DebugGeometryContainer {
 		Ref<ShaderMaterial> material;
 
 		~ImmediateMeshStorage() {
-			RS()->free_rid(instance);
+			RenderingServer::get_singleton()->free_rid(instance);
 			mesh.unref();
 			material.unref();
 		}

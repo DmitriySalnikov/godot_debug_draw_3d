@@ -8,7 +8,6 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
 GODOT_WARNING_RESTORE()
 
 using namespace godot;
@@ -22,7 +21,6 @@ void AssetLibraryUpdateChecker::_bind_methods() {
 #undef REG_CLASS_NAME
 }
 
-#include <godot_cpp/classes/os.hpp>
 void AssetLibraryUpdateChecker::request_completed(PackedByteArray body) {
 	if (http_thread.joinable()) {
 		is_thread_closing = true;

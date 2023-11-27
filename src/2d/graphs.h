@@ -4,7 +4,6 @@
 #include "common/colors.h"
 #include "utils/compiler.h"
 
-#include <map>
 #include <mutex>
 #include <vector>
 

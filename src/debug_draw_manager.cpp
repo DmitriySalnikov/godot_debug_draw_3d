@@ -12,7 +12,6 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
 GODOT_WARNING_RESTORE()
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;

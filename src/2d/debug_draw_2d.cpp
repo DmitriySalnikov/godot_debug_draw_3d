@@ -7,8 +7,6 @@
 #include "stats_2d.h"
 #include "utils/utils.h"
 
-#include <limits.h>
-
 GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
