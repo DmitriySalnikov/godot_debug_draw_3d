@@ -16,6 +16,7 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
+	ZoneScoped;
 	owner = root;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
@@ -40,30 +41,30 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 
 	// Create node with material and MultiMesh. Add to tree. Create array of instances
 	{
-		auto array_mesh_cube = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices);
+		auto array_mesh_cube = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices);
 		CreateMMI(InstanceType::CUBE, UsingShaderType::Wireframe, NAMEOF(mmi_cubes), array_mesh_cube);
 
-		auto array_mesh_cube_center = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices);
+		auto array_mesh_cube_center = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices);
 		CreateMMI(InstanceType::CUBE_CENTERED, UsingShaderType::Wireframe, NAMEOF(mmi_cubes_centered), array_mesh_cube_center);
 
-		auto array_mesh_arrow_head = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices);
+		auto array_mesh_arrow_head = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices);
 		CreateMMI(InstanceType::ARROWHEAD, UsingShaderType::Wireframe, NAMEOF(mmi_arrowheads), array_mesh_arrow_head);
 
-		auto array_mesh_pos = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices);
+		auto array_mesh_pos = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices);
 		CreateMMI(InstanceType::POSITION, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
 
-		auto array_mesh_sphere = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO, 2));
+		auto array_mesh_sphere = GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO, 2);
 		CreateMMI(InstanceType::SPHERE, UsingShaderType::Wireframe, NAMEOF(mmi_spheres), array_mesh_sphere);
 
-		auto array_mesh_sphere_hd = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO, 2));
+		auto array_mesh_sphere_hd = GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO, 2);
 		CreateMMI(InstanceType::SPHERE_HD, UsingShaderType::Wireframe, NAMEOF(mmi_spheres_hd), array_mesh_sphere_hd);
 
-		auto array_mesh_cylinder = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CreateCylinderLines(14, 1, 1, Vector3_ZERO, 2));
+		auto array_mesh_cylinder = GeometryGenerator::CreateCylinderLines(16, 1, 1, Vector3_ZERO, 2);
 		CreateMMI(InstanceType::CYLINDER, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder);
 
 		// VOLUMETRIC
 
-		auto array_mesh_line_volumetric = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices);
+		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices));
 		CreateMMI(InstanceType::LINE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_line_volumetric);
 
 		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube);
@@ -72,25 +73,25 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center);
 		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_centered_volumetric), array_mesh_cube_centered_volumetric);
 
-		auto array_mesh_arrow_head_simple = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndicesSimplified);
-		auto array_mesh_arrow_head_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_arrow_head_simple);
+		auto array_mesh_arrow_head_simple = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndicesSimplified);
+		auto array_mesh_arrow_head_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_arrow_head_simple, true);
 		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_arrowheads_volumetric), array_mesh_arrow_head_volumetric);
 
 		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos);
 		CreateMMI(InstanceType::POSITION_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_positions_volumetric), array_mesh_pos_volumetric);
 
-		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere, false);
+		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere);
 		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_volumetric), array_mesh_sphere_volumetric);
 
-		auto array_mesh_sphere_hd_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere_hd, false);
+		auto array_mesh_sphere_hd_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere_hd);
 		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_hd_volumetric), array_mesh_sphere_hd_volumetric);
 
-		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder, false);
+		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder);
 		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cylinders_volumetric), array_mesh_cylinder_volumetric);
 
 		// SOLID
 
-		auto array_mesh_billboard = GeometryGenerator::CreateMesh(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices);
+		auto array_mesh_billboard = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices);
 		CreateMMI(InstanceType::BILLBOARD_SQUARE, UsingShaderType::Billboard, NAMEOF(mmi_billboard_squares), array_mesh_billboard);
 
 		set_render_layer_mask(1);
@@ -98,6 +99,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 }
 
 DebugGeometryContainer::~DebugGeometryContainer() {
+	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();
@@ -105,6 +107,7 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 }
 
 void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh) {
+	ZoneScoped;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	RID mmi = rs->instance_create();
@@ -145,6 +148,7 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 }
 
 void DebugGeometryContainer::set_world(Node *new_world) {
+	ZoneScoped;
 	scene_world_node = new_world;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	RID scenario;
@@ -167,6 +171,7 @@ Node *DebugGeometryContainer::get_world() {
 
 // TODO add mark_dirty for 3d to reduce editor updates if only delayed shapes are displayed.
 void DebugGeometryContainer::update_geometry(double delta) {
+	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 
 	// Don't clear geometry if frozen
@@ -307,12 +312,14 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.reset_counter(delta);
 }
 
-Ref<DebugDrawStats3D> DebugGeometryContainer::get_render_stats() {
+void DebugGeometryContainer::get_render_stats(Ref<DebugDrawStats3D> &stats) {
+	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
-	return geometry_pool.get_stats();
+	return geometry_pool.update_stats(stats);
 }
 
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
+	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 	if (render_layers != layers) {
 		RenderingServer *rs = RenderingServer::get_singleton();
@@ -329,6 +336,7 @@ int32_t DebugGeometryContainer::get_render_layer_mask() const {
 }
 
 void DebugGeometryContainer::clear_3d_objects() {
+	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 	for (auto &s : multi_mesh_storage) {
 		s.mesh->set_instance_count(0);

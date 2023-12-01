@@ -1,5 +1,7 @@
 shader_type spatial;
-render_mode shadows_disabled, unshaded;
+render_mode shadows_disabled, unshaded, depth_prepass_alpha;
+
+uniform sampler2D depth_value : hint_depth_texture;
 
 void vertex()
 {
@@ -14,7 +16,6 @@ vec3 toLinearFast(vec3 col) {
 
 void fragment() {
 	ALBEDO = COLOR.xyz;
-	
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 }

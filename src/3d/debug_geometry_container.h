@@ -65,7 +65,7 @@ public:
 	void set_render_layer_mask(int32_t layers);
 	int32_t get_render_layer_mask() const;
 
-	Ref<DebugDrawStats3D> get_render_stats();
+	void get_render_stats(Ref<DebugDrawStats3D> &stats);
 	void clear_3d_objects();
 };
 

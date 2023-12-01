@@ -25,6 +25,7 @@ public:
 	}
 
 	void prepare_buffer(size_t t_expected_size) {
+		ZoneScoped;
 		if ((size_t)m_buffer.size() < t_expected_size) {
 			size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
 			DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": extending from %d to %d\n", m_buffer.size(), new_size);
@@ -61,6 +62,7 @@ DelayedRendererInstance::DelayedRendererInstance() :
 }
 
 void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds) {
+	ZoneScoped;
 	_update(_exp_time, true);
 
 	type = _type;
@@ -74,6 +76,7 @@ DelayedRendererLine::DelayedRendererLine() :
 }
 
 void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col) {
+	ZoneScoped;
 	_update(_exp_time, true);
 
 	set_lines(_lines);
@@ -90,6 +93,7 @@ const std::vector<Vector3> &DelayedRendererLine::get_lines() const {
 }
 
 AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines) {
+	ZoneScoped;
 	if (_lines.size() > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
 		Vector3 begin = _lines[0];
@@ -124,12 +128,12 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 }
 
 void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes) {
+	ZoneScoped;
 	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec();
 
 	for (size_t i = 0; i < t_meshes.size(); i++) {
 		auto &mesh = *t_meshes[i];
 
-		// TODO hot delete[]
 		PackedFloat32Array a = get_raw_data((InstanceType)i);
 
 		int new_size = (int)(a.size() / INSTANCE_DATA_FLOAT_COUNT);
@@ -140,10 +144,6 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)In
 
 		if (a.size()) {
 			// TODO PR for native pointer!
-			// TODO try to change condition to >= and not !=
-			// ERROR:
-			// Condition "p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache)" is true.at : RendererRD::MeshStorage::multimesh_set_buffer(servers\rendering\renderer_rd\storage_rd\mesh_storage.cpp : 1764)
-
 			mesh->set_buffer(a);
 		}
 	}
@@ -152,6 +152,7 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)In
 }
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
+	ZoneScoped;
 	auto &inst = instances[(int)_type];
 
 	size_t buffer_size = (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
@@ -214,6 +215,7 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 }
 
 void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
+	ZoneScoped;
 	time_spent_to_fill_buffers_of_lines = 0;
 
 	if (lines.used_instant == 0 && lines.delayed.size() == 0)
@@ -290,6 +292,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 }
 
 void GeometryPool::reset_counter(double _delta) {
+	ZoneScoped;
 	lines.reset_counter(_delta);
 
 	for (int i = 0; i < (int)InstanceType::ALL; i++) {
@@ -298,13 +301,16 @@ void GeometryPool::reset_counter(double _delta) {
 }
 
 void GeometryPool::reset_visible_objects() {
+	ZoneScoped;
 	for (auto &i : instances) {
 		i.reset_visible_counter();
 	}
 	lines.reset_visible_counter();
 }
 
-Ref<DebugDrawStats3D> GeometryPool::get_stats() const {
+void GeometryPool::update_stats(Ref<DebugDrawStats3D> &stats) const {
+	ZoneScoped;
+
 	size_t used_instances = 0;
 	for (auto &i : instances) {
 		used_instances += i._prev_used_instant;
@@ -318,9 +324,7 @@ Ref<DebugDrawStats3D> GeometryPool::get_stats() const {
 
 	size_t used_lines = lines._prev_used_instant + lines.used_delayed;
 
-	Ref<DebugDrawStats3D> stats;
-	stats.instantiate();
-	stats->setup(
+	stats->set_render_stats(
 			/* t_instances */ used_instances,
 			/* t_lines */ used_lines,
 
@@ -332,10 +336,10 @@ Ref<DebugDrawStats3D> GeometryPool::get_stats() const {
 
 			/* t_time_culling_instant_usec */ time_spent_to_cull_instant,
 			/* t_time_culling_delayed_usec */ time_spent_to_cull_delayed);
-	return stats;
 }
 
 void GeometryPool::clear_pool() {
+	ZoneScoped;
 	for (auto &i : instances) {
 		i.clear_pools();
 	}
@@ -343,6 +347,7 @@ void GeometryPool::clear_pool() {
 }
 
 void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func) {
+	ZoneScoped;
 	for (auto &inst : instances) {
 		for (size_t i = 0; i < inst.used_instant; i++) {
 			_func(&inst.instant[i]);
@@ -355,6 +360,7 @@ void GeometryPool::for_each_instance(const std::function<void(DelayedRendererIns
 }
 
 void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &_func) {
+	ZoneScoped;
 	for (size_t i = 0; i < lines.used_instant; i++) {
 		_func(&lines.instant[i]);
 	}
@@ -365,6 +371,8 @@ void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)
 }
 
 void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
+	ZoneScoped;
+
 	uint64_t instant_time = 0;
 	uint64_t delayed_time = 0;
 	for (auto &t : instances) { // loop over instance types
@@ -398,6 +406,7 @@ void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_f
 }
 
 void GeometryPool::update_expiration(double _delta) {
+	ZoneScoped;
 	for (auto &t : instances)
 		for (size_t i = 0; i < t.delayed.size(); i++)
 			t.delayed[i].update_expiration(_delta);
@@ -407,6 +416,7 @@ void GeometryPool::update_expiration(double _delta) {
 }
 
 void GeometryPool::scan_visible_instances() {
+	ZoneScoped;
 	reset_visible_objects();
 
 	for (auto &t : instances) {
@@ -432,6 +442,7 @@ void GeometryPool::scan_visible_instances() {
 }
 
 void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
+	ZoneScoped;
 	DelayedRendererInstance *inst = instances[(int)_type].get(_exp_time > 0);
 	inst->update(_exp_time, _type, _transform, _col, _custom_col, _bounds);
 	if (_custom_upd)
@@ -439,6 +450,7 @@ void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, 
 }
 
 void GeometryPool::add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
+	ZoneScoped;
 	DelayedRendererLine *inst = lines.get(_exp_time > 0);
 	inst->update(_exp_time, _lines, _col);
 	if (_custom_upd)

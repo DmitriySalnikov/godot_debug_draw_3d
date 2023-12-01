@@ -3,6 +3,7 @@
 #include "common/circular_buffer.h"
 #include "common/colors.h"
 #include "utils/compiler.h"
+#include "utils/profiler.h"
 
 #include <mutex>
 #include <vector>
@@ -117,7 +118,8 @@ private:
 	Callable data_getter;
 
 protected:
-	mutable std::recursive_mutex datalock;
+	mutable ProfiledMutex(std::recursive_mutex, datalock, "Graphs draw lock");
+
 	std::unique_ptr<CircularBuffer<double> > buffer_data;
 	mutable graph_interpolated_values_range graph_range = {};
 	StringName title;
@@ -232,7 +234,7 @@ public:
 
 class DataGraphManager {
 	std::vector<Ref<DebugDrawGraph> > graphs;
-	mutable std::recursive_mutex datalock;
+	mutable ProfiledMutex(std::recursive_mutex, datalock, "Graphs manager lock");
 	class DebugDraw2D *owner = nullptr;
 
 public:

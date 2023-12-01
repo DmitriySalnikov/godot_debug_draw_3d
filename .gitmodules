@@ -3,3 +3,6 @@
 	url = https://github.com/godotengine/godot-cpp.git
 	branch = 3.4
 	
+[submodule "src/thirdparty/tracy"]
+	path = src/thirdparty/tracy
+	url = https://github.com/wolfpld/tracy.git

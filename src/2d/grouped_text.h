@@ -2,6 +2,7 @@
 #ifndef DISABLE_DEBUG_RENDERING
 
 #include "utils/compiler.h"
+#include "utils/profiler.h"
 
 #include <functional>
 #include <memory>
@@ -47,7 +48,7 @@ private:
 public:
 	bool is_used_one_time = false;
 	String title;
-	std::unordered_set<TextGroupItem_ptr> Texts;
+	std::vector<TextGroupItem_ptr> Texts;
 	class DebugDraw2D *owner;
 
 	void set_group_priority(int _val);
@@ -101,10 +102,11 @@ class GroupedText {
 	};
 
 	TextGroupItem_ptr item_for_title_of_groups;
-	std::unordered_set<TextGroup_ptr> _text_groups;
+	std::vector<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;
 	class DebugDraw2D *owner = nullptr;
-	std::recursive_mutex datalock;
+
+	ProfiledMutex(std::recursive_mutex, datalock, "Text lock");
 
 	void _create_new_default_group_if_needed();
 

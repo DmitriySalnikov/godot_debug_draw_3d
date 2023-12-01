@@ -2,11 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="debug_draw_manager.cpp" />
-    <ClCompile Include="gen\shared_resources.gen.cpp">
+    <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="thirdparty\tracy\public\TracyClient.cpp">
+      <Filter>thirdparty\tracy\public</Filter>
+    </ClCompile>
+    <ClCompile Include="gen\editor_resources.gen.cpp">
       <Filter>gen</Filter>
     </ClCompile>
-    <ClCompile Include="register_types.cpp" />
-    <ClCompile Include="gen\editor_resources.gen.cpp">
+    <ClCompile Include="gen\shared_resources.gen.cpp">
       <Filter>gen</Filter>
     </ClCompile>
     <ClCompile Include="editor\asset_library_update_checker.cpp">
@@ -17,6 +20,9 @@
     </ClCompile>
     <ClCompile Include="editor\generate_csharp_bindings.cpp">
       <Filter>editor</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\config_scoped_3d.cpp">
+      <Filter>3d</Filter>
     </ClCompile>
     <ClCompile Include="3d\debug_draw_3d.cpp">
       <Filter>3d</Filter>
@@ -60,17 +66,17 @@
     <ClCompile Include="common\colors.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="3d\config_scoped_3d.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
-    <ClInclude Include="gen\shared_resources.gen.h">
+    <ClInclude Include="version.h" />
+    <ClInclude Include="thirdparty\tracy\public\tracy\Tracy.hpp">
+      <Filter>thirdparty\tracy\public\tracy</Filter>
+    </ClInclude>
+    <ClInclude Include="gen\editor_resources.gen.h">
       <Filter>gen</Filter>
     </ClInclude>
-    <ClInclude Include="version.h" />
-    <ClInclude Include="gen\editor_resources.gen.h">
+    <ClInclude Include="gen\shared_resources.gen.h">
       <Filter>gen</Filter>
     </ClInclude>
     <ClInclude Include="editor\asset_library_update_checker.h">
@@ -81,6 +87,9 @@
     </ClInclude>
     <ClInclude Include="editor\generate_csharp_bindings.h">
       <Filter>editor</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\config_scoped_3d.h">
+      <Filter>3d</Filter>
     </ClInclude>
     <ClInclude Include="3d\debug_draw_3d.h">
       <Filter>3d</Filter>
@@ -133,34 +142,46 @@
     <ClInclude Include="common\i_scoped_storage.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="3d\config_scoped_3d.h">
-      <Filter>3d</Filter>
+    <ClInclude Include="utils\profiler.h">
+      <Filter>utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debug_strings.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="gen">
-      <UniqueIdentifier>{8430e6fa-e0b0-4fea-adec-0637de7c0a05}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="editor">
-      <UniqueIdentifier>{b5004f62-7cf6-43c4-8a65-32ed5c896d6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3d">
-      <UniqueIdentifier>{09f9832d-9d61-4dc9-b717-ae51b219090b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="utils">
-      <UniqueIdentifier>{e0cfdda3-62c1-4198-99c3-b5d2983327c1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="2d">
-      <UniqueIdentifier>{aebaf487-eccc-4dfa-a1e5-93b0458bab66}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{463d3845-6105-4768-b06b-676296dc1659}</UniqueIdentifier>
-    </Filter>
+    <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="default_sources.json" />
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{be5e6784-a46a-4bae-afb6-287146379d42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy">
+      <UniqueIdentifier>{079c0148-41ca-455a-a871-8ed13afaa735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public">
+      <UniqueIdentifier>{3b56fa1f-a0c7-4a5f-971b-cf67a73c88af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public\tracy">
+      <UniqueIdentifier>{fc97df7a-4021-4252-ad7b-70a6ca379616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gen">
+      <UniqueIdentifier>{8145331d-3741-4718-8d54-2c74e1e53090}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="editor">
+      <UniqueIdentifier>{db54c157-e733-4466-bda5-2a6d99047c4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3d">
+      <UniqueIdentifier>{b9e0e87e-86a6-4094-982f-9f1fc88e0f72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{50d7f8ac-d649-407c-a605-d7d11e4358dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2d">
+      <UniqueIdentifier>{92aa6682-7c30-4679-967d-cf0ee2aa9004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{669993b2-daab-4a2d-ba8e-e07eec66356c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

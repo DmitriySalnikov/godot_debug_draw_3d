@@ -15,6 +15,7 @@ def setup_options(env, arguments, gen_help):
 
     opts = Variables([], arguments)
 
+    opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
     opts.Add(PathVariable("addon_output_dir", "Path to the output directory", output_dir, PathVariable.PathIsDirCreate))
@@ -23,7 +24,7 @@ def setup_options(env, arguments, gen_help):
     gen_help(env, opts)
 
 
-def setup_defines_and_flags(env):
+def setup_defines_and_flags(env, src_out):
     env.Append(CPPDEFINES=["GDEXTENSION_LIBRARY"])
 
     if "release" in env["target"] and not env["force_enabled_dd3d"]:
@@ -37,6 +38,13 @@ def setup_defines_and_flags(env):
         else:
             env.AppendUnique(CCFLAGS=["-flto"])
             env.AppendUnique(LINKFLAGS=["-flto"])
+
+    if env["tracy_enabled"]:
+        env.Append(CPPDEFINES=["TRACY_ENABLE"])
+        env.Append(CPPDEFINES=["TRACY_ON_DEMAND"])
+        env.Append(CPPDEFINES=["TRACY_DELAYED_INIT"])
+        env.Append(CPPDEFINES=["TRACY_MANUAL_LIFETIME"])
+        src_out.append("src/thirdparty/tracy/public/TracyClient.cpp")
 
 
 def is_file_locked(file_path):
@@ -91,12 +99,9 @@ def replace_flag(arr, flag, new_flag):
 def get_library_object(env, arguments=None, gen_help=None):
     if arguments != None and gen_help:
         setup_options(env, arguments, gen_help)
-    setup_defines_and_flags(env)
-
-    env.Append(CPPPATH=[src_folder])
-
-    # replace_flag(env["CXXFLAGS"], "/std:c++17" if env.get("is_msvc", False) else "-std=c++17",
-    #                      "/std:c++20" if env.get("is_msvc", False) else "-std=c++20")
+    additional_src = []
+    setup_defines_and_flags(env, additional_src)
+    env.Append(CPPPATH=src_folder)
 
     src = []
     with open(src_folder + "/default_sources.json") as f:
@@ -124,7 +129,7 @@ def get_library_object(env, arguments=None, gen_help=None):
     env.Default(
         env.SharedLibrary(
             target=env.File(Path(env["addon_output_dir"]) / (library_full_name + env["SHLIBSUFFIX"])),
-            source=get_sources(src),
+            source=additional_src + get_sources(src),
             SHLIBSUFFIX=env["SHLIBSUFFIX"],
         )
     )

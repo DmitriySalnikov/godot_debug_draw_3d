@@ -5,7 +5,7 @@
 #include "3d/debug_draw_3d.h"
 #include "utils/utils.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 #include "editor/generate_csharp_bindings.h"
 #endif
 
@@ -13,10 +13,9 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 GODOT_WARNING_RESTORE()
+using namespace godot;
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
-
-using namespace godot;
 
 const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
 
@@ -49,6 +48,7 @@ Node *DebugDrawManager::_get_current_scene() {
 }
 
 void DebugDrawManager::_connect_scene_changed() {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	// Skip when exiting the tree and finish this loop
 	if (is_closing) {
@@ -66,6 +66,7 @@ void DebugDrawManager::_connect_scene_changed() {
 }
 
 void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
@@ -79,6 +80,7 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 }
 
 void DebugDrawManager::_integrate_into_engine() {
+	ZoneScoped;
 	// Assigned here because it is created inside the `GDExtension Initialize` function.
 	// 1. Create in Initialize and assign Singleton
 	// 2. Call class constructor after Initialize to get default values of properties
@@ -184,6 +186,7 @@ DebugDrawManager::~DebugDrawManager() {
 }
 
 void DebugDrawManager::clear_all() {
+	ZoneScoped;
 	if (debug_draw_2d_singleton)
 		debug_draw_2d_singleton->clear_all();
 	if (debug_draw_3d_singleton)
@@ -202,6 +205,7 @@ bool DebugDrawManager::is_debug_enabled() const {
 }
 
 void DebugDrawManager::init() {
+	ZoneScoped;
 	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + "initial_debug_state", true, Variant::BOOL);
 	set_debug_enabled(initial_debug_state);
 
@@ -231,11 +235,15 @@ void DebugDrawManager::_process(double delta) {
 	//		memdelete(asd);
 	//	#endif
 	//	}
-
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
 		DebugDraw3D::get_singleton()->process(get_process_delta_time());
+
 		DebugDraw2D::get_singleton()->process(get_process_delta_time());
+
+		if (!DebugDraw2D::get_singleton()->is_drawing_frame()) {
+			FrameMark;
+		}
 	}
 #endif
 
@@ -244,9 +252,14 @@ void DebugDrawManager::_process(double delta) {
 		log_flush_time -= 0.25f;
 		Utils::print_logs();
 	}
+
+	if (!debug_enabled || !DebugDraw2D::get_singleton()->is_debug_enabled()) {
+		FrameMark;
+	}
 }
 
 void DebugDrawManager::_exit_tree() {
+	ZoneScoped;
 	is_closing = true;
 
 	if (Engine::get_singleton()->has_singleton(NAMEOF(DebugDrawManager))) {
@@ -272,6 +285,7 @@ void DebugDrawManager::_exit_tree() {
 
 #ifdef TOOLS_ENABLED
 void DebugDrawManager::_try_to_update_cs_bindings() {
+	ZoneScoped;
 	auto g = GenerateCSharpBindingsPlugin();
 	if (g.is_need_to_update()) {
 		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");

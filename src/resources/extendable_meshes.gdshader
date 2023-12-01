@@ -1,5 +1,7 @@
 shader_type spatial;
-render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords;
+render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords, depth_prepass_alpha;
+
+uniform float shade_power : hint_range(0.0, 1.0, 0.01) = 0.8f;
 
 mat3 orthonormalize(mat3 m) {
     vec3 x = normalize(m[0]);
@@ -17,11 +19,7 @@ vec3 toLinearFast(vec3 col) {
 }
 
 void fragment() {
-	if (FRONT_FACING)
-		ALBEDO = COLOR.xyz;
-	else
-		ALBEDO = COLOR.xyz * 0.85f;
-	
+	ALBEDO = mix(COLOR.xyz * shade_power, COLOR.xyz, pow(length(UV * 2.0 - 1.0), .7));
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 }

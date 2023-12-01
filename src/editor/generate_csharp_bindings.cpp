@@ -26,6 +26,7 @@ GenerateCSharpBindingsPlugin::IndentGuard::~IndentGuard() {
 }
 
 bool GenerateCSharpBindingsPlugin::is_need_to_update() {
+	ZoneScoped;
 	if (!ClassDB::class_exists("CSharpScript"))
 		return false;
 
@@ -44,6 +45,7 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 }
 
 void GenerateCSharpBindingsPlugin::generate() {
+	ZoneScoped;
 	const String out_path = output_directory.path_join(api_file_name);
 	const String out_log_path = output_directory.path_join("log.txt");
 
@@ -121,6 +123,7 @@ void GenerateCSharpBindingsPlugin::generate_header() {
 }
 
 void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_data &remapped_data) {
+	ZoneScoped;
 	log("Class: " + cls, 1);
 
 	StringName parent_name = ClassDB::get_parent_class(cls);
@@ -229,6 +232,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 }
 
 void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &remapped_data) {
+	ZoneScoped;
 	log("DebugDraw utilities:", 1);
 
 	line("internal class _DebugDrawInstanceWrapper_ : IDisposable");
@@ -398,6 +402,7 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 }
 
 void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool is_static, bool inheritance) {
+	ZoneScoped;
 	if (is_static) {
 		String lowered_name = cls;
 
@@ -468,6 +473,7 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 }
 
 void GenerateCSharpBindingsPlugin::generate_constants(const StringName &cls) {
+	ZoneScoped;
 	int added_items = 0;
 	PackedStringArray consts = ClassDB::class_get_integer_constant_list(cls, true);
 
@@ -486,6 +492,7 @@ void GenerateCSharpBindingsPlugin::generate_constants(const StringName &cls) {
 }
 
 void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const StringName &enm) {
+	ZoneScoped;
 	log(enm, 3);
 
 	int added_items = 0;
@@ -533,6 +540,7 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 }
 
 void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, remap_data &remapped_data) {
+	ZoneScoped;
 	String name = (String)method["name"];
 
 	log(name, 3);
@@ -592,6 +600,7 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 }
 
 void GenerateCSharpBindingsPlugin::generate_default_arguments_remap(const remap_data &remapped_data) {
+	ZoneScoped;
 	if (!remapped_data.size())
 		return;
 
@@ -612,6 +621,7 @@ void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, co
 	// Methods Set: 60,477 ms
 	// ClassDB_SetGet Get: 28,660 ms
 	// ClassDB_SetGet Set: 26,918 ms
+	ZoneScoped;
 
 	for (int i = 0; i < props.size(); i++) {
 		String name = ((Dictionary)props[i])["name"];
@@ -645,6 +655,7 @@ void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, co
 }
 
 GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argument_parse(const Dictionary &arg, bool is_return) {
+	ZoneScoped;
 	StringName class_name = arg["class_name"];
 	String name = arg["name"];
 	Variant::Type var_type = (Variant::Type)(int)arg["type"];
@@ -671,10 +682,12 @@ GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argumen
 }
 
 GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argument_parse(const StringName &class_name, const String &name, const Variant::Type type) {
+	ZoneScoped;
 	return argument_parse(Utils::make_dict("class_name", class_name, "name", name, "type", type));
 }
 
 std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlugin::arguments_parse_values(const TypedArray<Dictionary> &args, const Array &def_args, remap_data &remapped_data) {
+	ZoneScoped;
 	std::vector<DefaultData> res;
 
 	int start_idx = (int)(args.size() - def_args.size());
@@ -712,6 +725,7 @@ std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlu
 }
 
 GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::arguments_get_formatted_value(const ArgumentData &arg_data, const Variant &def_val) {
+	ZoneScoped;
 	if (arg_data.is_enum) {
 		return DefaultData(arg_data.name, arg_data.type_name, false, FMT_STR("({0}){1}", arg_data.type_name, def_val));
 	} else {
@@ -900,6 +914,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 }
 
 String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dictionary> &args, bool with_defaults, std::vector<DefaultData> def_args_data) {
+	ZoneScoped;
 	PackedStringArray arg_strs;
 	for (int i = 0; i < args.size(); i++) {
 		ArgumentData arg_data = argument_parse(args[i]);
@@ -928,6 +943,7 @@ String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dict
 }
 
 String GenerateCSharpBindingsPlugin::arguments_string_call(const TypedArray<Dictionary> &args, const std::vector<DefaultData> &def_remap) {
+	ZoneScoped;
 	PackedStringArray arg_strs;
 	for (int i = 0; i < args.size(); i++) {
 		ArgumentData arg_data = argument_parse((Dictionary)args[i]);
@@ -950,6 +966,7 @@ String GenerateCSharpBindingsPlugin::arguments_string_call(const TypedArray<Dict
 }
 
 void GenerateCSharpBindingsPlugin::line(const String &str, int indent_override) {
+	ZoneScoped;
 	if (indent_override < 0) {
 		opened_file->store_string(indent);
 	} else {

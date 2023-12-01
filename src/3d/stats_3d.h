@@ -39,11 +39,21 @@ public:                                      \
 
 	DEFINE_DEFAULT_PROP(int64_t, total_time_spent_usec, 0);
 
+	DEFINE_DEFAULT_PROP(int64_t, created_scoped_configs, 0);
+	DEFINE_DEFAULT_PROP(int64_t, orphan_scoped_configs, 0);
+
 #undef DEFINE_DEFAULT_PROP
 
 	DebugDrawStats3D(){};
 
-	void setup(
+	void set_scoped_config_stats(
+			const int64_t &t_created_scoped_configs,
+			const int64_t &t_orphan_scoped_configs) {
+		created_scoped_configs = t_created_scoped_configs;
+		orphan_scoped_configs = t_orphan_scoped_configs;
+	}
+
+	void set_render_stats(
 			const int64_t &t_instances,
 			const int64_t &t_lines,
 			const int64_t &t_visible_instances,

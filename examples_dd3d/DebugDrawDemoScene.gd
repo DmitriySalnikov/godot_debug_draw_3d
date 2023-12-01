@@ -69,19 +69,12 @@ func _update_keys_just_press():
 
 func _process(delta: float) -> void:
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness)
-	if false: #test
-		print("def ", DebugDraw3D.scoped_config().get_thickness())
+	if true: #test
 		var s11 = DebugDraw3D.new_scoped_config()
-		print("over ", s11.get_thickness())
 		s11.set_thickness(1)
-		print("over changed ", s11.get_thickness())
-		print("def recheck ", DebugDraw3D.scoped_config().get_thickness())
 		if true:
 			var s13 = DebugDraw3D.new_scoped_config()
-			s13.set_thickness(2)
-			print("scope ", s13.get_thickness())
-		print("def recheck 2 ", DebugDraw3D.scoped_config().get_thickness())
-		print("over recheck ", s11.get_thickness())
+			s13.set_thickness(3)
 	
 	_update_keys_just_press()
 	
@@ -127,12 +120,13 @@ func _process(delta: float) -> void:
 		if !Engine.is_editor_hint():
 			get_viewport().msaa_3d = Viewport.MSAA_DISABLED if get_viewport().msaa_3d == Viewport.MSAA_4X else Viewport.MSAA_4X
 	
-	if _is_key_just_pressed(KEY_1):
-		DebugDraw3D.debug_enabled = !DebugDraw3D.debug_enabled
-	if _is_key_just_pressed(KEY_2):
-		DebugDraw2D.debug_enabled = !DebugDraw2D.debug_enabled
-	if _is_key_just_pressed(KEY_3):
-		DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
+	if !Engine.is_editor_hint():
+		if _is_key_just_pressed(KEY_1):
+			DebugDraw3D.debug_enabled = !DebugDraw3D.debug_enabled
+		if _is_key_just_pressed(KEY_2):
+			DebugDraw2D.debug_enabled = !DebugDraw2D.debug_enabled
+		if _is_key_just_pressed(KEY_3):
+			DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
 	
 	
 	if Engine.is_editor_hint():
@@ -156,8 +150,9 @@ func _process(delta: float) -> void:
 	time -= delta
 	
 	# Cylinders
-	DebugDraw3D.draw_cylinder($Cylinder1.global_transform, Color.CRIMSON)
-	DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY, $Cylinder2.global_transform.origin).scaled(Vector3(1,2,1)), Color.RED)
+	DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
+	DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY.scaled(Vector3(1,2,1)), $Cylinders/Cylinder2.global_position), Color.RED)
+	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.35)
 	
 	# Boxes
 	DebugDraw3D.draw_box_xf($Box1.global_transform, Color.MEDIUM_PURPLE)
@@ -180,6 +175,9 @@ func _process(delta: float) -> void:
 		DebugDraw3D.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2.0)
 		time3 = 2
 	time3 -= delta
+	
+	# Test UP vector
+	DebugDraw3D.draw_line($"Lines/7".global_transform.origin, target.global_transform.origin, Color.RED)
 	
 	# Lines with Arrow
 	DebugDraw3D.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.BLUE, 0.5, true)
@@ -212,8 +210,10 @@ func _process(delta: float) -> void:
 	DebugDraw3D.draw_point_path(points_below3, 0.25, Color.BLUE, Color.TOMATO)
 	
 	# Misc
-	#for i in 1000:
-	DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
+	if true:
+		#for i in 1000:
+		var a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
+		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
 	DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
@@ -309,6 +309,10 @@ func _text_tests():
 			DebugDraw2D.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 9)
 			DebugDraw2D.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 10)
 			DebugDraw2D.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 11)
+			
+			DebugDraw2D.set_text("---", null, 14)
+			
+			DebugDraw2D.set_text("Created scoped configs", "%d" % render_stats.created_scoped_configs, 15)
 		
 		if text_groups_show_stats && text_groups_show_stats_2d:
 			DebugDraw2D.set_text("----", null, 19)

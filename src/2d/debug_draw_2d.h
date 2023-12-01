@@ -28,6 +28,9 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	// 2d
+	const static char *s_marked_dirty;
+
+	bool _is_drawing_frame = true;
 	bool _canvas_need_update = true;
 	Ref<Font> _font;
 
@@ -45,7 +48,6 @@ private:
 	void _finish_frame_and_update();
 #endif
 
-	void _on_canvas_marked_dirty();
 	void _on_canvas_item_draw(Control *ci);
 	inline bool _is_enabled_override() const;
 
@@ -77,6 +79,7 @@ public:
 		return singleton;
 	};
 	void mark_canvas_dirty();
+	bool is_drawing_frame() const;
 
 	Node *get_root_node();
 

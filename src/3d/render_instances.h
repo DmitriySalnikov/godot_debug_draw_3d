@@ -68,6 +68,7 @@ template <class TBounds>
 class DelayedRenderer {
 protected:
 	void _update(double exp_time, bool is_vis) {
+		ZoneScoped;
 		expiration_time = exp_time;
 		is_used_one_time = false;
 		is_visible = is_vis;
@@ -90,6 +91,7 @@ public:
 	}
 
 	bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
+		ZoneScoped;
 		if (_skip_expiration_check || !is_expired()) {
 			is_visible = false;
 
@@ -207,6 +209,7 @@ private:
 		}
 
 		TInst *get(bool is_delayed) {
+			ZoneScoped;
 			auto objs = is_delayed ? &delayed : &instant;
 			auto used = is_delayed ? &_prev_not_expired_delayed : &used_instant;
 
@@ -228,6 +231,7 @@ private:
 		}
 
 		void reset_counter(double delta, int custom_type_of_buffer = 0) {
+			ZoneScoped;
 			if (instant.size() && used_instant < (instant.size() * 0.5)) {
 				time_used_less_then_half_of_instant_pool -= delta;
 				if (time_used_less_then_half_of_instant_pool <= 0) {
@@ -296,7 +300,7 @@ public:
 	void fill_lines_data(Ref<ArrayMesh> _ig);
 	void reset_counter(double _delta);
 	void reset_visible_objects();
-	Ref<DebugDrawStats3D> get_stats() const;
+	void update_stats(Ref<DebugDrawStats3D> &stats) const;
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);

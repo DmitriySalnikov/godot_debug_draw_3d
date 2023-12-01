@@ -1,7 +1,7 @@
 #include "math_utils.h"
 
 const float MathUtils::CubeRadiusForSphere = 0.8660253882f; // "%.10f" % (Vector3.ONE * 0.5).length()
-const float MathUtils::CylinderRadiusForSphere = 0.5590170026f; // "%.10f" % (Vector3(1,0.5,0) * 0.5).length()
+const float MathUtils::CylinderRadiusForSphere = 0.7071067691f; // "%.10f" % (Vector3(1,1,0) * 0.5).length()
 const float MathUtils::AxisRadiusForSphere = 0.5000000000f; // "%.10f" % (Vector3(1,0,0) * 0.5).length()
 const float MathUtils::ArrowRadiusForSphere = 0.5153881907f; // "%.10f" % (Vector3(1,0.25,0) * 0.5).length()
 

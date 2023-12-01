@@ -3,6 +3,8 @@
 #include "common/colors.h"
 #include "utils/compiler.h"
 
+#include <functional>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -64,14 +66,17 @@ private:
 
 #pragma endregion // Exposed Parameter Values
 
+	std::function<void()> mark_dirty_func = nullptr;
+
 protected:
 	static void _bind_methods();
 
 public:
-	const static char *s_marked_dirty;
-
 	DebugDrawConfig2D();
 	~DebugDrawConfig2D();
+
+	void register_config(std::function<void()> p_mark_dirty);
+	void unregister_config();
 
 	void set_graphs_base_offset(const Vector2i &_offset);
 	Vector2i get_graphs_base_offset() const;

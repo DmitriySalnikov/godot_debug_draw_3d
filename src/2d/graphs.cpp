@@ -278,6 +278,7 @@ Callable DebugDrawGraph::get_data_getter() const {
 }
 
 void DebugDrawGraph::update(double _value) {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
 	if (get_buffer_size() != buffer_data->buffer_size()) {
@@ -295,6 +296,7 @@ void DebugDrawGraph::_update_received(double value) {
 }
 
 void DebugDrawGraph::graph_interpolated_values_range::update(const double &_min, const double &_max, const double &_avg, const double &_delta) {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 
 	double _center_offset = abs(max - min) * (0.25 * 0.5); // react when the new limit is below 25% of the half range
@@ -365,6 +367,7 @@ void DebugDrawGraph::graph_interpolated_values_range::reset(uint32_t _buffer_siz
 }
 
 Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDrawGraph::GraphPosition &_corner, const DebugDrawGraph::graph_rects &_rects) const {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	Vector2i pos = _rects.base.position;
 
@@ -421,6 +424,7 @@ Vector2i DebugDrawGraph::_get_graph_position(const bool &_is_root, const DebugDr
 }
 
 DebugDrawGraph::graph_rects DebugDrawGraph::draw(CanvasItem *_ci, const Ref<Font> &_font, const graph_rects &_prev_rects, const GraphPosition &_corner, const bool &_is_root, const double &_delta) const {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_enabled())
 		return _prev_rects;
@@ -628,6 +632,7 @@ void DebugDrawFPSGraph::_bind_methods() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 void DebugDrawFPSGraph::_update_received(double _value) {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 	if (is_ms != is_frame_time_mode()) {
 		buffer_data->reset();
@@ -672,6 +677,7 @@ DataGraphManager::~DataGraphManager() {
 }
 
 void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
 	struct GraphsNode {
@@ -729,6 +735,7 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, 
 }
 
 Ref<DebugDrawGraph> DataGraphManager::create_graph(const StringName &_title) {
+	ZoneScoped;
 	ERR_FAIL_COND_V(_title.is_empty(), Ref<DebugDrawGraph>());
 
 	Ref<DebugDrawGraph> config = Ref<DebugDrawGraph>(memnew(DebugDrawGraph(this, _title)));
@@ -739,6 +746,7 @@ Ref<DebugDrawGraph> DataGraphManager::create_graph(const StringName &_title) {
 }
 
 Ref<DebugDrawGraph> DataGraphManager::create_fps_graph(const StringName &_title) {
+	ZoneScoped;
 	ERR_FAIL_COND_V(_title.is_empty(), Ref<DebugDrawFPSGraph>());
 
 	Ref<DebugDrawFPSGraph> config = Ref<DebugDrawFPSGraph>(memnew(DebugDrawFPSGraph(this, _title)));
@@ -749,6 +757,7 @@ Ref<DebugDrawGraph> DataGraphManager::create_fps_graph(const StringName &_title)
 }
 
 void DataGraphManager::auto_update_graphs(double _delta) {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 	for (auto &i : graphs) {
 		Ref<DebugDrawGraph> g = i;
@@ -770,9 +779,10 @@ void DataGraphManager::auto_update_graphs(double _delta) {
 }
 
 void DataGraphManager::graph_update_data(const StringName &_title, const double &_data) {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = std::find_if(graphs.begin(), graphs.end(), [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
 		Ref<DebugDrawGraph> g = *graph;
 		if (g->get_type() != DebugDrawGraph::GRAPH_FPS) {
@@ -788,9 +798,10 @@ void DataGraphManager::graph_update_data(const StringName &_title, const double 
 }
 
 void DataGraphManager::remove_graph(const StringName &_title) {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = std::find_if(graphs.begin(), graphs.end(), [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
 		graphs.erase(graph);
 	}
@@ -803,14 +814,16 @@ void DataGraphManager::remove_graph(const StringName &_title) {
 }
 
 void DataGraphManager::clear_graphs() {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 	graphs.clear();
 }
 
 Ref<DebugDrawGraph> DataGraphManager::get_graph(const StringName &_title) const {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	auto graph = Utils::find<Ref<DebugDrawGraph> >(graphs, [&_title](auto g) { return g->get_title() == _title; });
+	auto graph = std::find_if(graphs.begin(), graphs.end(), [&_title](auto g) { return g->get_title() == _title; });
 	if (graph != graphs.end()) {
 		return *graph;
 	}
@@ -818,6 +831,7 @@ Ref<DebugDrawGraph> DataGraphManager::get_graph(const StringName &_title) const 
 }
 
 PackedStringArray DataGraphManager::get_graph_names() const {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 
 	PackedStringArray res;
@@ -828,6 +842,7 @@ PackedStringArray DataGraphManager::get_graph_names() const {
 }
 
 size_t DataGraphManager::get_graphs_enabled() const {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 	size_t total = 0;
 	for (auto &g : graphs) {
@@ -838,6 +853,7 @@ size_t DataGraphManager::get_graphs_enabled() const {
 }
 
 size_t DataGraphManager::get_graphs_total() const {
+	ZoneScoped;
 	LOCK_GUARD(datalock);
 	return graphs.size();
 }

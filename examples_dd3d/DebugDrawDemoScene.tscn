@@ -221,7 +221,9 @@ process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 draw_array_of_boxes = true
+debug_thickness = 0.075
 start_culling_distance = 55.0
+text_groups_show_stats = true
 text_groups_position = 2
 text_groups_default_font_size = 15
 text_groups_title_font_size = 20
@@ -288,6 +290,18 @@ libraries = {
 "": SubResource("AnimationLibrary_nj4nv")
 }
 
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 0, 0, 0)
+visible = false
+pixel_size = 0.0025
+billboard = 1
+double_sided = false
+modulate = Color(0, 0, 0, 1)
+outline_modulate = Color(1, 1, 1, 1)
+text = "TestTestTestTest
+TestTestTest"
+font_size = 80
+
 [node name="LinePath" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8)
 
@@ -311,14 +325,26 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -1)
 [node name="Spatial7" type="Node3D" parent="LinePath"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
 
-[node name="Cylinder1" type="Node3D" parent="."]
-transform = Transform3D(1.30832, 0.213863, -3.73947e-07, 0.60031, -0.408523, 0.929687, 0.225355, -0.153359, -2.47654, -25.6488, 0, -6.39029)
+[node name="Cylinders" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5266, 4.76837e-07, -5.82213)
 
-[node name="Cylinder2" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.134, -9.53674e-07, -6.39029)
+[node name="Cylinder1" type="Node3D" parent="Cylinders"]
+transform = Transform3D(1.20775, 0.591481, -3.4521e-07, 0.554162, -1.12986, 0.858242, 0.208031, -0.424147, -2.28622, -3.03832, 0, -0.377882)
+
+[node name="Cylinder2" type="Node3D" parent="Cylinders"]
+transform = Transform3D(0.667622, 0.306331, 0.114996, 0.327448, -0.625499, -0.23481, -5.73853e-08, 0.143919, -0.383377, 0.234978, -0.4237, 0.332998)
+
+[node name="Cylinder3" type="Node3D" parent="Cylinders"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35527, -0.655492, -0.352802)
+
+[node name="1" type="Node3D" parent="Cylinders/Cylinder3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.419773, -2.38419e-07, -1.40591)
+
+[node name="2" type="Node3D" parent="Cylinders/Cylinder3"]
+transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 1.01018, 0.486778, 1.32635)
 
 [node name="SphereTransform" type="Node3D" parent="."]
-transform = Transform3D(3.018, 0, 0, 0, 0.945452, -0.636291, 0, 1.04515, 4.40664, -14.547, 0.166728, -5.65327)
+transform = Transform3D(3.018, 0, 0, 0, 0.945452, -3.30182, 0, 1.04515, 2.98686, -14.547, 0.166728, -5.65327)
 
 [node name="SphereHDTransform" type="Node3D" parent="."]
 transform = Transform3D(1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, -2.65493, 0.587941, -1.00109, -14.5341, 0.166728, -10.3981)
@@ -408,8 +434,11 @@ transform = Transform3D(-0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -
 [node name="6" type="Node3D" parent="Lines"]
 transform = Transform3D(-0.998872, -0.0207882, -0.0355643, 0.0855371, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028)
 
+[node name="7" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855357, -0.5714, -2.68836, 0.0136014, -0.249864, 0.572533, 0.0511096, -1.3236, 1.06745)
+
 [node name="Target" type="Node3D" parent="Lines"]
-transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.30799e-06, 1, 0, -3.51517e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
+transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
 
 [node name="HitTest" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.48967, -1.03227, 9.524)

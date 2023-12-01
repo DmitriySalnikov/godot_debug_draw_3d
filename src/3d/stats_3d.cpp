@@ -10,16 +10,23 @@ void DebugDrawStats3D::_bind_methods() {
 	REG_PROPERTY_NO_SET(instances, Variant::INT);
 	REG_PROPERTY_NO_SET(lines, Variant::INT);
 	REG_PROPERTY_NO_SET(total_geometry, Variant::INT);
+
 	REG_PROPERTY_NO_SET(visible_instances, Variant::INT);
 	REG_PROPERTY_NO_SET(visible_lines, Variant::INT);
 	REG_PROPERTY_NO_SET(total_visible, Variant::INT);
+
 	REG_PROPERTY_NO_SET(time_filling_buffers_instances_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(time_filling_buffers_lines_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(total_time_filling_buffers_usec, Variant::INT);
+
 	REG_PROPERTY_NO_SET(time_culling_instant_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(time_culling_delayed_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(total_time_culling_usec, Variant::INT);
+
 	REG_PROPERTY_NO_SET(total_time_spent_usec, Variant::INT);
+
+	REG_PROPERTY_NO_SET(created_scoped_configs, Variant::INT);
+	REG_PROPERTY_NO_SET(orphan_scoped_configs, Variant::INT);
 
 #undef REG_PROPERTY_NO_SET
 #pragma endregion

@@ -23,6 +23,7 @@ inline String DebugDrawMenuExtensionPlugin::_get_plugin_name() const {
 }
 
 void DebugDrawMenuExtensionPlugin::_enter_tree() {
+	ZoneScoped;
 	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " _enter_tree\n");
 
 	PopupMenu *menu = memnew(PopupMenu);
@@ -51,6 +52,7 @@ void DebugDrawMenuExtensionPlugin::_exit_tree() {
 }
 
 void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId id) {
+	ZoneScoped;
 	switch (id) {
 		case DebugDrawMenuExtensionPlugin::OPEN_LIBRARY_SITE: {
 			OS::get_singleton()->shell_open("https://github.com/DmitriySalnikov/godot_debug_draw_3d");

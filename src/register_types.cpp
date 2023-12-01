@@ -30,6 +30,10 @@ using namespace godot;
 /** GDExtension Initialize **/
 void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+#if defined(TRACY_DELAYED_INIT) && defined(TRACY_MANUAL_LIFETIME)
+		tracy::StartupProfiler();
+#endif
+
 		ClassDB::register_class<DebugDraw2D>();
 		ClassDB::register_class<DebugDrawStats2D>();
 		ClassDB::register_class<DebugDrawConfig2D>();
@@ -66,12 +70,17 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 /** GDExtension Uninitialize **/
 void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+
 		// If this library is disabled manually before deleting the scene tree,
 		// then an attempt is made to delete this node manually.
 		if (Engine::get_singleton()->get_main_loop() && UtilityFunctions::is_instance_valid(debug_draw_manager)) {
 			memdelete(debug_draw_manager);
 		}
 		debug_draw_manager = nullptr;
+
+#if defined(TRACY_DELAYED_INIT) && defined(TRACY_MANUAL_LIFETIME)
+		tracy::ShutdownProfiler();
+#endif
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING

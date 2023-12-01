@@ -112,7 +112,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -131,7 +131,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libgodot-cpp.windows.$(Configuration).$(LlvmPlatformName).lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
@@ -173,7 +172,7 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;GDEXTENSION_LIBRARY;DISABLE_DEBUG_RENDERING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION_LIBRARY;DISABLE_DEBUG_RENDERING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -201,7 +200,7 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -274,6 +273,9 @@
     <ClCompile Include="gen\editor_resources.gen.cpp" />
     <ClCompile Include="gen\shared_resources.gen.cpp" />
     <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="thirdparty\tracy\public\TracyClient.cpp">
+      <IncludeInUnityFile>false</IncludeInUnityFile>
+    </ClCompile>
     <ClCompile Include="utils\math_utils.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -335,7 +337,11 @@
     <ClInclude Include="editor\generate_csharp_bindings.h" />
     <ClInclude Include="gen\editor_resources.gen.h" />
     <ClInclude Include="gen\shared_resources.gen.h" />
+    <ClInclude Include="thirdparty\tracy\public\tracy\Tracy.hpp" />
     <ClInclude Include="utils\math_utils.h">
+      <DeploymentContent>false</DeploymentContent>
+    </ClInclude>
+    <ClInclude Include="utils\profiler.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="utils\utils.h">

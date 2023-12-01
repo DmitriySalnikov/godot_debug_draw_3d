@@ -3,8 +3,6 @@
 
 #include <limits.h>
 
-const char *DebugDrawConfig2D::s_marked_dirty = "marked_dirty";
-
 void DebugDrawConfig2D::_bind_methods() {
 #ifdef DEV_ENABLED
 	ClassDB::bind_method(D_METHOD(NAMEOF(api_test1)), &DebugDrawConfig2D::api_test1);
@@ -37,11 +35,19 @@ void DebugDrawConfig2D::_bind_methods() {
 	REG_PROP(text_background_color, Variant::COLOR);
 	REG_PROP(text_custom_font, Variant::OBJECT);
 
-	ADD_SIGNAL(MethodInfo(s_marked_dirty));
 #undef REG_CLASS_NAME
 }
 
 DebugDrawConfig2D::~DebugDrawConfig2D() {
+	mark_dirty_func = nullptr;
+}
+
+void DebugDrawConfig2D::register_config(std::function<void()> p_mark_dirty) {
+	mark_dirty_func = p_mark_dirty;
+}
+
+void DebugDrawConfig2D::unregister_config() {
+	mark_dirty_func = nullptr;
 }
 
 DebugDrawConfig2D::DebugDrawConfig2D() {
@@ -53,7 +59,8 @@ DebugDrawConfig2D::DebugDrawConfig2D() {
 }
 
 void DebugDrawConfig2D::mark_canvas_dirty() {
-	emit_signal(s_marked_dirty);
+	if (mark_dirty_func)
+		mark_dirty_func();
 }
 
 void DebugDrawConfig2D::set_graphs_base_offset(const Vector2i &_offset) {

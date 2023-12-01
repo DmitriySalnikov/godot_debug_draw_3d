@@ -1,6 +1,7 @@
 #pragma once
 
 #include "compiler.h"
+#include "profiler.h"
 
 #include <algorithm>
 #include <functional>
@@ -33,7 +34,6 @@ GODOT_WARNING_RESTORE()
 
 #if DEV_ENABLED
 #define DEV_PRINT(text, ...) godot::UtilityFunctions::print(FMT_STR(godot::Variant(text), ##__VA_ARGS__))
-// TODO rework. rename to "Fast logs". use without DEV?
 #define DEV_PRINT_STD(format, ...) Utils::_logv(false, false, format, ##__VA_ARGS__)
 // Forced
 #define DEV_PRINT_STD_F(format, ...) Utils::_logv(false, true, format, ##__VA_ARGS__)
@@ -91,7 +91,11 @@ static String get_file_name_in_repository(const String &name) {
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())
 
+#ifndef TRACY_ENABLE
 #define LOCK_GUARD(_mutex) std::lock_guard<std::recursive_mutex> __guard(_mutex)
+#else
+#define LOCK_GUARD(_mutex) std::lock_guard<LockableBase(std::recursive_mutex)> __guard(_mutex)
+#endif
 
 #define PS() ProjectSettings::get_singleton()
 #define DEFINE_SETTING_AND_GET(var, path, def, type) \
@@ -134,18 +138,19 @@ static String get_file_name_in_repository(const String &name) {
 		}                                                                           \
 	}
 
-// TODO: temp constants. I didn't find them in gdnative api
+// TODO: temp constants.
 
-const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
-const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
-const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
-const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);
-const godot::Vector3 Vector3_LEFT = godot::Vector3(-1, 0, 0);
-const godot::Vector3 Vector3_RIGHT = godot::Vector3(1, 0, 0);
-const godot::Vector3 Vector3_BACK = godot::Vector3(0, 0, 1);
-const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
+const extern godot::Vector3 Vector3_ZERO;
+const extern godot::Vector3 Vector3_ONE;
+const extern godot::Vector3 Vector3_UP_OF;
+const extern godot::Vector3 Vector3_UP;
+const extern godot::Vector3 Vector3_DOWN;
+const extern godot::Vector3 Vector3_LEFT;
+const extern godot::Vector3 Vector3_RIGHT;
+const extern godot::Vector3 Vector3_BACK;
+const extern godot::Vector3 Vector3_FORWARD;
 
-const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
+const extern godot::Quaternion Quaternion_IDENTITY;
 
 class Utils {
 #if DEBUG_ENABLED
@@ -196,6 +201,8 @@ public:
 
 	template <class TPool, class TContainer>
 	static TPool convert_to_packed_array(TContainer &arr) {
+		ZoneScoped;
+
 		TPool p;
 		if (!arr.empty()) {
 			auto *data = arr.data();
@@ -209,6 +216,7 @@ public:
 
 	template <class TPool, class TContainer>
 	static TPool convert_to_packed_array_diffrent_types(TContainer &arr) {
+		ZoneScoped;
 
 		TPool p;
 		p.resize(1);
@@ -227,6 +235,8 @@ public:
 
 	template <class TPool, class TContainer>
 	static TPool convert_packed_array_to_diffrent_types(TContainer &arr) {
+		ZoneScoped;
+
 		TPool p;
 		p.resize(1);
 		long s = sizeof(p[0]);
@@ -242,33 +252,10 @@ public:
 		return p;
 	}
 
-	template <class T>
-	static typename std::vector<T>::const_iterator find(const std::vector<T> &arr, const std::function<bool(T)> &search) {
-		for (auto it = arr.begin(); it != arr.end(); it++) {
-			if (search(*it))
-				return it;
-		}
-		return arr.end();
-	}
-
-	template <class TVal, class TFun>
-	static void remove_where(std::unordered_set<TVal> &set, const TFun &checker_bool_val, const std::function<void(TVal)> &deleter = nullptr) {
-		std::unordered_set<TVal> to_remove;
-		for (const TVal &t : set) {
-			if (checker_bool_val(t)) {
-				to_remove.insert(t);
-			}
-		}
-		for (const TVal &t : to_remove) {
-			if (deleter) {
-				deleter(t);
-			}
-			set.erase(t);
-		}
-	}
-
 	template <class TVal, class TFun>
 	static int sum(const std::unordered_set<TVal> &set, const TFun &getter_int_val) {
+		ZoneScoped;
+
 		int res = 0;
 		for (const TVal &t : set) {
 			res += getter_int_val(t);
@@ -276,18 +263,11 @@ public:
 		return res;
 	}
 
-	template <class TVal, class TFun>
-	static std::vector<TVal> order_by(const std::unordered_set<TVal> &set, const TFun &comparator_bool_tval_tval) {
-		std::vector<TVal> ordered(set.begin(), set.end());
-
-		std::sort(ordered.begin(), ordered.end(), comparator_bool_tval_tval);
-		return ordered;
-	}
-
 	// TODO: need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
 	static godot::Dictionary make_dict(Args... args) {
+		ZoneScoped;
 		return dict_append_all(godot::Dictionary(), args...);
 	}
 

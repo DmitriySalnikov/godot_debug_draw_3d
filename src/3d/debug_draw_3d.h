@@ -3,6 +3,7 @@
 #include "common/colors.h"
 #include "common/i_scoped_storage.h"
 #include "config_scoped_3d.h"
+#include "utils/profiler.h"
 
 #include <map>
 #include <memory>
@@ -22,6 +23,8 @@ class DebugDrawStats3D;
 
 #ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
+class DelayedRendererLine;
+
 enum class InstanceType : char;
 enum class ConvertableInstanceType : char;
 #endif
@@ -47,25 +50,28 @@ private:
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
+	Ref<DebugDrawStats3D> stats_3d;
 	Ref<DDScopedConfig3D> default_scoped_config;
 
 #ifndef DISABLE_DEBUG_RENDERING
+	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
+	ProfiledMutex(std::recursive_mutex, scoped_datalock, "3D Scoped config lock");
+
 	typedef std::pair<uint64_t, DDScopedConfig3D *> ScopedPairIdConfig;
 	// stores thread id and array of id's with ptrs
 	std::map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
 	std::map<uint64_t, DDScopedConfig3D *> cached_scoped_configs;
-	std::recursive_mutex scoped_datalock;
-#endif
+	uint64_t create_scoped_configs = 0;
 
 	// Inherited via IScopedStorage
 	Ref<DDScopedConfig3D> scoped_config_for_current_thread() override;
+#endif
 
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef DEV_ENABLED
 	const char *reload_action_name = "ui_end";
 #endif
-	std::recursive_mutex datalock;
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
@@ -80,10 +86,18 @@ private:
 	Ref<ShaderMaterial> shader_extendable_mat;
 	Ref<Shader> shader_extendable_code;
 
+	// Inherited via IScopedStorage
+	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DDScopedConfig3D *cfg) override;
+	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
+	void _clear_scoped_configs() override;
+
 	// Internal use of raw pointer to avoid ref/unref
 	Color _scoped_config_to_custom(DDScopedConfig3D *cfg);
 	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DDScopedConfig3D *cfg);
 	GeometryType _scoped_config_get_geometry_type(DDScopedConfig3D *cfg);
+
+	void add_or_update_line_with_thickness(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+
 #endif
 
 	void _load_materials();
@@ -116,14 +130,6 @@ public:
 		return singleton;
 	};
 
-	Ref<DDScopedConfig3D> new_scoped_config();
-
-	// Inherited via IScopedStorage
-	Ref<DDScopedConfig3D> scoped_config() override;
-	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DDScopedConfig3D *cfg) override;
-	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
-	void _clear_scoped_configs() override;
-
 	Node *get_root_node();
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
@@ -133,6 +139,9 @@ public:
 	Ref<ShaderMaterial> get_extendable_material();
 
 #pragma region Exposed Parameters
+	Ref<DDScopedConfig3D> new_scoped_config();
+	Ref<DDScopedConfig3D> scoped_config() override;
+
 	void set_empty_color(const Color &_col);
 	Color get_empty_color() const;
 
@@ -174,7 +183,7 @@ public:
 	/// duration: Duration of existence in seconds
 	void draw_sphere(const Vector3 &position, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
-	/// Draw sphere
+	/// Draw sphere with a radius of 0.5
 	/// transform: Transform3D of the Sphere
 	/// color: Sphere color
 	/// duration: Duration of existence in seconds
@@ -197,11 +206,19 @@ public:
 
 #pragma region Cylinders
 
-	/// Draw vertical cylinder
+	/// Draw vertical cylinder with a radius of 0.5 and a height of 1.0
 	/// transform: Transform3D of the Cylinder
 	/// color: Cylinder color
 	/// duration: Duration of existence in seconds
 	void draw_cylinder(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+	/// Draw a cylinder between points A and B with a certain radius
+	/// a: Bottom point of the Cylinder
+	/// b: Top point of the Cylinder
+	/// radius: Cylinder radius
+	/// color: Cylinder color
+	/// duration: Duration of existence in seconds
+	void draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Cylinders
 
