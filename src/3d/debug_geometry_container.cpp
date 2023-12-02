@@ -15,7 +15,7 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
+DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel) {
 	ZoneScoped;
 	owner = root;
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -39,7 +39,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 		immediate_mesh_storage.mesh = _array_mesh;
 	}
 
-	// Create node with material and MultiMesh. Add to tree. Create array of instances
+	// Generate geometry and create MMI's in RenderingServer
 	{
 		auto array_mesh_cube = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices);
 		CreateMMI(InstanceType::CUBE, UsingShaderType::Wireframe, NAMEOF(mmi_cubes), array_mesh_cube);
@@ -64,29 +64,29 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root) {
 
 		// VOLUMETRIC
 
-		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices));
+		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices), add_bevel);
 		CreateMMI(InstanceType::LINE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_line_volumetric);
 
-		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube);
+		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube, add_bevel);
 		CreateMMI(InstanceType::CUBE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_cube_volumetric);
 
-		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center);
+		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center, add_bevel);
 		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_centered_volumetric), array_mesh_cube_centered_volumetric);
 
 		auto array_mesh_arrow_head_simple = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndicesSimplified);
-		auto array_mesh_arrow_head_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_arrow_head_simple, true);
+		auto array_mesh_arrow_head_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_arrow_head_simple, add_bevel, true);
 		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_arrowheads_volumetric), array_mesh_arrow_head_volumetric);
 
-		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos);
+		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos, add_bevel);
 		CreateMMI(InstanceType::POSITION_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_positions_volumetric), array_mesh_pos_volumetric);
 
-		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere);
+		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere, false);
 		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_volumetric), array_mesh_sphere_volumetric);
 
-		auto array_mesh_sphere_hd_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere_hd);
+		auto array_mesh_sphere_hd_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere_hd, false);
 		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_spheres_hd_volumetric), array_mesh_sphere_hd_volumetric);
 
-		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder);
+		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder, false);
 		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cylinders_volumetric), array_mesh_cylinder_volumetric);
 
 		// SOLID

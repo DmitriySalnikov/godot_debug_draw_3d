@@ -17,6 +17,8 @@ GODOT_WARNING_RESTORE()
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
+const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
+const char *DebugDraw3D::s_default_thickness = "default_volumetric_thickness";
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
@@ -97,15 +99,21 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	root_node = root;
 	set_config(nullptr);
 
+	root_settings_section = String(Utils::root_settings_section) + "3D/";
+	DEFINE_SETTING_AND_GET(bool add_bevel, root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
+	DEFINE_SETTING_AND_GET(real_t def_thickness, root_settings_section + s_default_thickness, 0.075f, Variant::FLOAT);
+
 	stats_3d.instantiate();
 	default_scoped_config.instantiate();
+
+	default_scoped_config->set_thickness(def_thickness);
 
 	_load_materials();
 
 #ifndef DISABLE_DEBUG_RENDERING
 	DEV_PRINT_STD("To regenerate the 3D geometry press the \"%s\" action\n", reload_action_name);
 
-	dgc = std::make_unique<DebugGeometryContainer>(this);
+	dgc = std::make_unique<DebugGeometryContainer>(this, add_bevel);
 #endif
 }
 
@@ -127,7 +135,7 @@ void DebugDraw3D::process(double delta) {
 		dgc.reset();
 
 		_load_materials();
-		dgc = std::make_unique<DebugGeometryContainer>(this);
+		dgc = std::make_unique<DebugGeometryContainer>(this, PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric));
 		dgc->set_world(old_world);
 	}
 #endif
@@ -560,6 +568,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
+	// TODO SLOOOOOW
 	Vector3 diff = b - a;
 	real_t len = diff.length();
 	real_t diameter = radius * 2;
@@ -729,13 +738,9 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 
 	Vector3 dir = (b - a);
 	real_t size = (is_absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
-	Vector3 pos = b - dir.normalized() * size;
 
 	const Vector3 UP = Vector3(0.0000000001f, 1, 0);
-	Transform3D t;
-	t.set_look_at(pos, b, UP);
-	t.scale(Vector3_ONE * (size));
-	t.origin = pos;
+	Transform3D t = Transform3D(Basis().looking_at(dir, UP).scaled(Vector3(size, size, size)), b);
 
 	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
 
@@ -746,7 +751,7 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
-			SphereBounds(t.origin - t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
+			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 
 void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, const real_t &duration) {
@@ -762,7 +767,7 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
-			SphereBounds(transform.origin - transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
+			SphereBounds(transform.origin + transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
 void DebugDraw3D::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {

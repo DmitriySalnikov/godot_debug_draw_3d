@@ -101,13 +101,13 @@ const std::array<Vector3, 2> GeometryGenerator::LineVertices{
 };
 
 const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertices{
-	Vector3(0, 0, -1),
-	Vector3(0, 0.25f, 0),
-	Vector3(0, -0.25f, 0),
-	Vector3(0.25f, 0, 0),
-	Vector3(-0.25f, 0, 0),
+	Vector3(0, 0, 0),
+	Vector3(0, 0.25f, 1),
+	Vector3(0, -0.25f, 1),
+	Vector3(0.25f, 0, 1),
+	Vector3(-0.25f, 0, 1),
 	// Cross to center
-	Vector3(0, 0, -0.2f),
+	Vector3(0, 0, 0.8f),
 };
 
 const std::array<int, 18> GeometryGenerator::ArrowheadIndices{
@@ -207,7 +207,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const Pac
 	return mesh;
 }
 
-Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_caps) {
+Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps) {
 	ZoneScoped;
 	Array arrs = mesh->surface_get_arrays(0);
 	ERR_FAIL_COND_V(arrs.size() == 0, mesh);
@@ -216,23 +216,36 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
 	PackedInt32Array indexes = arrs[ArrayMesh::ArrayType::ARRAY_INDEX];
 
-	bool has_normals = normals.size();
-
 	ERR_FAIL_COND_V(vertexes.size() % 2 != 0, Ref<ArrayMesh>());
 	ERR_FAIL_COND_V(normals.size() && vertexes.size() != normals.size(), Ref<ArrayMesh>());
+
+	bool has_indexes = indexes.size();
+	bool has_normals = normals.size();
 
 	PackedVector3Array res_vertexes;
 	PackedVector3Array res_custom0;
 	PackedInt32Array res_indexes;
 	PackedVector2Array res_uv;
 
-	if (indexes.size()) {
+	if (has_indexes) {
 		for (int i = 0; i < indexes.size(); i += 2) {
-			GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], has_normals ? normals[indexes[i]] : Vector3(0, 1, 0.0001f), has_normals ? normals[i + 1] : Vector3(0, 1, 0.0001f), res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			Vector3 normal_a = has_normals ? normals[indexes[i]] : Vector3(0, 1, 0.0001f);
+			Vector3 normal_b = has_normals ? normals[indexes[i + 1]] : Vector3(0, 1, 0.0001f);
+
+			if (add_bevel)
+				GenerateVolumetricSegmentBevel(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			else
+				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 		}
 	} else {
 		for (int i = 0; i < vertexes.size(); i += 2) {
-			GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], has_normals ? normals[i] : Vector3(0, 1, 0.0001f), has_normals ? normals[i + 1] : Vector3(0, 1, 0.0001f), res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			Vector3 normal_a = has_normals ? normals[i] : Vector3(0, 1, 0.0001f);
+			Vector3 normal_b = has_normals ? normals[i + 1] : Vector3(0, 1, 0.0001f);
+
+			if (add_bevel)
+				GenerateVolumetricSegmentBevel(vertexes[i], vertexes[i + 1], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			else
+				GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 		}
 	}
 
@@ -250,72 +263,178 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
 	ZoneScoped;
 	bool debug_size = false;
+	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
 	Vector3 dir = (b - a).normalized();
-	int64_t base = vertexes.size();
+	int64_t base_idx = vertexes.size();
 
-	auto add_side = [&dir, &vertexes, &custom0, &uv, &debug_size](Vector3 pos, Vector3 normal) {
-		Vector3 right = dir.cross(normal.rotated(dir, Math::deg_to_rad(45.f))).normalized();
-		Vector3 left = right * -1;
-		Vector3 up = dir.cross(left).normalized();
-		Vector3 down = up * -1;
+	auto add_side = [&dir, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal_a, Vector3 normal_b, bool is_rotated) {
+		int64_t start_idx = vertexes.size();
 
-		right /= Math::sqrt(2.0f);
-		left /= Math::sqrt(2.0f);
-		up /= Math::sqrt(2.0f);
-		down /= Math::sqrt(2.0f);
+		Vector3 right_a = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 left_a = right_a * -1;
 
-		Vector3 mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
+		Vector3 right_b = dir.cross(normal_b.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 left_b = right_b * -1;
 
-		// Start X
-		vertexes.push_back(pos + right * mult);
-		vertexes.push_back(pos + left * mult);
-		vertexes.push_back(pos + up * mult);
-		vertexes.push_back(pos + down * mult);
+		right_a /= Math::sqrt(2.0f);
+		left_a /= Math::sqrt(2.0f);
+		right_b /= Math::sqrt(2.0f);
+		left_b /= Math::sqrt(2.0f);
 
-		custom0.push_back(right);
-		custom0.push_back(left);
-		custom0.push_back(up);
-		custom0.push_back(down);
+		vertexes.push_back(pos_a + right_a * debug_mult); // 0
+		vertexes.push_back(pos_a + left_a * debug_mult); // 1
+		vertexes.push_back(pos_b + right_b * debug_mult); // 2
+		vertexes.push_back(pos_b + left_b * debug_mult); // 3
 
-		uv.push_back(Vector2(1, 1));
-		uv.push_back(Vector2(0, 0));
-		uv.push_back(Vector2(0, 1));
-		uv.push_back(Vector2(1, 0));
+		indexes.append(start_idx + 0);
+		indexes.append(start_idx + 1);
+		indexes.append(start_idx + 2);
+
+		indexes.append(start_idx + 1);
+		indexes.append(start_idx + 3);
+		indexes.append(start_idx + 2);
+
+		if (is_rotated) {
+			uv.push_back(Vector2(0, 0));
+			uv.push_back(Vector2(1, 1));
+			uv.push_back(Vector2(0, 0));
+			uv.push_back(Vector2(1, 1));
+		} else {
+			uv.push_back(Vector2(1, 0));
+			uv.push_back(Vector2(0, 1));
+			uv.push_back(Vector2(1, 0));
+			uv.push_back(Vector2(0, 1));
+		}
+
+		custom0.push_back(right_a);
+		custom0.push_back(left_a);
+		custom0.push_back(right_b);
+		custom0.push_back(left_b);
 	};
 
-	add_side(a, normal_a);
-	add_side(b, normal_b);
-
-	// Horizontal plane
-	indexes.append(base + 0);
-	indexes.append(base + 1);
-	indexes.append(base + 4);
-	indexes.append(base + 1);
-	indexes.append(base + 5);
-	indexes.append(base + 4);
-	// Vertical plane
-	indexes.append(base + 2);
-	indexes.append(base + 3);
-	indexes.append(base + 6);
-	indexes.append(base + 3);
-	indexes.append(base + 7);
-	indexes.append(base + 6);
+	add_side(a, b, normal_a, normal_b, false);
+	add_side(a, b, normal_a, normal_b, true);
 
 	if (add_caps) {
 		// Start cap
-		indexes.append(base + 0);
-		indexes.append(base + 1);
-		indexes.append(base + 2);
-		indexes.append(base + 0);
-		indexes.append(base + 3);
-		indexes.append(base + 1);
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 4);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 5);
+		indexes.append(base_idx + 0);
+
 		// End cap
-		indexes.append(base + 4);
-		indexes.append(base + 6);
-		indexes.append(base + 5);
-		indexes.append(base + 4);
-		indexes.append(base + 5);
-		indexes.append(base + 7);
+		indexes.append(base_idx + 2);
+		indexes.append(base_idx + 6);
+		indexes.append(base_idx + 3);
+		indexes.append(base_idx + 3);
+		indexes.append(base_idx + 7);
+		indexes.append(base_idx + 2);
+	}
+}
+
+void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
+	ZoneScoped;
+	bool debug_size = false;
+	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5f : Vector3();
+	real_t len = (b - a).length();
+	real_t half_len = .5f;
+	// real_t half_len = Math::clamp(len * .5f, .0f, 0.5f);
+	Vector3 dir = (b - a).normalized();
+	int64_t base_idx = vertexes.size();
+
+	vertexes.push_back(a); // 0
+	vertexes.push_back(b); // 1
+
+	uv.push_back(Vector2(.5f, .5f));
+	uv.push_back(Vector2(.5f, .5f));
+
+	custom0.push_back(Vector3_ZERO);
+	custom0.push_back(Vector3_ZERO);
+
+	auto add_side = [&half_len, &dir, &base_idx, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal_a, Vector3 normal_b, bool is_rotated) {
+		int64_t start_idx = vertexes.size();
+
+		Vector3 right_a = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 left_a = right_a * -1;
+
+		Vector3 right_b = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 left_b = right_b * -1;
+
+		right_a /= Math::sqrt(2.0f);
+		left_a /= Math::sqrt(2.0f);
+		right_b /= Math::sqrt(2.0f);
+		left_b /= Math::sqrt(2.0f);
+
+		right_a += dir * half_len;
+		left_a += dir * half_len;
+		right_b -= dir * half_len;
+		left_b -= dir * half_len;
+
+		vertexes.push_back(pos_a + right_a * debug_mult); // global 2, local 0
+		vertexes.push_back(pos_a + left_a * debug_mult); // global 3, local 1
+		vertexes.push_back(pos_b + right_b * debug_mult); // global 4, local 2
+		vertexes.push_back(pos_b + left_b * debug_mult); // global 5, local 3
+
+		indexes.append(base_idx + 0);
+		indexes.append(start_idx + 2);
+		indexes.append(start_idx + 0);
+
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 1);
+		indexes.append(start_idx + 2);
+
+		indexes.append(start_idx + 1);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 0);
+
+		indexes.append(start_idx + 1);
+		indexes.append(start_idx + 3);
+		indexes.append(base_idx + 1);
+
+		uv.push_back(Vector2(1, 0));
+		uv.push_back(Vector2(0, 0));
+		uv.push_back(Vector2(1, 1));
+		uv.push_back(Vector2(0, 1));
+
+		custom0.push_back(right_a);
+		custom0.push_back(left_a);
+		custom0.push_back(right_b);
+		custom0.push_back(left_b);
+	};
+
+	add_side(a, b, normal_a, normal_b, false);
+	add_side(a, b, normal_a, normal_b, true);
+
+	if (add_caps) {
+		// Start cap
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 2);
+		indexes.append(base_idx + 6);
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 6);
+		indexes.append(base_idx + 3);
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 3);
+		indexes.append(base_idx + 7);
+		indexes.append(base_idx + 0);
+		indexes.append(base_idx + 7);
+		indexes.append(base_idx + 2);
+
+		// End cap
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 4);
+		indexes.append(base_idx + 8);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 8);
+		indexes.append(base_idx + 5);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 5);
+		indexes.append(base_idx + 9);
+		indexes.append(base_idx + 1);
+		indexes.append(base_idx + 9);
+		indexes.append(base_idx + 4);
 	}
 }
 

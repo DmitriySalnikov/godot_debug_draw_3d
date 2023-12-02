@@ -22,4 +22,5 @@ void fragment() {
 	ALBEDO = mix(COLOR.xyz * shade_power, COLOR.xyz, pow(length(UV * 2.0 - 1.0), .7));
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
+	NORMAL = ALBEDO;
 }

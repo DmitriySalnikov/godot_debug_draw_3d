@@ -13,6 +13,7 @@ using namespace godot;
 class GeometryGenerator {
 private:
 	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
+	static void GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
 
 public:
 #pragma region Predefined Geometry Parts
@@ -50,7 +51,7 @@ public:
 
 	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
 
-	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_caps = false);
+	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps = false);
 
 	static Ref<ArrayMesh> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
 	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> *vertexes, std::vector<Vector3> *normals);

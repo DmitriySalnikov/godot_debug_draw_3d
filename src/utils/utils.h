@@ -98,6 +98,17 @@ static String get_file_name_in_repository(const String &name) {
 #endif
 
 #define PS() ProjectSettings::get_singleton()
+#define DEFINE_SETTING(path, def, type)     \
+	{                                       \
+		if (!PS()->has_setting(path)) {     \
+			PS()->set_setting(path, def);   \
+		}                                   \
+		Dictionary info;                    \
+		info["name"] = path;                \
+		info["type"] = type;                \
+		PS()->add_property_info(info);      \
+		PS()->set_initial_value(path, def); \
+	}
 #define DEFINE_SETTING_AND_GET(var, path, def, type) \
 	{                                                \
 		if (!PS()->has_setting(path)) {              \

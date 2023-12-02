@@ -107,7 +107,12 @@ void DebugDraw2D::process(double delta) {
 	ZoneScoped;
 
 #ifdef TRACY_ENABLE
+	if (DebugDraw2D_frame_mark_2d_started) {
+		FrameMarkEnd("2D Draw");
+		FrameMark;
+	}
 	FrameMarkStart("2D Draw");
+
 	DebugDraw2D_frame_mark_2d_started = true;
 #endif
 

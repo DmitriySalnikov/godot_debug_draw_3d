@@ -18,4 +18,5 @@ void fragment() {
 	ALBEDO = COLOR.xyz;
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
+	NORMAL = ALBEDO;
 }

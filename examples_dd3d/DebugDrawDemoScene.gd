@@ -7,7 +7,7 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
-@export_range(0, 2, 0.001) var debug_thickness := 0.1
+@export_range(0, 2, 0.001) var debug_thickness := 0.075
 @export_range(0, 1024) var start_culling_distance := 0.0
 
 @export_group("Text groups", "text_groups")
@@ -69,10 +69,11 @@ func _update_keys_just_press():
 
 func _process(delta: float) -> void:
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness)
-	if true: #test
+	if false: #test
 		var s11 = DebugDraw3D.new_scoped_config()
 		s11.set_thickness(1)
 		if true:
+			pass
 			var s13 = DebugDraw3D.new_scoped_config()
 			s13.set_thickness(3)
 	
@@ -139,13 +140,13 @@ func _process(delta: float) -> void:
 		DebugDraw3D.draw_box_xf(z.global_transform, Color.BLACK)
 	
 	# Spheres
-	DebugDraw3D.draw_sphere_xf($SphereTransform.global_transform, Color.CRIMSON)
-	DebugDraw3D.draw_sphere_hd_xf($SphereHDTransform.global_transform, Color.ORANGE_RED)
+	DebugDraw3D.draw_sphere_xf($Spheres/SphereTransform.global_transform, Color.CRIMSON)
+	DebugDraw3D.draw_sphere_hd_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
 	# Delayed spheres
 	if time <= 0:
-		DebugDraw3D.draw_sphere($SpherePosition.global_transform.origin, 2.0, Color.BLUE_VIOLET, 2.0)
-		DebugDraw3D.draw_sphere_hd($SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
+		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_transform.origin, 2.0, Color.BLUE_VIOLET, 2.0)
+		DebugDraw3D.draw_sphere_hd($Spheres/SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		time = 2
 	time -= delta
 	
@@ -155,14 +156,14 @@ func _process(delta: float) -> void:
 	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.35)
 	
 	# Boxes
-	DebugDraw3D.draw_box_xf($Box1.global_transform, Color.MEDIUM_PURPLE)
-	DebugDraw3D.draw_box($Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
-	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Box3.global_transform.origin), Color.ROSY_BROWN)
+	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
+	DebugDraw3D.draw_box($Boxes/Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
+	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_transform.origin), Color.ROSY_BROWN)
 	
-	DebugDraw3D.draw_box_xf($BoxOutOfDistanceCulling.global_transform, Color.RED)
+	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
-	DebugDraw3D.draw_aabb(AABB($AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
-	DebugDraw3D.draw_aabb_ab($AABB.get_child(0).global_transform.origin, $AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
+	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
+	DebugDraw3D.draw_aabb_ab($Boxes/AABB.get_child(0).global_transform.origin, $Boxes/AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
 	
 	# Lines
 	var target = $Lines/Target
@@ -343,8 +344,10 @@ func _more_tests():
 		if ray is RayCast3D:
 			DebugDraw3D.draw_line_hit(ray.global_transform.origin, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
-		# Delayed line render
-	DebugDraw3D.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
+	# Delayed line render
+	if true:
+		var a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
+		DebugDraw3D.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
 
 
 func _draw_array_of_boxes():

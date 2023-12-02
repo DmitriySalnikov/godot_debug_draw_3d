@@ -47,6 +47,10 @@ class DebugDraw3D : public Object, public IScopedStorage<DDScopedConfig3D> {
 private:
 	static DebugDraw3D *singleton;
 
+	String root_settings_section;
+	const static char *s_add_bevel_to_volumetric;
+	const static char *s_default_thickness;
+
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
