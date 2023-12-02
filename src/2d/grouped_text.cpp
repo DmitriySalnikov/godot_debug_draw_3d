@@ -132,7 +132,7 @@ void GroupedText::init_group(DebugDraw2D *p_owner) {
 	item_for_title_of_groups->is_group_title = true;
 }
 
-void GroupedText::clear_text() {
+void GroupedText::clear_groups() {
 	LOCK_GUARD(datalock);
 	_text_groups.clear();
 }

@@ -127,6 +127,9 @@ public:
 	/// duration: Expiration time
 	void set_text(String key, Variant value = Variant(), int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
 
+	/// Clear all text
+	void clear_texts();
+
 #pragma endregion // Text
 #pragma region Graphs
 

@@ -23,11 +23,14 @@ public:
 	const static std::array<Vector3, 8> CubeVertices;
 	const static std::array<int, 24> CubeIndices;
 	const static std::array<int, 36> CubeWithDiagonalsIndices;
+
 	const static std::array<Vector3, 6> ArrowheadVertices;
 	const static std::array<int, 18> ArrowheadIndices;
 	const static std::array<int, 18> ArrowheadIndicesSimplified;
+
 	const static std::array<Vector3, 4> CenteredSquareVertices;
 	const static std::array<int, 6> SquareIndices;
+
 	const static std::array<Vector3, 6> PositionVertices;
 	const static std::array<int, 6> PositionIndices;
 

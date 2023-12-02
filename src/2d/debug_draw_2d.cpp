@@ -38,6 +38,7 @@ void DebugDraw2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw2D::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(NAMEOF(end_text_group)), &DebugDraw2D::end_text_group);
 	ClassDB::bind_method(D_METHOD(NAMEOF(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw2D::set_text, Variant(), 0, Colors::empty_color, -1.0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_texts)), &DebugDraw2D::clear_texts);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(create_graph), "title"), &DebugDraw2D::create_graph);
 	ClassDB::bind_method(D_METHOD(NAMEOF(create_fps_graph), "title"), &DebugDraw2D::create_fps_graph);
@@ -141,7 +142,8 @@ void DebugDraw2D::_finish_frame_and_update() {
 
 		// reset some values
 		_canvas_need_update = false;
-		grouped_text->end_text_group();
+		if (grouped_text)
+			grouped_text->end_text_group();
 	} else {
 #ifdef TRACY_ENABLE
 		if (DebugDraw2D_frame_mark_2d_started) {
@@ -283,9 +285,10 @@ Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
 void DebugDraw2D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!grouped_text || !data_graphs) return;
-	grouped_text->clear_text();
-	data_graphs->clear_graphs();
+	if (grouped_text)
+		grouped_text->clear_groups();
+	if (data_graphs)
+		data_graphs->clear_graphs();
 	mark_canvas_dirty();
 	_finish_frame_and_update();
 #else
@@ -332,6 +335,11 @@ void DebugDraw2D::end_text_group() {
 void DebugDraw2D::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
 	ZoneScoped;
 	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
+}
+
+void DebugDraw2D::clear_texts() {
+	ZoneScoped;
+	FORCE_CALL_TO_2D(grouped_text, clear_groups);
 }
 
 #pragma endregion // Text

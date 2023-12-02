@@ -112,7 +112,7 @@ class GroupedText {
 
 public:
 	void init_group(class DebugDraw2D *p_owner);
-	void clear_text();
+	void clear_groups();
 	void cleanup_text(const double &_delta);
 	void begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size);
 	void end_text_group();
