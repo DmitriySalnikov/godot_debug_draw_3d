@@ -17,6 +17,11 @@ using namespace godot;
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
+const char *DebugDrawManager::s_initial_state = "initial_debug_state";
+const char *DebugDrawManager::s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
+const char *DebugDrawManager::s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
+const char *DebugDrawManager::s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
+
 const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
 
 void DebugDrawManager::_bind_methods() {
@@ -183,6 +188,7 @@ DebugDrawManager::DebugDrawManager() {
 
 DebugDrawManager::~DebugDrawManager() {
 	UNASSIGN_SINGLETON(DebugDrawManager);
+	deinit();
 }
 
 void DebugDrawManager::clear_all() {
@@ -206,23 +212,77 @@ bool DebugDrawManager::is_debug_enabled() const {
 
 void DebugDrawManager::init() {
 	ZoneScoped;
-	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + "initial_debug_state", true, Variant::BOOL);
+	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + s_initial_state, true, Variant::BOOL);
 	set_debug_enabled(initial_debug_state);
+
+	manager_aliases.push_back(StringName("Dmgr"));
+	dd2d_aliases.push_back(StringName("Dbg2"));
+	dd3d_aliases.push_back(StringName("Dbg3"));
+
+	root_settings_section = String(Utils::root_settings_section) + "common/";
+	DEFINE_SETTING_AND_GET_HINT(Variant mgr_a, root_settings_section + s_manager_aliases, manager_aliases, Variant::ARRAY, PropertyHint::PROPERTY_HINT_TYPE_STRING, FMT_STR("{0}:", Variant::STRING_NAME));
+	DEFINE_SETTING_AND_GET_HINT(Variant dd2d_a, root_settings_section + s_dd2d_aliases, dd2d_aliases, Variant::ARRAY, PropertyHint::PROPERTY_HINT_TYPE_STRING, FMT_STR("{0}:", Variant::STRING_NAME));
+	DEFINE_SETTING_AND_GET_HINT(Variant dd3d_a, root_settings_section + s_dd3d_aliases, dd3d_aliases, Variant::ARRAY, PropertyHint::PROPERTY_HINT_TYPE_STRING, FMT_STR("{0}:", Variant::STRING_NAME));
+
+	manager_aliases = TypedArray<StringName>(mgr_a);
+	dd2d_aliases = TypedArray<StringName>(dd2d_a);
+	dd3d_aliases = TypedArray<StringName>(dd3d_a);
 
 	// Draw everything after calls from scripts to avoid lagging
 	set_process_priority(INT32_MAX);
 
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDrawManager), this);
-
-	debug_draw_3d_singleton = memnew(DebugDraw3D);
-	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw3D), debug_draw_3d_singleton);
-	Engine::get_singleton()->register_singleton("Dbg3", debug_draw_3d_singleton);
+	_register_singleton_aliases(manager_aliases, this);
 
 	debug_draw_2d_singleton = memnew(DebugDraw2D);
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw2D), debug_draw_2d_singleton);
-	Engine::get_singleton()->register_singleton("Dbg2", debug_draw_2d_singleton);
+	_register_singleton_aliases(dd2d_aliases, debug_draw_2d_singleton);
+
+	debug_draw_3d_singleton = memnew(DebugDraw3D);
+	Engine::get_singleton()->register_singleton(NAMEOF(DebugDraw3D), debug_draw_3d_singleton);
+	_register_singleton_aliases(dd3d_aliases, debug_draw_3d_singleton);
 
 	call_deferred(NAMEOF(_integrate_into_engine));
+}
+
+void DebugDrawManager::deinit() {
+	ZoneScoped;
+	is_closing = true;
+
+	if (Engine::get_singleton()->has_singleton(NAMEOF(DebugDrawManager))) {
+		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDrawManager));
+		_unregister_singleton_aliases(manager_aliases);
+	}
+
+	if (debug_draw_2d_singleton) {
+		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw2D));
+		_unregister_singleton_aliases(dd2d_aliases);
+		memdelete(debug_draw_2d_singleton);
+		debug_draw_2d_singleton = nullptr;
+	}
+
+	if (debug_draw_3d_singleton) {
+		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw3D));
+		_unregister_singleton_aliases(dd3d_aliases);
+		memdelete(debug_draw_3d_singleton);
+		debug_draw_3d_singleton = nullptr;
+	}
+
+	emit_signal(s_extension_unloading);
+}
+
+void DebugDrawManager::_register_singleton_aliases(const TypedArray<StringName> &names, Object *instance) {
+	for (int i = 0; i < names.size(); i++) {
+		if (!names[i].operator godot::StringName().is_empty())
+			Engine::get_singleton()->register_singleton(names[i], instance);
+	}
+}
+
+void DebugDrawManager::_unregister_singleton_aliases(const TypedArray<StringName> &names) {
+	for (int i = 0; i < names.size(); i++) {
+		if (!names[i].operator godot::StringName().is_empty())
+			Engine::get_singleton()->unregister_singleton(names[i]);
+	}
 }
 
 void DebugDrawManager::_process(double delta) {
@@ -256,31 +316,6 @@ void DebugDrawManager::_process(double delta) {
 	if (!debug_enabled || !DebugDraw2D::get_singleton()->is_debug_enabled()) {
 		FrameMark;
 	}
-}
-
-void DebugDrawManager::_exit_tree() {
-	ZoneScoped;
-	is_closing = true;
-
-	if (Engine::get_singleton()->has_singleton(NAMEOF(DebugDrawManager))) {
-		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDrawManager));
-	}
-
-	if (debug_draw_3d_singleton) {
-		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw3D));
-		Engine::get_singleton()->unregister_singleton("Dbg3");
-		memdelete(debug_draw_3d_singleton);
-		debug_draw_3d_singleton = nullptr;
-	}
-
-	if (debug_draw_2d_singleton) {
-		Engine::get_singleton()->unregister_singleton(NAMEOF(DebugDraw2D));
-		Engine::get_singleton()->unregister_singleton("Dbg2");
-		memdelete(debug_draw_2d_singleton);
-		debug_draw_2d_singleton = nullptr;
-	}
-
-	emit_signal(s_extension_unloading);
 }
 
 #ifdef TOOLS_ENABLED

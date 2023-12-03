@@ -220,14 +220,7 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-draw_array_of_boxes = true
-start_culling_distance = 55.0
-text_groups_show_stats = true
 text_groups_position = 2
-text_groups_default_font_size = 15
-text_groups_title_font_size = 20
-text_groups_text_font_size = 17
-graph_text_precision = 1
 
 [node name="Camera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
@@ -388,13 +381,13 @@ transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.18606, -0.331599, 6.66091)
 
 [node name="Arrow" type="Node3D" parent="Misc"]
-transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -4.38512, -1.18432, 6.66091)
+transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -4.06502, -0.670307, 6.7413)
 
 [node name="Position" type="Node3D" parent="Misc"]
 transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, -2.73567, -0.331599, 2.69873)
 
 [node name="GizmoNormal" type="Node3D" parent="Misc"]
-transform = Transform3D(1.98138, 0, -0.70285, 0, 0.999999, 0, 0.434655, 0, 3.20395, -2.69921, -0.331599, 4.79165)
+transform = Transform3D(1.95938, 0, -0.848962, 0, 0.999999, 0, 0.525014, 0, 3.16837, -2.69921, -0.306246, 4.79165)
 
 [node name="GizmoTransform" type="Node3D" parent="Misc"]
 transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259)
@@ -431,7 +424,7 @@ transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085
 transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 6.87561e-07, 1, 0, -2.87275e-08, -1.49012e-08, 1, -0.1559, -0.407045, 0.0523388)
 
 [node name="4" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906)
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 4.9239e-07, 1, 0, -3.40677e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906)
 
 [node name="5" type="Node3D" parent="Lines"]
 transform = Transform3D(-0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -2.68836, 0.0136011, -0.249864, 0.572532, 1.43126, 0.26242, 1.92347)

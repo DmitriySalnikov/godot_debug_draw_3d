@@ -7,8 +7,8 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
-@export_range(0, 2, 0.001) var debug_thickness := 0.075
-@export_range(0, 1024) var start_culling_distance := 0.0
+@export_range(0, 5, 0.001) var debug_thickness := 0.05
+@export_range(0, 1024) var start_culling_distance := 55.0
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
@@ -17,16 +17,16 @@ extends Node3D
 @export var text_groups_position := DebugDrawConfig2D.POSITION_LEFT_TOP
 @export var text_groups_offset := Vector2i(8, 8)
 @export var text_groups_padding := Vector2i(3, 1)
-@export_range(1, 100) var text_groups_default_font_size := 12
-@export_range(1, 100) var text_groups_title_font_size := 14
-@export_range(1, 100) var text_groups_text_font_size := 12
+@export_range(1, 100) var text_groups_default_font_size := 15
+@export_range(1, 100) var text_groups_title_font_size := 20
+@export_range(1, 100) var text_groups_text_font_size := 17
 
 @export_group("Graphs", "graph")
 @export var graph_offset := Vector2i(8, 8)
 @export var graph_size := Vector2i(200, 80)
 @export_range(1, 100) var graph_title_font_size := 14
 @export_range(1, 100) var graph_text_font_size := 12
-@export_range(0, 64) var graph_text_precision := 2
+@export_range(0, 64) var graph_text_precision := 1
 @export_range(1, 32) var graph_line_width := 1.0
 @export_range(1, 512) var graph_buffer_size := 128
 @export var graph_frame_time_mode := true
@@ -68,6 +68,9 @@ func _update_keys_just_press():
 
 
 func _process(delta: float) -> void:
+	if Input.is_action_just_pressed("ui_end"):
+		DebugDraw3D.regenerate_geometry_meshes()
+	
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness)
 	if false: #test
 		var s11 = DebugDraw3D.new_scoped_config()

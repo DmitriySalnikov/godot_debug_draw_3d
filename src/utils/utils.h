@@ -121,6 +121,20 @@ static String get_file_name_in_repository(const String &name) {
 		PS()->set_initial_value(path, def);          \
 	}                                                \
 	var = PS()->get_setting(path)
+#define DEFINE_SETTING_AND_GET_HINT(var, path, def, type, hint, hint_string) \
+	{                                                                        \
+		if (!PS()->has_setting(path)) {                                      \
+			PS()->set_setting(path, def);                                    \
+		}                                                                    \
+		Dictionary info;                                                     \
+		info["name"] = path;                                                 \
+		info["type"] = type;                                                 \
+		info["hint"] = hint;                                                 \
+		info["hint_string"] = hint_string;                                   \
+		PS()->add_property_info(info);                                       \
+		PS()->set_initial_value(path, def);                                  \
+	}                                                                        \
+	var = PS()->get_setting(path)
 #define DEFINE_SETTING_READ_ONLY(path, def, type)  \
 	{                                              \
 		PS()->set_setting(path, def);              \

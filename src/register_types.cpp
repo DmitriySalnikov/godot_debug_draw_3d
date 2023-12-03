@@ -71,7 +71,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 
-		// If this library is disabled manually before deleting the scene tree,
+		// If this library is disabled manually before deleting the scene tree (hot-reload),
 		// then an attempt is made to delete this node manually.
 		if (Engine::get_singleton()->get_main_loop() && UtilityFunctions::is_instance_valid(debug_draw_manager)) {
 			memdelete(debug_draw_manager);

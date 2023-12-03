@@ -73,9 +73,6 @@ private:
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEV_ENABLED
-	const char *reload_action_name = "ui_end";
-#endif
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
@@ -100,6 +97,7 @@ private:
 	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DDScopedConfig3D *cfg);
 	GeometryType _scoped_config_get_geometry_type(DDScopedConfig3D *cfg);
 
+	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
 	void add_or_update_line_with_thickness(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 
 #endif
@@ -172,6 +170,8 @@ public:
 #define FAKE_FUNC_IMPL \
 	{}
 #endif
+
+	void regenerate_geometry_meshes();
 
 	/// Clear all 3D objects
 	void clear_all();

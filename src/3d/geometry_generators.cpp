@@ -230,22 +230,20 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 	if (has_indexes) {
 		for (int i = 0; i < indexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[indexes[i]] : Vector3(0, 1, 0.0001f);
-			Vector3 normal_b = has_normals ? normals[indexes[i + 1]] : Vector3(0, 1, 0.0001f);
 
 			if (add_bevel)
-				GenerateVolumetricSegmentBevel(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegmentBevel(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 			else
-				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 		}
 	} else {
 		for (int i = 0; i < vertexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[i] : Vector3(0, 1, 0.0001f);
-			Vector3 normal_b = has_normals ? normals[i + 1] : Vector3(0, 1, 0.0001f);
 
 			if (add_bevel)
-				GenerateVolumetricSegmentBevel(vertexes[i], vertexes[i + 1], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegmentBevel(vertexes[i], vertexes[i + 1], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 			else
-				GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], normal_a, normal_b, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 		}
 	}
 
@@ -260,20 +258,20 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
-void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
+void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
 	ZoneScoped;
 	bool debug_size = false;
 	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
 	Vector3 dir = (b - a).normalized();
 	int64_t base_idx = vertexes.size();
 
-	auto add_side = [&dir, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal_a, Vector3 normal_b, bool is_rotated) {
+	auto add_side = [&dir, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal, bool is_rotated) {
 		int64_t start_idx = vertexes.size();
 
-		Vector3 right_a = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 right_a = dir.cross(normal.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
 		Vector3 left_a = right_a * -1;
 
-		Vector3 right_b = dir.cross(normal_b.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
 		Vector3 left_b = right_b * -1;
 
 		right_a /= Math::sqrt(2.0f);
@@ -312,8 +310,8 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 		custom0.push_back(left_b);
 	};
 
-	add_side(a, b, normal_a, normal_b, false);
-	add_side(a, b, normal_a, normal_b, true);
+	add_side(a, b, normal, false);
+	add_side(a, b, normal, true);
 
 	if (add_caps) {
 		// Start cap
@@ -334,7 +332,7 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 	}
 }
 
-void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
+void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
 	ZoneScoped;
 	bool debug_size = false;
 	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5f : Vector3();
@@ -353,13 +351,13 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	custom0.push_back(Vector3_ZERO);
 	custom0.push_back(Vector3_ZERO);
 
-	auto add_side = [&half_len, &dir, &base_idx, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal_a, Vector3 normal_b, bool is_rotated) {
+	auto add_side = [&half_len, &dir, &base_idx, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal, real_t angle) {
 		int64_t start_idx = vertexes.size();
 
-		Vector3 right_a = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 right_a = dir.cross(normal.rotated(dir, Math::deg_to_rad(angle))).normalized();
 		Vector3 left_a = right_a * -1;
 
-		Vector3 right_b = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
+		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(angle))).normalized();
 		Vector3 left_b = right_b * -1;
 
 		right_a /= Math::sqrt(2.0f);
@@ -404,8 +402,8 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 		custom0.push_back(left_b);
 	};
 
-	add_side(a, b, normal_a, normal_b, false);
-	add_side(a, b, normal_a, normal_b, true);
+	add_side(a, b, normal, 45.f);
+	add_side(a, b, normal, -45.f);
 
 	if (add_caps) {
 		// Start cap
@@ -436,6 +434,108 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 		indexes.append(base_idx + 9);
 		indexes.append(base_idx + 4);
 	}
+}
+
+Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const real_t &radius, const real_t &length, const real_t &offset_mult, const bool &add_bevel) {
+	PackedVector3Array vertexes;
+	PackedVector2Array uv;
+	PackedVector3Array custom0;
+	PackedInt32Array indexes;
+
+	auto rotate = [](PackedVector3Array &arr, int start, int end, real_t scale) {
+		for (int i = start; i <= end; i++) {
+			arr[i] = arr[i].rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / scale;
+		}
+	};
+
+	real_t front_offset = add_bevel ? .5f : 0;
+	real_t square_diag_mult = Math::sqrt(2.f);
+
+	vertexes.push_back(Vector3(0, 0, 0)); // 0
+
+	vertexes.push_back(Vector3(0, 0, -0.00001f).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 1
+	vertexes.push_back(Vector3(0, 0, -0.00001f).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 2
+	vertexes.push_back(Vector3(0, 0, -0.00001f).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 3
+	vertexes.push_back(Vector3(0, 0, -0.00001f).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 4
+
+	vertexes.push_back(Vector3(0, radius, length).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 5
+	vertexes.push_back(Vector3(0, -radius, length).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 6
+	vertexes.push_back(Vector3(radius, 0, length).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 7
+	vertexes.push_back(Vector3(-radius, 0, length).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult); // 8
+
+	custom0.push_back(Vector3(0, 0, 0));
+	custom0.push_back(Vector3(0, 1, 0).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult - Vector3_FORWARD * front_offset);
+	custom0.push_back(Vector3(0, -1, 0).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult - Vector3_FORWARD * front_offset);
+	custom0.push_back(Vector3(1, 0, 0).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult - Vector3_FORWARD * front_offset);
+	custom0.push_back(Vector3(-1, 0, 0).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult - Vector3_FORWARD * front_offset);
+
+	custom0.push_back(Vector3(0, 1 + radius * 2, offset_mult * length * 2).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult);
+	custom0.push_back(Vector3(0, -(1 + radius * 2), offset_mult * length * 2).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult);
+	custom0.push_back(Vector3(1 + radius * 2, 0, offset_mult * length * 2).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult);
+	custom0.push_back(Vector3(-(1 + radius * 2), 0, offset_mult * length * 2).rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / square_diag_mult);
+
+	uv.push_back(Vector2(.5f, .5f));
+
+	uv.push_back(Vector2(0, 0));
+	uv.push_back(Vector2(0, 0));
+	uv.push_back(Vector2(0, 0));
+	uv.push_back(Vector2(0, 0));
+
+	uv.push_back(Vector2(.5f, .5f));
+	uv.push_back(Vector2(.5f, .5f));
+	uv.push_back(Vector2(.5f, .5f));
+	uv.push_back(Vector2(.5f, .5f));
+
+	indexes.push_back(0);
+	indexes.push_back(1);
+	indexes.push_back(3);
+	indexes.push_back(0);
+	indexes.push_back(3);
+	indexes.push_back(2);
+	indexes.push_back(0);
+	indexes.push_back(2);
+	indexes.push_back(4);
+	indexes.push_back(0);
+	indexes.push_back(4);
+	indexes.push_back(1);
+
+	indexes.push_back(1);
+	indexes.push_back(3);
+	indexes.push_back(5);
+	indexes.push_back(3);
+	indexes.push_back(7);
+	indexes.push_back(5);
+
+	indexes.push_back(1);
+	indexes.push_back(5);
+	indexes.push_back(8);
+	indexes.push_back(1);
+	indexes.push_back(8);
+	indexes.push_back(4);
+
+	indexes.push_back(2);
+	indexes.push_back(6);
+	indexes.push_back(8);
+	indexes.push_back(2);
+	indexes.push_back(8);
+	indexes.push_back(4);
+
+	indexes.push_back(3);
+	indexes.push_back(7);
+	indexes.push_back(6);
+	indexes.push_back(3);
+	indexes.push_back(6);
+	indexes.push_back(2);
+
+	return CreateMesh(
+			Mesh::PRIMITIVE_TRIANGLES,
+			vertexes,
+			indexes,
+			PackedColorArray(),
+			PackedVector3Array(),
+			uv,
+			Utils::convert_packed_array_to_diffrent_types<PackedFloat32Array>(custom0),
+			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
 Ref<ArrayMesh> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {

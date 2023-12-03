@@ -10,7 +10,6 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
-#include <godot_cpp/classes/input.hpp>
 #include <godot_cpp/classes/os.hpp>
 GODOT_WARNING_RESTORE()
 
@@ -36,6 +35,7 @@ void DebugDraw3D::_bind_methods() {
 #pragma endregion
 
 #pragma region Draw Functions
+	ClassDB::bind_method(D_METHOD(NAMEOF(regenerate_geometry_meshes)), &DebugDraw3D::regenerate_geometry_meshes);
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDraw3D::clear_all);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw3D::draw_sphere, 0.5f, Colors::empty_color, 0);
@@ -99,9 +99,9 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	root_node = root;
 	set_config(nullptr);
 
-	root_settings_section = String(Utils::root_settings_section) + "3D/";
+	root_settings_section = String(Utils::root_settings_section) + "3d/";
 	DEFINE_SETTING_AND_GET(bool add_bevel, root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
-	DEFINE_SETTING_AND_GET(real_t def_thickness, root_settings_section + s_default_thickness, 0.075f, Variant::FLOAT);
+	DEFINE_SETTING_AND_GET(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT);
 
 	stats_3d.instantiate();
 	default_scoped_config.instantiate();
@@ -111,8 +111,6 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	_load_materials();
 
 #ifndef DISABLE_DEBUG_RENDERING
-	DEV_PRINT_STD("To regenerate the 3D geometry press the \"%s\" action\n", reload_action_name);
-
 	dgc = std::make_unique<DebugGeometryContainer>(this, add_bevel);
 #endif
 }
@@ -128,17 +126,6 @@ void DebugDraw3D::process(double delta) {
 	ZoneScoped;
 	FrameMarkStart("3D Setup");
 #ifndef DISABLE_DEBUG_RENDERING
-#ifdef DEV_ENABLED
-	if (Input::get_singleton()->is_action_just_pressed(reload_action_name)) {
-		LOCK_GUARD(datalock);
-		Node *old_world = dgc->get_world();
-		dgc.reset();
-
-		_load_materials();
-		dgc = std::make_unique<DebugGeometryContainer>(this, PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric));
-		dgc->set_world(old_world);
-	}
-#endif
 
 	// Update 3D debug
 	dgc->update_geometry(delta);
@@ -445,6 +432,17 @@ Ref<DebugDrawStats3D> DebugDraw3D::get_render_stats() {
 	return stats_3d;
 }
 
+void DebugDraw3D::regenerate_geometry_meshes() {
+#ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
+	Node *old_world = dgc->get_world();
+	dgc.reset();
+
+	dgc = std::make_unique<DebugGeometryContainer>(this, PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric));
+	dgc->set_world(old_world);
+#endif
+}
+
 void DebugDraw3D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
@@ -465,6 +463,10 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 
+Vector3 DebugDraw3D::get_up_vector(const Vector3 &dir) {
+	return (Math::is_equal_approx(dir.x, 0) && Math::is_equal_approx(dir.z, 0)) || Math::is_equal_approx(dir.y, 0) ? Vector3_UP_OF : Vector3_UP;
+}
+
 void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
 	ZoneScoped;
 
@@ -481,11 +483,10 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, const std:
 			Vector3 diff = _lines[i + 1] - a;
 			real_t len = diff.length();
 			Vector3 center = diff.normalized() * len * .5f;
-			Vector3 up = center.x == 0 && center.z == 0 ? Vector3_UP_OF : Vector3_UP;
 			dgc->geometry_pool.add_or_update_instance(
 					InstanceType::LINE_VOLUMETRIC,
 					_exp_time,
-					Transform3D(Basis().looking_at(center, up).scaled(Vector3(len, len, len)), a), // slow
+					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(Vector3(len, len, len)), a), // slow
 					_col,
 					_scoped_config_to_custom(scfg.ptr()),
 					SphereBounds(a + center, len * .5f));
@@ -568,12 +569,12 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	// TODO SLOOOOOW
+	// TODO sloooow
 	Vector3 diff = b - a;
 	real_t len = diff.length();
 	real_t diameter = radius * 2;
 	Vector3 center = diff.normalized() * len * .5f;
-	Vector3 up = (Math::is_equal_approx(center.x, 0) && Math::is_equal_approx(center.z, 0)) || Math::is_equal_approx(center.y, 0) ? Vector3_UP_OF : Vector3_UP;
+	Vector3 up = get_up_vector(center);
 	Vector3 center_rot = center.rotated(center.cross(up), Math::deg_to_rad(90.f)); // Convert +Y of cylinder to -Z
 	Transform3D t = Transform3D(Basis().looking_at(center_rot, up).scaled_local(Vector3(diameter, len, diameter)), a + center);
 
@@ -739,8 +740,8 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	Vector3 dir = (b - a);
 	real_t size = (is_absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
 
-	const Vector3 UP = Vector3(0.0000000001f, 1, 0);
-	Transform3D t = Transform3D(Basis().looking_at(dir, UP).scaled(Vector3(size, size, size)), b);
+	Vector3 up = get_up_vector(dir);
+	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(Vector3(size, size, size)), b);
 
 	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
 
