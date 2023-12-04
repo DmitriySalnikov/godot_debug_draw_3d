@@ -85,7 +85,15 @@ class GenerateCSharpBindingsPlugin {
 	String indent;
 	Ref<FileAccess> opened_file;
 	Ref<FileAccess> opened_log_file;
+	TypedArray<String> property_method_prefix;
+
 	TypedArray<StringName> generate_for_classes;
+	TypedArray<StringName> avoid_caching_for_classes;
+
+	typedef std::map<StringName, std::vector<String> > extend_class_strings;
+	extend_class_strings additional_statics_for_classes;
+	extend_class_strings override_disposable_for_classes;
+
 	PackedStringArray singletons;
 	bool is_shift_pressed = false;
 	bool is_generate_unload_event = false;

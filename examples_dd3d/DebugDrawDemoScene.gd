@@ -73,12 +73,11 @@ func _process(delta: float) -> void:
 	
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness)
 	if false: #test
-		var s11 = DebugDraw3D.new_scoped_config()
-		s11.set_thickness(1)
+		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
 		if true:
 			pass
-			var s13 = DebugDraw3D.new_scoped_config()
-			s13.set_thickness(3)
+			var _s13 = DebugDraw3D.new_scoped_config()
+			_s13.set_thickness(3)
 	
 	_update_keys_just_press()
 	
@@ -216,7 +215,7 @@ func _process(delta: float) -> void:
 	# Misc
 	if true:
 		#for i in 1000:
-		var a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
+		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
 		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
 	DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
@@ -349,12 +348,12 @@ func _more_tests():
 	
 	# Delayed line render
 	if true:
-		var a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
+		var _a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
 		DebugDraw3D.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
 
 
 func _draw_array_of_boxes():
-	# Lots of boxes to check performance.. I guess..
+	# Lots of boxes to check performance..
 	if time2 <= 0:
 		for x in 50:
 			for y in 50:

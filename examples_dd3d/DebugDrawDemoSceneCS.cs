@@ -14,7 +14,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool test_graphs = false;
     [Export] bool more_test_cases = true;
     [Export] bool draw_array_of_boxes = false;
-    [Export(PropertyHint.Range, "0, 1024")] float start_culling_distance = 0.0f;
+    [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.05f;
+    [Export(PropertyHint.Range, "0, 1024")] float start_culling_distance = 55.0f;
 
     [ExportGroup("Text groups", "text_groups")]
     [Export] bool text_groups_show_hints = true;
@@ -23,16 +24,16 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] DebugDrawConfig2D.BlockPosition text_groups_position = DebugDrawConfig2D.BlockPosition.LeftTop;
     [Export] Vector2I text_groups_offset = new Vector2I(8, 8);
     [Export] Vector2I text_groups_padding = new Vector2I(3, 1);
-    [Export(PropertyHint.Range, "1, 100")] int text_groups_default_font_size = 12;
-    [Export(PropertyHint.Range, "1, 100")] int text_groups_title_font_size = 14;
-    [Export(PropertyHint.Range, "1, 100")] int text_groups_text_font_size = 12;
+    [Export(PropertyHint.Range, "1, 100")] int text_groups_default_font_size = 15;
+    [Export(PropertyHint.Range, "1, 100")] int text_groups_title_font_size = 20;
+    [Export(PropertyHint.Range, "1, 100")] int text_groups_text_font_size = 17;
 
     [ExportGroup("Graphs", "graph")]
     [Export] Vector2I graph_offset = new Vector2I(8, 8);
     [Export] Vector2I graph_size = new Vector2I(200, 80);
     [Export(PropertyHint.Range, "1, 100")] int graph_title_font_size = 14;
     [Export(PropertyHint.Range, "1, 100")] int graph_text_font_size = 12;
-    [Export(PropertyHint.Range, "0, 64")] int graph_text_precision = 2;
+    [Export(PropertyHint.Range, "0, 64")] int graph_text_precision = 1;
     [Export(PropertyHint.Range, "1, 32")] float graph_line_width = 1.0f;
     [Export(PropertyHint.Range, "1, 512")] int graph_buffer_size = 128;
     [Export] bool graph_frame_time_mode = true;
@@ -41,6 +42,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Dictionary<Key, int> button_presses = new Dictionary<Key, int>() {
         { Key.Left, 0 },
         { Key.Up, 0 },
+        { Key.Ctrl, 0 },
         { Key.F1, 0 },
         { Key.Key1, 0 },
         { Key.Key2, 0 },
@@ -56,25 +58,28 @@ public partial class DebugDrawDemoSceneCS : Node3D
     CsgBox3D dLagTest;
     PanelContainer dPanel;
     Node3D dZones;
-    Node3D dAABB;
-    Node3D dAABB_fixed;
     Node3D dSpherePosition;
     Node3D dSphereTransform;
     Node3D dSphereHDTransform;
+    Node3D dAABB;
+    Node3D dAABB_fixed;
     Node3D dBox1;
     Node3D dBox2;
     Node3D dBox3;
     Node3D dBoxOutOfDistanceCulling;
     Node3D dLines_1;
-    Node3D dLines_3;
-    Node3D dLines_6;
     Node3D dLines_2;
+    Node3D dLines_3;
     Node3D dLines_4;
     Node3D dLines_5;
+    Node3D dLines_6;
+    Node3D dLines_7;
     Node3D dLines_Target;
     Node3D dLinePath;
     Node3D dCylinder1;
     Node3D dCylinder2;
+    Node3D dCylinder3a;
+    Node3D dCylinder3b;
 
     Control dCustomCanvas;
     Node3D dMisc_Arrow;
@@ -98,25 +103,28 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dLagTest = GetNode<CsgBox3D>("LagTest");
         dPanel = GetNode<PanelContainer>("Panel");
         dZones = GetNode<Node3D>("Zones");
-        dAABB = GetNode<Node3D>("AABB");
-        dAABB_fixed = GetNode<Node3D>("AABB_fixed");
-        dSpherePosition = GetNode<Node3D>("SpherePosition");
-        dSphereTransform = GetNode<Node3D>("SphereTransform");
-        dSphereHDTransform = GetNode<Node3D>("SphereHDTransform");
-        dBox1 = GetNode<Node3D>("Box1");
-        dBox2 = GetNode<Node3D>("Box2");
-        dBox3 = GetNode<Node3D>("Box3");
-        dBoxOutOfDistanceCulling = GetNode<Node3D>("BoxOutOfDistanceCulling");
+        dSpherePosition = GetNode<Node3D>("Spheres/SpherePosition");
+        dSphereTransform = GetNode<Node3D>("Spheres/SphereTransform");
+        dSphereHDTransform = GetNode<Node3D>("Spheres/SphereHDTransform");
+        dAABB = GetNode<Node3D>("Boxes/AABB");
+        dAABB_fixed = GetNode<Node3D>("Boxes/AABB_fixed");
+        dBox1 = GetNode<Node3D>("Boxes/Box1");
+        dBox2 = GetNode<Node3D>("Boxes/Box2");
+        dBox3 = GetNode<Node3D>("Boxes/Box3");
+        dBoxOutOfDistanceCulling = GetNode<Node3D>("Boxes/BoxOutOfDistanceCulling");
         dLines_1 = GetNode<Node3D>("Lines/1");
-        dLines_3 = GetNode<Node3D>("Lines/3");
-        dLines_6 = GetNode<Node3D>("Lines/6");
         dLines_2 = GetNode<Node3D>("Lines/2");
+        dLines_3 = GetNode<Node3D>("Lines/3");
         dLines_4 = GetNode<Node3D>("Lines/4");
         dLines_5 = GetNode<Node3D>("Lines/5");
+        dLines_6 = GetNode<Node3D>("Lines/6");
+        dLines_7 = GetNode<Node3D>("Lines/7");
         dLines_Target = GetNode<Node3D>("Lines/Target");
         dLinePath = GetNode<Node3D>("LinePath");
-        dCylinder1 = GetNode<Node3D>("Cylinder1");
-        dCylinder2 = GetNode<Node3D>("Cylinder2");
+        dCylinder1 = GetNode<Node3D>("Cylinders/Cylinder1");
+        dCylinder2 = GetNode<Node3D>("Cylinders/Cylinder2");
+        dCylinder3a = GetNode<Node3D>("Cylinders/Cylinder3/1");
+        dCylinder3b = GetNode<Node3D>("Cylinders/Cylinder3/2");
 
         dCustomCanvas = GetNode<Control>("CustomCanvas");
         dMisc_Arrow = GetNode<Node3D>("Misc/Arrow");
@@ -168,6 +176,19 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     public override void _Process(double delta)
     {
+        if (Input.IsActionJustPressed("ui_end"))
+            DebugDraw3D.RegenerateGeometryMeshes();
+
+        DebugDraw3D.ScopedConfig().SetThickness(debug_thickness);
+#pragma warning disable CS0162 // Unreachable code detected
+        if (false) // #test
+        {
+            using var s11 = DebugDraw3D.NewScopedConfig().SetThickness(1);
+            using var s13 = DebugDraw3D.NewScopedConfig();
+            s13.SetThickness(3);
+        }
+#pragma warning restore CS0162 // Unreachable code detected
+
         _update_keys_just_press();
 
         if (_is_key_just_pressed(Key.F1))
@@ -215,12 +236,15 @@ public partial class DebugDrawDemoSceneCS : Node3D
             if (!Engine.IsEditorHint())
                 GetViewport().Msaa3D = GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? Viewport.Msaa.Disabled : Viewport.Msaa.Msaa4X;
 
-        if (_is_key_just_pressed(Key.Key1))
-            DebugDraw3D.DebugEnabled = !DebugDraw3D.DebugEnabled;
-        if (_is_key_just_pressed(Key.Key2))
-            DebugDraw2D.DebugEnabled = !DebugDraw2D.DebugEnabled;
-        if (_is_key_just_pressed(Key.Key3))
-            DebugDrawManager.DebugEnabled = !DebugDrawManager.DebugEnabled;
+        if (!Engine.IsEditorHint())
+        {
+            if (_is_key_just_pressed(Key.Key1))
+                DebugDraw3D.DebugEnabled = !DebugDraw3D.DebugEnabled;
+            if (_is_key_just_pressed(Key.Key2))
+                DebugDraw2D.DebugEnabled = !DebugDraw2D.DebugEnabled;
+            if (_is_key_just_pressed(Key.Key3))
+                DebugDrawManager.DebugEnabled = !DebugDrawManager.DebugEnabled;
+        }
 
 
         if (Engine.IsEditorHint())
@@ -257,7 +281,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Cylinders
         DebugDraw3D.DrawCylinder(dCylinder1.GlobalTransform, Colors.Crimson);
-        DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity, dCylinder2.GlobalTransform.Origin).Scaled(new Vector3(1, 2, 1)), Colors.Red);
+        DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalTransform.Origin), Colors.Red);
+        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalTransform.Origin, dCylinder3b.GlobalTransform.Origin, 0.35f);
 
         // Boxes
         DebugDraw3D.DrawBoxXf(dBox1.GlobalTransform, Colors.MediumPurple);
@@ -284,6 +309,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
 
         time3 -= delta;
+
+        // Test UP vector
+        DebugDraw3D.DrawLine(dLines_7.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Red);
 
         // Lines with Arrow
         DebugDraw3D.DrawArrowLine(dLines_2.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Blue, 0.5f, true);
@@ -325,7 +353,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawPointPath(points_below3.ToArray(), 0.25f, Colors.Blue, Colors.Tomato);
 
         // Misc
-        DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
+        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
+        {
+            DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
+        }
 
         DebugDraw3D.DrawArrow(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
 
@@ -342,7 +373,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawGrid(tg.Origin, tg.Basis.X, tg.Basis.Z, new Vector2I((int)tn.X * 10, (int)tn.Z * 10), Colors.LightCoral, false);
 
         var tn1 = dMisc_Grids_GridCentered_Subdivision.Transform.Origin;
-        DebugDraw3D.DrawGridXf(dMisc_Grids_GridCentered.GlobalTransform, new Vector2I((int)tn1.X * 10, (int)tn1.Z * 10));
+        DebugDraw3D.DrawGridXf(dMisc_Grids_GridCentered.GlobalTransform, new Vector2I((int)(tn1.X * 10), (int)(tn1.Z * 10)));
 
         // 2D
         DebugDraw2D.Config.TextDefaultSize = text_groups_default_font_size;
@@ -450,6 +481,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 DebugDraw2D.SetText("Filling lines buffer", $"{(render_stats.TimeFillingBuffersLinesUsec / 1000.0):F2} ms", 9);
                 DebugDraw2D.SetText("Filling time", $"{(render_stats.TotalTimeFillingBuffersUsec / 1000.0):F2} ms", 10);
                 DebugDraw2D.SetText("Total time", $"{(render_stats.TotalTimeSpentUsec / 1000.0):F2} ms", 11);
+
+                DebugDraw2D.SetText("---", null, 14);
+
+                DebugDraw2D.SetText("Created scoped configs", $"{render_stats.CreatedScopedConfigs}", 15);
             }
 
             if (text_groups_show_stats && text_groups_show_stats_2d)
@@ -472,7 +507,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         {
             DebugDraw2D.BeginTextGroup("controls", 1024, Colors.White, false);
             DebugDraw2D.SetText("Shift: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
-            DebugDraw2D.SetText("Ctrl: change render layers", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
+            DebugDraw2D.SetText("Ctrl: toggle anti-aliasing", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
             DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 3);
             DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
             DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
@@ -493,12 +528,15 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
 
         // Delayed line render
-        DebugDraw3D.DrawLine(dLagTest.GlobalTransform.Origin + Vector3.Up, dLagTest.GlobalTransform.Origin + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
+        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.035f))
+        {
+            DebugDraw3D.DrawLine(dLagTest.GlobalTransform.Origin + Vector3.Up, dLagTest.GlobalTransform.Origin + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
+        }
     }
 
     void _draw_array_of_boxes()
     {
-        // Lots of boxes to check performance.. I guess..
+        // Lots of boxes to check performance..
         if (time2 <= 0)
         {
             for (int x = 0; x < 50; x++)

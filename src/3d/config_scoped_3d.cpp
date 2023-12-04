@@ -4,9 +4,18 @@
 
 void DDScopedConfig3D::_bind_methods() {
 #define REG_CLASS_NAME DDScopedConfig3D
+	REG_METHOD(_manual_unregister);
+
 	REG_METHOD(set_thickness, "value");
 	REG_METHOD(get_thickness);
 #undef REG_CLASS_NAME
+}
+
+void DDScopedConfig3D::_manual_unregister() {
+	if (unregister_action) {
+		unregister_action(thread_id, guard_id);
+	}
+	unregister_action = nullptr;
 }
 
 Ref<DDScopedConfig3D> DDScopedConfig3D::set_thickness(real_t value) {
@@ -36,7 +45,5 @@ DDScopedConfig3D::DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &
 }
 
 DDScopedConfig3D::~DDScopedConfig3D() {
-	if (unregister_action) {
-		unregister_action(thread_id, guard_id);
-	}
+	_manual_unregister();
 }

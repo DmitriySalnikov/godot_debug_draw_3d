@@ -22,6 +22,8 @@ protected:
 	real_t thickness;
 
 public:
+	void _manual_unregister();
+
 	Ref<DDScopedConfig3D> set_thickness(real_t value);
 	real_t get_thickness();
 

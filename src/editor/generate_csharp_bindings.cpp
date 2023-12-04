@@ -73,6 +73,11 @@ void GenerateCSharpBindingsPlugin::generate() {
 	opened_log_file = FileAccess::open(out_log_path, FileAccess::ModeFlags::WRITE);
 	ERR_FAIL_COND(FileAccess::get_open_error() != Error::OK);
 
+	property_method_prefix = TypedArray<String>(Array::make(
+			"set",
+			"get",
+			"is"));
+
 	generate_for_classes = TypedArray<StringName>(Array::make(
 			"DebugDraw2D",
 			"DebugDrawStats2D",
@@ -82,7 +87,20 @@ void GenerateCSharpBindingsPlugin::generate() {
 			"DebugDraw3D",
 			"DebugDrawStats3D",
 			"DebugDrawConfig3D",
+			"DDScopedConfig3D",
 			"DebugDrawManager"));
+
+	avoid_caching_for_classes = TypedArray<StringName>(Array::make(
+			"DDScopedConfig3D"));
+
+	additional_statics_for_classes = extend_class_strings{
+		{ "DDScopedConfig3D", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
+	};
+
+	override_disposable_for_classes = extend_class_strings{
+		{ "DDScopedConfig3D", { "Instance?.Call(___manual_unregister);" } }
+	};
+
 	singletons = Engine::get_singleton()->get_singleton_list();
 
 	generate_header();
@@ -139,10 +157,16 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 	line();
 	// class DebugDrawFPSGraph : DebugDrawGraph
 	String static_modifier_str = is_singleton ? "static " : "";
+	String additional_inheritance = "";
+
+	if (override_disposable_for_classes.find(cls) != override_disposable_for_classes.end()) {
+		additional_inheritance += ", IDisposable";
+	}
+
 	if (is_preserved_inheritance) {
-		line(FMT_STR("internal class {0} : {1}", cls, parent_name));
+		line(FMT_STR("internal class {0} : {1}{2}", cls, parent_name, additional_inheritance));
 	} else {
-		line(FMT_STR("{0}internal class {1}{2}", static_modifier_str, cls, is_singleton ? "" : " : _DebugDrawInstanceWrapper_"));
+		line(FMT_STR("{0}internal class {1}{2}{3}", static_modifier_str, cls, is_singleton ? "" : " : _DebugDrawInstanceWrapper_", additional_inheritance));
 	}
 
 	{
@@ -176,11 +200,14 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 
 			for (int i = 0; i < methods.size(); i++) {
 				String name = ((Dictionary)methods[i])["name"];
+				auto split = name.split("_", true, 1);
 
 				for (int j = 0; j < properties.size(); j++) {
 					String prop_name = ((Dictionary)properties[j])["name"];
-					auto split = name.split("_", true, 1);
-					if (split.size() == 2 && split[1] == prop_name) {
+
+					// check for prefix (set, get, is) and name of property
+					// to avoid confusion between `config` and `scoped_config`
+					if (split.size() == 2 && split[1] == prop_name && (property_method_prefix.has(split[0].to_lower()))) {
 						is_property.append(name);
 
 						std::map<String, ArgumentData>::iterator it = properties_map.find(prop_name);
@@ -208,8 +235,30 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 				}
 			}
 
+			const auto &it_add = additional_statics_for_classes.find(cls);
+			if (it_add != additional_statics_for_classes.end()) {
+				line("// Additional custom statics");
+				for (const auto &i : it_add->second) {
+					added++;
+					line(i);
+				}
+			}
+
 			if (added)
 				line();
+
+			const auto &it_over = override_disposable_for_classes.find(cls);
+			if (it_over != override_disposable_for_classes.end()) {
+				line("// Custom Disposable");
+				line("public new void Dispose()");
+				{
+					TAB();
+					for (const auto &i : it_over->second) {
+						line(i);
+					}
+				}
+				line();
+			}
 
 			for (int i = 0; i < methods.size(); i++) {
 				String name = ((Dictionary)methods[i])["name"];
@@ -281,7 +330,7 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 		line("public void Dispose()");
 		{
 			TAB();
-			line("Instance.Dispose();");
+			line("Instance?.Dispose();");
 			line("Instance = null;");
 		}
 		line();
@@ -389,7 +438,9 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 							{
 								TAB();
 								line(FMT_STR("_DebugDrawInstanceWrapper_ new_instance = new {0}(_instance);", cls));
-								line("cached_instances[id] = new_instance;");
+								if (!avoid_caching_for_classes.has(cls)) {
+									line("cached_instances[id] = new_instance;");
+								}
 								line("return new_instance;");
 							}
 						}
