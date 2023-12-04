@@ -45,6 +45,33 @@ protected:
 	void _try_to_update_cs_bindings();
 #endif
 
+	// TEST C# API GENERATOR
+#ifdef DEV_ENABLED
+public:
+	enum DevTestEnum : int {
+		FIRST_VALUE = 0,
+		SECOND_VALUE = 1,
+	};
+
+private:
+	static Object *default_arg_obj;
+
+	// Test regular arguments
+	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath){};
+	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
+	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
+	void api_test4(RID, Callable, Signal, Dictionary, Array){};
+	void api_test5(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
+	// Test with default arguments
+	Variant api_test6(Object *, Variant, Variant, bool, int, DevTestEnum, float, String, StringName, NodePath) { return "test var"; };
+	Color api_test7(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i) { return Color(4, 3, 2, 1); };
+	DevTestEnum api_test8(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection) { return (DevTestEnum)1; };
+	Object *api_test9(RID, Callable, Signal, Dictionary, Array) { return this; };
+	void api_test10(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
+
+public:
+#endif
+
 public:
 	static const char *s_extension_unloading;
 
@@ -63,3 +90,7 @@ public:
 	void deinit();
 	virtual void _process(double delta) override;
 };
+
+#ifdef DEV_ENABLED
+VARIANT_ENUM_CAST(DebugDrawManager::DevTestEnum);
+#endif

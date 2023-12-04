@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="editor_analyze|x64">
+      <Configuration>editor_analyze</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="editor_dev|x64">
       <Configuration>editor_dev</Configuration>
       <Platform>x64</Platform>
@@ -34,6 +38,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>true</EnableUnitySupport>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_analyze|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <EnableUnitySupport>true</EnableUnitySupport>
+    <EnableASAN>true</EnableASAN>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -65,6 +77,9 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='editor_analyze|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -82,6 +97,18 @@
     <TargetName>libdd3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_analyze|x64'">
+    <IncludePath>$(ProjectDir);$(ProjectDir)..\godot-cpp\include;$(ProjectDir)..\godot-cpp\gdextension;$(ProjectDir)..\godot-cpp\gen\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)..\godot-cpp\bin;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)..\addons\debug_draw_3d\libs\</OutDir>
+    <TargetName>libdd3d.windows.editor.$(LlvmPlatformName)</TargetName>
+    <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'">
     <IncludePath>$(ProjectDir);$(ProjectDir)..\godot-cpp\include;$(ProjectDir)..\godot-cpp\gdextension;$(ProjectDir)..\godot-cpp\gen\include;$(IncludePath)</IncludePath>
@@ -90,6 +117,8 @@
     <TargetName>libdd3d.windows.editor.$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='template_release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -98,6 +127,8 @@
     <OutDir>$(ProjectDir)..\addons\debug_draw_3d\libs\</OutDir>
     <TargetName>libdd3d.windows.$(Configuration).$(LlvmPlatformName)</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release_forced|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -106,6 +137,8 @@
     <OutDir>$(ProjectDir)..\addons\debug_draw_3d\libs\</OutDir>
     <TargetName>libdd3d.windows.template_release.$(LlvmPlatformName).enabled</TargetName>
     <IntDir>$(SolutionDir)obj\$(PlatformTarget)\</IntDir>
+    <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
+    <ClangTidyChecks>clang-analyzer-*</ClangTidyChecks>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor|x64'">
     <ClCompile>
@@ -134,6 +167,37 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor_analyze|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CreateHotpatchableImage>
+      </CreateHotpatchableImage>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BasicRuntimeChecks>UninitializedLocalUsageCheck</BasicRuntimeChecks>
+    </ClCompile>
+    <Link>
+      <SubSystem>NotSet</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libgodot-cpp.windows.editor.$(LlvmPlatformName).lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(VC_ExecutablePath_x64)\clang_rt.asan_dynamic-x86_64.dll" "$(TargetDir)clang_rt.asan_dynamic-x86_64.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'">
     <ClCompile>

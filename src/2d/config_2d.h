@@ -22,22 +22,6 @@ public:
 		POSITION_RIGHT_BOTTOM = 3,
 	};
 
-	// TEST C# API GENERATOR
-#ifdef DEV_ENABLED
-	// Test regular arguments
-	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath){};
-	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
-	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
-	void api_test4(RID, Callable, Signal, Dictionary, Array){};
-	void api_test5(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
-	// Test with default arguments
-	Variant api_test6(Object *, Variant, Variant, bool, int, BlockPosition, float, String, StringName, NodePath) { return "test var"; };
-	Color api_test7(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i) { return Color(4, 3, 2, 1); };
-	BlockPosition api_test8(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection) { return (BlockPosition)1; };
-	Object *api_test9(RID, Callable, Signal, Dictionary, Array) { return this; };
-	void api_test10(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
-#endif
-
 private:
 #pragma region Exposed Parameter Values
 
