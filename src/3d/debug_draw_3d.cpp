@@ -48,6 +48,7 @@ void DebugDraw3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder_ab), "a", "b", "radius", "color", "duration"), &DebugDraw3D::draw_cylinder_ab, 0.5f, Colors::empty_color, 0);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_ab), "a", "b", "up", "color", "is_ab_diagonal", "duration"), &DebugDraw3D::draw_box_ab, Vector3(0, 1, 0), Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box_xf, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_aabb), "aabb", "color", "duration"), &DebugDraw3D::draw_aabb, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_aabb_ab), "a", "b", "color", "duration"), &DebugDraw3D::draw_aabb_ab, Colors::empty_color, 0);
@@ -569,14 +570,14 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	// TODO sloooow
+	// TODO maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
 	real_t diameter = radius * 2;
-	Vector3 center = diff.normalized() * len * .5f;
-	Vector3 up = get_up_vector(center);
-	Vector3 center_rot = center.rotated(center.cross(up), Math::deg_to_rad(90.f)); // Convert +Y of cylinder to -Z
-	Transform3D t = Transform3D(Basis().looking_at(center_rot, up).scaled_local(Vector3(diameter, len, diameter)), a + center);
+	Vector3 half_center = diff.normalized() * len * .5f;
+	Vector3 up = get_up_vector(half_center);
+	Vector3 center_rot = half_center.rotated(half_center.cross(up), Math::deg_to_rad(90.f)); // Convert +Y of cylinder to -Z
+	Transform3D t = Transform3D(Basis().looking_at(center_rot, up).scaled_local(Vector3(diameter, len, diameter)), a + half_center);
 
 	draw_cylinder(t, color, duration);
 }
@@ -588,6 +589,32 @@ void DebugDraw3D::draw_box(const Vector3 &position, const Vector3 &size, const C
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 	draw_box_xf(Transform3D(Basis().scaled(size), position), color, is_box_centered, duration);
+}
+
+void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 &up, const Color &color, const bool &is_ab_diagonal, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	Vector3 diff = b - a;
+
+	// TODO maybe someone knows a better way to solve it?
+	if (is_ab_diagonal) {
+		ZoneScopedN("From diagonals");
+		Vector3 up_n = up.normalized();
+		Vector3 half_center = (diff.normalized() * diff.length() * .5f).rotated(up_n, Math::deg_to_rad(45.f));
+		Vector3 half_center_side = half_center / MathUtils::Sqrt2;
+		Vector3 front = half_center_side.cross(up_n);
+
+		Transform3D t(half_center.project(up_n) * 2, half_center_side.project(front.cross(up_n)) * 2, front * 2, a);
+		draw_box_xf(t, color, false, duration);
+	} else {
+		ZoneScopedN("From edges");
+		Vector3 half_center = diff.normalized() * diff.length() * .5f;
+		Vector3 front = diff.cross(up.normalized());
+
+		Transform3D t(half_center.project(up) * 2, half_center.project(front.cross(up)) * 2, front, a + half_center);
+		draw_box_xf(t, color, true, duration);
+	}
 }
 
 void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, const bool &is_box_centered, const real_t &duration) {

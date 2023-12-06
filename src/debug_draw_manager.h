@@ -7,6 +7,9 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
+class DebugDraw2D;
+class DebugDraw3D;
+
 class DebugDrawManager : public CanvasLayer {
 	GDCLASS(DebugDrawManager, CanvasLayer)
 protected:
@@ -25,8 +28,8 @@ protected:
 	bool is_closing = false;
 	bool is_current_scene_is_null = true;
 
-	class DebugDraw3D *debug_draw_3d_singleton = nullptr;
-	class DebugDraw2D *debug_draw_2d_singleton = nullptr;
+	DebugDraw2D *debug_draw_2d_singleton = nullptr;
+	DebugDraw3D *debug_draw_3d_singleton = nullptr;
 
 	TypedArray<StringName> manager_aliases;
 	TypedArray<StringName> dd2d_aliases;

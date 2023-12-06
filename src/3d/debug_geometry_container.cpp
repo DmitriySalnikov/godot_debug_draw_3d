@@ -102,7 +102,6 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();
-	geometry_pool.clear_pool();
 }
 
 void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh) {

@@ -237,6 +237,14 @@ public:
 	void draw_box(const Vector3 &position, const Vector3 &size, const Color &color = Colors::empty_color, const bool &is_box_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/// Draw box
+	/// position: Position of the Box
+	/// size: Size of the Box
+	/// color: Box color
+	/// is_box_centered: Use 'position' as the center of the box, not as the bottom corner
+	/// duration: Duration of existence in seconds
+	void draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 &up, const Color &color = Colors::empty_color, const bool &is_ab_diagonal = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+	/// Draw box
 	/// transform: Transform3D of the Box
 	/// color: Box color
 	/// is_box_centered: Use 'transform' as the center of the box, not as the bottom corner

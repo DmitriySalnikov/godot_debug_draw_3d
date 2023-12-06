@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=20 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -163,6 +163,161 @@ tracks/0/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a7f1a"]
 _data = {
 "RESET": SubResource("8")
+}
+
+[sub_resource type="GDScript" id="GDScript_hwhty"]
+script/source = "@tool
+extends Button
+
+@export_range(1, 128)  var bars_count := 32
+@export var node_3d : Node3D = null
+var transform: Transform3D:
+	get:
+		return node_3d.global_transform
+@export_exp_easing(\"inout\") var motion_smoothing := 0.06
+@export_range(0, 0.5) var bar_thickness := 0.02
+@export_range(0, 10) var bars_separation := 0.1
+@export_exp_easing(\"inout\") var color_offset_speed := 0.4
+@export var colors: Gradient = null
+
+var MAX_HZ := 11050.0
+var MIN_DB := 60
+var spectrum: AudioEffectSpectrumAnalyzerInstance = null
+
+var smoothed_energy: Array[float] = []
+var color_offset := 0.0
+
+var _on_data_loaded_callback = null
+
+func _ready():
+	var bus = AudioServer.get_bus_index(\"Music\")
+	spectrum = AudioServer.get_bus_effect_instance(bus, 0)
+	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(&\"Master\"))
+	
+	if OS.has_feature('web'):
+		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
+		
+		# Retrieve the 'gd_callbacks' object
+		var gdcallbacks: JavaScriptObject = JavaScriptBridge.get_interface(\"gd_callbacks\")
+		
+		# Assign the callbacks
+		gdcallbacks.dataLoaded = _on_data_loaded_callback
+
+func _process(_delta):
+	if node_3d:
+		draw_spectrum()
+
+
+func _pressed():
+	if DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
+		DisplayServer.file_dialog_show(\"Select audio file\", \"\", \"\", true, DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, [\"*.mp3\"], 
+		func (status: bool, selected: PackedStringArray, _fileter: int):
+			if status and selected.size():
+				print(selected)
+				var file = FileAccess.open(selected[0], FileAccess.READ)
+				var data = file.get_buffer(file.get_length())
+				open_stream(selected[0].get_extension(), data)
+		)
+	elif OS.has_feature('web'):
+		JavaScriptBridge.eval(\"loadData()\")
+	else:
+		print(\"Not implemented!\")
+
+func _on_data_loaded(data: Array) -> void:
+	# Make sure there is something
+	if (data.size() == 0):
+		return
+	
+	var file_name: String = data[0]
+	print(\"Opening %s\" % file_name)
+	
+	var arr: PackedByteArray = JavaScriptBridge.eval(\"gd_callbacks.dataLoadedResult;\")
+	open_stream(file_name.get_extension(), arr)
+
+
+func open_stream(file_ext: String, data: PackedByteArray):
+	var stream: AudioStream = null
+	if file_ext == \"mp3\":
+		stream = AudioStreamMP3.new()
+		stream.data = data
+		
+		if not stream.data:
+			print(\"Failed to load MP3!\")
+			return
+	
+	if not stream:
+		print(\"Failed to load music!\")
+		return
+	
+	%MusicPlayer.stream = stream
+	%MusicPlayer.bus = \"Music\"
+	%MusicPlayer.play()
+
+
+func draw_spectrum():
+	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness)
+	var prev_hz = 0
+	smoothed_energy.resize(bars_count)
+	
+	var y := transform.basis.y
+	var h := y.length()
+	var x := transform.basis.x
+	var z := transform.basis.z
+	var origin := transform.origin - (x * bars_count + (x * bars_separation) * (bars_count - 1)) * 0.5
+	var sum := 0.0
+	
+	for ih in range(1, bars_count + 1):
+		var i := ih - 1
+		var hz: float = ih * MAX_HZ / bars_count
+		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz).length()
+		var energy: float = clampf((MIN_DB + linear_to_db(magnitude)) / MIN_DB, 0, 1)
+		var e: float = lerp(smoothed_energy[i], energy, clampf(get_process_delta_time() / motion_smoothing if motion_smoothing else 1.0, 0, 1))
+		smoothed_energy[i] = e
+		var height: float = e * h
+		sum += e
+		
+		var s := x * bars_separation
+		
+		var a := origin + x * i + s * i + (z * 0.5)
+		var b := origin + x * (i + 1) + s * i + (z * -0.5) + transform.basis.y.normalized() * clampf(height, 0.001, h)
+		var c := Color.HOT_PINK
+		if colors:
+			c = colors.sample(wrapf(float(ih) / bars_count + color_offset, 0, 1))
+			c.s = smoothed_energy[i] * 0.3 + 0.7
+		
+		DebugDraw3D.draw_box_ab(a, b, y, c)
+		
+		prev_hz = hz
+	
+	color_offset = wrapf(color_offset + sum / smoothed_energy.size() * clampf(get_process_delta_time() / color_offset_speed if color_offset_speed else 1.0, 0, 1), 0, 1)
+
+
+func _on_mute_toggled(toggled_on):
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
+"
+
+[sub_resource type="Gradient" id="Gradient_bdma0"]
+offsets = PackedFloat32Array(0, 0.339623, 0.674528, 1)
+colors = PackedColorArray(0.0862745, 0.0941176, 1, 1, 0.145844, 1, 0.144868, 1, 1, 0.219608, 0.145098, 1, 0.0862745, 0.0941176, 1, 1)
+
+[sub_resource type="Animation" id="Animation_n750a"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("%MusicPlayer:stream")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [null]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0ity1"]
+_data = {
+"RESET": SubResource("Animation_n750a")
 }
 
 [sub_resource type="Theme" id="3"]
@@ -363,17 +518,56 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.961257, 0, 3.93748)
 [node name="BoxOutOfDistanceCulling" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.43744, 0.344, -22.8947)
 
-[node name="AABB" type="Node3D" parent="Boxes"]
-transform = Transform3D(-0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.0121951, -0.0566928, -0.0370723, -0.997703, 1.56894, -4.76837e-07, 0.608174)
-
-[node name="a" type="Node3D" parent="Boxes/AABB"]
-transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.7928e-08, 1, 1.11759e-08, -1.49012e-08, 0, 1, -0.5468, -2.45083, -0.991707)
-
-[node name="b" type="Node3D" parent="Boxes/AABB"]
-transform = Transform3D(1, -1.53668e-08, 1.86265e-08, -1.18744e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, 0.821057, 1.16918, 2.89658)
-
 [node name="AABB_fixed" type="Node3D" parent="Boxes"]
 transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.77336, -1.788, 0.470324)
+
+[node name="AABB" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99963, -0.869998, 0.205034)
+
+[node name="a" type="Node3D" parent="Boxes/AABB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 1.42401, -1.45318, 1.96619)
+
+[node name="b" type="Node3D" parent="Boxes/AABB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -1.24128, 1.47773, -2.13102)
+
+[node name="o" type="Node3D" parent="Boxes/AABB"]
+transform = Transform3D(0.864099, 0.258703, 0.431748, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 0, 0, 0)
+metadata/_edit_group_ = true
+
+[node name="up" type="Node3D" parent="Boxes/AABB/o"]
+transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.553809, -0.331842)
+
+[node name="BoxAB" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.66169, -2.2624, 4.04042)
+
+[node name="a" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 0.556136, -0.666145, 0.951601)
+
+[node name="b" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -0.548804, 0.715255, -0.942184)
+
+[node name="o" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.826805, 0.360538, 0.431748, -0.102949, 0.851596, -0.51399, -0.552988, 0.380522, 0.741221, 0, 0, 0)
+metadata/_edit_group_ = true
+
+[node name="up" type="Node3D" parent="Boxes/BoxAB/o"]
+transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.553809, -0.331842)
+
+[node name="BoxABEdge" type="Node3D" parent="Boxes"]
+transform = Transform3D(0.965926, -0.0669873, -0.25, 0, 0.965926, -0.258819, 0.258819, 0.25, 0.933013, 1.06082, -2.04857, 5.13079)
+
+[node name="a" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, 0, 0.857796, -0.513991, -0.503322, 0.444139, 0.741221, 0.0688295, -0.957891, 0.0658493)
+
+[node name="b" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, 3.72529e-09, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -0.345897, 0.814153, -0.701643)
+
+[node name="o" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(1, 1.49012e-08, 2.98023e-08, 7.45058e-09, 1, -1.49012e-08, -1.49012e-08, -1.49012e-08, 1, 0, 0, 0)
+metadata/_edit_group_ = true
+
+[node name="up" type="Node3D" parent="Boxes/BoxABEdge/o"]
+transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
 
 [node name="Misc" type="Node3D" parent="."]
 
@@ -495,6 +689,41 @@ libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
 
+[node name="MusicVisualizer" type="Button" parent="." node_paths=PackedStringArray("node_3d")]
+offset_right = 88.0
+offset_bottom = 31.0
+text = "OPEN FILE"
+script = SubResource("GDScript_hwhty")
+node_3d = NodePath("../AudioVisualizer")
+bar_thickness = 0.065
+bars_separation = 0.325
+colors = SubResource("Gradient_bdma0")
+
+[node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
+libraries = {
+"": SubResource("AnimationLibrary_0ity1")
+}
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="MusicVisualizer"]
+unique_name_in_owner = true
+autoplay = true
+bus = &"Music"
+
+[node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
+layout_mode = 0
+offset_top = 35.0
+offset_right = 40.0
+offset_bottom = 75.0
+
+[node name="MuteMaster" type="CheckBox" parent="MusicVisualizer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Mute"
+
+[node name="AudioVisualizer" type="Node3D" parent="."]
+transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -3.988, -1.422, 14.14)
+
 [node name="CustomCanvas" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 11
@@ -508,6 +737,7 @@ offset_bottom = -36.0
 grow_horizontal = 0
 grow_vertical = 2
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3
@@ -520,6 +750,7 @@ mouse_filter = 2
 theme = SubResource("3")
 script = SubResource("2")
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
+metadata/_edit_lock_ = true
 
 [node name="GC" type="GridContainer" parent="Settings"]
 layout_mode = 1
@@ -528,7 +759,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 columns = 3
+metadata/_edit_lock_ = true
 
 [node name="Label" type="Label" parent="Settings/GC"]
 layout_mode = 2
@@ -572,6 +805,7 @@ min_value = 50.0
 max_value = 1000.0
 value = 128.0
 
+[connection signal="toggled" from="MusicVisualizer/VBox/MuteMaster" to="MusicVisualizer" method="_on_mute_toggled"]
 [connection signal="toggled" from="Settings/GC/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
 [connection signal="pressed" from="Settings/GC/VB/H/Button" to="Settings" method="_on_Button_pressed"]
 [connection signal="toggled" from="Settings/GC/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]

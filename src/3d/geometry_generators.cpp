@@ -1,4 +1,5 @@
 #include "geometry_generators.h"
+#include "utils/math_utils.h"
 #include "utils/utils.h"
 
 #include <vector>
@@ -274,10 +275,10 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
 		Vector3 left_b = right_b * -1;
 
-		right_a /= Math::sqrt(2.0f);
-		left_a /= Math::sqrt(2.0f);
-		right_b /= Math::sqrt(2.0f);
-		left_b /= Math::sqrt(2.0f);
+		right_a /= MathUtils::Sqrt2;
+		left_a /= MathUtils::Sqrt2;
+		right_b /= MathUtils::Sqrt2;
+		left_b /= MathUtils::Sqrt2;
 
 		vertexes.push_back(pos_a + right_a * debug_mult); // 0
 		vertexes.push_back(pos_a + left_a * debug_mult); // 1
@@ -360,10 +361,10 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(angle))).normalized();
 		Vector3 left_b = right_b * -1;
 
-		right_a /= Math::sqrt(2.0f);
-		left_a /= Math::sqrt(2.0f);
-		right_b /= Math::sqrt(2.0f);
-		left_b /= Math::sqrt(2.0f);
+		right_a /= MathUtils::Sqrt2;
+		left_a /= MathUtils::Sqrt2;
+		right_b /= MathUtils::Sqrt2;
+		left_b /= MathUtils::Sqrt2;
 
 		right_a += dir * half_len;
 		left_a += dir * half_len;
@@ -449,7 +450,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const real_t &radius
 	};
 
 	real_t front_offset = add_bevel ? .5f : 0;
-	real_t square_diag_mult = Math::sqrt(2.f);
+	real_t square_diag_mult = MathUtils::Sqrt2;
 
 	vertexes.push_back(Vector3(0, 0, 0)); // 0
 

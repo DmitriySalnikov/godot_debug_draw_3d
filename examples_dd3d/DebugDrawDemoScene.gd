@@ -162,10 +162,18 @@ func _process(delta: float) -> void:
 	DebugDraw3D.draw_box($Boxes/Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_transform.origin), Color.ROSY_BROWN)
 	
+	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
+	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_transform.origin, $Boxes/AABB/b.global_transform.origin, Color.DEEP_PINK)
+	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_transform.origin, $Boxes/AABB/b.global_transform.origin, Color.DEEP_PINK)
+	
 	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
-	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
-	DebugDraw3D.draw_aabb_ab($Boxes/AABB.get_child(0).global_transform.origin, $Boxes/AABB.get_child(1).global_transform.origin, Color.DEEP_PINK)
+	# Boxes AB
+	DebugDraw3D.draw_arrow_line($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
+	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_transform.origin, $Boxes/BoxABEdge/b.global_transform.origin, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
+	
+	DebugDraw3D.draw_arrow_line($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
+	DebugDraw3D.draw_box_ab($Boxes/BoxAB/a.global_transform.origin, $Boxes/BoxAB/b.global_transform.origin, $Boxes/BoxAB/o/up.global_position - $Boxes/BoxAB.global_position, Color.PERU)
 	
 	# Lines
 	var target = $Lines/Target

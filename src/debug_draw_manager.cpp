@@ -135,7 +135,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		Control *c = memnew(Control);
 		SCENE_ROOT()->add_child(c);
 		debug_draw_2d_singleton->_font = c->get_theme_default_font();
-		c->queue_free();
+		memdelete(c);
 	}
 
 	// Setup default text group
@@ -191,6 +191,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 		debug_draw_2d_singleton->default_canvas = default_canvas;
 
+		// will be auto deleted
 		add_child(default_canvas);
 	}
 
