@@ -50,6 +50,7 @@ private:
 	String root_settings_section;
 	const static char *s_add_bevel_to_volumetric;
 	const static char *s_default_thickness;
+	const static char *s_default_center_brightness;
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;

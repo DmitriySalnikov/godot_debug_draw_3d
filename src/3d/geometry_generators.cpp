@@ -377,25 +377,25 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 		vertexes.push_back(pos_b + left_b * debug_mult); // global 5, local 3
 
 		indexes.append(base_idx + 0);
-		indexes.append(start_idx + 2);
 		indexes.append(start_idx + 0);
-
-		indexes.append(base_idx + 0);
-		indexes.append(base_idx + 1);
-		indexes.append(start_idx + 2);
-
 		indexes.append(start_idx + 1);
-		indexes.append(base_idx + 1);
-		indexes.append(base_idx + 0);
+
+		indexes.append(start_idx + 0);
+		indexes.append(start_idx + 2);
+		indexes.append(start_idx + 1);
 
 		indexes.append(start_idx + 1);
 		indexes.append(start_idx + 3);
-		indexes.append(base_idx + 1);
+		indexes.append(start_idx + 2);
 
-		uv.push_back(Vector2(1, 0));
+		indexes.append(start_idx + 2);
+		indexes.append(base_idx + 1);
+		indexes.append(start_idx + 3);
+
+		uv.push_back(Vector2(1, 1));
 		uv.push_back(Vector2(0, 0));
 		uv.push_back(Vector2(1, 1));
-		uv.push_back(Vector2(0, 1));
+		uv.push_back(Vector2(0, 0));
 
 		custom0.push_back(right_a);
 		custom0.push_back(left_a);

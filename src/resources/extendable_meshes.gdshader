@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords, depth_prepass_alpha;
 
-uniform float shade_power : hint_range(0.0, 1.0, 0.01) = 0.8f;
+varying float brightness_of_center;
 
 mat3 orthonormalize(mat3 m) {
     vec3 x = normalize(m[0]);
@@ -11,6 +11,7 @@ mat3 orthonormalize(mat3 m) {
 }
 
 void vertex() {
+	brightness_of_center = INSTANCE_CUSTOM.y;
 	VERTEX = VERTEX + (CUSTOM0.xyz * INSTANCE_CUSTOM.x) * orthonormalize(inverse(mat3(normalize(MODEL_MATRIX[0].xyz), normalize(MODEL_MATRIX[1].xyz), normalize(MODEL_MATRIX[2].xyz))));
 }
 
@@ -19,7 +20,7 @@ vec3 toLinearFast(vec3 col) {
 }
 
 void fragment() {
-	ALBEDO = mix(COLOR.xyz * shade_power, COLOR.xyz, pow(length(UV * 2.0 - 1.0), .7));
+	ALBEDO = mix(COLOR.xyz * brightness_of_center, COLOR.xyz, clamp(length(UV * 1.8 - 0.9), 0, 1));
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 	NORMAL = ALBEDO;

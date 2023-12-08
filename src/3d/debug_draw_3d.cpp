@@ -17,7 +17,8 @@ GODOT_WARNING_RESTORE()
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
 const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
-const char *DebugDraw3D::s_default_thickness = "default_volumetric_thickness";
+const char *DebugDraw3D::s_default_thickness = "volumetric_defaults/thickness";
+const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/center_brightness";
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
@@ -102,12 +103,14 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 
 	root_settings_section = String(Utils::root_settings_section) + "3d/";
 	DEFINE_SETTING_AND_GET(bool add_bevel, root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
-	DEFINE_SETTING_AND_GET(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT);
+	DEFINE_SETTING_AND_GET_HINT(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,100,0.0001");
+	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.8f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
 
 	stats_3d.instantiate();
 	default_scoped_config.instantiate();
 
 	default_scoped_config->set_thickness(def_thickness);
+	default_scoped_config->set_center_brightness(def_brightness);
 
 	_load_materials();
 
@@ -173,7 +176,7 @@ DebugDraw3D::GeometryType DebugDraw3D::_scoped_config_get_geometry_type(DDScoped
 Color DebugDraw3D::_scoped_config_to_custom(DDScopedConfig3D *cfg) {
 	ZoneScoped;
 	if (_scoped_config_get_geometry_type(cfg) == GeometryType::Volumetric)
-		return Color(cfg->get_thickness(), 0, 0, 0);
+		return Color(cfg->get_thickness(), cfg->get_center_brightness(), 0, 0);
 
 	return Color();
 }

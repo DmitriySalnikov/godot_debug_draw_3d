@@ -19,13 +19,19 @@ protected:
 
 	typedef std::function<void(uint64_t, uint64_t)> unregister_func;
 	unregister_func unregister_action;
+
+	// Update constructor!
 	real_t thickness;
+	real_t center_brightness;
 
 public:
 	void _manual_unregister();
 
 	Ref<DDScopedConfig3D> set_thickness(real_t value);
 	real_t get_thickness();
+
+	Ref<DDScopedConfig3D> set_center_brightness(real_t value);
+	real_t get_center_brightness();
 
 	DDScopedConfig3D();
 
