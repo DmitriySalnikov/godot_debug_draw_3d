@@ -32,7 +32,7 @@ class DebugGeometryContainer {
 			mesh.unref();
 		}
 	};
-	MultiMeshStorage multi_mesh_storage[(int)InstanceType::ALL] = {};
+	MultiMeshStorage multi_mesh_storage[(int)InstanceType::MAX] = {};
 
 	struct ImmediateMeshStorage {
 		RID instance;
@@ -50,6 +50,7 @@ class DebugGeometryContainer {
 	GeometryPool geometry_pool;
 	Node *scene_world_node = nullptr;
 	int32_t render_layers = 1;
+	bool is_frame_rendered = false;
 
 	void CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh);
 
@@ -61,6 +62,8 @@ public:
 	Node *get_world();
 
 	void update_geometry(double delta);
+	void update_geometry_physics_start(double delta);
+	void update_geometry_physics_end(double delta);
 
 	void set_render_layer_mask(int32_t layers);
 	int32_t get_render_layer_mask() const;

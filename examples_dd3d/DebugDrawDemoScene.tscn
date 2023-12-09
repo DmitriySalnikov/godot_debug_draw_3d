@@ -375,6 +375,9 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+update_in_physics = true
+draw_array_of_boxes = true
+text_groups_show_stats = true
 text_groups_position = 2
 
 [node name="Camera" type="Camera3D" parent="."]
@@ -430,13 +433,6 @@ transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -
 [node name="Lines" type="Node3D" parent="Zones"]
 transform = Transform3D(10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416)
 
-[node name="LinePathAnim" type="AnimationPlayer" parent="."]
-root_node = NodePath("../LinePath")
-libraries = {
-"": SubResource("AnimationLibrary_nj4nv")
-}
-autoplay = "New Anim"
-
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 0, 0, 0)
 visible = false
@@ -448,6 +444,13 @@ outline_modulate = Color(1, 1, 1, 1)
 text = "TestTestTestTest
 TestTestTest"
 font_size = 80
+
+[node name="LinesAnim" type="AnimationPlayer" parent="."]
+root_node = NodePath("../LinePath")
+libraries = {
+"": SubResource("AnimationLibrary_nj4nv")
+}
+autoplay = "New Anim"
 
 [node name="LinePath" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8)
@@ -624,10 +627,13 @@ transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 4.9239e-07, 1, 0, -3.40677e
 transform = Transform3D(-0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -2.68836, 0.0136011, -0.249864, 0.572532, 1.43126, 0.26242, 1.92347)
 
 [node name="6" type="Node3D" parent="Lines"]
-transform = Transform3D(-0.998872, -0.0207882, -0.0355643, 0.0855371, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028)
+transform = Transform3D(-0.998872, -0.0207882, -0.0355643, 0.085537, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028)
 
 [node name="7" type="Node3D" parent="Lines"]
 transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855357, -0.5714, -2.68836, 0.0136014, -0.249864, 0.572533, 0.0511096, -1.3236, 1.06745)
+
+[node name="8" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855353, -0.5714, -2.68836, 0.0136016, -0.249864, 0.572533, -1.01372, -3.80486, 1.25019)
 
 [node name="Target" type="Node3D" parent="Lines"]
 transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)

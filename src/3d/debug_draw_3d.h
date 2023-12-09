@@ -108,6 +108,8 @@ private:
 	inline bool _is_enabled_override() const;
 
 	void process(double delta);
+	void physics_process_start(double delta);
+	void physics_process_end(double delta);
 
 #pragma region Exposed Parameter Values
 

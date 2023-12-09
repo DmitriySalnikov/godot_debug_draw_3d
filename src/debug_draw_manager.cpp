@@ -19,6 +19,17 @@ using namespace godot;
 Object *DebugDrawManager::default_arg_obj = nullptr;
 #endif
 
+#ifndef DISABLE_DEBUG_RENDERING
+void DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
+	root_node = p_root;
+	set_physics_process_priority(INT32_MIN);
+}
+
+void DD3D_PhysicsWatcher::_physics_process(double delta) {
+	root_node->_physics_process_start(delta);
+}
+#endif
+
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
 const char *DebugDrawManager::s_initial_state = "initial_debug_state";
@@ -115,15 +126,24 @@ void DebugDrawManager::_integrate_into_engine() {
 	// Other classes will not face similar problems
 	ASSIGN_SINGLETON(DebugDrawManager);
 
+	// Draw everything after calls from scripts to avoid lagging
+	set_process_priority(INT32_MAX);
+	set_physics_process_priority(INT32_MAX);
+
 	SCENE_ROOT()->add_child(this);
 	SCENE_ROOT()->move_child(this, 0);
 
-	set_process(true);
-
-	debug_draw_3d_singleton->init(this);
 	debug_draw_2d_singleton->init(this);
+	debug_draw_3d_singleton->init(this);
 
 #ifndef DISABLE_DEBUG_RENDERING
+	{
+		// will be auto deleted as child
+		DD3D_PhysicsWatcher *physics_watcher = memnew(DD3D_PhysicsWatcher);
+		add_child(physics_watcher);
+		physics_watcher->init(this);
+	}
+
 	// Useful nodes and names:
 	// CanvasItemEditor - probably 2D editor viewport
 	// Node3DEditorViewportContainer - base 3D viewport
@@ -191,7 +211,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 		debug_draw_2d_singleton->default_canvas = default_canvas;
 
-		// will be auto deleted
+		// will be auto deleted as child
 		add_child(default_canvas);
 	}
 
@@ -254,9 +274,6 @@ void DebugDrawManager::init() {
 	manager_aliases = TypedArray<StringName>(mgr_a);
 	dd2d_aliases = TypedArray<StringName>(dd2d_a);
 	dd3d_aliases = TypedArray<StringName>(dd3d_a);
-
-	// Draw everything after calls from scripts to avoid lagging
-	set_process_priority(INT32_MAX);
 
 	Engine::get_singleton()->register_singleton(NAMEOF(DebugDrawManager), this);
 	_register_singleton_aliases(manager_aliases, this);
@@ -343,6 +360,24 @@ void DebugDrawManager::_process(double delta) {
 	if (!debug_enabled || !DebugDraw2D::get_singleton()->is_debug_enabled()) {
 		FrameMark;
 	}
+}
+
+void DebugDrawManager::_physics_process_start(double delta) {
+	if (debug_enabled) {
+		DebugDraw3D::get_singleton()->physics_process_start(get_process_delta_time());
+
+		DebugDraw2D::get_singleton()->physics_process_start(get_process_delta_time());
+	}
+}
+
+void DebugDrawManager::_physics_process(double delta) {
+#ifndef DISABLE_DEBUG_RENDERING
+	if (debug_enabled) {
+		DebugDraw3D::get_singleton()->physics_process_end(get_process_delta_time());
+
+		DebugDraw2D::get_singleton()->physics_process_end(get_process_delta_time());
+	}
+#endif
 }
 
 #ifdef TOOLS_ENABLED

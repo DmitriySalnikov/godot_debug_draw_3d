@@ -128,6 +128,21 @@ void DebugDraw2D::process(double delta) {
 #endif
 }
 
+void DebugDraw2D::physics_process_start(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	FrameMarkStart("2D Physics Step");
+#endif
+}
+
+void DebugDraw2D::physics_process_end(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	// TODO implement
+	FrameMarkEnd("2D Physics Step");
+#endif
+}
+
 #ifndef DISABLE_DEBUG_RENDERING
 void DebugDraw2D::_finish_frame_and_update() {
 	ZoneScoped;

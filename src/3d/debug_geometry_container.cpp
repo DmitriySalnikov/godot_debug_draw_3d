@@ -269,6 +269,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			geometry_pool.add_or_update_instance(
 					InstanceType::SPHERE,
 					0,
+					ProcessType::PROCESS,
 					Transform3D(Basis().scaled(Vector3_ONE * i.second * 2), i.first),
 					Colors::debug_bounds,
 					Color(),
@@ -286,6 +287,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			geometry_pool.add_or_update_instance(
 					InstanceType::CUBE,
 					0,
+					ProcessType::PROCESS,
 					Transform3D(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
 					Color(),
@@ -298,16 +300,29 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
 
 	// Update MultiMeshInstances
-	std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> meshes;
-	for (int i = 0; i < (int)InstanceType::ALL; i++) {
+	static std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> meshes;
+	for (int i = 0; i < (int)InstanceType::MAX; i++) {
 		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
 
 	geometry_pool.fill_instance_data(meshes);
 
 	geometry_pool.scan_visible_instances();
-	geometry_pool.update_expiration(delta);
-	geometry_pool.reset_counter(delta);
+	geometry_pool.update_expiration(delta, ProcessType::PROCESS);
+	geometry_pool.reset_counter(delta, ProcessType::PROCESS);
+
+	is_frame_rendered = true;
+}
+
+void DebugGeometryContainer::update_geometry_physics_start(double delta) {
+	if (is_frame_rendered) {
+		geometry_pool.reset_counter(delta, ProcessType::PHYSICS_PROCESS);
+		is_frame_rendered = false;
+	}
+}
+
+void DebugGeometryContainer::update_geometry_physics_end(double delta) {
+	geometry_pool.update_expiration(delta, ProcessType::PHYSICS_PROCESS);
 }
 
 void DebugGeometryContainer::get_render_stats(Ref<DebugDrawStats3D> &stats) {

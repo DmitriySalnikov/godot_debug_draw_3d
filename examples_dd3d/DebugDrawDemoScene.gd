@@ -3,11 +3,13 @@ extends Node3D
 
 @export var custom_font : Font
 @export var zylann_example := false
+@export var update_in_physics := false
 @export var test_text := true
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.05
+@export_range(0, 1, 0.001) var debug_center_brightness := 0.8
 @export_range(0, 1024) var start_culling_distance := 55.0
 
 @export_group("Text groups", "text_groups")
@@ -67,11 +69,24 @@ func _update_keys_just_press():
 	button_presses[KEY_3] = set_key.call(KEY_3)
 
 
-func _process(delta: float) -> void:
+func _process(delta):
+	if !update_in_physics:
+		main_update(delta)
+
+
+func _physics_process(delta: float) -> void:
+	if update_in_physics:
+		main_update(delta)
+	
+	if not zylann_example:
+		DebugDraw3D.draw_line($"Lines/8".global_transform.origin, $Lines/Target.global_transform.origin, Color.YELLOW)
+
+
+func main_update(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_end"):
 		DebugDraw3D.regenerate_geometry_meshes()
 	
-	DebugDraw3D.scoped_config().set_thickness(debug_thickness)
+	DebugDraw3D.scoped_config().set_thickness(debug_thickness).set_center_brightness(debug_center_brightness)
 	if false: #test
 		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
 		if true:
@@ -204,7 +219,10 @@ func _process(delta: float) -> void:
 	var points_below2: PackedVector3Array = []
 	var points_below3: PackedVector3Array = []
 	var lines_above: PackedVector3Array = []
+	
 	for c in $LinePath.get_children():
+		if not c is Node3D:
+			break
 		points.append(c.global_transform.origin)
 		points_below.append(c.global_transform.origin + Vector3.DOWN)
 		points_below2.append(c.global_transform.origin + Vector3.DOWN * 2)
@@ -226,15 +244,19 @@ func _process(delta: float) -> void:
 		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
 		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
-	DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
+	if true:
+		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.1)
+		DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
 	DebugDraw3D.draw_square($Misc/Billboard.global_transform.origin, 0.5, Color.GREEN)
 	
 	DebugDraw3D.draw_position($Misc/Position.global_transform, Color.BROWN)
 	
 	DebugDraw3D.draw_gizmo($Misc/GizmoTransform.global_transform, DebugDraw3D.empty_color, true)
-	DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
 	DebugDraw3D.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.BROWN, true)
+	if true:
+		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5)
+		DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
 	
 	var tg : Transform3D = $Misc/Grids/Grid.global_transform
 	var tn : Vector3 = $Misc/Grids/Grid/Subdivision.transform.origin

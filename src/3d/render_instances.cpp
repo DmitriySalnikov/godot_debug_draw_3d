@@ -15,7 +15,7 @@ template <class T, size_t _TStepSize>
 struct TempBigBuffer {
 private:
 	T m_buffer;
-	int m_accesses_before_shrink = (int)InstanceType::ALL * 60; // try to shrink after 60 frames
+	int m_accesses_before_shrink = (int)InstanceType::MAX * 60; // try to shrink after 60 frames
 	int m_shrink_timer;
 
 public:
@@ -61,11 +61,10 @@ DelayedRendererInstance::DelayedRendererInstance() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
 }
 
-void DelayedRendererInstance::update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds) {
+void DelayedRendererInstance::update(const real_t &_exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds) {
 	ZoneScoped;
 	_update(_exp_time, true);
 
-	type = _type;
 	bounds = _bounds;
 	data = InstanceTransformAndData3D(_transform, _col, _custom_col);
 }
@@ -75,7 +74,7 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col) {
+void DelayedRendererLine::update(const real_t &_exp_time, const std::vector<Vector3> &_lines, const Color &_col) {
 	ZoneScoped;
 	_update(_exp_time, true);
 
@@ -127,7 +126,7 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 	}
 }
 
-void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes) {
+void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes) {
 	ZoneScoped;
 	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec();
 
@@ -153,59 +152,52 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)In
 
 PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 	ZoneScoped;
-	auto &inst = instances[(int)_type];
-
-	size_t buffer_size = (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
 	thread_local static auto temp_buffer = TempBigBuffer<PackedFloat32Array, 128 * 1024>();
-	temp_buffer.prepare_buffer(buffer_size);
-
 	size_t last_added = 0;
+	size_t buffer_size = 0;
+
+	{
+		ZoneScopedN("Prepare buffer");
+		for (auto &proc : pools) {
+			auto &inst = proc.instances[(int)_type];
+			buffer_size += (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
+		}
+		temp_buffer.prepare_buffer(buffer_size);
+	}
+
 	if (buffer_size > 0) {
+		ZoneScopedN("Fill buffer");
 		auto w = temp_buffer.ptrw();
 
-		auto write_data = [&last_added, &w](DelayedRendererInstance &o) {
-			size_t id = last_added * INSTANCE_DATA_FLOAT_COUNT;
+		for (auto &proc : pools) {
+			auto &inst = proc.instances[(int)_type];
 
-			last_added++;
+			auto write_instance_data = [&last_added, &w](DelayedRendererInstance &o) {
+				size_t id = last_added * INSTANCE_DATA_FLOAT_COUNT;
+				last_added++;
 
-			// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
-			memcpy(w + id, reinterpret_cast<real_t *>(&o.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
+				// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
+				memcpy(w + id, reinterpret_cast<real_t *>(&o.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
+			};
 
-			/*w[id + 0] = o.transform.basis.rows[0][0];
-			w[id + 1] = o.transform.basis.rows[0][1];
-			w[id + 2] = o.transform.basis.rows[0][2];
-			w[id + 3] = o.transform.origin.x;
-			w[id + 4] = o.transform.basis.rows[1][0];
-			w[id + 5] = o.transform.basis.rows[1][1];
-			w[id + 6] = o.transform.basis.rows[1][2];
-			w[id + 7] = o.transform.origin.y;
-			w[id + 8] = o.transform.basis.rows[2][0];
-			w[id + 9] = o.transform.basis.rows[2][1];
-			w[id + 10] = o.transform.basis.rows[2][2];
-			w[id + 11] = o.transform.origin.z;
-			w[id + 12] = o.color[0];
-			w[id + 13] = o.color[1];
-			w[id + 14] = o.color[2];
-			w[id + 15] = o.color[3];*/
-		};
-
-		for (size_t i = 0; i < inst.used_instant; i++) {
-			auto &o = inst.instant[i];
-			o.is_used_one_time = true;
-			if (o.is_visible) {
-				write_data(o);
-			}
-		}
-		inst._prev_used_instant = inst.used_instant;
-
-		inst.used_delayed = 0;
-		for (size_t i = 0; i < inst.delayed.size(); i++) {
-			auto &o = inst.delayed[i];
-			if (!o.is_expired()) {
-				inst.used_delayed++;
+			for (size_t i = 0; i < inst.used_instant; i++) {
+				auto &o = inst.instant[i];
 				o.is_used_one_time = true;
 				if (o.is_visible) {
-					write_data(o);
+					write_instance_data(o);
+				}
+			}
+			inst._prev_used_instant = inst.used_instant;
+
+			inst.used_delayed = 0;
+			for (size_t i = 0; i < inst.delayed.size(); i++) {
+				auto &o = inst.delayed[i];
+				if (!o.is_expired()) {
+					inst.used_delayed++;
+					o.is_used_one_time = true;
+					if (o.is_visible) {
+						write_instance_data(o);
+					}
 				}
 			}
 		}
@@ -218,8 +210,14 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	ZoneScoped;
 	time_spent_to_fill_buffers_of_lines = 0;
 
-	if (lines.used_instant == 0 && lines.delayed.size() == 0)
+	uint64_t used_lines = 0;
+	for (auto &proc : pools) {
+		used_lines += proc.lines.used_instant;
+		used_lines += proc.lines.delayed.size();
+	}
+	if (used_lines == 0) {
 		return;
+	}
 
 	size_t spent_timer = Time::get_singleton()->get_ticks_usec();
 
@@ -227,16 +225,18 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	size_t used_vertices = 0;
 
 	// pre calculate buffer size
-	for (size_t i = 0; i < lines.used_instant; i++) {
-		auto &o = lines.instant[i];
-		if (o.is_visible) {
-			used_vertices += o.get_lines().size();
+	for (auto &proc : pools) {
+		for (size_t i = 0; i < proc.lines.used_instant; i++) {
+			auto &o = proc.lines.instant[i];
+			if (o.is_visible) {
+				used_vertices += o.get_lines().size();
+			}
 		}
-	}
-	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		auto &o = lines.delayed[i];
-		if (o.is_visible && !o.is_expired()) {
-			used_vertices += o.get_lines().size();
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			auto &o = proc.lines.delayed[i];
+			if (o.is_visible && !o.is_expired()) {
+				used_vertices += o.get_lines().size();
+			}
 		}
 	}
 
@@ -249,7 +249,7 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	auto vertices_write = verices_buffer.ptrw();
 	auto colors_write = colors_buffer.ptrw();
 
-	auto append_lines = [&](const DelayedRendererLine &o) {
+	auto append_lines = [&vertices_write, &colors_write, &prev_pos](const DelayedRendererLine &o) {
 		size_t lines_size = o.get_lines().size();
 
 		std::copy(o.get_lines().begin(), o.get_lines().end(), vertices_write + prev_pos);
@@ -258,25 +258,27 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 		prev_pos += lines_size;
 	};
 
-	for (size_t i = 0; i < lines.used_instant; i++) {
-		auto &o = lines.instant[i];
-		if (o.is_visible) {
-			append_lines(o);
-		}
-		o.is_used_one_time = true;
-	}
-	lines._prev_used_instant = lines.used_instant;
-
-	lines.used_delayed = 0;
-	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		auto &o = lines.delayed[i];
-		if (!o.is_expired()) {
-			lines.used_delayed++;
+	for (auto &proc : pools) {
+		for (size_t i = 0; i < proc.lines.used_instant; i++) {
+			auto &o = proc.lines.instant[i];
 			if (o.is_visible) {
 				append_lines(o);
 			}
+			o.is_used_one_time = true;
 		}
-		o.is_used_one_time = true;
+		proc.lines._prev_used_instant = proc.lines.used_instant;
+
+		proc.lines.used_delayed = 0;
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			auto &o = proc.lines.delayed[i];
+			if (!o.is_expired()) {
+				proc.lines.used_delayed++;
+				if (o.is_visible) {
+					append_lines(o);
+				}
+			}
+			o.is_used_one_time = true;
+		}
 	}
 
 	if (used_vertices > 1) {
@@ -291,45 +293,61 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 	time_spent_to_fill_buffers_of_lines = Time::get_singleton()->get_ticks_usec() - spent_timer;
 }
 
-void GeometryPool::reset_counter(double _delta) {
+void GeometryPool::reset_counter(const double &_delta, const ProcessType &p_proc) {
 	ZoneScoped;
-	lines.reset_counter(_delta);
-
-	for (int i = 0; i < (int)InstanceType::ALL; i++) {
-		instances[i].reset_counter(_delta, i);
+	if (p_proc == ProcessType::MAX) {
+		for (auto &proc : pools) {
+			for (int i = 0; i < (int)InstanceType::MAX; i++) {
+				proc.instances[i].reset_counter(_delta, i);
+			}
+			proc.lines.reset_counter(_delta);
+		}
+	} else {
+		for (int i = 0; i < (int)InstanceType::MAX; i++) {
+			pools[(int)p_proc].instances[i].reset_counter(_delta, i);
+		}
+		pools[(int)p_proc].lines.reset_counter(_delta);
 	}
 }
 
 void GeometryPool::reset_visible_objects() {
 	ZoneScoped;
-	for (auto &i : instances) {
-		i.reset_visible_counter();
+	for (auto &proc : pools) {
+		for (auto &i : proc.instances) {
+			i.reset_visible_counter();
+		}
+		proc.lines.reset_visible_counter();
 	}
-	lines.reset_visible_counter();
 }
 
 void GeometryPool::update_stats(Ref<DebugDrawStats3D> &stats) const {
 	ZoneScoped;
 
 	size_t used_instances = 0;
-	for (auto &i : instances) {
-		used_instances += i._prev_used_instant;
-		used_instances += i.used_delayed;
-	}
-
+	size_t used_lines = 0;
 	size_t visible_instances = 0;
-	for (auto &i : instances) {
-		visible_instances += i.visible_objects;
-	}
+	size_t visible_lines = 0;
 
-	size_t used_lines = lines._prev_used_instant + lines.used_delayed;
+	for (auto &proc : pools) {
+		for (auto &i : proc.instances) {
+			used_instances += i._prev_used_instant;
+			used_instances += i.used_delayed;
+		}
+
+		for (auto &i : proc.instances) {
+			visible_instances += i.visible_objects;
+		}
+
+		used_lines += proc.lines._prev_used_instant + proc.lines.used_delayed;
+		visible_lines += proc.lines.visible_objects;
+	}
 
 	stats->set_render_stats(
 			/* t_instances */ used_instances,
 			/* t_lines */ used_lines,
 
 			/* t_visible_instances */ visible_instances,
-			/* t_visible_lines */ lines.visible_objects,
+			/* t_visible_lines */ visible_lines,
 
 			/* t_time_filling_buffers_instances_usec */ time_spent_to_fill_buffers_of_instances,
 			/* t_time_filling_buffers_lines_usec */ time_spent_to_fill_buffers_of_lines,
@@ -340,118 +358,133 @@ void GeometryPool::update_stats(Ref<DebugDrawStats3D> &stats) const {
 
 void GeometryPool::clear_pool() {
 	ZoneScoped;
-	for (auto &i : instances) {
-		i.clear_pools();
+	for (auto &proc : pools) {
+		for (auto &i : proc.instances) {
+			i.clear_pools();
+		}
+		proc.lines.clear_pools();
 	}
-	lines.clear_pools();
 }
 
 void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func) {
 	ZoneScoped;
-	for (auto &inst : instances) {
-		for (size_t i = 0; i < inst.used_instant; i++) {
-			_func(&inst.instant[i]);
-		}
-		for (size_t i = 0; i < inst.delayed.size(); i++) {
-			if (!inst.delayed[i].is_expired())
-				_func(&inst.delayed[i]);
+	for (auto &proc : pools) {
+		for (auto &inst : proc.instances) {
+			for (size_t i = 0; i < inst.used_instant; i++) {
+				_func(&inst.instant[i]);
+			}
+			for (size_t i = 0; i < inst.delayed.size(); i++) {
+				if (!inst.delayed[i].is_expired())
+					_func(&inst.delayed[i]);
+			}
 		}
 	}
 }
 
 void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &_func) {
 	ZoneScoped;
-	for (size_t i = 0; i < lines.used_instant; i++) {
-		_func(&lines.instant[i]);
-	}
-	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		if (!lines.delayed[i].is_expired())
-			_func(&lines.delayed[i]);
+	for (auto &proc : pools) {
+		for (size_t i = 0; i < proc.lines.used_instant; i++) {
+			_func(&proc.lines.instant[i]);
+		}
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			if (!proc.lines.delayed[i].is_expired())
+				_func(&proc.lines.delayed[i]);
+		}
 	}
 }
 
 void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
 	ZoneScoped;
 
-	uint64_t instant_time = 0;
-	uint64_t delayed_time = 0;
-	for (auto &t : instances) { // loop over instance types
-		uint64_t i_t = Time::get_singleton()->get_ticks_usec();
+	uint64_t dt_i = 0, dt_d = 0;
+	for (auto &proc : pools) {
+		uint64_t instant_time = 0;
+		uint64_t delayed_time = 0;
+		for (auto &t : proc.instances) { // loop over instance types
+			uint64_t i_t = Time::get_singleton()->get_ticks_usec();
 
-		for (size_t i = 0; i < t.used_instant; i++)
-			t.instant[i].update_visibility(t_frustums, t_distance_data, true);
+			for (size_t i = 0; i < t.used_instant; i++)
+				t.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
-		instant_time += Time::get_singleton()->get_ticks_usec() - i_t;
-		uint64_t d_t = Time::get_singleton()->get_ticks_usec();
+			instant_time += Time::get_singleton()->get_ticks_usec() - i_t;
+			uint64_t d_t = Time::get_singleton()->get_ticks_usec();
 
-		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_visibility(t_frustums, t_distance_data, false);
+			for (size_t i = 0; i < t.delayed.size(); i++)
+				t.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
-		delayed_time += Time::get_singleton()->get_ticks_usec() - d_t;
+			delayed_time += Time::get_singleton()->get_ticks_usec() - d_t;
+		}
+
+		// loop over lines
+		uint64_t instant_dt = Time::get_singleton()->get_ticks_usec();
+
+		for (size_t i = 0; i < proc.lines.used_instant; i++)
+			proc.lines.instant[i].update_visibility(t_frustums, t_distance_data, true);
+
+		instant_dt = Time::get_singleton()->get_ticks_usec() - instant_dt + instant_time;
+		uint64_t delayed_dt = Time::get_singleton()->get_ticks_usec();
+
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++)
+			proc.lines.delayed[i].update_visibility(t_frustums, t_distance_data, false);
+
+		delayed_dt = Time::get_singleton()->get_ticks_usec() - delayed_dt + delayed_time;
 	}
-
-	// loop over lines
-	time_spent_to_cull_instant = Time::get_singleton()->get_ticks_usec();
-
-	for (size_t i = 0; i < lines.used_instant; i++)
-		lines.instant[i].update_visibility(t_frustums, t_distance_data, true);
-
-	time_spent_to_cull_instant = Time::get_singleton()->get_ticks_usec() - time_spent_to_cull_instant + instant_time;
-	time_spent_to_cull_delayed = Time::get_singleton()->get_ticks_usec();
-
-	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_visibility(t_frustums, t_distance_data, false);
-
-	time_spent_to_cull_delayed = Time::get_singleton()->get_ticks_usec() - time_spent_to_cull_delayed + delayed_time;
+	time_spent_to_cull_instant = dt_i;
+	time_spent_to_cull_delayed = dt_d;
 }
 
-void GeometryPool::update_expiration(double _delta) {
+void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_proc) {
 	ZoneScoped;
-	for (auto &t : instances)
+	auto &proc = pools[(int)p_proc];
+
+	for (auto &t : proc.instances)
 		for (size_t i = 0; i < t.delayed.size(); i++)
 			t.delayed[i].update_expiration(_delta);
 
-	for (size_t i = 0; i < lines.delayed.size(); i++)
-		lines.delayed[i].update_expiration(_delta);
+	for (size_t i = 0; i < proc.lines.delayed.size(); i++)
+		proc.lines.delayed[i].update_expiration(_delta);
 }
 
 void GeometryPool::scan_visible_instances() {
 	ZoneScoped;
 	reset_visible_objects();
 
-	for (auto &t : instances) {
-		for (size_t i = 0; i < t.used_instant; i++)
-			if (t.instant[i].is_visible)
-				t.visible_objects++;
-		for (size_t i = 0; i < t.delayed.size(); i++) {
-			auto &o = t.delayed[i];
-			if (o.is_visible && !o.is_expired())
-				t.visible_objects++;
+	for (auto &proc : pools) {
+		for (auto &t : proc.instances) {
+			for (size_t i = 0; i < t.used_instant; i++)
+				if (t.instant[i].is_visible)
+					t.visible_objects++;
+			for (size_t i = 0; i < t.delayed.size(); i++) {
+				auto &o = t.delayed[i];
+				if (o.is_visible && !o.is_expired())
+					t.visible_objects++;
+			}
 		}
-	}
 
-	for (size_t i = 0; i < lines.used_instant; i++)
-		if (lines.instant[i].is_visible)
-			lines.visible_objects++;
+		for (size_t i = 0; i < proc.lines.used_instant; i++)
+			if (proc.lines.instant[i].is_visible)
+				proc.lines.visible_objects++;
 
-	for (size_t i = 0; i < lines.delayed.size(); i++) {
-		auto &o = lines.delayed[i];
-		if (o.is_visible && !o.is_expired())
-			lines.visible_objects++;
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			auto &o = proc.lines.delayed[i];
+			if (o.is_visible && !o.is_expired())
+				proc.lines.visible_objects++;
+		}
 	}
 }
 
-void GeometryPool::add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
+void GeometryPool::add_or_update_instance(InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd) {
 	ZoneScoped;
-	DelayedRendererInstance *inst = instances[(int)_type].get(_exp_time > 0);
-	inst->update(_exp_time, _type, _transform, _col, _custom_col, _bounds);
+	DelayedRendererInstance *inst = pools[(int)p_proc].instances[(int)_type].get(_exp_time > 0);
+	inst->update(_exp_time, _transform, _col, _custom_col, _bounds);
 	if (_custom_upd)
 		_custom_upd(inst);
 }
 
-void GeometryPool::add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
+void GeometryPool::add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
 	ZoneScoped;
-	DelayedRendererLine *inst = lines.get(_exp_time > 0);
+	DelayedRendererLine *inst = pools[(int)p_proc].lines.get(_exp_time > 0);
 	inst->update(_exp_time, _lines, _col);
 	if (_custom_upd)
 		_custom_upd(inst);

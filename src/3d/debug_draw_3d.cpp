@@ -128,15 +128,31 @@ DebugDraw3D::~DebugDraw3D() {
 
 void DebugDraw3D::process(double delta) {
 	ZoneScoped;
-	FrameMarkStart("3D Setup");
 #ifndef DISABLE_DEBUG_RENDERING
+	FrameMarkStart("3D Update");
 
 	// Update 3D debug
 	dgc->update_geometry(delta);
 
 	_clear_scoped_configs();
+	FrameMarkEnd("3D Update");
 #endif
-	FrameMarkEnd("3D Setup");
+}
+
+void DebugDraw3D::physics_process_start(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	FrameMarkStart("3D Physics Step");
+	dgc->update_geometry_physics_start(delta);
+#endif
+}
+
+void DebugDraw3D::physics_process_end(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	dgc->update_geometry_physics_end(delta);
+	FrameMarkEnd("3D Physics Step");
+#endif
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -459,6 +475,7 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
+#define GET_PROC_TYPE() (root_node->is_physics_processing() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)
 #define CHECK_BEFORE_CALL() \
 	if (!dgc || NEED_LEAVE || config->is_freeze_3d_render()) return;
 #else
@@ -479,7 +496,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, const std:
 	LOCK_GUARD(datalock);
 
 	if (!scfg->get_thickness()) {
-		dgc->geometry_pool.add_or_update_line(_exp_time, _lines, _col);
+		dgc->geometry_pool.add_or_update_line(_exp_time, GET_PROC_TYPE(), _lines, _col);
 	} else {
 		for (int i = 0; i < _lines.size(); i += 2) {
 			ZoneScoped;
@@ -490,6 +507,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, const std:
 			dgc->geometry_pool.add_or_update_instance(
 					InstanceType::LINE_VOLUMETRIC,
 					_exp_time,
+					GET_PROC_TYPE(),
 					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(Vector3(len, len, len)), a), // slow
 					_col,
 					_scoped_config_to_custom(scfg.ptr()),
@@ -520,6 +538,7 @@ void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(hd ? ConvertableInstanceType::SPHERE_HD : ConvertableInstanceType::SPHERE, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -563,6 +582,7 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::CYLINDER, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -637,6 +657,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -678,6 +699,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 		dgc->geometry_pool.add_or_update_instance(
 				InstanceType::BILLBOARD_SQUARE,
 				duration,
+				GET_PROC_TYPE(),
 				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				Color(), // Just a plane, no need to store custom data
@@ -779,6 +801,7 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::ARROWHEAD, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -795,6 +818,7 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::ARROWHEAD, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -861,6 +885,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::BILLBOARD_SQUARE,
 			duration,
+			GET_PROC_TYPE(),
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -887,6 +912,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::POSITION, scfg.ptr()),
 			duration,
+			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,
 			_scoped_config_to_custom(scfg.ptr()),
@@ -1001,4 +1027,5 @@ void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const 
 #endif
 
 #undef IS_DEFAULT_COLOR
+#undef GET_PROC_TYPE
 #undef NEED_LEAVE

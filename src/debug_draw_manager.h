@@ -9,10 +9,29 @@ using namespace godot;
 
 class DebugDraw2D;
 class DebugDraw3D;
+class DebugDrawManager;
+
+#ifndef DISABLE_DEBUG_RENDERING
+class DD3D_PhysicsWatcher : public Node {
+	GDCLASS(DD3D_PhysicsWatcher, Node)
+protected:
+	DebugDrawManager *root_node;
+	static void _bind_methods(){};
+
+public:
+	void init(DebugDrawManager *p_root);
+
+	virtual void _physics_process(double delta) override;
+};
+#endif
 
 class DebugDrawManager : public CanvasLayer {
 	GDCLASS(DebugDrawManager, CanvasLayer)
 protected:
+#ifndef DISABLE_DEBUG_RENDERING
+	friend DD3D_PhysicsWatcher;
+#endif
+
 	static DebugDrawManager *singleton;
 
 	String root_settings_section;
@@ -92,6 +111,8 @@ public:
 	void init();
 	void deinit();
 	virtual void _process(double delta) override;
+	void _physics_process_start(double delta);
+	virtual void _physics_process(double delta) override;
 };
 
 #ifdef DEV_ENABLED

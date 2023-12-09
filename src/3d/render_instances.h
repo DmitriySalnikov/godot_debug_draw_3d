@@ -51,7 +51,13 @@ enum class InstanceType : char {
 	// Solid geometry
 	BILLBOARD_SQUARE,
 
-	ALL,
+	MAX,
+};
+
+enum class ProcessType : char {
+	PROCESS,
+	PHYSICS_PROCESS,
+	MAX,
 };
 
 class GeometryPoolDistanceCullingData {
@@ -67,7 +73,7 @@ public:
 template <class TBounds>
 class DelayedRenderer {
 protected:
-	void _update(double exp_time, bool is_vis) {
+	void _update(const double &exp_time, const bool &is_vis) {
 		ZoneScoped;
 		expiration_time = exp_time;
 		is_used_one_time = false;
@@ -75,9 +81,9 @@ protected:
 	}
 
 public:
-	double expiration_time = 0;
-	bool is_used_one_time = false;
-	bool is_visible = true;
+	double expiration_time;
+	bool is_used_one_time;
+	bool is_visible;
 	TBounds bounds;
 
 	DelayedRenderer() :
@@ -122,9 +128,9 @@ public:
 		return is_visible;
 	}
 
-	void update_expiration(double delta) {
+	void update_expiration(const double &_delta) {
 		if (!is_expired()) {
-			expiration_time -= delta;
+			expiration_time -= _delta;
 		}
 	}
 };
@@ -164,10 +170,9 @@ public:
 class DelayedRendererInstance : public DelayedRenderer<SphereBounds> {
 public:
 	InstanceTransformAndData3D data;
-	InstanceType type = InstanceType::CUBE;
 
 	DelayedRendererInstance();
-	void update(real_t _exp_time, const InstanceType &_type, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds);
+	void update(const real_t &_exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds);
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
@@ -178,7 +183,7 @@ public:
 	Color customColor;
 
 	DelayedRendererLine();
-	void update(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col);
+	void update(const real_t &_exp_time, const std::vector<Vector3> &_lines, const Color &_col);
 
 	void set_lines(const std::vector<Vector3> &_lines);
 	const std::vector<Vector3> &get_lines() const;
@@ -280,8 +285,10 @@ private:
 		}
 	};
 
-	ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::ALL] = {};
-	ObjectsPool<DelayedRendererLine> lines;
+	struct {
+		ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::MAX];
+		ObjectsPool<DelayedRendererLine> lines;
+	} pools[(int)ProcessType::MAX];
 
 	uint64_t time_spent_to_fill_buffers_of_instances = 0;
 	uint64_t time_spent_to_fill_buffers_of_lines = 0;
@@ -296,19 +303,19 @@ public:
 	~GeometryPool() {
 	}
 
-	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::ALL> &t_meshes);
+	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes);
 	void fill_lines_data(Ref<ArrayMesh> _ig);
-	void reset_counter(double _delta);
+	void reset_counter(const double &_delta, const ProcessType &p_proc = ProcessType::MAX);
 	void reset_visible_objects();
 	void update_stats(Ref<DebugDrawStats3D> &stats) const;
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
 	void update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
-	void update_expiration(double _delta);
+	void update_expiration(const double &_delta, const ProcessType &p_proc);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, real_t _exp_time, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
-	void add_or_update_line(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_instance(InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
+	void add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };
 
 #endif
