@@ -47,39 +47,50 @@ def setup_defines_and_flags(env, src_out):
         src_out.append("src/thirdparty/tracy/public/TracyClient.cpp")
 
 
-def is_file_locked(file_path):
-    if not os.path.exists(file_path):
-        return False
-    try:
-        with open(file_path, "a") as f:
-            pass
-    except IOError:
-        return True
-    return False
+# A utility function for getting the name of an unblocked file
+def _get_unblocked_file_name(original_file_path, new_file_ext, max_files=256, keep_newest_one=True):
+    lib_dir = os.path.normpath(os.path.dirname(original_file_path))
+    lib_name = os.path.splitext(os.path.basename(original_file_path))[0]
 
-
-def msvc_pdb_rename(env, lib_full_name):
-    new_name = (Path(env["addon_output_dir"]) / lib_full_name).as_posix()
-    max_files = 256
-
-    onlyfiles = [
+    # Collect all matching files
+    found_files = [
         f
-        for f in os.listdir(Path(env["addon_output_dir"]))
-        if os.path.isfile(os.path.join(Path(env["addon_output_dir"]), f))
+        for f in os.listdir(lib_dir)
+        if os.path.isfile(os.path.join(lib_dir, f)) and f.startswith(lib_name) and f.endswith("." + new_file_ext)
     ]
-    for of in onlyfiles:
-        if of.endswith(".pdb") and of.startswith(lib_full_name):
+    found_files = sorted(found_files, key=lambda x: os.path.getmtime(os.path.join(lib_dir, x)))
+
+    # Clean up the old files if possible, except for the newest one
+    if found_files:
+        if keep_newest_one:
+            found_files.pop()
+        for f in found_files:
             try:
-                os.remove(Path(env["addon_output_dir"]) / of)
+                os.remove(os.path.join(lib_dir, f))
             except:
                 pass
 
-    pdb_name = ""
+    # Search for a unblocked file name
+    file_name = ""
     for s in range(max_files):
-        pdb_name = "{}_{}.pdb".format(new_name, s)
-        if not is_file_locked(pdb_name):
+        file_name = "{}_{}.{}".format(os.path.join(lib_dir, lib_name), s, new_file_ext)
+        if not os.path.exists(file_name):
             break
+        try:
+            with open(file_name, "a") as f:
+                pass
+        except IOError:
+            continue
+        break
 
+    return file_name
+
+
+# This is necessary to support debugging and Hot-Reload at the same time when building using MSVC
+def msvc_pdb_rename(env, full_lib_path):
+    pdb_name = _get_unblocked_file_name(full_lib_path, "pdb")
+    print("New path to the PDB: " + pdb_name)
+    # explicit assignment of the PDB name
     env.Append(LINKFLAGS=["/PDB:" + pdb_name])
 
 
@@ -117,18 +128,17 @@ def get_library_object(env, arguments=None, gen_help=None):
     if "release" in env["target"] and env["force_enabled_dd3d"]:
         additional_tags += ".enabled"
 
-    library_full_name = "lib{}.{}.{}.{}{}".format(
-        lib_name, env["platform"], env["target"], env["arch"], additional_tags
-    )
+    library_name = "lib{}.{}.{}.{}{}".format(lib_name, env["platform"], env["target"], env["arch"], additional_tags)
+    library_full_path = os.path.join(env["addon_output_dir"], (library_name + env["SHLIBSUFFIX"]))
 
     # using the library with `reloadable = true` and with the debugger block the PDB file,
     # so it needs to be renamed to something not blocked
     if env.get("is_msvc", False) and env["target"] != "template_release":
-        msvc_pdb_rename(env, library_full_name)
+        msvc_pdb_rename(env, library_full_path)
 
     env.Default(
         env.SharedLibrary(
-            target=env.File(Path(env["addon_output_dir"]) / (library_full_name + env["SHLIBSUFFIX"])),
+            target=env.File(library_full_path),
             source=additional_src + get_sources(src),
             SHLIBSUFFIX=env["SHLIBSUFFIX"],
         )
@@ -139,9 +149,9 @@ def get_library_object(env, arguments=None, gen_help=None):
     env = env.Clone()
     env.Append(LIBPATH=[env.Dir(env["addon_output_dir"])])
     if env.get("is_msvc", False):
-        env.Append(LIBS=[library_full_name.replace(".dll", ".lib")])
+        env.Append(LIBS=[library_full_path.replace(".dll", ".lib")])
     else:
-        env.Append(LIBS=[library_full_name])
+        env.Append(LIBS=[library_full_path])
 
     return env
 
