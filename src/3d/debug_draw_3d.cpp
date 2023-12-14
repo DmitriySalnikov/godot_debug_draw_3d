@@ -620,12 +620,26 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 	if (is_ab_diagonal) {
 		ZoneScopedN("From diagonals");
 		Vector3 up_n = up.normalized();
-		Vector3 half_center = (diff.normalized() * diff.length() * .5f).rotated(up_n, Math::deg_to_rad(45.f));
+		Vector3 half_center_orig = diff.normalized() * diff.length() * .5f;
+		Vector3 half_center = half_center_orig.rotated(up_n, Math::deg_to_rad(45.f));
 		Vector3 half_center_side = half_center / MathUtils::Sqrt2;
 		Vector3 front = half_center_side.cross(up_n);
 
 		Transform3D t(half_center.project(up_n) * 2, half_center_side.project(front.cross(up_n)) * 2, front * 2, a);
-		draw_box_xf(t, color, false, duration);
+
+		// copied from draw_box_xf
+		SphereBounds sb(t.origin + half_center_orig, MathUtils::get_max_basis_length(t.basis) * MathUtils::CubeRadiusForSphere);
+		Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
+
+		LOCK_GUARD(datalock);
+		dgc->geometry_pool.add_or_update_instance(
+				_scoped_config_type_convert(ConvertableInstanceType::CUBE, scfg.ptr()),
+				duration,
+				GET_PROC_TYPE(),
+				t,
+				IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
+				_scoped_config_to_custom(scfg.ptr()),
+				sb);
 	} else {
 		ZoneScopedN("From edges");
 		Vector3 half_center = diff.normalized() * diff.length() * .5f;
@@ -644,7 +658,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 	SphereBounds sb(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CubeRadiusForSphere);
 
 	if (!is_box_centered) {
-		sb.position = transform.origin + transform.basis.get_scale() * 0.5f;
+		sb.position = transform.origin + (transform.basis[0] + transform.basis[1] + transform.basis[2]) * 0.5f;
 	}
 
 	Ref<DDScopedConfig3D> scfg = scoped_config_for_current_thread();
