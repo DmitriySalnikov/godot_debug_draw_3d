@@ -17,6 +17,7 @@ namespace godot {
 class MultiMesh;
 }
 class DebugDrawStats3D;
+class GeometryPool;
 
 enum class ConvertableInstanceType : char {
 	CUBE,
@@ -192,11 +193,14 @@ public:
 
 class GeometryPool {
 private:
+	enum ShrinkTimers : char {
+		TIME_USED_TO_SHRINK_TEMP_BUFFER = 5,
+		TIME_USED_TO_SHRINK_INSTANT = 10,
+		TIME_USED_TO_SHRINK_DELAYED = 15,
+	};
+
 	template <class TInst>
 	struct ObjectsPool {
-		const real_t TIME_USED_TO_SHRINK_INSTANT = 10; // 10 sec
-		const real_t TIME_USED_TO_SHRINK_DELAYED = 15; // 15 sec
-
 		std::vector<TInst> instant = {};
 		std::vector<TInst> delayed = {};
 		int visible_objects = 0;
@@ -285,6 +289,65 @@ private:
 		}
 	};
 
+	template <class T, class TSlice, size_t _TStepSize>
+	struct TempBigBuffer {
+	private:
+		std::unique_ptr<T[]> m_buffer;
+		size_t current_size;
+		double m_shrink_timer;
+
+		void resize(size_t new_size) {
+			m_buffer.reset(new T[new_size]);
+			current_size = new_size;
+		}
+
+	public:
+		TempBigBuffer() {
+			resize(_TStepSize);
+			m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
+		}
+
+		void prepare_buffer(size_t t_expected_size) {
+			ZoneScoped;
+			if (current_size < t_expected_size) {
+				size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
+				DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": extending from %d to %d\n", current_size, new_size);
+				resize(new_size);
+				m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
+			}
+		}
+
+		void update(size_t max_expected_size, const double &delta) {
+			size_t new_size = (size_t)Math::ceil(((double)current_size / 2) / _TStepSize) * _TStepSize;
+			if (max_expected_size <= new_size) {
+				m_shrink_timer -= delta;
+				if (m_shrink_timer < 0) {
+					if (new_size != current_size) {
+						DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": shrinking from %d to %d\n", current_size, new_size);
+						resize(new_size);
+						m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
+					}
+				}
+			} else {
+				m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
+			}
+		}
+
+		inline auto ptrw() {
+			return m_buffer.get();
+		}
+
+		// TODO stupid and slow as it makes a COPY of all memory..
+		inline auto slice(int64_t begin, int64_t end = 2147483647) {
+			ZoneScoped;
+			TSlice res;
+			end = Math::min(end, (int64_t)current_size);
+			res.resize(end - begin);
+			memcpy(res.ptrw(), m_buffer.get(), (end - begin) * sizeof(T));
+			return res;
+		}
+	};
+
 	struct {
 		ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::MAX];
 		ObjectsPool<DelayedRendererLine> lines;
@@ -295,7 +358,8 @@ private:
 	uint64_t time_spent_to_cull_instant = 0;
 	uint64_t time_spent_to_cull_delayed = 0;
 
-	PackedFloat32Array get_raw_data(InstanceType _type);
+	typedef TempBigBuffer<float, PackedFloat32Array, 128 * 1020> temp_raw_buffer;
+	PackedFloat32Array get_raw_data(InstanceType _type, temp_raw_buffer &buffer, size_t &out_buffer_size);
 
 public:
 	GeometryPool() {}
@@ -303,8 +367,8 @@ public:
 	~GeometryPool() {
 	}
 
-	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes);
-	void fill_lines_data(Ref<ArrayMesh> _ig);
+	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes, const double &delta);
+	void fill_lines_data(Ref<ArrayMesh> _ig, const double &delta);
 	void reset_counter(const double &_delta, const ProcessType &p_proc = ProcessType::MAX);
 	void reset_visible_objects();
 	void update_stats(Ref<DebugDrawStats3D> &stats) const;

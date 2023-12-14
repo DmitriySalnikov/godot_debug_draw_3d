@@ -165,15 +165,14 @@ _data = {
 "RESET": SubResource("8")
 }
 
-[sub_resource type="GDScript" id="GDScript_hwhty"]
+[sub_resource type="GDScript" id="GDScript_atshy"]
 script/source = "@tool
 extends Button
 
 @export_range(1, 128)  var bars_count := 32
-@export var node_3d : Node3D = null
 var transform: Transform3D:
 	get:
-		return node_3d.global_transform
+		return %AudioVisualizer.global_transform
 @export_exp_easing(\"inout\") var motion_smoothing := 0.06
 @export_range(0, 0.5) var bar_thickness := 0.02
 @export_range(0, 10) var bars_separation := 0.1
@@ -203,9 +202,9 @@ func _ready():
 		# Assign the callbacks
 		gdcallbacks.dataLoaded = _on_data_loaded_callback
 
+
 func _process(_delta):
-	if node_3d:
-		draw_spectrum()
+	draw_spectrum()
 
 
 func _pressed():
@@ -296,9 +295,9 @@ func _on_mute_toggled(toggled_on):
 	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
 "
 
-[sub_resource type="Gradient" id="Gradient_bdma0"]
-offsets = PackedFloat32Array(0, 0.339623, 0.674528, 1)
-colors = PackedColorArray(0.0862745, 0.0941176, 1, 1, 0.145844, 1, 0.144868, 1, 1, 0.219608, 0.145098, 1, 0.0862745, 0.0941176, 1, 1)
+[sub_resource type="Gradient" id="Gradient_tup4c"]
+offsets = PackedFloat32Array(0.00471698, 0.316038, 0.646226, 1)
+colors = PackedColorArray(0, 0.0156863, 1, 1, 0.0988327, 1, 0.122977, 1, 1, 0.111986, 0.118936, 1, 0, 0.0156863, 1, 1)
 
 [sub_resource type="Animation" id="Animation_n750a"]
 length = 0.001
@@ -375,6 +374,7 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+update_in_physics = true
 draw_array_of_boxes = true
 text_groups_show_stats = true
 text_groups_position = 2
@@ -687,15 +687,14 @@ libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
 
-[node name="MusicVisualizer" type="Button" parent="." node_paths=PackedStringArray("node_3d")]
+[node name="MusicVisualizer" type="Button" parent="."]
 offset_right = 88.0
 offset_bottom = 31.0
 text = "OPEN FILE"
-script = SubResource("GDScript_hwhty")
-node_3d = NodePath("../AudioVisualizer")
+script = SubResource("GDScript_atshy")
 bar_thickness = 0.065
 bars_separation = 0.325
-colors = SubResource("Gradient_bdma0")
+colors = SubResource("Gradient_tup4c")
 
 [node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
 libraries = {
@@ -720,6 +719,7 @@ button_pressed = true
 text = "Mute"
 
 [node name="AudioVisualizer" type="Node3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -3.988, -1.422, 14.14)
 
 [node name="CustomCanvas" type="Control" parent="."]

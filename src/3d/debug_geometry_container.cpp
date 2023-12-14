@@ -301,7 +301,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	}
 
 	// Draw immediate lines
-	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh);
+	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, delta);
 
 	// Update MultiMeshInstances
 	static std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> meshes;
@@ -309,7 +309,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
 
-	geometry_pool.fill_instance_data(meshes);
+	geometry_pool.fill_instance_data(meshes, delta);
 
 	geometry_pool.scan_visible_instances();
 	geometry_pool.update_expiration(delta, ProcessType::PROCESS);

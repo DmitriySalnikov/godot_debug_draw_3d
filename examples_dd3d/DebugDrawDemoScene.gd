@@ -190,11 +190,11 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
 	# Boxes AB
-	DebugDraw3D.draw_arrow_line($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
-	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_transform.origin, $Boxes/BoxABEdge/b.global_transform.origin, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
-	
 	DebugDraw3D.draw_arrow_line($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
 	DebugDraw3D.draw_box_ab($Boxes/BoxAB/a.global_transform.origin, $Boxes/BoxAB/b.global_transform.origin, $Boxes/BoxAB/o/up.global_position - $Boxes/BoxAB.global_position, Color.PERU)
+	
+	DebugDraw3D.draw_arrow_line($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
+	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_transform.origin, $Boxes/BoxABEdge/b.global_transform.origin, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
 	
 	# Lines
 	var target = $Lines/Target
@@ -333,11 +333,11 @@ func _text_tests():
 		var render_stats := DebugDraw3D.get_render_stats()
 		if render_stats && text_groups_show_stats:
 			DebugDraw2D.set_text("Total", render_stats.total_geometry)
-			DebugDraw2D.set_text("Instances", render_stats.instances, 1)
-			DebugDraw2D.set_text("Lines", render_stats.lines, 2)
+			DebugDraw2D.set_text("Instances", render_stats.instances + render_stats.instances_physics, 1)
+			DebugDraw2D.set_text("Lines", render_stats.lines + render_stats.lines_physics, 2)
 			DebugDraw2D.set_text("Total Visible", render_stats.total_visible, 3)
-			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances, 4)
-			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines, 5)
+			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances + render_stats.visible_instances_physics, 4)
+			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines + render_stats.visible_lines_physics, 5)
 			
 			DebugDraw2D.set_text("---", null, 6)
 			
@@ -372,6 +372,7 @@ func _text_tests():
 		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 5)
 		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 6)
 		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 7)
+		DebugDraw2D.end_text_group()
 
 
 func _more_tests():

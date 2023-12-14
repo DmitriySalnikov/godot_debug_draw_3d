@@ -10,52 +10,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/time.hpp>
 GODOT_WARNING_RESTORE()
 
-// TODO too big buffer constantly shrinking
-template <class T, size_t _TStepSize>
-struct TempBigBuffer {
-private:
-	T m_buffer;
-	int m_accesses_before_shrink = (int)InstanceType::MAX * 60; // try to shrink after 60 frames
-	int m_shrink_timer;
-
-public:
-	TempBigBuffer() {
-		m_buffer.resize(_TStepSize);
-		m_shrink_timer = 0;
-	}
-
-	void prepare_buffer(size_t t_expected_size) {
-		ZoneScoped;
-		if ((size_t)m_buffer.size() < t_expected_size) {
-			size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
-			DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": extending from %d to %d\n", m_buffer.size(), new_size);
-			m_buffer.resize(new_size);
-			m_shrink_timer = 0;
-		} else {
-			if (t_expected_size < m_buffer.size() - _TStepSize) {
-				m_shrink_timer++;
-				if (m_shrink_timer >= m_accesses_before_shrink) {
-					size_t new_size = (size_t)m_buffer.size() - _TStepSize;
-					DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": shrinking from %d to %d\n", m_buffer.size(), new_size);
-					m_buffer.resize(new_size);
-					m_shrink_timer = 0;
-				}
-			} else {
-				m_shrink_timer = 0;
-			}
-		}
-	}
-
-	inline auto ptrw() {
-		return m_buffer.ptrw();
-	}
-
-	// TODO stupid and slow as it makes a COPY of all memory..
-	inline auto slice(int64_t begin, int64_t end = 2147483647) {
-		return m_buffer.slice(begin, end);
-	}
-};
-
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
@@ -126,33 +80,42 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vect
 	}
 }
 
-void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes) {
+void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes, const double &delta) {
 	ZoneScoped;
+	thread_local static auto temp_buffer = temp_raw_buffer();
+	size_t max_buffer_size = 0;
+
 	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec();
 
 	for (size_t i = 0; i < t_meshes.size(); i++) {
 		auto &mesh = *t_meshes[i];
 
-		PackedFloat32Array a = get_raw_data((InstanceType)i);
+		size_t buf_size = 0;
+		PackedFloat32Array a = get_raw_data((InstanceType)i, temp_buffer, buf_size);
+
+		if (buf_size > max_buffer_size) {
+			max_buffer_size = buf_size;
+		}
 
 		int new_size = (int)(a.size() / INSTANCE_DATA_FLOAT_COUNT);
 		if (mesh->get_instance_count() != new_size) {
 			mesh->set_instance_count(new_size);
-			mesh->set_visible_instance_count(-1);
+			mesh->set_visible_instance_count(new_size);
 		}
 
 		if (a.size()) {
 			// TODO PR for native pointer!
+			ZoneScopedN("Set buffer");
 			mesh->set_buffer(a);
 		}
 	}
 
+	temp_buffer.update(max_buffer_size, delta);
 	time_spent_to_fill_buffers_of_instances = Time::get_singleton()->get_ticks_usec() - time_spent_to_fill_buffers_of_instances;
 }
 
-PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
+PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffer &buffer, size_t &out_buffer_size) {
 	ZoneScoped;
-	thread_local static auto temp_buffer = TempBigBuffer<PackedFloat32Array, 128 * 1024>();
 	size_t last_added = 0;
 	size_t buffer_size = 0;
 
@@ -162,12 +125,14 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 			auto &inst = proc.instances[(int)_type];
 			buffer_size += (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
 		}
-		temp_buffer.prepare_buffer(buffer_size);
+		buffer.prepare_buffer(buffer_size);
+
+		out_buffer_size = buffer_size;
 	}
 
 	if (buffer_size > 0) {
 		ZoneScopedN("Fill buffer");
-		auto w = temp_buffer.ptrw();
+		auto w = buffer.ptrw();
 
 		for (auto &proc : pools) {
 			auto &inst = proc.instances[(int)_type];
@@ -203,10 +168,10 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type) {
 		}
 	}
 
-	return temp_buffer.slice(0, last_added * INSTANCE_DATA_FLOAT_COUNT);
+	return buffer.slice(0, last_added * INSTANCE_DATA_FLOAT_COUNT);
 }
 
-void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 	ZoneScoped;
 	time_spent_to_fill_buffers_of_lines = 0;
 
@@ -240,10 +205,12 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig) {
 		}
 	}
 
-	thread_local static auto verices_buffer = TempBigBuffer<PackedVector3Array, 64 * 1024>();
-	thread_local static auto colors_buffer = TempBigBuffer<PackedColorArray, 64 * 1024>();
+	thread_local static auto verices_buffer = TempBigBuffer<Vector3, PackedVector3Array, 64 * 1024>();
+	thread_local static auto colors_buffer = TempBigBuffer<Color, PackedColorArray, 64 * 1024>();
 	verices_buffer.prepare_buffer(used_vertices);
 	colors_buffer.prepare_buffer(used_vertices);
+	verices_buffer.update(used_vertices, delta);
+	colors_buffer.update(used_vertices, delta);
 
 	size_t prev_pos = 0;
 	auto vertices_write = verices_buffer.ptrw();
@@ -323,31 +290,41 @@ void GeometryPool::reset_visible_objects() {
 void GeometryPool::update_stats(Ref<DebugDrawStats3D> &stats) const {
 	ZoneScoped;
 
-	size_t used_instances = 0;
-	size_t used_lines = 0;
-	size_t visible_instances = 0;
-	size_t visible_lines = 0;
+	struct {
+		size_t used_instances = 0;
+		size_t used_lines = 0;
+		size_t visible_instances = 0;
+		size_t visible_lines = 0;
+	} counts[(int)ProcessType::MAX];
 
-	for (auto &proc : pools) {
+	for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+		auto &proc = pools[proc_i];
 		for (auto &i : proc.instances) {
-			used_instances += i._prev_used_instant;
-			used_instances += i.used_delayed;
+			counts[proc_i].used_instances += i._prev_used_instant;
+			counts[proc_i].used_instances += i.used_delayed;
 		}
 
 		for (auto &i : proc.instances) {
-			visible_instances += i.visible_objects;
+			counts[proc_i].visible_instances += i.visible_objects;
 		}
 
-		used_lines += proc.lines._prev_used_instant + proc.lines.used_delayed;
-		visible_lines += proc.lines.visible_objects;
+		counts[proc_i].used_lines += proc.lines._prev_used_instant + proc.lines.used_delayed;
+		counts[proc_i].visible_lines += proc.lines.visible_objects;
 	}
 
-	stats->set_render_stats(
-			/* t_instances */ used_instances,
-			/* t_lines */ used_lines,
+	const int p = (int)ProcessType::PROCESS;
+	const int py = (int)ProcessType::PHYSICS_PROCESS;
 
-			/* t_visible_instances */ visible_instances,
-			/* t_visible_lines */ visible_lines,
+	stats->set_render_stats(
+			/* t_instances */ counts[p].used_instances,
+			/* t_lines */ counts[p].used_lines,
+			/* t_visible_instances */ counts[p].visible_instances,
+			/* t_visible_lines */ counts[p].visible_lines,
+
+			/* t_instances_phys */ counts[py].used_instances,
+			/* t_lines_phys */ counts[py].used_lines,
+			/* t_visible_instances_phys */ counts[py].visible_instances,
+			/* t_visible_lines_phys */ counts[py].visible_lines,
 
 			/* t_time_filling_buffers_instances_usec */ time_spent_to_fill_buffers_of_instances,
 			/* t_time_filling_buffers_lines_usec */ time_spent_to_fill_buffers_of_lines,
@@ -397,7 +374,7 @@ void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)
 void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data) {
 	ZoneScoped;
 
-	uint64_t dt_i = 0, dt_d = 0;
+	uint64_t time_spent_i = 0, time_spent_d = 0;
 	for (auto &proc : pools) {
 		uint64_t instant_time = 0;
 		uint64_t delayed_time = 0;
@@ -417,21 +394,24 @@ void GeometryPool::update_visibility(const std::vector<std::vector<Plane> > &t_f
 		}
 
 		// loop over lines
-		uint64_t instant_dt = Time::get_singleton()->get_ticks_usec();
+		uint64_t instant_st = Time::get_singleton()->get_ticks_usec();
 
 		for (size_t i = 0; i < proc.lines.used_instant; i++)
 			proc.lines.instant[i].update_visibility(t_frustums, t_distance_data, true);
 
-		instant_dt = Time::get_singleton()->get_ticks_usec() - instant_dt + instant_time;
-		uint64_t delayed_dt = Time::get_singleton()->get_ticks_usec();
+		instant_st = Time::get_singleton()->get_ticks_usec() - instant_st + instant_time;
+		uint64_t delayed_st = Time::get_singleton()->get_ticks_usec();
 
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++)
 			proc.lines.delayed[i].update_visibility(t_frustums, t_distance_data, false);
 
-		delayed_dt = Time::get_singleton()->get_ticks_usec() - delayed_dt + delayed_time;
+		delayed_st = Time::get_singleton()->get_ticks_usec() - delayed_st + delayed_time;
+
+		time_spent_i += instant_st;
+		time_spent_d += delayed_st;
 	}
-	time_spent_to_cull_instant = dt_i;
-	time_spent_to_cull_delayed = dt_d;
+	time_spent_to_cull_instant = time_spent_i;
+	time_spent_to_cull_delayed = time_spent_d;
 }
 
 void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_proc) {
