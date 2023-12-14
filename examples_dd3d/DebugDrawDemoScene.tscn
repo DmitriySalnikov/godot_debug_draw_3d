@@ -375,7 +375,6 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-update_in_physics = true
 draw_array_of_boxes = true
 text_groups_show_stats = true
 text_groups_position = 2
@@ -513,32 +512,25 @@ transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.
 rotation_edit_mode = 2
 
 [node name="Box2" type="Node3D" parent="Boxes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.36486, 0, 0.135054)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104528, -0.809874, 2.10804)
 
 [node name="Box3" type="Node3D" parent="Boxes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.961257, 0, 3.93748)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)
 
 [node name="BoxOutOfDistanceCulling" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.43744, 0.344, -22.8947)
 
 [node name="AABB_fixed" type="Node3D" parent="Boxes"]
-transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.77336, -1.788, 0.470324)
+transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.12735, -0.835878, 0.470324)
 
 [node name="AABB" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99963, -0.869998, 0.205034)
 
 [node name="a" type="Node3D" parent="Boxes/AABB"]
-transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 1.42401, -1.45318, 1.96619)
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 1.48526, -1.45318, 1.96619)
 
 [node name="b" type="Node3D" parent="Boxes/AABB"]
 transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -1.24128, 1.47773, -2.13102)
-
-[node name="o" type="Node3D" parent="Boxes/AABB"]
-transform = Transform3D(0.864099, 0.258703, 0.431748, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 0, 0, 0)
-metadata/_edit_group_ = true
-
-[node name="up" type="Node3D" parent="Boxes/AABB/o"]
-transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.553809, -0.331842)
 
 [node name="BoxAB" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.66169, -2.2624, 4.04042)
@@ -557,13 +549,13 @@ metadata/_edit_group_ = true
 transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.553809, -0.331842)
 
 [node name="BoxABEdge" type="Node3D" parent="Boxes"]
-transform = Transform3D(0.965926, -0.0669873, -0.25, 0, 0.965926, -0.258819, 0.258819, 0.25, 0.933013, 1.06082, -2.04857, 5.13079)
+transform = Transform3D(0.965926, -0.0669873, -0.25, 0, 0.965926, -0.258819, 0.258819, 0.25, 0.933013, 0.348115, -1.30239, 4.88007)
 
 [node name="a" type="Node3D" parent="Boxes/BoxABEdge"]
-transform = Transform3D(0.864099, 0.258702, 0.431747, 0, 0.857796, -0.513991, -0.503322, 0.444139, 0.741221, 0.0688295, -0.957891, 0.0658493)
+transform = Transform3D(0.241143, 0.650584, 0.720132, -0.123077, 0.756539, -0.642262, -0.962654, 0.066246, 0.262507, 0.384618, -0.635015, 0.0956125)
 
 [node name="b" type="Node3D" parent="Boxes/BoxABEdge"]
-transform = Transform3D(0.864099, 0.258702, 0.431747, 3.72529e-09, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -0.345897, 0.814153, -0.701643)
+transform = Transform3D(0.241143, 0.650584, 0.720133, -0.123077, 0.756539, -0.642261, -0.962654, 0.0662459, 0.262507, -0.287622, 0.997905, -0.144578)
 
 [node name="o" type="Node3D" parent="Boxes/BoxABEdge"]
 transform = Transform3D(1, 1.49012e-08, 2.98023e-08, 7.45058e-09, 1, -1.49012e-08, -1.49012e-08, -1.49012e-08, 1, 0, 0, 0)
@@ -731,19 +723,17 @@ text = "Mute"
 transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -3.988, -1.422, 14.14)
 
 [node name="CustomCanvas" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 3
-anchors_preset = 11
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -639.0
-offset_top = 36.0
-offset_right = -36.0
-offset_bottom = -36.0
+offset_left = -545.0
+offset_top = 14.0
+offset_right = -37.0
+offset_bottom = 638.0
 grow_horizontal = 0
-grow_vertical = 2
 mouse_filter = 2
-metadata/_edit_lock_ = true
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3

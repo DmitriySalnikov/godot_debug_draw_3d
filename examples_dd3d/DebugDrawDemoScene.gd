@@ -35,10 +35,10 @@ extends Node3D
 @export var graph_is_enabled := true
 
 var button_presses := {}
-var time := 0.0
-var time2 := 0.0
-var time3 := 0.0
-var time_text := 0.0
+var timer_1 := 0.0
+var timer_2 := 0.0
+var timer_3 := 0.0
+var timer_text := 0.0
 
 func _ready() -> void:
 	_update_keys_just_press()
@@ -68,15 +68,22 @@ func _update_keys_just_press():
 	button_presses[KEY_2] = set_key.call(KEY_2)
 	button_presses[KEY_3] = set_key.call(KEY_3)
 
+func _update_timers(delta : float):
+	timer_1 -= delta
+	timer_2 -= delta
+	timer_3 -= delta
+	timer_text -= delta
 
 func _process(delta):
 	if !update_in_physics:
 		main_update(delta)
+		_update_timers(delta)
 
 
 func _physics_process(delta: float) -> void:
 	if update_in_physics:
 		main_update(delta)
+		_update_timers(delta)
 	
 	if not zylann_example:
 		DebugDraw3D.draw_line($"Lines/8".global_transform.origin, $Lines/Target.global_transform.origin, Color.YELLOW)
@@ -123,7 +130,7 @@ func main_update(delta: float) -> void:
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
-	DebugDraw2D.custom_canvas = $CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
+	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
 	
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
@@ -161,11 +168,10 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_sphere_hd_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
 	# Delayed spheres
-	if time <= 0:
+	if timer_1 < 0:
 		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_transform.origin, 2.0, Color.BLUE_VIOLET, 2.0)
 		DebugDraw3D.draw_sphere_hd($Spheres/SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
-		time = 2
-	time -= delta
+		timer_1 = 2
 	
 	# Cylinders
 	DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
@@ -197,10 +203,9 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.FUCHSIA)
 	DebugDraw3D.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3.0, Color.CRIMSON)
 	
-	if time3 <= 0:
+	if timer_3 < 0:
 		DebugDraw3D.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2.0)
-		time3 = 2
-	time3 -= delta
+		timer_3 = 2
 	
 	# Test UP vector
 	DebugDraw3D.draw_line($"Lines/7".global_transform.origin, target.global_transform.origin, Color.RED)
@@ -274,7 +279,6 @@ func main_update(delta: float) -> void:
 	DebugDraw2D.config.text_custom_font = custom_font
 	
 	if test_text:
-		time_text -= delta
 		_text_tests()
 	
 	# Graphs
@@ -309,9 +313,9 @@ func main_update(delta: float) -> void:
 
 
 func _text_tests():
-	if time_text < 0:
+	if timer_text < 0:
 		DebugDraw2D.set_text("Some delayed text", "for 2.5s", -1, Color.BLACK, 2.5) # it's supposed to show text for 2.5 seconds
-		time_text += 5
+		timer_text = 5
 	
 	DebugDraw2D.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
@@ -384,13 +388,16 @@ func _more_tests():
 
 func _draw_array_of_boxes():
 	# Lots of boxes to check performance..
-	if time2 <= 0:
-		for x in 50:
-			for y in 50:
-				for z in 3:
+	var x_size := 50
+	var y_size := 50
+	var z_size := 3
+	
+	if timer_2 < 0:
+		for x in x_size:
+			for y in y_size:
+				for z in z_size:
 					DebugDraw3D.draw_box(Vector3(x, -4-z, y), Vector3.ONE, DebugDraw3D.empty_color, false, 1.25)
-		time2 = 1.25
-	time2 -= get_process_delta_time()
+		timer_2 = 1.25
 
 
 func _graph_test():

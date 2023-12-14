@@ -167,6 +167,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del \Y $(SolutionDir)vc140.pdb</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor_analyze|x64'">
     <ClCompile>
@@ -198,6 +201,9 @@
     <PostBuildEvent>
       <Command>copy /Y "$(VC_ExecutablePath_x64)\clang_rt.asan_dynamic-x86_64.dll" "$(TargetDir)clang_rt.asan_dynamic-x86_64.dll"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>del \Y $(SolutionDir)vc140.pdb</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='editor_dev|x64'">
     <ClCompile>
@@ -226,6 +232,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del \Y $(SolutionDir)vc140.pdb</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='template_release|x64'">
     <ClCompile>
@@ -253,6 +262,9 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del \Y $(SolutionDir)vc140.pdb</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_forced|x64'">
     <ClCompile>
@@ -280,6 +292,9 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
     </Link>
+    <PreBuildEvent>
+      <Command>del \Y $(SolutionDir)vc140.pdb</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="default_sources.json" />

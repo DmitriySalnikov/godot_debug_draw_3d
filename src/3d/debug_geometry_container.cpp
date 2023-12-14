@@ -147,6 +147,10 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 
 void DebugGeometryContainer::set_world(Node *new_world) {
 	ZoneScoped;
+	if (!new_world) {
+		return;
+	}
+
 	scene_world_node = new_world;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	RID scenario;

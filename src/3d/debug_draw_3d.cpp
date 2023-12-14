@@ -114,9 +114,7 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 
 	_load_materials();
 
-#ifndef DISABLE_DEBUG_RENDERING
-	dgc = std::make_unique<DebugGeometryContainer>(this, add_bevel);
-#endif
+	// Need to call_deferred `regenerate_geometry_meshes` outside this methods in Manager
 }
 
 DebugDraw3D::~DebugDraw3D() {
@@ -455,7 +453,7 @@ Ref<DebugDrawStats3D> DebugDraw3D::get_render_stats() {
 void DebugDraw3D::regenerate_geometry_meshes() {
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
-	Node *old_world = dgc->get_world();
+	Node *old_world = dgc ? dgc->get_world() : nullptr;
 	dgc.reset();
 
 	dgc = std::make_unique<DebugGeometryContainer>(this, PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric));
@@ -475,11 +473,9 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
-#define GET_PROC_TYPE() (root_node->is_physics_processing() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)
+#define GET_PROC_TYPE() (Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)
 #define CHECK_BEFORE_CALL() \
 	if (!dgc || NEED_LEAVE || config->is_freeze_3d_render()) return;
-#else
-#define CHECK_BEFORE_CALL()
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -1028,4 +1024,5 @@ void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const 
 
 #undef IS_DEFAULT_COLOR
 #undef GET_PROC_TYPE
+#undef CHECK_BEFORE_CALL
 #undef NEED_LEAVE

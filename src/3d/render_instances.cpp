@@ -438,12 +438,33 @@ void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_
 	ZoneScoped;
 	auto &proc = pools[(int)p_proc];
 
-	for (auto &t : proc.instances)
-		for (size_t i = 0; i < t.delayed.size(); i++)
-			t.delayed[i].update_expiration(_delta);
+	if (p_proc == ProcessType::PHYSICS_PROCESS) {
+		for (auto &t : proc.instances) {
+			for (size_t i = 0; i < t.delayed.size(); i++) {
+				auto &o = t.delayed[i];
+				if (o.is_used_one_time) {
+					o.update_expiration(_delta);
+				}
+			}
+		}
 
-	for (size_t i = 0; i < proc.lines.delayed.size(); i++)
-		proc.lines.delayed[i].update_expiration(_delta);
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			auto &o = proc.lines.delayed[i];
+			if (o.is_used_one_time) {
+				o.update_expiration(_delta);
+			}
+		}
+	} else {
+		for (auto &t : proc.instances) {
+			for (size_t i = 0; i < t.delayed.size(); i++) {
+				t.delayed[i].update_expiration(_delta);
+			}
+		}
+
+		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+			proc.lines.delayed[i].update_expiration(_delta);
+		}
+	}
 }
 
 void GeometryPool::scan_visible_instances() {

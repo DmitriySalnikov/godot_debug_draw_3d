@@ -93,7 +93,7 @@ public:
 			is_visible(false) {}
 
 	bool is_expired() const {
-		return expiration_time > 0 ? false : is_used_one_time;
+		return expiration_time < 0 ? is_used_one_time : false;
 	}
 
 	bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
