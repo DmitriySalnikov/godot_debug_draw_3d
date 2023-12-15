@@ -338,7 +338,7 @@ private:
 			return m_buffer.get();
 		}
 
-		// TODO stupid and slow as it makes a COPY of all memory..
+		// TODO stupid and slow
 		inline auto slice(int64_t begin, int64_t end = 2147483647) {
 			ZoneScoped;
 			TSlice res;

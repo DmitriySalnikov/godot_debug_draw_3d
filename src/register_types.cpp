@@ -114,6 +114,6 @@ GDExtensionBool GDE_EXPORT debug_draw_3d_library_init(GDExtensionInterfaceGetPro
 // StringName : 1 unclaimed string names at exit.
 // TODO https://github.com/godotengine/godot/pull/83619#:~:text=This%20still%20leaves%20one%20reported%20orphan%20string%3A
 
-// TODO idk
+// TODO godot bug?
 // ERROR: Pages in use exist at exit in PagedAllocator: N7Variant5Pools12BucketMediumE
 //	at : ~PagedAllocator(./ core / templates / paged_allocator.h : 170)

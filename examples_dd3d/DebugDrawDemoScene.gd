@@ -86,7 +86,7 @@ func _physics_process(delta: float) -> void:
 		_update_timers(delta)
 	
 	if not zylann_example:
-		DebugDraw3D.draw_line($"Lines/8".global_transform.origin, $Lines/Target.global_transform.origin, Color.YELLOW)
+		DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
 
 
 func main_update(delta: float) -> void:
@@ -169,8 +169,8 @@ func main_update(delta: float) -> void:
 	
 	# Delayed spheres
 	if timer_1 < 0:
-		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_transform.origin, 2.0, Color.BLUE_VIOLET, 2.0)
-		DebugDraw3D.draw_sphere_hd($Spheres/SpherePosition.global_transform.origin + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
+		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position, 2.0, Color.BLUE_VIOLET, 2.0)
+		DebugDraw3D.draw_sphere_hd($Spheres/SpherePosition.global_position + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		timer_1 = 2
 	
 	# Cylinders
@@ -180,41 +180,40 @@ func main_update(delta: float) -> void:
 	
 	# Boxes
 	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
-	DebugDraw3D.draw_box($Boxes/Box2.global_transform.origin, Vector3.ONE, Color.REBECCA_PURPLE)
-	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_transform.origin), Color.ROSY_BROWN)
+	DebugDraw3D.draw_box($Boxes/Box2.global_position, Vector3.ONE, Color.REBECCA_PURPLE)
+	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_position), Color.ROSY_BROWN)
 	
-	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_transform.origin, Vector3(2, 1, 2)), Color.AQUA)
-	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_transform.origin, $Boxes/AABB/b.global_transform.origin, Color.DEEP_PINK)
-	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_transform.origin, $Boxes/AABB/b.global_transform.origin, Color.DEEP_PINK)
+	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_position, Vector3(2, 1, 2)), Color.AQUA)
+	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_position, $Boxes/AABB/b.global_position, Color.DEEP_PINK)
 	
 	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
 	# Boxes AB
 	DebugDraw3D.draw_arrow_line($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
-	DebugDraw3D.draw_box_ab($Boxes/BoxAB/a.global_transform.origin, $Boxes/BoxAB/b.global_transform.origin, $Boxes/BoxAB/o/up.global_position - $Boxes/BoxAB.global_position, Color.PERU)
+	DebugDraw3D.draw_box_ab($Boxes/BoxAB/a.global_position, $Boxes/BoxAB/b.global_position, $Boxes/BoxAB/o/up.global_position - $Boxes/BoxAB.global_position, Color.PERU)
 	
 	DebugDraw3D.draw_arrow_line($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
-	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_transform.origin, $Boxes/BoxABEdge/b.global_transform.origin, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
+	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_position, $Boxes/BoxABEdge/b.global_position, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
 	
 	# Lines
 	var target = $Lines/Target
-	DebugDraw3D.draw_square(target.global_transform.origin, 0.5, Color.RED)
+	DebugDraw3D.draw_square(target.global_position, 0.5, Color.RED)
 	
-	DebugDraw3D.draw_line($"Lines/1".global_transform.origin, target.global_transform.origin, Color.FUCHSIA)
-	DebugDraw3D.draw_ray($"Lines/3".global_transform.origin, (target.global_transform.origin - $"Lines/3".global_transform.origin).normalized(), 3.0, Color.CRIMSON)
+	DebugDraw3D.draw_line($"Lines/1".global_position, target.global_position, Color.FUCHSIA)
+	DebugDraw3D.draw_ray($"Lines/3".global_position, (target.global_position - $"Lines/3".global_position).normalized(), 3.0, Color.CRIMSON)
 	
 	if timer_3 < 0:
-		DebugDraw3D.draw_line($"Lines/6".global_transform.origin, target.global_transform.origin, Color.FUCHSIA, 2.0)
+		DebugDraw3D.draw_line($"Lines/6".global_position, target.global_position, Color.FUCHSIA, 2.0)
 		timer_3 = 2
 	
 	# Test UP vector
-	DebugDraw3D.draw_line($"Lines/7".global_transform.origin, target.global_transform.origin, Color.RED)
+	DebugDraw3D.draw_line($"Lines/7".global_position, target.global_position, Color.RED)
 	
 	# Lines with Arrow
-	DebugDraw3D.draw_arrow_line($"Lines/2".global_transform.origin, target.global_transform.origin, Color.BLUE, 0.5, true)
-	DebugDraw3D.draw_arrow_ray($"Lines/4".global_transform.origin, (target.global_transform.origin - $"Lines/4".global_transform.origin).normalized(), 8.0, Color.LAVENDER, 0.5, true)
+	DebugDraw3D.draw_arrow_line($"Lines/2".global_position, target.global_position, Color.BLUE, 0.5, true)
+	DebugDraw3D.draw_arrow_ray($"Lines/4".global_position, (target.global_position - $"Lines/4".global_position).normalized(), 8.0, Color.LAVENDER, 0.5, true)
 	
-	DebugDraw3D.draw_line_hit_offset($"Lines/5".global_transform.origin, target.global_transform.origin, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
+	DebugDraw3D.draw_line_hit_offset($"Lines/5".global_position, target.global_position, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
 	
 	# Path
 	
@@ -228,10 +227,10 @@ func main_update(delta: float) -> void:
 	for c in $LinePath.get_children():
 		if not c is Node3D:
 			break
-		points.append(c.global_transform.origin)
-		points_below.append(c.global_transform.origin + Vector3.DOWN)
-		points_below2.append(c.global_transform.origin + Vector3.DOWN * 2)
-		points_below3.append(c.global_transform.origin + Vector3.DOWN * 3)
+		points.append(c.global_position)
+		points_below.append(c.global_position + Vector3.DOWN)
+		points_below2.append(c.global_position + Vector3.DOWN * 2)
+		points_below3.append(c.global_position + Vector3.DOWN * 3)
 	for x in points.size()-1:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
@@ -253,7 +252,7 @@ func main_update(delta: float) -> void:
 		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.1)
 		DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
-	DebugDraw3D.draw_square($Misc/Billboard.global_transform.origin, 0.5, Color.GREEN)
+	DebugDraw3D.draw_square($Misc/Billboard.global_position, 0.5, Color.GREEN)
 	
 	DebugDraw3D.draw_position($Misc/Position.global_transform, Color.BROWN)
 	
@@ -297,7 +296,7 @@ func main_update(delta: float) -> void:
 	
 	# Lag Test
 	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
-	DebugDraw3D.draw_box($LagTest.global_transform.origin, Vector3.ONE * 2.01, DebugDraw3D.empty_color, true)
+	DebugDraw3D.draw_box($LagTest.global_position, Vector3.ONE * 2.01, DebugDraw3D.empty_color, true)
 	
 	if more_test_cases:
 		for ray in $HitTest/RayEmitter.get_children():
@@ -379,12 +378,12 @@ func _more_tests():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast3D:
-			DebugDraw3D.draw_line_hit(ray.global_transform.origin, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.15)
+			DebugDraw3D.draw_line_hit(ray.global_position, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.15)
 	
 	# Delayed line render
 	if true:
 		var _a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
-		DebugDraw3D.draw_line($LagTest.global_transform.origin + Vector3.UP, $LagTest.global_transform.origin + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
+		DebugDraw3D.draw_line($LagTest.global_position + Vector3.UP, $LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
 
 
 func _draw_array_of_boxes():

@@ -6,7 +6,7 @@
 [node name="DebugDrawDemoSceneCS" instance=ExtResource("2")]
 script = ExtResource("2_ipqea")
 
-[node name="Settings" parent="." index="14"]
+[node name="Settings" parent="." index="16"]
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
 
 [node name="Label" parent="Settings/GC" index="0"]

@@ -10,6 +10,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     [Export] Font custom_font;
     [Export] bool zylann_example = false;
+    [Export] bool update_in_physics = false;
     [Export] bool test_text = true;
     [Export] bool test_graphs = false;
     [Export] bool more_test_cases = true;
@@ -49,10 +50,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         { Key.Key3, 0 },
     };
 
-    double time = 0.0;
-    double time2 = 0.0;
-    double time3 = 0.0;
-    double time_text = 0.0;
+    double timer_1 = 0.0;
+    double timer_2 = 0.0;
+    double timer_3 = 0.0;
+    double timer_text = 0.0;
 
     Node3D dHitTest;
     CsgBox3D dLagTest;
@@ -67,6 +68,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dBox2;
     Node3D dBox3;
     Node3D dBoxOutOfDistanceCulling;
+    Node3D dBoxAB;
+    Node3D dBoxABa;
+    Node3D dBoxABb;
+    Node3D dBoxABup;
+    Node3D dBoxABEdge;
+    Node3D dBoxABEdgea;
+    Node3D dBoxABEdgeb;
+    Node3D dBoxABEdgeup;
     Node3D dLines_1;
     Node3D dLines_2;
     Node3D dLines_3;
@@ -74,6 +83,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dLines_5;
     Node3D dLines_6;
     Node3D dLines_7;
+    Node3D dLines_8;
     Node3D dLines_Target;
     Node3D dLinePath;
     Node3D dCylinder1;
@@ -112,6 +122,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dBox2 = GetNode<Node3D>("Boxes/Box2");
         dBox3 = GetNode<Node3D>("Boxes/Box3");
         dBoxOutOfDistanceCulling = GetNode<Node3D>("Boxes/BoxOutOfDistanceCulling");
+        dBoxAB = GetNode<Node3D>("Boxes/BoxAB");
+        dBoxABa = GetNode<Node3D>("Boxes/BoxAB/a");
+        dBoxABb = GetNode<Node3D>("Boxes/BoxAB/b");
+        dBoxABup = GetNode<Node3D>("Boxes/BoxAB/o/up");
+        dBoxABEdge = GetNode<Node3D>("Boxes/BoxABEdge");
+        dBoxABEdgea = GetNode<Node3D>("Boxes/BoxABEdge/a");
+        dBoxABEdgeb = GetNode<Node3D>("Boxes/BoxABEdge/b");
+        dBoxABEdgeup = GetNode<Node3D>("Boxes/BoxABEdge/o/up");
         dLines_1 = GetNode<Node3D>("Lines/1");
         dLines_2 = GetNode<Node3D>("Lines/2");
         dLines_3 = GetNode<Node3D>("Lines/3");
@@ -119,6 +137,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dLines_5 = GetNode<Node3D>("Lines/5");
         dLines_6 = GetNode<Node3D>("Lines/6");
         dLines_7 = GetNode<Node3D>("Lines/7");
+        dLines_8 = GetNode<Node3D>("Lines/8");
         dLines_Target = GetNode<Node3D>("Lines/Target");
         dLinePath = GetNode<Node3D>("LinePath");
         dCylinder1 = GetNode<Node3D>("Cylinders/Cylinder1");
@@ -162,6 +181,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
         return false;
     }
 
+    void _update_timers(double delta)
+    {
+        timer_1 -= delta;
+        timer_2 -= delta;
+        timer_3 -= delta;
+        timer_text -= delta;
+    }
+
     void _update_keys_just_press()
     {
         var set = (Key k) => Input.IsKeyPressed(k) ? (button_presses[k] == 0 ? 1 : button_presses[k]) : 0;
@@ -175,6 +202,29 @@ public partial class DebugDrawDemoSceneCS : Node3D
     }
 
     public override void _Process(double delta)
+    {
+        if (!update_in_physics)
+        {
+            MainUpdate(delta);
+            _update_timers(delta);
+        }
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (update_in_physics)
+        {
+            MainUpdate(delta);
+            _update_timers(delta);
+        }
+
+        if (!zylann_example)
+        {
+            DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
+        }
+    }
+
+    void MainUpdate(double delta)
     {
         if (Input.IsActionJustPressed("ui_end"))
             DebugDraw3D.RegenerateGeometryMeshes();
@@ -270,54 +320,61 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawSphereHdXf(dSphereHDTransform.GlobalTransform, Colors.OrangeRed);
 
         // Delayed spheres
-        if (time <= 0)
+        if (timer_1 <= 0)
         {
-            DebugDraw3D.DrawSphere(dSpherePosition.GlobalTransform.Origin, 2.0f, Colors.BlueViolet, 2.0f);
-            DebugDraw3D.DrawSphereHd(dSpherePosition.GlobalTransform.Origin + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
-            time = 2;
+            DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition, 2.0f, Colors.BlueViolet, 2.0f);
+            DebugDraw3D.DrawSphereHd(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
+            timer_1 = 2;
         }
 
-        time -= delta;
+        timer_1 -= delta;
 
         // Cylinders
         DebugDraw3D.DrawCylinder(dCylinder1.GlobalTransform, Colors.Crimson);
-        DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalTransform.Origin), Colors.Red);
-        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalTransform.Origin, dCylinder3b.GlobalTransform.Origin, 0.35f);
+        DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalPosition), Colors.Red);
+        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalPosition, dCylinder3b.GlobalPosition, 0.35f);
 
         // Boxes
         DebugDraw3D.DrawBoxXf(dBox1.GlobalTransform, Colors.MediumPurple);
-        DebugDraw3D.DrawBox(dBox2.GlobalTransform.Origin, Vector3.One, Colors.RebeccaPurple);
-        DebugDraw3D.DrawBoxXf(new Transform3D(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), dBox3.GlobalTransform.Origin), Colors.RosyBrown);
+        DebugDraw3D.DrawBox(dBox2.GlobalPosition, Vector3.One, Colors.RebeccaPurple);
+        DebugDraw3D.DrawBoxXf(new Transform3D(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), dBox3.GlobalPosition), Colors.RosyBrown);
+
+        DebugDraw3D.DrawAabb(new Aabb(dAABB_fixed.GlobalPosition, new Vector3(2, 1, 2)), Colors.Aqua);
+        DebugDraw3D.DrawAabbAb(dAABB.GetChild<Node3D>(0).GlobalPosition, dAABB.GetChild<Node3D>(1).GlobalPosition, Colors.DeepPink);
 
         DebugDraw3D.DrawBoxXf(dBoxOutOfDistanceCulling.GlobalTransform, Colors.Red);
 
-        DebugDraw3D.DrawAabb(new Aabb(dAABB_fixed.GlobalTransform.Origin, new Vector3(2, 1, 2)), Colors.Aqua);
-        DebugDraw3D.DrawAabbAb(dAABB.GetChild<Node3D>(0).GlobalTransform.Origin, dAABB.GetChild<Node3D>(1).GlobalTransform.Origin, Colors.DeepPink);
+        // Boxes AB
+
+        DebugDraw3D.DrawArrowLine(dBoxAB.GlobalPosition, dBoxABup.GlobalPosition, Colors.Gold, 0.1f, true);
+        DebugDraw3D.DrawBoxAb(dBoxABa.GlobalPosition, dBoxABb.GlobalPosition, dBoxABup.GlobalPosition - dBoxAB.GlobalPosition, Colors.Peru);
+
+        DebugDraw3D.DrawArrowLine(dBoxABEdge.GlobalPosition, dBoxABEdgeup.GlobalPosition, Colors.DarkRed, 0.1f, true);
+        DebugDraw3D.DrawBoxAb(dBoxABEdgea.GlobalPosition, dBoxABEdgeb.GlobalPosition, dBoxABEdgeup.GlobalPosition - dBoxABEdge.GlobalPosition, Colors.DarkOliveGreen, false);
 
         // Lines
-        var target = dLines_Target;
-        DebugDraw3D.DrawSquare(target.GlobalTransform.Origin, 0.5f, Colors.Red);
+        DebugDraw3D.DrawSquare(dLines_Target.GlobalPosition, 0.5f, Colors.Red);
 
-        DebugDraw3D.DrawLine(dLines_1.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Fuchsia);
-        DebugDraw3D.DrawRay(dLines_3.GlobalTransform.Origin, (target.GlobalTransform.Origin - dLines_3.GlobalTransform.Origin).Normalized(), 3.0f, Colors.Crimson);
+        DebugDraw3D.DrawLine(dLines_1.GlobalPosition, dLines_Target.GlobalPosition, Colors.Fuchsia);
+        DebugDraw3D.DrawRay(dLines_3.GlobalPosition, (dLines_Target.GlobalPosition - dLines_3.GlobalPosition).Normalized(), 3.0f, Colors.Crimson);
 
 
-        if (time3 <= 0)
+        if (timer_3 <= 0)
         {
-            DebugDraw3D.DrawLine(dLines_6.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Fuchsia, 2.0f);
-            time3 = 2;
+            DebugDraw3D.DrawLine(dLines_6.GlobalPosition, dLines_Target.GlobalPosition, Colors.Fuchsia, 2.0f);
+            timer_3 = 2;
         }
 
-        time3 -= delta;
+        timer_3 -= delta;
 
         // Test UP vector
-        DebugDraw3D.DrawLine(dLines_7.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Red);
+        DebugDraw3D.DrawLine(dLines_7.GlobalPosition, dLines_Target.GlobalPosition, Colors.Red);
 
         // Lines with Arrow
-        DebugDraw3D.DrawArrowLine(dLines_2.GlobalTransform.Origin, target.GlobalTransform.Origin, Colors.Blue, 0.5f, true);
-        DebugDraw3D.DrawArrowRay(dLines_4.GlobalTransform.Origin, (target.GlobalTransform.Origin - dLines_4.GlobalTransform.Origin).Normalized(), 8.0f, Colors.Lavender, 0.5f, true);
+        DebugDraw3D.DrawArrowLine(dLines_2.GlobalPosition, dLines_Target.GlobalPosition, Colors.Blue, 0.5f, true);
+        DebugDraw3D.DrawArrowRay(dLines_4.GlobalPosition, (dLines_Target.GlobalPosition - dLines_4.GlobalPosition).Normalized(), 8.0f, Colors.Lavender, 0.5f, true);
 
-        DebugDraw3D.DrawLineHitOffset(dLines_5.GlobalTransform.Origin, target.GlobalTransform.Origin, true, Mathf.Abs(Mathf.Sin(Time.GetTicksMsec() / 1000.0f)), 0.25f, Colors.Aqua);
+        DebugDraw3D.DrawLineHitOffset(dLines_5.GlobalPosition, dLines_Target.GlobalPosition, true, Mathf.Abs(Mathf.Sin(Time.GetTicksMsec() / 1000.0f)), 0.25f, Colors.Aqua);
 
         // Path
 
@@ -332,10 +389,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         {
             if (node is Node3D c)
             {
-                points.Add(c.GlobalTransform.Origin);
-                points_below.Add(c.GlobalTransform.Origin + Vector3.Down);
-                points_below2.Add(c.GlobalTransform.Origin + Vector3.Down * 2);
-                points_below3.Add(c.GlobalTransform.Origin + Vector3.Down * 3);
+                points.Add(c.GlobalPosition);
+                points_below.Add(c.GlobalPosition + Vector3.Down);
+                points_below2.Add(c.GlobalPosition + Vector3.Down * 2);
+                points_below3.Add(c.GlobalPosition + Vector3.Down * 3);
             }
         }
 
@@ -358,15 +415,21 @@ public partial class DebugDrawDemoSceneCS : Node3D
             DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
         }
 
-        DebugDraw3D.DrawArrow(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
+        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.1f))
+        {
+            DebugDraw3D.DrawArrow(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
+        }
 
-        DebugDraw3D.DrawSquare(dMisc_Billboard.GlobalTransform.Origin, 0.5f, Colors.Green);
+        DebugDraw3D.DrawSquare(dMisc_Billboard.GlobalPosition, 0.5f, Colors.Green);
 
         DebugDraw3D.DrawPosition(dMisc_Position.GlobalTransform, Colors.Brown);
 
         DebugDraw3D.DrawGizmo(dMisc_GizmoTransform.GlobalTransform, null, true);
-        DebugDraw3D.DrawGizmo(dMisc_GizmoNormal.GlobalTransform.Orthonormalized(), null, false);
         DebugDraw3D.DrawGizmo(dMisc_GizmoOneColor.GlobalTransform, Colors.Brown, true);
+        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.5f))
+        {
+            DebugDraw3D.DrawGizmo(dMisc_GizmoNormal.GlobalTransform.Orthonormalized(), null, false);
+        }
 
         Transform3D tg = dMisc_Grids_Grid.GlobalTransform;
         Vector3 tn = dMisc_Grids_Grid_Subdivision.Transform.Origin;
@@ -386,7 +449,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (test_text)
         {
-            time_text -= delta;
+            timer_text -= delta;
             _text_tests();
         }
 
@@ -414,7 +477,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Lag Test
         dLagTest.Position = ((Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0)) + new Vector3(Mathf.Sin(Time.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
-        DebugDraw3D.DrawBox(dLagTest.GlobalTransform.Origin, Vector3.One * 2.01f, null, true);
+        DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Vector3.One * 2.01f, null, true);
 
         if (more_test_cases)
         {
@@ -445,10 +508,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
     void _text_tests()
     {
 
-        if (time_text < 0)
+        if (timer_text < 0)
         {
             DebugDraw2D.SetText("Some delayed text", "for 2.5s", -1, Colors.Black, 2.5f); // it's supposed to show text for 2.5 seconds
-            time_text += 5;
+            timer_text += 5;
         }
 
         DebugDraw2D.SetText("FPS", $"{Engine.GetFramesPerSecond():F2}", 0, Colors.Gold);
@@ -523,21 +586,21 @@ public partial class DebugDrawDemoSceneCS : Node3D
         {
             if (node is RayCast3D ray)
             {
-                DebugDraw3D.DrawLineHit(ray.GlobalTransform.Origin, ray.ToGlobal(ray.TargetPosition), ray.GetCollisionPoint(), ray.IsColliding(), 0.15f);
+                DebugDraw3D.DrawLineHit(ray.GlobalPosition, ray.ToGlobal(ray.TargetPosition), ray.GetCollisionPoint(), ray.IsColliding(), 0.15f);
             }
         }
 
         // Delayed line render
         using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.035f))
         {
-            DebugDraw3D.DrawLine(dLagTest.GlobalTransform.Origin + Vector3.Up, dLagTest.GlobalTransform.Origin + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
+            DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
         }
     }
 
     void _draw_array_of_boxes()
     {
         // Lots of boxes to check performance..
-        if (time2 <= 0)
+        if (timer_2 <= 0)
         {
             for (int x = 0; x < 50; x++)
             {
@@ -549,9 +612,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
                     }
                 }
             }
-            time2 = 1.25;
+            timer_2 = 1.25;
         }
-        time2 -= GetProcessDeltaTime();
+        timer_2 -= GetProcessDeltaTime();
     }
 
 

@@ -89,5 +89,5 @@ void DebugDrawStats3D::set_render_stats(
 	total_time_culling_usec = time_culling_instant_usec +
 							  time_culling_delayed_usec;
 
-	total_time_spent_usec = total_time_filling_buffers_usec + total_time_culling_usec; // TODO
+	total_time_spent_usec = total_time_filling_buffers_usec + total_time_culling_usec;
 }
