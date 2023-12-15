@@ -166,6 +166,13 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffe
 				}
 			}
 		}
+	} else {
+		// Force reset stats
+		for (auto &proc : pools) {
+			auto &inst = proc.instances[(int)_type];
+			inst._prev_used_instant = inst.used_instant;
+			inst.used_delayed = 0;
+		}
 	}
 
 	return buffer.slice(0, last_added * INSTANCE_DATA_FLOAT_COUNT);
