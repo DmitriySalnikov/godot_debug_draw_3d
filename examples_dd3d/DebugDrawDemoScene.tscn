@@ -374,8 +374,6 @@ func _on_Button_pressed() -> void:
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-draw_array_of_boxes = true
-text_groups_show_stats = true
 text_groups_position = 2
 
 [node name="Camera" type="Camera3D" parent="."]

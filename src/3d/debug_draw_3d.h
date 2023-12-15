@@ -60,17 +60,16 @@ private:
 
 #ifndef DISABLE_DEBUG_RENDERING
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
-	ProfiledMutex(std::recursive_mutex, scoped_datalock, "3D Scoped config lock");
 
 	typedef std::pair<uint64_t, DDScopedConfig3D *> ScopedPairIdConfig;
 	// stores thread id and array of id's with ptrs
-	std::map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
+	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
-	std::map<uint64_t, DDScopedConfig3D *> cached_scoped_configs;
+	std::unordered_map<uint64_t, DDScopedConfig3D *> cached_scoped_configs;
 	uint64_t create_scoped_configs = 0;
 
 	// Inherited via IScopedStorage
-	Ref<DDScopedConfig3D> scoped_config_for_current_thread() override;
+	DDScopedConfig3D *scoped_config_for_current_thread() override;
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING

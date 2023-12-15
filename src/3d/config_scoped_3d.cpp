@@ -48,7 +48,7 @@ DDScopedConfig3D::DDScopedConfig3D() {
 	center_brightness = 0;
 }
 
-DDScopedConfig3D::DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const Ref<DDScopedConfig3D> parent, const unregister_func p_unreg) {
+DDScopedConfig3D::DDScopedConfig3D(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DDScopedConfig3D *parent, const unregister_func p_unreg) {
 	unregister_action = p_unreg;
 
 	thread_id = p_thread_id;

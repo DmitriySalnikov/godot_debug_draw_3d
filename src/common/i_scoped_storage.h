@@ -17,7 +17,7 @@ private:
 	virtual void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) = 0;
 	virtual void _clear_scoped_configs() = 0;
 
-	virtual Ref<TCfgStorage> scoped_config_for_current_thread() = 0;
+	virtual TCfgStorage *scoped_config_for_current_thread() = 0;
 #endif
 
 public:
