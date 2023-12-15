@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=22 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -192,6 +192,7 @@ func _ready():
 	var bus = AudioServer.get_bus_index(\"Music\")
 	spectrum = AudioServer.get_bus_effect_instance(bus, 0)
 	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(&\"Master\"))
+	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&\"Master\")))
 	
 	if OS.has_feature('web'):
 		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
@@ -293,6 +294,10 @@ func draw_spectrum():
 
 func _on_mute_toggled(toggled_on):
 	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
+
+
+func _on_volume_slider_value_changed(value):
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&\"Master\"), linear_to_db(value))
 "
 
 [sub_resource type="Gradient" id="Gradient_tup4c"]
@@ -326,54 +331,94 @@ script/source = "@tool
 extends Control
 
 @export var switch_to_scene = \"\"
+var is_ready := false
 
-var frames := 0
-
-func _process(_delta):
-	frames += 1
-	if frames == 3:
-		_deferred_init()
-		set_process(false)
-
-func _deferred_init():
-	$GC/VB/H/Button.disabled = true
+func _ready():
+	if ProjectSettings.has_setting(\"application/config/no_csharp_support\"):
+		%SwitchLang.visible = false
+	
+	%SwitchLang.disabled = true
 	
 	var test := DebugDraw2D.get_graph(&\"FPS\")
 	if test:
-		$GC/VB/H/FPSEnabled.button_pressed = test.enabled
-		$GC/VB/FPSMS.button_pressed = test.frame_time_mode
-		$GC/VB/HSlider.value = test.size.x
-		$GC/VB/HSlider2.value = test.buffer_size
+		%FPSEnabled.button_pressed = test.enabled
+		%FPSMS.button_pressed = test.frame_time_mode
+		%WidthSlider.value = test.size.x
+		%BufferSlider.value = test.buffer_size
+	
+	%ThicknessSlider.value = get_parent().debug_thickness
+	%UpdateInPhysics.text = \"Update in physics (%d Ticks)\" % ProjectSettings.get_setting(\"physics/common/physics_ticks_per_second\")
+	%UpdateInPhysics.button_pressed = get_parent().update_in_physics
 	
 	if get_tree():
 		await get_tree().create_timer(0.2).timeout
 	
-	$GC/VB/H/Button.disabled = false
+	%SwitchLang.disabled = false
+	is_ready = true
+
 
 func _on_CheckBox_toggled(button_pressed: bool) -> void:
+	if not is_ready: return
+	
 	var cfg = DebugDraw2D.get_graph(&\"FPS\")
 	if cfg:
 		cfg.enabled = button_pressed
 
+
 func _on_FPSMS_toggled(button_pressed: bool) -> void:
+	if not is_ready: return
+	
 	var cfg = DebugDraw2D.get_graph(&\"FPS\")
 	if cfg:
 		cfg.frame_time_mode = button_pressed
 
-func _on_HSlider_value_changed(value: float) -> void:
-	get_parent().graph_size = Vector2i(int(value), get_parent().graph_size.y)
-
-func _on_HSlider2_value_changed(value: float) -> void:
-	get_parent().graph_buffer_size = int(value)
 
 func _on_Button_pressed() -> void:
 	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
+
+
+func _on_width_slider_value_changed(value):
+	if not is_ready: return
+	
+	get_parent().graph_size = Vector2i(int(value), get_parent().graph_size.y)
+
+
+func _on_buffer_slider_value_changed(value):
+	if not is_ready: return
+	
+	get_parent().graph_buffer_size = int(value)
+
+
+func _on_thickness_slider_value_changed(value):
+	if not is_ready: return
+	
+	get_parent().debug_thickness = value
+
+
+func _on_update_in_physics_toggled(toggled_on):
+	get_parent().update_in_physics = toggled_on
 "
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oj5gf"]
+content_margin_top = 5.0
+content_margin_bottom = 7.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boyhr"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 0.682353)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+update_in_physics = true
 text_groups_position = 2
 
 [node name="Camera" type="Camera3D" parent="."]
@@ -561,41 +606,42 @@ metadata/_edit_group_ = true
 [node name="up" type="Node3D" parent="Boxes/BoxABEdge/o"]
 transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
 
-[node name="Misc" type="Node3D" parent="."]
+[node name="Grids" type="Node3D" parent="."]
+transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 4.21038, -2.5, 2.93281)
 
-[node name="Billboard" type="Node3D" parent="Misc"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.18606, -0.331599, 6.66091)
-
-[node name="Arrow" type="Node3D" parent="Misc"]
-transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -4.06502, -0.670307, 6.7413)
-
-[node name="Position" type="Node3D" parent="Misc"]
-transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, -2.73567, -0.331599, 2.69873)
-
-[node name="GizmoNormal" type="Node3D" parent="Misc"]
-transform = Transform3D(1.95938, 0, -0.848962, 0, 0.999999, 0, 0.525014, 0, 3.16837, -2.69921, -0.306246, 4.79165)
-
-[node name="GizmoTransform" type="Node3D" parent="Misc"]
-transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259)
-
-[node name="GizmoOneColor" type="Node3D" parent="Misc"]
-transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -4.428, -0.139425, 2.50494)
-
-[node name="Grids" type="Node3D" parent="Misc"]
-transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 7.45433, -2.5, 5.15179)
-
-[node name="GridCentered" type="Node3D" parent="Misc/Grids"]
+[node name="GridCentered" type="Node3D" parent="Grids"]
 transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
 rotation_edit_mode = 2
 
-[node name="Subdivision" type="Node3D" parent="Misc/Grids/GridCentered"]
+[node name="Subdivision" type="Node3D" parent="Grids/GridCentered"]
 transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
 
-[node name="Grid" type="Node3D" parent="Misc/Grids"]
+[node name="Grid" type="Node3D" parent="Grids"]
 transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
 
-[node name="Subdivision" type="Node3D" parent="Misc/Grids/Grid"]
+[node name="Subdivision" type="Node3D" parent="Grids/Grid"]
 transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
+
+[node name="Misc" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.35867, 0, 4.33293)
+
+[node name="Billboard" type="Node3D" parent="Misc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.403353, -0.331599, 2.22542)
+
+[node name="Arrow" type="Node3D" parent="Misc"]
+transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -0.475607, -0.670307, 2.30581)
+
+[node name="Position" type="Node3D" parent="Misc"]
+transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 0.853743, -0.331599, -1.73676)
+
+[node name="GizmoNormal" type="Node3D" parent="Misc"]
+transform = Transform3D(1.95938, 0, -0.848962, 0, 0.999999, 0, 0.525014, 0, 3.16837, 0.890203, -0.306246, 0.356159)
+
+[node name="GizmoTransform" type="Node3D" parent="Misc"]
+transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -0.838587, -0.458, -0.176491)
+
+[node name="GizmoOneColor" type="Node3D" parent="Misc"]
+transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -0.838587, -0.139425, -1.93055)
 
 [node name="Lines" type="Node3D" parent="."]
 transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326)
@@ -628,7 +674,7 @@ transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855353, -0.5714, -
 transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
 
 [node name="HitTest" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.48967, -1.03227, 9.524)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.21084, -1.03227, 8.02411)
 
 [node name="StaticBody" type="StaticBody3D" parent="HitTest"]
 
@@ -668,7 +714,9 @@ target_position = Vector3(0, -3.464, 0)
 transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
 target_position = Vector3(0, -3.464, 0)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
+[node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
+unique_name_in_owner = true
+callback_mode_process = 0
 libraries = {
 "": SubResource("AnimationLibrary_vh8ml")
 }
@@ -685,8 +733,10 @@ libraries = {
 }
 
 [node name="MusicVisualizer" type="Button" parent="."]
-offset_right = 88.0
-offset_bottom = 31.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 98.0
+offset_bottom = 41.0
 text = "OPEN FILE"
 script = SubResource("GDScript_atshy")
 bar_thickness = 0.065
@@ -709,7 +759,20 @@ offset_top = 35.0
 offset_right = 40.0
 offset_bottom = 75.0
 
-[node name="MuteMaster" type="CheckBox" parent="MusicVisualizer/VBox"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MusicVisualizer/VBox"]
+layout_mode = 2
+
+[node name="VolumeSlider" type="HSlider" parent="MusicVisualizer/VBox/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.1
+
+[node name="MuteMaster" type="CheckBox" parent="MusicVisualizer/VBox/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
@@ -726,11 +789,12 @@ anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -545.0
-offset_top = 14.0
+offset_top = 46.0
 offset_right = -37.0
 offset_bottom = 638.0
 grow_horizontal = 0
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3
@@ -745,62 +809,128 @@ script = SubResource("2")
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
 metadata/_edit_lock_ = true
 
-[node name="GC" type="GridContainer" parent="Settings"]
+[node name="HBox" type="HBoxContainer" parent="Settings"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-columns = 3
-metadata/_edit_lock_ = true
+offset_left = -497.0
+offset_top = -372.0
+offset_right = -10.0006
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
 
-[node name="Label" type="Label" parent="Settings/GC"]
+[node name="Label" type="Label" parent="Settings/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxEmpty_oj5gf")
 text = "GDScript example"
 horizontal_alignment = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VB" type="VBoxContainer" parent="Settings/GC"]
+[node name="PanelContainer" type="PanelContainer" parent="Settings/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_boyhr")
 
-[node name="H" type="HBoxContainer" parent="Settings/GC/VB"]
+[node name="VBox" type="VBoxContainer" parent="Settings/HBox/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "Common:"
+
+[node name="HBox3" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
 
-[node name="FPSEnabled" type="CheckBox" parent="Settings/GC/VB/H"]
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+layout_mode = 2
+text = "Thickness "
+
+[node name="ThicknessSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 0.5
+step = 0.001
+value = 0.05
+
+[node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Update in physics (15 Ticks)"
+
+[node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "FPS Graph:"
+
+[node name="FPSEnabled" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 button_pressed = true
 text = "FPS Graph enabled"
 
-[node name="Button" type="Button" parent="Settings/GC/VB/H"]
-layout_mode = 2
-text = "Switch to C#"
-
-[node name="FPSMS" type="CheckBox" parent="Settings/GC/VB"]
+[node name="FPSMS" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "FPS Graph ms or FPS"
 
-[node name="HSlider" type="HSlider" parent="Settings/GC/VB"]
+[node name="HBox" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+layout_mode = 2
+text = "Width       "
+
+[node name="WidthSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 50.0
 max_value = 1000.0
 value = 200.0
 
-[node name="HSlider2" type="HSlider" parent="Settings/GC/VB"]
+[node name="HBox2" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+layout_mode = 2
+text = "BufferSize"
+
+[node name="BufferSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 50.0
 max_value = 1000.0
-value = 128.0
+value = 200.0
 
-[connection signal="toggled" from="MusicVisualizer/VBox/MuteMaster" to="MusicVisualizer" method="_on_mute_toggled"]
-[connection signal="toggled" from="Settings/GC/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
-[connection signal="pressed" from="Settings/GC/VB/H/Button" to="Settings" method="_on_Button_pressed"]
-[connection signal="toggled" from="Settings/GC/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
-[connection signal="value_changed" from="Settings/GC/VB/HSlider" to="Settings" method="_on_HSlider_value_changed"]
-[connection signal="value_changed" from="Settings/GC/VB/HSlider2" to="Settings" method="_on_HSlider2_value_changed"]
+[node name="SwitchLang" type="Button" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Switch to C#"
+
+[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
+[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_toggled"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
+[connection signal="pressed" from="Settings/HBox/PanelContainer/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]

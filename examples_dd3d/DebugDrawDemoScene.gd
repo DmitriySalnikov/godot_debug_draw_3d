@@ -76,12 +76,14 @@ func _update_timers(delta : float):
 
 func _process(delta):
 	if !update_in_physics:
+		%RayEmitterAnimationPlayer.callback_mode_process = AnimationPlayer.ANIMATION_PROCESS_IDLE
 		main_update(delta)
 		_update_timers(delta)
 
 
 func _physics_process(delta: float) -> void:
 	if update_in_physics:
+		%RayEmitterAnimationPlayer.callback_mode_process = AnimationPlayer.ANIMATION_PROCESS_PHYSICS
 		main_update(delta)
 		_update_timers(delta)
 	
@@ -262,12 +264,12 @@ func main_update(delta: float) -> void:
 		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5)
 		DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
 	
-	var tg : Transform3D = $Misc/Grids/Grid.global_transform
-	var tn : Vector3 = $Misc/Grids/Grid/Subdivision.transform.origin
+	var tg : Transform3D = $Grids/Grid.global_transform
+	var tn : Vector3 = $Grids/Grid/Subdivision.transform.origin
 	DebugDraw3D.draw_grid(tg.origin, tg.basis.x, tg.basis.z, Vector2i(int(tn.x*10), int(tn.z*10)), Color.LIGHT_CORAL, false)
 	
-	var tn1 = $Misc/Grids/GridCentered/Subdivision.transform.origin
-	DebugDraw3D.draw_grid_xf($Misc/Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
+	var tn1 = $Grids/GridCentered/Subdivision.transform.origin
+	DebugDraw3D.draw_grid_xf($Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
 	# 2D
 	DebugDraw2D.config.text_default_size = text_groups_default_font_size

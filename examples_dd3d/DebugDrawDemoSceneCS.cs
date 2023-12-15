@@ -99,10 +99,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dMisc_GizmoTransform;
     Node3D dMisc_GizmoNormal;
     Node3D dMisc_GizmoOneColor;
+
     Node3D dMisc_Grids_Grid;
     Node3D dMisc_Grids_Grid_Subdivision;
     Node3D dMisc_Grids_GridCentered_Subdivision;
     Node3D dMisc_Grids_GridCentered;
+
     AnimationPlayer dLagTest_RESET;
     Node3D dHitTest_RayEmitter;
 
@@ -153,10 +155,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dMisc_GizmoTransform = GetNode<Node3D>("Misc/GizmoTransform");
         dMisc_GizmoNormal = GetNode<Node3D>("Misc/GizmoNormal");
         dMisc_GizmoOneColor = GetNode<Node3D>("Misc/GizmoOneColor");
-        dMisc_Grids_Grid = GetNode<Node3D>("Misc/Grids/Grid");
-        dMisc_Grids_Grid_Subdivision = GetNode<Node3D>("Misc/Grids/Grid/Subdivision");
-        dMisc_Grids_GridCentered_Subdivision = GetNode<Node3D>("Misc/Grids/GridCentered/Subdivision");
-        dMisc_Grids_GridCentered = GetNode<Node3D>("Misc/Grids/GridCentered");
+
+        dMisc_Grids_Grid = GetNode<Node3D>("Grids/Grid");
+        dMisc_Grids_Grid_Subdivision = GetNode<Node3D>("Grids/Grid/Subdivision");
+        dMisc_Grids_GridCentered_Subdivision = GetNode<Node3D>("Grids/GridCentered/Subdivision");
+        dMisc_Grids_GridCentered = GetNode<Node3D>("Grids/GridCentered");
+
         dLagTest_RESET = GetNode<AnimationPlayer>("LagTest/RESET");
         dHitTest_RayEmitter = GetNode<Node3D>("HitTest/RayEmitter");
 
