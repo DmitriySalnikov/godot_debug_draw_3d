@@ -55,9 +55,11 @@ public:
 	static Ref<ArrayMesh> CreateVolumetricArrowHead(const real_t &radius, const real_t &length, const real_t &offset_mult, const bool &add_bevel);
 
 	static Ref<ArrayMesh> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
-	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> *vertexes, std::vector<Vector3> *normals);
+	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes);
+	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes);
 	static Ref<ArrayMesh> CreateLinesFromPath(const PackedVector3Array &path);
-	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, std::vector<Vector3> *vertexes, std::vector<Vector3> *normals);
+	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, std::vector<Vector3> &vertexes);
+	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, Vector3 *vertexes);
 
 	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const Vector3 &position, const int &subdivide = 1);
 	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const Vector3 &position, const int &subdivide = 1);

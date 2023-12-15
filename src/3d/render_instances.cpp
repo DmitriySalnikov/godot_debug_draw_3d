@@ -28,31 +28,33 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
-void DelayedRendererLine::update(const real_t &_exp_time, const std::vector<Vector3> &_lines, const Color &_col) {
+void DelayedRendererLine::update(const real_t &_exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _lines_count, const Color &_col) {
 	ZoneScoped;
 	_update(_exp_time, true);
 
-	set_lines(_lines);
+	lines = std::move(_lines);
+	lines_count = _lines_count;
+	bounds = calculate_bounds_based_on_lines();
 	color = _col;
 }
 
-void DelayedRendererLine::set_lines(const std::vector<Vector3> &_lines) {
-	lines = _lines;
-	bounds = calculate_bounds_based_on_lines(lines);
+const Vector3 *DelayedRendererLine::get_lines() const {
+	return lines.get();
 }
 
-const std::vector<Vector3> &DelayedRendererLine::get_lines() const {
-	return lines;
+const size_t DelayedRendererLine::get_lines_count() const {
+	return lines_count;
 }
 
-AABB DelayedRendererLine::calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines) {
+AABB DelayedRendererLine::calculate_bounds_based_on_lines() {
 	ZoneScoped;
-	if (_lines.size() > 0) {
+	if (lines_count > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
-		Vector3 begin = _lines[0];
-		Vector3 end = _lines[0] + Vector3_ZERO;
+		Vector3 begin = lines.get()[0];
+		Vector3 end = lines.get()[0] + Vector3_ZERO;
 
-		for (Vector3 v : _lines) {
+		for (size_t i = 0; i < lines_count; i++) {
+			auto &v = lines.get()[i];
 			if (v.x < begin.x) {
 				begin.x = v.x;
 			}
@@ -201,13 +203,13 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 		for (size_t i = 0; i < proc.lines.used_instant; i++) {
 			auto &o = proc.lines.instant[i];
 			if (o.is_visible) {
-				used_vertices += o.get_lines().size();
+				used_vertices += o.get_lines_count();
 			}
 		}
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
 			auto &o = proc.lines.delayed[i];
 			if (o.is_visible && !o.is_expired()) {
-				used_vertices += o.get_lines().size();
+				used_vertices += o.get_lines_count();
 			}
 		}
 	}
@@ -224,9 +226,9 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 	auto colors_write = colors_buffer.ptrw();
 
 	auto append_lines = [&vertices_write, &colors_write, &prev_pos](const DelayedRendererLine &o) {
-		size_t lines_size = o.get_lines().size();
+		size_t lines_size = o.get_lines_count();
 
-		std::copy(o.get_lines().begin(), o.get_lines().end(), vertices_write + prev_pos);
+		memcpy(vertices_write + prev_pos, o.get_lines(), o.get_lines_count() * sizeof(Vector3));
 		std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, o.color);
 
 		prev_pos += lines_size;
@@ -490,10 +492,10 @@ void GeometryPool::add_or_update_instance(InstanceType _type, const real_t &_exp
 		_custom_upd(inst);
 }
 
-void GeometryPool::add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
+void GeometryPool::add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
 	ZoneScoped;
 	DelayedRendererLine *inst = pools[(int)p_proc].lines.get(_exp_time > 0);
-	inst->update(_exp_time, _lines, _col);
+	inst->update(_exp_time, std::move(_lines), _line_count, _col);
 	if (_custom_upd)
 		_custom_upd(inst);
 }

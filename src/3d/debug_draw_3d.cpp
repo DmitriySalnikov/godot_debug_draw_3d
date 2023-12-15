@@ -484,19 +484,19 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &dir) {
 	return (Math::is_equal_approx(dir.x, 0) && Math::is_equal_approx(dir.z, 0)) || Math::is_equal_approx(dir.y, 0) ? Vector3_UP_OF : Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
 	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
 
 	if (!scfg->get_thickness()) {
-		dgc->geometry_pool.add_or_update_line(_exp_time, GET_PROC_TYPE(), _lines, _col);
+		dgc->geometry_pool.add_or_update_line(_exp_time, GET_PROC_TYPE(), std::move(_lines), _line_count, _col);
 	} else {
-		for (int i = 0; i < _lines.size(); i += 2) {
+		for (int i = 0; i < _line_count; i += 2) {
 			ZoneScoped;
-			Vector3 a = _lines[i];
-			Vector3 diff = _lines[i + 1] - a;
+			Vector3 a = _lines.get()[i];
+			Vector3 diff = _lines.get()[i + 1] - a;
 			real_t len = diff.length();
 			Vector3 center = diff.normalized() * len * .5f;
 			dgc->geometry_pool.add_or_update_instance(
@@ -701,8 +701,8 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 
 	LOCK_GUARD(datalock);
 	if (is_hit) {
-		add_or_update_line_with_thickness(duration, { start, hit }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
-		add_or_update_line_with_thickness(duration, { hit, end }, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
+		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, hit }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ hit, end }), 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
 		dgc->geometry_pool.add_or_update_instance(
 				InstanceType::BILLBOARD_SQUARE,
@@ -713,7 +713,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				Color(), // Just a plane, no need to store custom data
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size));
 	} else {
-		add_or_update_line_with_thickness(duration, { start, end }, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, end }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 	}
 }
 
@@ -734,7 +734,7 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, { a, b }, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
@@ -746,12 +746,11 @@ void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color
 		return;
 	}
 
-	std::vector<Vector3> l(lines.size());
-	{
-		memcpy(l.data(), lines.ptr(), (size_t)lines.size() * sizeof(Vector3));
-	}
+	size_t s = lines.size();
+	std::unique_ptr<Vector3[]> l(new Vector3[s]);
+	memcpy(l.get(), lines.ptr(), s * sizeof(Vector3));
 
-	add_or_update_line_with_thickness(duration, l, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &color, const real_t &duration) {
@@ -763,14 +762,18 @@ void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &c
 		return;
 	}
 
-	add_or_update_line_with_thickness(duration, lines, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	size_t s = lines.size();
+	std::unique_ptr<Vector3[]> l(new Vector3[s]);
+	memcpy(l.get(), lines.data(), s * sizeof(Vector3));
+
+	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, { origin, origin + direction * length }, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ origin, origin + direction * length }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
@@ -784,10 +787,11 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 		return;
 	}
 
-	std::vector<Vector3> vertexes;
-	GeometryGenerator::CreateLinesFromPathWireframe(path, &vertexes, nullptr);
+	size_t s = path.size() * 2;
+	std::unique_ptr<Vector3[]> l(new Vector3[s]);
+	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
 
-	add_or_update_line_with_thickness(duration, vertexes, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 }
 
 #pragma endregion // Normal
@@ -838,7 +842,7 @@ void DebugDraw3D::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Colo
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, { a, b }, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 	create_arrow(a, b, color, arrow_size, is_absolute_size, duration);
 }
 
@@ -852,11 +856,12 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	std::vector<Vector3> vertexes;
-	GeometryGenerator::CreateLinesFromPathWireframe(path, &vertexes, nullptr);
+	size_t s = path.size() * 2;
+	std::unique_ptr<Vector3[]> l(new Vector3[s]);
+	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, vertexes, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
 	for (int i = 0; i < path.size() - 1; i++) {
 		create_arrow(path[i], path[i + 1], color, arrow_size, is_absolute_size, duration);
@@ -999,11 +1004,13 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &_su
 void DebugDraw3D::draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	std::vector<Vector3> vertexes;
-	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, &vertexes, nullptr);
+
+	size_t s = GeometryGenerator::CubeIndices.size();
+	std::unique_ptr<Vector3[]> l(new Vector3[s]);
+	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, l.get());
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, vertexes, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {

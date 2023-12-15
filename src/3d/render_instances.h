@@ -177,18 +177,19 @@ public:
 };
 
 class DelayedRendererLine : public DelayedRenderer<AABB> {
-	std::vector<Vector3> lines;
+	std::unique_ptr<Vector3[]> lines;
+	size_t lines_count;
 
 public:
 	Color color;
 	Color customColor;
 
 	DelayedRendererLine();
-	void update(const real_t &_exp_time, const std::vector<Vector3> &_lines, const Color &_col);
+	void update(const real_t &_exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _lines_count, const Color &_col);
 
-	void set_lines(const std::vector<Vector3> &_lines);
-	const std::vector<Vector3> &get_lines() const;
-	AABB calculate_bounds_based_on_lines(const std::vector<Vector3> &_lines);
+	const Vector3 *get_lines() const;
+	const size_t get_lines_count() const;
+	AABB calculate_bounds_based_on_lines();
 };
 
 class GeometryPool {
@@ -379,7 +380,7 @@ public:
 	void update_expiration(const double &_delta, const ProcessType &p_proc);
 	void scan_visible_instances();
 	void add_or_update_instance(InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
-	void add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };
 
 #endif

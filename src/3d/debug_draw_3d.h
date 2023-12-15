@@ -98,7 +98,7 @@ private:
 	GeometryType _scoped_config_get_geometry_type(DDScopedConfig3D *cfg);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
-	void add_or_update_line_with_thickness(real_t _exp_time, const std::vector<Vector3> &_lines, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 
 #endif
 
