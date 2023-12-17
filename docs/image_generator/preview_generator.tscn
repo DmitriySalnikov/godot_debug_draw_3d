@@ -1,0 +1,382 @@
+[gd_scene load_steps=15 format=3 uid="uid://davayb2hh6h3u"]
+
+[ext_resource type="Script" path="res://image_generator/preview_generator.gd" id="1_1iqys"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ykfor"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_0vayr"]
+sky_material = SubResource("ProceduralSkyMaterial_ykfor")
+
+[sub_resource type="Environment" id="Environment_yk01e"]
+background_mode = 3
+background_color = Color(0, 0, 0, 0)
+sky = SubResource("Sky_0vayr")
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x7pwt"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_otr13"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+bg_color = Color(1, 1, 1, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+corner_detail = 12
+shadow_size = 2
+anti_aliasing_size = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lq6n3"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+bg_color = Color(1, 0.996078, 0.984314, 1)
+border_width_bottom = 4
+border_color = Color(1, 0.407843, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+corner_detail = 12
+anti_aliasing_size = 2.0
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_kbyai"]
+blend_mode = 4
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_asjiu"]
+viewport_path = NodePath("GridRender")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qjyty"]
+content_margin_left = 1.0
+content_margin_top = 1.0
+content_margin_right = 1.0
+bg_color = Color(1, 1, 1, 0)
+border_width_bottom = 4
+border_color = Color(1, 0.407843, 0, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+corner_detail = 12
+anti_aliasing_size = 2.0
+
+[sub_resource type="Animation" id="Animation_dj0n6"]
+resource_name = "CenterBrightness"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:viewport_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(256, 128)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:single_image")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Origin:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.46, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GridRender/CameraOrigin/Camera3D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 1.25)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("GridRender/CameraOrigin/Camera3D:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.322886, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("GridRender/CameraOrigin:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.436332, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hchms"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:viewport_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(256, 256)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:single_image")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Origin:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.46, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GridRender/CameraOrigin/Camera3D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 1.29)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("GridRender/CameraOrigin/Camera3D:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.322886, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("GridRender/CameraOrigin:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.436332, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_4yn7h"]
+resource_name = "Thickness"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:viewport_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(256, 128)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:single_image")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Origin:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.46, 0)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GridRender/CameraOrigin/Camera3D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 1.25)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("GridRender/CameraOrigin/Camera3D:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.322886, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("GridRender/CameraOrigin:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.436332, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ce374"]
+_data = {
+"CenterBrightness": SubResource("Animation_dj0n6"),
+"RESET": SubResource("Animation_hchms"),
+"Thickness": SubResource("Animation_4yn7h")
+}
+
+[node name="PreviewGenerator" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1iqys")
+metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/temp/_.png"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_yk01e")
+
+[node name="GridRender" type="SubViewport" parent="."]
+transparent_bg = true
+handle_input_locally = false
+msaa_3d = 3
+scaling_3d_scale = 2.0
+render_target_update_mode = 4
+
+[node name="CameraOrigin" type="Node3D" parent="GridRender"]
+transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="GridRender/CameraOrigin"]
+transform = Transform3D(1, 0, 0, 0, 0.948324, -0.317305, 0, 0.317305, 0.948324, 0, 0, 1.29)
+keep_aspect = 0
+current = true
+fov = 66.6
+
+[node name="Control" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -896.0
+offset_bottom = -392.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_x7pwt")
+
+[node name="ShadowPanel" type="PanelContainer" parent="Control"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_otr13")
+
+[node name="PanelContainer" type="PanelContainer" parent="Control"]
+clip_children = 2
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lq6n3")
+
+[node name="Renderer" type="TextureRect" parent="Control/PanelContainer"]
+texture_filter = 6
+material = SubResource("CanvasItemMaterial_kbyai")
+layout_mode = 2
+texture = SubResource("ViewportTexture_asjiu")
+expand_mode = 2
+
+[node name="BorderPanel" type="PanelContainer" parent="Control"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qjyty")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {
+"": SubResource("AnimationLibrary_ce374")
+}
+
+[node name="Grid" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(3.72127, 0, 3.72127, 0.0105216, 5.26265, -0.0105216, -3.72126, 0.0148798, 3.72126, 0, 0, 0)
+
+[node name="Origin" type="Node3D" parent="."]
+transform = Transform3D(0.591832, 0.579682, -0.560093, -0.568178, 0.792886, 0.220242, 0.571759, 0.187886, 0.798617, 0, 0.46, 0)
+
+[node name="A" type="Node3D" parent="Origin"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
+
+[node name="B" type="Node3D" parent="Origin"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, 0)
