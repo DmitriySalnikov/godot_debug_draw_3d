@@ -16,7 +16,7 @@ extends Node3D
 @export var text_groups_show_hints := true
 @export var text_groups_show_stats := false
 @export var text_groups_show_stats_2d := false
-@export var text_groups_position := DebugDrawConfig2D.POSITION_LEFT_TOP
+@export var text_groups_position := DebugDraw2DConfig.POSITION_LEFT_TOP
 @export var text_groups_offset := Vector2i(8, 8)
 @export var text_groups_padding := Vector2i(3, 1)
 @export_range(1, 100) var text_groups_default_font_size := 15
@@ -116,7 +116,7 @@ func main_update(delta: float) -> void:
 		var line_begin = Vector3(-1, sin(_time * 4), 0)
 		var line_end = Vector3(1, cos(_time * 4), 0)
 		
-		DebugDraw3D.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))
+		DebugDraw3D.draw_box(box_pos, Quaternion.IDENTITY, Vector3(1, 2, 1), Color(0, 1, 0))
 		DebugDraw3D.draw_line(line_begin, line_end, Color(1, 1, 0))
 		DebugDraw2D.set_text("Time", _time)
 		DebugDraw2D.set_text("Frames drawn", Engine.get_frames_drawn())
@@ -157,9 +157,9 @@ func main_update(delta: float) -> void:
 	
 	
 	if Engine.is_editor_hint():
-		DebugDraw3D.config.cull_by_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
+		DebugDraw3D.config.culling_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
 	else:
-		DebugDraw3D.config.cull_by_distance = start_culling_distance
+		DebugDraw3D.config.culling_distance = start_culling_distance
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -182,7 +182,7 @@ func main_update(delta: float) -> void:
 	
 	# Boxes
 	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
-	DebugDraw3D.draw_box($Boxes/Box2.global_position, Vector3.ONE, Color.REBECCA_PURPLE)
+	DebugDraw3D.draw_box($Boxes/Box2.global_position, Quaternion.IDENTITY, Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_position), Color.ROSY_BROWN)
 	
 	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_position, Vector3(2, 1, 2)), Color.AQUA)
@@ -191,10 +191,10 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
 	# Boxes AB
-	DebugDraw3D.draw_arrow_line($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
+	DebugDraw3D.draw_arrow($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
 	DebugDraw3D.draw_box_ab($Boxes/BoxAB/a.global_position, $Boxes/BoxAB/b.global_position, $Boxes/BoxAB/o/up.global_position - $Boxes/BoxAB.global_position, Color.PERU)
 	
-	DebugDraw3D.draw_arrow_line($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
+	DebugDraw3D.draw_arrow($Boxes/BoxABEdge.global_position, $Boxes/BoxABEdge/o/up.global_position, Color.DARK_RED, 0.1, true)
 	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_position, $Boxes/BoxABEdge/b.global_position, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
 	
 	# Lines
@@ -212,7 +212,7 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_line($"Lines/7".global_position, target.global_position, Color.RED)
 	
 	# Lines with Arrow
-	DebugDraw3D.draw_arrow_line($"Lines/2".global_position, target.global_position, Color.BLUE, 0.5, true)
+	DebugDraw3D.draw_arrow($"Lines/2".global_position, target.global_position, Color.BLUE, 0.5, true)
 	DebugDraw3D.draw_arrow_ray($"Lines/4".global_position, (target.global_position - $"Lines/4".global_position).normalized(), 8.0, Color.LAVENDER, 0.5, true)
 	
 	DebugDraw3D.draw_line_hit_offset($"Lines/5".global_position, target.global_position, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
@@ -224,6 +224,7 @@ func main_update(delta: float) -> void:
 	var points_below: PackedVector3Array = []
 	var points_below2: PackedVector3Array = []
 	var points_below3: PackedVector3Array = []
+	var points_below4: PackedVector3Array = []
 	var lines_above: PackedVector3Array = []
 	
 	for c in $LinePath.get_children():
@@ -233,6 +234,7 @@ func main_update(delta: float) -> void:
 		points_below.append(c.global_position + Vector3.DOWN)
 		points_below2.append(c.global_position + Vector3.DOWN * 2)
 		points_below3.append(c.global_position + Vector3.DOWN * 3)
+		points_below4.append(c.global_position + Vector3.DOWN * 4)
 	for x in points.size()-1:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
@@ -240,9 +242,10 @@ func main_update(delta: float) -> void:
 	## drawing lines
 	DebugDraw3D.draw_lines(lines_above)
 	DebugDraw3D.draw_line_path(points, Color.BEIGE)
-	DebugDraw3D.draw_arrow_path(points_below, Color.GOLD, 0.5)
-	DebugDraw3D.draw_points(points_below2, 0.2, Color.DARK_GREEN)
-	DebugDraw3D.draw_point_path(points_below3, 0.25, Color.BLUE, Color.TOMATO)
+	DebugDraw3D.draw_points(points_below, DebugDraw3D.POINT_TYPE_SQUARE, 0.2, Color.DARK_GREEN)
+	DebugDraw3D.draw_point_path(points_below2, DebugDraw3D.POINT_TYPE_SQUARE, 0.25, Color.BLUE, Color.TOMATO)
+	DebugDraw3D.draw_arrow_path(points_below3, Color.GOLD, 0.5)
+	DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 	
 	# Misc
 	if true:
@@ -252,7 +255,7 @@ func main_update(delta: float) -> void:
 	
 	if true:
 		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.1)
-		DebugDraw3D.draw_arrow($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
+		DebugDraw3D.draw_arrowhead($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
 	DebugDraw3D.draw_square($Misc/Billboard.global_position, 0.5, Color.GREEN)
 	
@@ -284,7 +287,7 @@ func main_update(delta: float) -> void:
 	
 	# Graphs
 	# Enable FPSGraph if not exists
-	_create_graph(&"FPS", true, false, DebugDrawGraph.TEXT_CURRENT | DebugDrawGraph.TEXT_AVG | DebugDrawGraph.TEXT_MAX | DebugDrawGraph.TEXT_MIN, &"", DebugDrawGraph.SIDE_BOTTOM, DebugDrawGraph.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDrawGraph.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
+	_create_graph(&"FPS", true, false, DebugDraw2DGraph.TEXT_CURRENT | DebugDraw2DGraph.TEXT_AVG | DebugDraw2DGraph.TEXT_MAX | DebugDraw2DGraph.TEXT_MIN, &"", DebugDraw2DGraph.SIDE_BOTTOM, DebugDraw2DGraph.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw2DGraph.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
 	if Engine.is_editor_hint():
 		if DebugDraw2D.get_graph(&"FPS"):
 			DebugDraw2D.get_graph(&"FPS").offset = Vector2i(0, 64)
@@ -298,7 +301,7 @@ func main_update(delta: float) -> void:
 	
 	# Lag Test
 	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
-	DebugDraw3D.draw_box($LagTest.global_position, Vector3.ONE * 2.01, DebugDraw3D.empty_color, true)
+	DebugDraw3D.draw_box($LagTest.global_position, Quaternion.IDENTITY, Vector3.ONE * 2.01, DebugDraw3D.empty_color, true)
 	
 	if more_test_cases:
 		for ray in $HitTest/RayEmitter.get_children():
@@ -398,39 +401,39 @@ func _draw_array_of_boxes():
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
-					DebugDraw3D.draw_box(Vector3(x, -4-z, y), Vector3.ONE, DebugDraw3D.empty_color, false, 1.25)
+					DebugDraw3D.draw_box(Vector3(x, -4-z, y), Quaternion.IDENTITY, Vector3.ONE, DebugDraw3D.empty_color, false, 1.25)
 		timer_2 = 1.25
 
 
 func _graph_test():
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps", true, true, DebugDrawGraph.TEXT_CURRENT, &"", DebugDrawGraph.SIDE_LEFT, DebugDrawGraph.POSITION_RIGHT_TOP)
+	_create_graph(&"fps", true, true, DebugDraw2DGraph.TEXT_CURRENT, &"", DebugDraw2DGraph.SIDE_LEFT, DebugDraw2DGraph.POSITION_RIGHT_TOP)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps2", true, false, DebugDrawGraph.TEXT_CURRENT, &"fps", DebugDrawGraph.SIDE_BOTTOM, 0, Vector2i(200, 100))
+	_create_graph(&"fps2", true, false, DebugDraw2DGraph.TEXT_CURRENT, &"fps", DebugDraw2DGraph.SIDE_BOTTOM, 0, Vector2i(200, 100))
 # warning-ignore:return_value_discarded
-	_create_graph(&"Sin Wave!", false, true, DebugDrawGraph.TEXT_CURRENT, &"fps2", DebugDrawGraph.SIDE_BOTTOM)
+	_create_graph(&"Sin Wave!", false, true, DebugDraw2DGraph.TEXT_CURRENT, &"fps2", DebugDraw2DGraph.SIDE_BOTTOM)
 	
 # warning-ignore:return_value_discarded
-	_create_graph(&"randf", false, true, DebugDrawGraph.TEXT_AVG, &"", DebugDrawGraph.SIDE_LEFT, DebugDrawGraph.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
+	_create_graph(&"randf", false, true, DebugDraw2DGraph.TEXT_AVG, &"", DebugDraw2DGraph.SIDE_LEFT, DebugDraw2DGraph.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps5", true, true, DebugDrawGraph.TEXT_ALL, &"randf", DebugDrawGraph.SIDE_TOP)
+	_create_graph(&"fps5", true, true, DebugDraw2DGraph.TEXT_ALL, &"randf", DebugDraw2DGraph.SIDE_TOP)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps6", true, true, DebugDrawGraph.TEXT_ALL, &"fps5", DebugDrawGraph.SIDE_TOP)
+	_create_graph(&"fps6", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps5", DebugDraw2DGraph.SIDE_TOP)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps12", true, true, DebugDrawGraph.TEXT_ALL, &"fps5", DebugDrawGraph.SIDE_LEFT)
+	_create_graph(&"fps12", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps5", DebugDraw2DGraph.SIDE_LEFT)
 	
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps7", true, false, DebugDrawGraph.TEXT_ALL, &"FPS", DebugDrawGraph.SIDE_BOTTOM)
+	_create_graph(&"fps7", true, false, DebugDraw2DGraph.TEXT_ALL, &"FPS", DebugDraw2DGraph.SIDE_BOTTOM)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps8", true, true, DebugDrawGraph.TEXT_ALL, &"", DebugDrawGraph.SIDE_TOP, DebugDrawGraph.POSITION_LEFT_BOTTOM)
+	_create_graph(&"fps8", true, true, DebugDraw2DGraph.TEXT_ALL, &"", DebugDraw2DGraph.SIDE_TOP, DebugDraw2DGraph.POSITION_LEFT_BOTTOM)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps9", true, false, DebugDrawGraph.TEXT_ALL, &"fps8", DebugDrawGraph.SIDE_RIGHT)
+	_create_graph(&"fps9", true, false, DebugDraw2DGraph.TEXT_ALL, &"fps8", DebugDraw2DGraph.SIDE_RIGHT)
 # warning-ignore:return_value_discarded
-	_create_graph(&"fps10", true, false, DebugDrawGraph.TEXT_ALL, &"fps8", DebugDrawGraph.SIDE_TOP)
+	_create_graph(&"fps10", true, false, DebugDraw2DGraph.TEXT_ALL, &"fps8", DebugDraw2DGraph.SIDE_TOP)
 	# warning-ignore:return_value_discarded
-	_create_graph(&"fps11", true, true, DebugDrawGraph.TEXT_ALL, &"fps9", DebugDrawGraph.SIDE_RIGHT)
+	_create_graph(&"fps11", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps9", DebugDraw2DGraph.SIDE_RIGHT)
 	# warning-ignore:return_value_discarded
-	_create_graph(&"fps13", true, true, DebugDrawGraph.TEXT_ALL, &"", DebugDrawGraph.SIDE_RIGHT)
+	_create_graph(&"fps13", true, true, DebugDraw2DGraph.TEXT_ALL, &"", DebugDraw2DGraph.SIDE_RIGHT)
 	if not DebugDraw2D.get_graph(&"fps13"):
 		return
 	
@@ -441,16 +444,16 @@ func _graph_test():
 	DebugDraw2D.get_graph(&"Sin Wave!").upside_down =false
 	
 	DebugDraw2D.get_graph(&"randf").text_suffix = "utf8 ноль zéro"
-	#DebugDraw2D.get_graph(&"fps9").line_position = DebugDrawGraph.LINE_TOP
+	#DebugDraw2D.get_graph(&"fps9").line_position = DebugDraw2DGraph.LINE_TOP
 	DebugDraw2D.get_graph(&"fps9").offset = Vector2i(0, 0)
-	#DebugDraw2D.get_graph(&"fps11").line_position = DebugDrawGraph.LINE_BOTTOM
+	#DebugDraw2D.get_graph(&"fps11").line_position = DebugDraw2DGraph.LINE_BOTTOM
 	DebugDraw2D.get_graph(&"fps11").offset = Vector2i(16, 0)
 	DebugDraw2D.get_graph(&"fps6").offset = Vector2i(0, 32)
 	DebugDraw2D.get_graph(&"fps").offset = Vector2i(16, 72)
 	
 	DebugDraw2D.get_graph(&"fps9").enabled = graph_is_enabled
 	if !Engine.is_editor_hint():
-		DebugDraw2D.get_graph(&"fps").corner = DebugDrawGraph.POSITION_LEFT_TOP
+		DebugDraw2D.get_graph(&"fps").corner = DebugDraw2DGraph.POSITION_LEFT_TOP
 	
 	# Just sending random data to the graph
 	DebugDraw2D.graph_update_data(&"randf", randf())
@@ -459,7 +462,7 @@ func _graph_test():
 func _upd_graph_params():
 	DebugDraw2D.config.graphs_base_offset = graph_offset
 	for g in [&"FPS", &"fps5", &"fps8"]:
-		var graph := DebugDraw2D.get_graph(g) as DebugDrawFPSGraph
+		var graph := DebugDraw2D.get_graph(g) as DebugDraw2DFPSGraph
 		if graph:
 			graph.size = graph_size
 			graph.title_size = graph_title_font_size
@@ -492,7 +495,7 @@ func _remove_graphs():
 	DebugDraw2D.remove_graph(&"fps13")
 
 
-func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side := DebugDrawGraph.SIDE_BOTTOM, pos = DebugDrawGraph.POSITION_LEFT_BOTTOM, size := Vector2i(256, 60), font = null) -> DebugDrawGraph:
+func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side := DebugDraw2DGraph.SIDE_BOTTOM, pos = DebugDraw2DGraph.POSITION_LEFT_BOTTOM, size := Vector2i(256, 60), font = null) -> DebugDraw2DGraph:
 	var graph := DebugDraw2D.get_graph(title)
 	if !graph:
 		if is_fps:

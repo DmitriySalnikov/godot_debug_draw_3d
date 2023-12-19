@@ -264,8 +264,8 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 		real_t right_side_multiplier = 0;
 
 		switch (owner->get_config()->get_text_block_position()) {
-			case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_TOP:
-			case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_BOTTOM:
+			case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_TOP:
+			case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_BOTTOM:
 				right_side_multiplier = -1;
 				break;
 			default:
@@ -332,20 +332,20 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 	Vector2 text_block_offset = owner->get_config()->get_text_block_offset();
 	Vector2 pos;
 	switch (owner->get_config()->get_text_block_position()) {
-		case DebugDrawConfig2D::BlockPosition::POSITION_LEFT_TOP:
+		case DebugDraw2DConfig::BlockPosition::POSITION_LEFT_TOP:
 			pos = text_block_offset;
 			break;
-		case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_TOP:
+		case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_TOP:
 			pos = Vector2(
 					_vp_size.x - text_block_offset.x,
 					text_block_offset.y);
 			break;
-		case DebugDrawConfig2D::BlockPosition::POSITION_LEFT_BOTTOM:
+		case DebugDraw2DConfig::BlockPosition::POSITION_LEFT_BOTTOM:
 			pos = Vector2(
 					text_block_offset.x,
 					_vp_size.y - text_block_offset.y - groups_height);
 			break;
-		case DebugDrawConfig2D::BlockPosition::POSITION_RIGHT_BOTTOM:
+		case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_BOTTOM:
 			pos = Vector2(
 					_vp_size.x - text_block_offset.x,
 					_vp_size.y - text_block_offset.y - groups_height);

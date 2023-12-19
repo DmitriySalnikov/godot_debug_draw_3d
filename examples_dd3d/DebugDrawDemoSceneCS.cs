@@ -22,7 +22,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool text_groups_show_hints = true;
     [Export] bool text_groups_show_stats = true;
     [Export] bool text_groups_show_stats_2d = true;
-    [Export] DebugDrawConfig2D.BlockPosition text_groups_position = DebugDrawConfig2D.BlockPosition.LeftTop;
+    [Export] DebugDraw2DConfig.BlockPosition text_groups_position = DebugDraw2DConfig.BlockPosition.LeftTop;
     [Export] Vector2I text_groups_offset = new Vector2I(8, 8);
     [Export] Vector2I text_groups_padding = new Vector2I(3, 1);
     [Export(PropertyHint.Range, "1, 100")] int text_groups_default_font_size = 15;
@@ -256,7 +256,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
             var box_pos = new Vector3(0, Mathf.Sin(_time * 4f), 0);
             var line_begin = new Vector3(-1, Mathf.Sin(_time * 4f), 0);
             var line_end = new Vector3(1, Mathf.Cos(_time * 4f), 0);
-            DebugDraw3D.DrawBox(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0));
+            DebugDraw3D.DrawBox(box_pos, Quaternion.Identity, new Vector3(1, 2, 1), new Color(0, 1, 0));
             DebugDraw3D.DrawLine(line_begin, line_end, new Color(1, 1, 0));
             DebugDraw2D.SetText("Time", _time);
             DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
@@ -303,11 +303,11 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (Engine.IsEditorHint())
         {
-            DebugDraw3D.Config.CullByDistance = DebugDraw3D.Config.ForceUseCameraFromScene ? start_culling_distance : 0.0f;
+            DebugDraw3D.Config.CullingDistance = DebugDraw3D.Config.ForceUseCameraFromScene ? start_culling_distance : 0.0f;
         }
         else
         {
-            DebugDraw3D.Config.CullByDistance = start_culling_distance;
+            DebugDraw3D.Config.CullingDistance = start_culling_distance;
         }
 
         // Zones with black borders
@@ -340,7 +340,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Boxes
         DebugDraw3D.DrawBoxXf(dBox1.GlobalTransform, Colors.MediumPurple);
-        DebugDraw3D.DrawBox(dBox2.GlobalPosition, Vector3.One, Colors.RebeccaPurple);
+        DebugDraw3D.DrawBox(dBox2.GlobalPosition, Quaternion.Identity, Vector3.One, Colors.RebeccaPurple);
         DebugDraw3D.DrawBoxXf(new Transform3D(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), dBox3.GlobalPosition), Colors.RosyBrown);
 
         DebugDraw3D.DrawAabb(new Aabb(dAABB_fixed.GlobalPosition, new Vector3(2, 1, 2)), Colors.Aqua);
@@ -350,10 +350,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Boxes AB
 
-        DebugDraw3D.DrawArrowLine(dBoxAB.GlobalPosition, dBoxABup.GlobalPosition, Colors.Gold, 0.1f, true);
+        DebugDraw3D.DrawArrow(dBoxAB.GlobalPosition, dBoxABup.GlobalPosition, Colors.Gold, 0.1f, true);
         DebugDraw3D.DrawBoxAb(dBoxABa.GlobalPosition, dBoxABb.GlobalPosition, dBoxABup.GlobalPosition - dBoxAB.GlobalPosition, Colors.Peru);
 
-        DebugDraw3D.DrawArrowLine(dBoxABEdge.GlobalPosition, dBoxABEdgeup.GlobalPosition, Colors.DarkRed, 0.1f, true);
+        DebugDraw3D.DrawArrow(dBoxABEdge.GlobalPosition, dBoxABEdgeup.GlobalPosition, Colors.DarkRed, 0.1f, true);
         DebugDraw3D.DrawBoxAb(dBoxABEdgea.GlobalPosition, dBoxABEdgeb.GlobalPosition, dBoxABEdgeup.GlobalPosition - dBoxABEdge.GlobalPosition, Colors.DarkOliveGreen, false);
 
         // Lines
@@ -375,7 +375,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawLine(dLines_7.GlobalPosition, dLines_Target.GlobalPosition, Colors.Red);
 
         // Lines with Arrow
-        DebugDraw3D.DrawArrowLine(dLines_2.GlobalPosition, dLines_Target.GlobalPosition, Colors.Blue, 0.5f, true);
+        DebugDraw3D.DrawArrow(dLines_2.GlobalPosition, dLines_Target.GlobalPosition, Colors.Blue, 0.5f, true);
         DebugDraw3D.DrawArrowRay(dLines_4.GlobalPosition, (dLines_Target.GlobalPosition - dLines_4.GlobalPosition).Normalized(), 8.0f, Colors.Lavender, 0.5f, true);
 
         DebugDraw3D.DrawLineHitOffset(dLines_5.GlobalPosition, dLines_Target.GlobalPosition, true, Mathf.Abs(Mathf.Sin(Time.GetTicksMsec() / 1000.0f)), 0.25f, Colors.Aqua);
@@ -387,6 +387,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         List<Vector3> points_below = new List<Vector3>();
         List<Vector3> points_below2 = new List<Vector3>();
         List<Vector3> points_below3 = new List<Vector3>();
+        List<Vector3> points_below4 = new List<Vector3>();
         List<Vector3> lines_above = new List<Vector3>();
 
         foreach (var node in dLinePath.GetChildren())
@@ -397,6 +398,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 points_below.Add(c.GlobalPosition + Vector3.Down);
                 points_below2.Add(c.GlobalPosition + Vector3.Down * 2);
                 points_below3.Add(c.GlobalPosition + Vector3.Down * 3);
+                points_below4.Add(c.GlobalPosition + Vector3.Down * 4);
             }
         }
 
@@ -409,9 +411,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         // drawing lines
         DebugDraw3D.DrawLines(lines_above.ToArray());
         DebugDraw3D.DrawLinePath(points.ToArray(), Colors.Beige);
-        DebugDraw3D.DrawArrowPath(points_below.ToArray(), Colors.Gold, 0.5f);
-        DebugDraw3D.DrawPoints(points_below2.ToArray(), 0.2f, Colors.DarkGreen);
-        DebugDraw3D.DrawPointPath(points_below3.ToArray(), 0.25f, Colors.Blue, Colors.Tomato);
+        DebugDraw3D.DrawPoints(points_below.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.DarkGreen);
+        DebugDraw3D.DrawPointPath(points_below2.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.25f, Colors.Blue, Colors.Tomato);
+        DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
+        DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
 
         // Misc
         using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
@@ -421,7 +424,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.1f))
         {
-            DebugDraw3D.DrawArrow(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
+            DebugDraw3D.DrawArrowhead(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
         }
 
         DebugDraw3D.DrawSquare(dMisc_Billboard.GlobalPosition, 0.5f, Colors.Green);
@@ -459,7 +462,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Graphs
         // Enable FPSGraph if not exists
-        _create_graph("FPS", true, false, DebugDrawGraph.TextFlags.Current | DebugDrawGraph.TextFlags.Avg | DebugDrawGraph.TextFlags.Max | DebugDrawGraph.TextFlags.Min, "", DebugDrawGraph.GraphSide.Bottom, Engine.IsEditorHint() ? DebugDrawGraph.GraphPosition.LeftTop : DebugDrawGraph.GraphPosition.RightTop, new Vector2I(200, 80), custom_font);
+        _create_graph("FPS", true, false, DebugDraw2DGraph.TextFlags.Current | DebugDraw2DGraph.TextFlags.Avg | DebugDraw2DGraph.TextFlags.Max | DebugDraw2DGraph.TextFlags.Min, "", DebugDraw2DGraph.GraphSide.Bottom, Engine.IsEditorHint() ? DebugDraw2DGraph.GraphPosition.LeftTop : DebugDraw2DGraph.GraphPosition.RightTop, new Vector2I(200, 80), custom_font);
         if (Engine.IsEditorHint())
         {
             if (DebugDraw2D.GetGraph("FPS") != null)
@@ -481,7 +484,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Lag Test
         dLagTest.Position = ((Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0)) + new Vector3(Mathf.Sin(Time.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
-        DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Vector3.One * 2.01f, null, true);
+        DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Quaternion.Identity, Vector3.One * 2.01f, null, true);
 
         if (more_test_cases)
         {
@@ -612,7 +615,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 {
                     for (int z = 0; z < 3; z++)
                     {
-                        DebugDraw3D.DrawBox(new Vector3(x, -4 - z, y), Vector3.One, null, false, 1.25f);
+                        DebugDraw3D.DrawBox(new Vector3(x, -4 - z, y), Quaternion.Identity, Vector3.One, null, false, 1.25f);
                     }
                 }
             }
@@ -624,31 +627,31 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     void _graph_test()
     {
-        _create_graph("fps", true, true, DebugDrawGraph.TextFlags.Current, "", DebugDrawGraph.GraphSide.Left, DebugDrawGraph.GraphPosition.RightTop);
-        _create_graph("fps2", true, false, DebugDrawGraph.TextFlags.Current, "fps", DebugDrawGraph.GraphSide.Bottom, 0, new Vector2I(200, 100));
+        _create_graph("fps", true, true, DebugDraw2DGraph.TextFlags.Current, "", DebugDraw2DGraph.GraphSide.Left, DebugDraw2DGraph.GraphPosition.RightTop);
+        _create_graph("fps2", true, false, DebugDraw2DGraph.TextFlags.Current, "fps", DebugDraw2DGraph.GraphSide.Bottom, 0, new Vector2I(200, 100));
 
-        _create_graph("Sin Wave!", false, true, DebugDrawGraph.TextFlags.Current, "fps2", DebugDrawGraph.GraphSide.Bottom);
+        _create_graph("Sin Wave!", false, true, DebugDraw2DGraph.TextFlags.Current, "fps2", DebugDraw2DGraph.GraphSide.Bottom);
 
-        _create_graph("randf", false, true, DebugDrawGraph.TextFlags.Avg, "", DebugDrawGraph.GraphSide.Left, DebugDrawGraph.GraphPosition.RightBottom, new Vector2I(256, 60), custom_font);
+        _create_graph("randf", false, true, DebugDraw2DGraph.TextFlags.Avg, "", DebugDraw2DGraph.GraphSide.Left, DebugDraw2DGraph.GraphPosition.RightBottom, new Vector2I(256, 60), custom_font);
 
-        _create_graph("fps5", true, true, DebugDrawGraph.TextFlags.All, "randf", DebugDrawGraph.GraphSide.Top);
-        _create_graph("fps6", true, true, DebugDrawGraph.TextFlags.All, "fps5", DebugDrawGraph.GraphSide.Top);
-        _create_graph("fps12", true, true, DebugDrawGraph.TextFlags.All, "fps5", DebugDrawGraph.GraphSide.Left);
+        _create_graph("fps5", true, true, DebugDraw2DGraph.TextFlags.All, "randf", DebugDraw2DGraph.GraphSide.Top);
+        _create_graph("fps6", true, true, DebugDraw2DGraph.TextFlags.All, "fps5", DebugDraw2DGraph.GraphSide.Top);
+        _create_graph("fps12", true, true, DebugDraw2DGraph.TextFlags.All, "fps5", DebugDraw2DGraph.GraphSide.Left);
 
-        _create_graph("fps7", true, false, DebugDrawGraph.TextFlags.All, "FPS", DebugDrawGraph.GraphSide.Bottom);
-        _create_graph("fps8", true, true, DebugDrawGraph.TextFlags.All, "", DebugDrawGraph.GraphSide.Top, DebugDrawGraph.GraphPosition.LeftBottom);
-        _create_graph("fps9", true, false, DebugDrawGraph.TextFlags.All, "fps8", DebugDrawGraph.GraphSide.Right);
-        _create_graph("fps10", true, false, DebugDrawGraph.TextFlags.All, "fps8", DebugDrawGraph.GraphSide.Top);
-        _create_graph("fps11", true, true, DebugDrawGraph.TextFlags.All, "fps9", DebugDrawGraph.GraphSide.Right);
+        _create_graph("fps7", true, false, DebugDraw2DGraph.TextFlags.All, "FPS", DebugDraw2DGraph.GraphSide.Bottom);
+        _create_graph("fps8", true, true, DebugDraw2DGraph.TextFlags.All, "", DebugDraw2DGraph.GraphSide.Top, DebugDraw2DGraph.GraphPosition.LeftBottom);
+        _create_graph("fps9", true, false, DebugDraw2DGraph.TextFlags.All, "fps8", DebugDraw2DGraph.GraphSide.Right);
+        _create_graph("fps10", true, false, DebugDraw2DGraph.TextFlags.All, "fps8", DebugDraw2DGraph.GraphSide.Top);
+        _create_graph("fps11", true, true, DebugDraw2DGraph.TextFlags.All, "fps9", DebugDraw2DGraph.GraphSide.Right);
 
         // If graphs exists, then more tests are done
         DebugDraw2D.GetGraph("Sin Wave!").DataGetter = new Callable(this, "_get_sin_wave_for_graph");
         DebugDraw2D.GetGraph("Sin Wave!").UpsideDown = false;
 
         DebugDraw2D.GetGraph("randf").TextSuffix = "utf8 ноль zéro";
-        //DebugDraw2D.GetGraph("fps9").line_position = DebugDrawGraph.LINE_TOP
+        //DebugDraw2D.GetGraph("fps9").line_position = DebugDraw2DGraph.LINE_TOP
         DebugDraw2D.GetGraph("fps9").Offset = new Vector2I(0, 0);
-        //DebugDraw2D.GetGraph("fps11").LlinePosition = DebugDrawGraph.LINE_BOTTOM
+        //DebugDraw2D.GetGraph("fps11").LlinePosition = DebugDraw2DGraph.LINE_BOTTOM
         DebugDraw2D.GetGraph("fps11").Offset = new Vector2I(16, 0);
         DebugDraw2D.GetGraph("fps6").Offset = new Vector2I(0, 32);
         DebugDraw2D.GetGraph("fps").Offset = new Vector2I(16, 72);
@@ -656,7 +659,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (!Engine.IsEditorHint())
         {
-            DebugDraw2D.GetGraph("fps").Corner = DebugDrawGraph.GraphPosition.LeftTop;
+            DebugDraw2D.GetGraph("fps").Corner = DebugDraw2DGraph.GraphPosition.LeftTop;
         }
 
         // Just sending random data to the graph
@@ -668,7 +671,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw2D.Config.GraphsBaseOffset = graph_offset;
         foreach (var g in new string[] { "FPS", "fps5", "fps8" })
         {
-            var graph = DebugDraw2D.GetGraph(g) as DebugDrawFPSGraph;
+            var graph = DebugDraw2D.GetGraph(g) as DebugDraw2DFPSGraph;
             if (graph != null)
             {
 
@@ -708,7 +711,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw2D.RemoveGraph("fps12");
     }
 
-    DebugDrawGraph _create_graph(string title, bool is_fps, bool show_title, DebugDrawGraph.TextFlags flags, string parent = "", DebugDrawGraph.GraphSide parent_side = DebugDrawGraph.GraphSide.Bottom, DebugDrawGraph.GraphPosition pos = DebugDrawGraph.GraphPosition.LeftBottom, Vector2I? size = null, Font font = null)
+    DebugDraw2DGraph _create_graph(string title, bool is_fps, bool show_title, DebugDraw2DGraph.TextFlags flags, string parent = "", DebugDraw2DGraph.GraphSide parent_side = DebugDraw2DGraph.GraphSide.Bottom, DebugDraw2DGraph.GraphPosition pos = DebugDraw2DGraph.GraphPosition.LeftBottom, Vector2I? size = null, Font font = null)
     {
         var graph = DebugDraw2D.GetGraph(title);
         if (graph == null)

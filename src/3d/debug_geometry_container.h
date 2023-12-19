@@ -11,7 +11,7 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-class DebugDrawStats3D;
+class DebugDraw3DStats;
 
 class DebugGeometryContainer {
 	friend class DebugDraw3D;
@@ -68,7 +68,7 @@ public:
 	void set_render_layer_mask(int32_t layers);
 	int32_t get_render_layer_mask() const;
 
-	void get_render_stats(Ref<DebugDrawStats3D> &stats);
+	void get_render_stats(Ref<DebugDraw3DStats> &stats);
 	void clear_3d_objects();
 };
 

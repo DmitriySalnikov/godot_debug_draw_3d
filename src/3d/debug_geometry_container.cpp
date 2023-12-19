@@ -254,7 +254,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	// Update visibility
 	geometry_pool.update_visibility(
 			frustum_planes,
-			GeometryPoolDistanceCullingData(owner->get_config()->get_cull_by_distance(), cameras_positions));
+			GeometryPoolDistanceCullingData(owner->get_config()->get_culling_distance(), cameras_positions));
 
 	// Debug bounds of instances and lines
 	if (owner->get_config()->is_visible_instance_bounds()) {
@@ -329,7 +329,7 @@ void DebugGeometryContainer::update_geometry_physics_end(double delta) {
 	geometry_pool.update_expiration(delta, ProcessType::PHYSICS_PROCESS);
 }
 
-void DebugGeometryContainer::get_render_stats(Ref<DebugDrawStats3D> &stats) {
+void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &stats) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 	return geometry_pool.update_stats(stats);

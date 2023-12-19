@@ -1,0 +1,77 @@
+html {
+    --top-nav-height: 150px
+}
+
+@media screen and (min-width: 768px) {
+    #top {
+        height: var(--top-nav-height);
+    }
+
+    #nav-tree,
+    #side-nav {
+        height: calc(100vh - var(--top-nav-height)) !important;
+    }
+
+    #side-nav {
+        top: var(--top-nav-height);
+    }
+}
+
+
+#projectname {
+    font-size: calc(var(--title-font-size) * 0.8);
+    font-weight: 600;
+}
+
+html {
+    /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
+    --primary-color: #ff810b;
+    --primary-dark-color: #f18c2c;
+    --primary-light-color: #e0c33e;
+
+    --page-background-color: #ffffff;
+    --page-foreground-color: #1b1e21;
+    --page-secondary-foreground-color: #6f7e8e;
+
+    --side-nav-background: #f3f3f3;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        --primary-color: #f59031;
+        --primary-dark-color: #c07f42;
+        --primary-light-color: #e0c33e;
+
+        --page-background-color: #21232b;
+        --page-foreground-color: #ebf0f1;
+        --separator-color: #121212;
+
+        --side-nav-background: #282b35;
+    }
+}
+
+html.dark-mode {
+    color-scheme: dark;
+
+    --primary-color: #f59031;
+    --primary-dark-color: #c07f42;
+    --primary-light-color: #e0c33e;
+
+    --page-background-color: #21232b;
+    --page-foreground-color: #ebf0f1;
+    --separator-color: #121212;
+
+    --side-nav-background: #282b35;
+}
+
+#nav-tree .selected .arrow {
+    color: #f59031;
+    text-shadow: none;
+}
+
+span.mlabel {
+    background: var(--primary-color);
+    border-radius: 5px;
+    color: rgb(20, 20, 20);
+    font-weight: 800;
+}

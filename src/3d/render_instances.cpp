@@ -296,7 +296,7 @@ void GeometryPool::reset_visible_objects() {
 	}
 }
 
-void GeometryPool::update_stats(Ref<DebugDrawStats3D> &stats) const {
+void GeometryPool::update_stats(Ref<DebugDraw3DStats> &stats) const {
 	ZoneScoped;
 
 	struct {

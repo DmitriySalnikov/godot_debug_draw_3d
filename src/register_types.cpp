@@ -35,15 +35,15 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 #endif
 
 		ClassDB::register_class<DebugDraw2D>();
-		ClassDB::register_class<DebugDrawStats2D>();
-		ClassDB::register_class<DebugDrawConfig2D>();
-		ClassDB::register_class<DebugDrawGraph>();
-		ClassDB::register_class<DebugDrawFPSGraph>();
+		ClassDB::register_class<DebugDraw2DStats>();
+		ClassDB::register_class<DebugDraw2DConfig>();
+		ClassDB::register_class<DebugDraw2DGraph>();
+		ClassDB::register_class<DebugDraw2DFPSGraph>();
 
 		ClassDB::register_class<DebugDraw3D>();
-		ClassDB::register_class<DebugDrawStats3D>();
-		ClassDB::register_class<DebugDrawConfig3D>();
-		ClassDB::register_class<DDScopedConfig3D>();
+		ClassDB::register_class<DebugDraw3DStats>();
+		ClassDB::register_class<DebugDraw3DConfig>();
+		ClassDB::register_class<DebugDraw3DScopedConfig>();
 
 		ClassDB::register_class<DebugDrawManager>();
 #ifndef DISABLE_DEBUG_RENDERING

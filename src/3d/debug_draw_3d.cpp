@@ -48,7 +48,7 @@ void DebugDraw3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder), "transform", "color", "duration"), &DebugDraw3D::draw_cylinder, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder_ab), "a", "b", "radius", "color", "duration"), &DebugDraw3D::draw_cylinder_ab, 0.5f, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box), "position", "size", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box, Colors::empty_color, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box), "position", "rotation", "size", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box, Colors::empty_color, false, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_ab), "a", "b", "up", "color", "is_ab_diagonal", "duration"), &DebugDraw3D::draw_box_ab, Vector3(0, 1, 0), Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box_xf, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_aabb), "aabb", "color", "duration"), &DebugDraw3D::draw_aabb, Colors::empty_color, 0);
@@ -62,16 +62,16 @@ void DebugDraw3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_ray), "origin", "direction", "length", "color", "duration"), &DebugDraw3D::draw_ray, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_line_path), "path", "color", "duration"), &DebugDraw3D::draw_line_path, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow), "transform", "color", "duration"), &DebugDraw3D::draw_arrow, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrowhead), "transform", "color", "duration"), &DebugDraw3D::draw_arrowhead, Colors::empty_color, 0);
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_line), "a", "b", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw3D::draw_arrow_line, Colors::empty_color, 0.5f, false, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow), "a", "b", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw3D::draw_arrow, Colors::empty_color, 0.5f, false, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_ray), "origin", "direction", "length", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw3D::draw_arrow_ray, Colors::empty_color, 0.5f, false, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_arrow_path), "path", "color", "arrow_size", "is_absolute_size", "duration"), &DebugDraw3D::draw_arrow_path, Colors::empty_color, 0.75f, true, 0);
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_point_path), "path", "size", "points_color", "lines_color", "duration"), &DebugDraw3D::draw_point_path, 0.25f, Colors::empty_color, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_point_path), "path", "type", "size", "points_color", "lines_color", "duration"), &DebugDraw3D::draw_point_path, PointType::POINT_TYPE_SQUARE, 0.25f, Colors::empty_color, Colors::empty_color, 0);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_square), "position", "size", "color", "duration"), &DebugDraw3D::draw_square, 0.2f, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_points), "points", "size", "color", "duration"), &DebugDraw3D::draw_points, 0.2f, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_points), "points", "type", "size", "color", "duration"), &DebugDraw3D::draw_points, PointType::POINT_TYPE_SQUARE, 0.2f, Colors::empty_color, 0);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_camera_frustum), "camera", "color", "duration"), &DebugDraw3D::draw_camera_frustum, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_camera_frustum_planes), "camera_frustum", "color", "duration"), &DebugDraw3D::draw_camera_frustum_planes, Colors::empty_color, 0);
@@ -90,6 +90,9 @@ void DebugDraw3D::_bind_methods() {
 	REG_METHOD(scoped_config);
 
 #undef REG_CLASS_NAME
+
+	BIND_ENUM_CONSTANT(POINT_TYPE_SQUARE);
+	BIND_ENUM_CONSTANT(POINT_TYPE_SPHERE);
 }
 
 DebugDraw3D::DebugDraw3D() {
@@ -154,7 +157,7 @@ void DebugDraw3D::physics_process_end(double delta) {
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
-DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
+DebugDraw3DScopedConfig *DebugDraw3D::scoped_config_for_current_thread() {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
@@ -168,7 +171,7 @@ DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
 	if (it_v != scoped_configs.end()) {
 		const auto &cfgs = it_v->second;
 		if (!cfgs.empty()) {
-			DDScopedConfig3D *tmp = cfgs.back().second;
+			DebugDraw3DScopedConfig *tmp = cfgs.back().second;
 			cached_scoped_configs[thread] = tmp;
 			return tmp;
 		}
@@ -178,7 +181,7 @@ DDScopedConfig3D *DebugDraw3D::scoped_config_for_current_thread() {
 	return default_scoped_config.ptr();
 }
 
-DebugDraw3D::GeometryType DebugDraw3D::_scoped_config_get_geometry_type(DDScopedConfig3D *cfg) {
+DebugDraw3D::GeometryType DebugDraw3D::_scoped_config_get_geometry_type(DebugDraw3DScopedConfig *cfg) {
 	ZoneScoped;
 	if (cfg->get_thickness() != 0) {
 		return GeometryType::Volumetric;
@@ -187,7 +190,7 @@ DebugDraw3D::GeometryType DebugDraw3D::_scoped_config_get_geometry_type(DDScoped
 	return GeometryType::Wireframe;
 }
 
-Color DebugDraw3D::_scoped_config_to_custom(DDScopedConfig3D *cfg) {
+Color DebugDraw3D::_scoped_config_to_custom(DebugDraw3DScopedConfig *cfg) {
 	ZoneScoped;
 	if (_scoped_config_get_geometry_type(cfg) == GeometryType::Volumetric)
 		return Color(cfg->get_thickness(), cfg->get_center_brightness(), 0, 0);
@@ -195,7 +198,7 @@ Color DebugDraw3D::_scoped_config_to_custom(DDScopedConfig3D *cfg) {
 	return Color();
 }
 
-InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType type, DDScopedConfig3D *cfg) {
+InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType type, DebugDraw3DScopedConfig *cfg) {
 	ZoneScoped;
 	switch (_scoped_config_get_geometry_type(cfg)) {
 		case GeometryType::Wireframe: {
@@ -248,7 +251,7 @@ InstanceType DebugDraw3D::_scoped_config_type_convert(ConvertableInstanceType ty
 	return InstanceType(-1);
 }
 
-void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id, DDScopedConfig3D *cfg) {
+void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopedConfig *cfg) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
@@ -297,9 +300,13 @@ void DebugDraw3D::_clear_scoped_configs() {
 	if (orphans)
 		PRINT_ERROR("{0} scoped configs weren't freed. Do not save scoped configurations anywhere other than function bodies.", orphans);
 }
+
+Node *DebugDraw3D::get_root_node() {
+	return root_node;
+}
 #endif
 
-Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
+Ref<DebugDraw3DScopedConfig> DebugDraw3D::new_scoped_config() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
@@ -307,8 +314,8 @@ Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
 	create_counter++;
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
-	Ref<DDScopedConfig3D> res = memnew(
-			DDScopedConfig3D(
+	Ref<DebugDraw3DScopedConfig> res = memnew(
+			DebugDraw3DScopedConfig(
 					thread,
 					create_counter,
 					scoped_config_for_current_thread(),
@@ -322,7 +329,7 @@ Ref<DDScopedConfig3D> DebugDraw3D::new_scoped_config() {
 #endif
 }
 
-Ref<DDScopedConfig3D> DebugDraw3D::scoped_config() {
+Ref<DebugDraw3DScopedConfig> DebugDraw3D::scoped_config() {
 	return default_scoped_config;
 }
 
@@ -359,10 +366,6 @@ bool DebugDraw3D::_is_enabled_override() const {
 	return debug_enabled && DebugDrawManager::get_singleton()->is_debug_enabled();
 }
 
-Node *DebugDraw3D::get_root_node() {
-	return root_node;
-}
-
 void DebugDraw3D::set_custom_editor_viewport(std::vector<SubViewport *> _viewports) {
 	custom_editor_viewports = _viewports;
 }
@@ -395,9 +398,6 @@ Ref<ShaderMaterial> DebugDraw3D::get_extendable_material() {
 #endif
 }
 
-void DebugDraw3D::set_empty_color(const Color &_col) {
-}
-
 Color DebugDraw3D::get_empty_color() const {
 	return Colors::empty_color;
 }
@@ -416,16 +416,16 @@ bool DebugDraw3D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw3D::set_config(Ref<DebugDrawConfig3D> _cfg) {
+void DebugDraw3D::set_config(Ref<DebugDraw3DConfig> _cfg) {
 	if (_cfg.is_valid()) {
 		config = _cfg;
 	} else {
-		config = Ref<DebugDrawConfig3D>();
+		config = Ref<DebugDraw3DConfig>();
 		config.instantiate();
 	}
 }
 
-Ref<DebugDrawConfig3D> DebugDraw3D::get_config() const {
+Ref<DebugDraw3DConfig> DebugDraw3D::get_config() const {
 	return config;
 }
 
@@ -441,7 +441,7 @@ Viewport *DebugDraw3D::get_custom_viewport() const {
 
 #pragma region Draw Functions
 
-Ref<DebugDrawStats3D> DebugDraw3D::get_render_stats() {
+Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (dgc)
 		dgc->get_render_stats(stats_3d);
@@ -488,7 +488,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::uniqu
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	if (!scfg->get_thickness()) {
 		dgc->geometry_pool.add_or_update_line(_exp_time, GET_PROC_TYPE(), std::move(_lines), _line_count, _col);
@@ -528,7 +528,7 @@ void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color 
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(hd ? ConvertableInstanceType::SPHERE_HD : ConvertableInstanceType::SPHERE, scfg),
@@ -572,7 +572,7 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::CYLINDER, scfg),
@@ -603,10 +603,10 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 #pragma endregion // Cylinders
 #pragma region Boxes
 
-void DebugDraw3D::draw_box(const Vector3 &position, const Vector3 &size, const Color &color, const bool &is_box_centered, const real_t &duration) {
+void DebugDraw3D::draw_box(const Vector3 &position, const Quaternion &rotation, const Vector3 &size, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_box_xf(Transform3D(Basis().scaled(size), position), color, is_box_centered, duration);
+	draw_box_xf(Transform3D(Basis(rotation).scaled(size), position), color, is_box_centered, duration);
 }
 
 void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 &up, const Color &color, const bool &is_ab_diagonal, const real_t &duration) {
@@ -630,7 +630,7 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 		SphereBounds sb(t.origin + half_center_orig, MathUtils::get_max_basis_length(t.basis) * MathUtils::CubeRadiusForSphere);
 
 		LOCK_GUARD(datalock);
-		DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+		DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 		dgc->geometry_pool.add_or_update_instance(
 				_scoped_config_type_convert(ConvertableInstanceType::CUBE, scfg),
@@ -662,7 +662,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 	}
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE, scfg),
@@ -680,7 +680,7 @@ void DebugDraw3D::draw_aabb(const AABB &aabb, const Color &color, const real_t &
 
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(aabb.position, aabb.position + aabb.size, bottom, top, diag);
-	draw_box(bottom, diag, color, false, duration);
+	draw_box_xf(Transform3D(Basis().scaled(diag), bottom), color, false, duration);
 }
 
 void DebugDraw3D::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {
@@ -689,7 +689,7 @@ void DebugDraw3D::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &
 
 	Vector3 bottom, top, diag;
 	MathUtils::get_diagonal_vectors(a, b, bottom, top, diag);
-	draw_box(bottom, diag, color, false, duration);
+	draw_box_xf(Transform3D(Basis().scaled(diag), bottom), color, false, duration);
 }
 
 #pragma endregion // Boxes
@@ -807,7 +807,7 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	Vector3 up = get_up_vector(dir);
 	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(Vector3(size, size, size)), b);
 
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	LOCK_GUARD(datalock);
 	dgc->geometry_pool.add_or_update_instance(
@@ -820,12 +820,12 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 
-void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_arrowhead(const Transform3D &transform, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::ARROWHEAD, scfg),
@@ -837,7 +837,7 @@ void DebugDraw3D::draw_arrow(const Transform3D &transform, const Color &color, c
 			SphereBounds(transform.origin + transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
 
-void DebugDraw3D::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+void DebugDraw3D::draw_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
@@ -849,7 +849,7 @@ void DebugDraw3D::draw_arrow_line(const Vector3 &a, const Vector3 &b, const Colo
 void DebugDraw3D::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_arrow_line(origin, origin + direction * length, color, arrow_size, is_absolute_size, duration);
+	draw_arrow(origin, origin + direction * length, color, arrow_size, is_absolute_size, duration);
 }
 
 void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
@@ -871,12 +871,12 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 #pragma endregion // Arrows
 #pragma region Points
 
-void DebugDraw3D::draw_point_path(const PackedVector3Array &path, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
+void DebugDraw3D::draw_point_path(const PackedVector3Array &path, const PointType type, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	draw_points(path, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
+	draw_points(path, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
 	draw_line_path(path, IS_DEFAULT_COLOR(lines_color) ? Colors::green : lines_color, duration);
 }
 
@@ -893,7 +893,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	t.basis.scale(Vector3_ONE * size);
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			InstanceType::BILLBOARD_SQUARE,
@@ -905,13 +905,20 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size));
 }
 
-void DebugDraw3D::draw_points(const PackedVector3Array &points, const real_t &size, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_points(const PackedVector3Array &points, const PointType type, const real_t &size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
 	for (int i = 0; i < points.size(); i++) {
-		draw_square(points[i], size, color, duration);
+		switch (type) {
+			case PointType::POINT_TYPE_SQUARE:
+				draw_square(points[i], size, color, duration);
+				break;
+			case PointType::POINT_TYPE_SPHERE:
+				draw_sphere(points[i], size, color, duration);
+				break;
+		}
 	}
 }
 
@@ -920,7 +927,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	DDScopedConfig3D *scfg = scoped_config_for_current_thread();
+	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
 			_scoped_config_type_convert(ConvertableInstanceType::POSITION, scfg),
@@ -943,13 +950,13 @@ void DebugDraw3D::draw_gizmo(const Transform3D &transform, const Color &color, c
 
 	LOCK_GUARD(datalock);
 	if (is_centered) {
-		draw_arrow_line(MINUS(0 /** 0.5f*/), PLUS(0 /** 0.5f*/), COLOR(x), 0.1f, true, duration);
-		draw_arrow_line(MINUS(1 /** 0.5f*/), PLUS(1 /** 0.5f*/), COLOR(y), 0.1f, true, duration);
-		draw_arrow_line(MINUS(2 /** 0.5f*/), PLUS(2 /** 0.5f*/), COLOR(z), 0.1f, true, duration);
+		draw_arrow(MINUS(0 /** 0.5f*/), PLUS(0 /** 0.5f*/), COLOR(x), 0.1f, true, duration);
+		draw_arrow(MINUS(1 /** 0.5f*/), PLUS(1 /** 0.5f*/), COLOR(y), 0.1f, true, duration);
+		draw_arrow(MINUS(2 /** 0.5f*/), PLUS(2 /** 0.5f*/), COLOR(z), 0.1f, true, duration);
 	} else {
-		draw_arrow_line(transform.origin, PLUS(0), COLOR(x), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS(1), COLOR(y), 0.15f, true, duration);
-		draw_arrow_line(transform.origin, PLUS(2), COLOR(z), 0.15f, true, duration);
+		draw_arrow(transform.origin, PLUS(0), COLOR(x), 0.15f, true, duration);
+		draw_arrow(transform.origin, PLUS(1), COLOR(y), 0.15f, true, duration);
+		draw_arrow(transform.origin, PLUS(2), COLOR(z), 0.15f, true, duration);
 	}
 
 #undef COLOR

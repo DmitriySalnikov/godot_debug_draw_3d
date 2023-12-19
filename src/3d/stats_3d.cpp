@@ -1,9 +1,9 @@
 #include "stats_3d.h"
 
-void DebugDrawStats3D::_bind_methods() {
+void DebugDraw3DStats::_bind_methods() {
 #define REG_PROPERTY_NO_SET(name, type)                                                         \
-	ClassDB::bind_method(D_METHOD(NAMEOF(get_##name)), &DebugDrawStats3D::get_##name);          \
-	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &DebugDrawStats3D::set_##name); \
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_##name)), &DebugDraw3DStats::get_##name);          \
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_##name), "value"), &DebugDraw3DStats::set_##name); \
 	ADD_PROPERTY(PropertyInfo(type, #name), NAMEOF(set_##name), NAMEOF(get_##name));
 #pragma region Parameters
 
@@ -40,12 +40,12 @@ void DebugDrawStats3D::_bind_methods() {
 #pragma endregion
 }
 
-void DebugDrawStats3D::set_scoped_config_stats(const int64_t &t_created_scoped_configs, const int64_t &t_orphan_scoped_configs) {
+void DebugDraw3DStats::set_scoped_config_stats(const int64_t &t_created_scoped_configs, const int64_t &t_orphan_scoped_configs) {
 	created_scoped_configs = t_created_scoped_configs;
 	orphan_scoped_configs = t_orphan_scoped_configs;
 }
 
-void DebugDrawStats3D::set_render_stats(
+void DebugDraw3DStats::set_render_stats(
 		const int64_t &t_instances,
 		const int64_t &t_lines,
 		const int64_t &t_visible_instances,

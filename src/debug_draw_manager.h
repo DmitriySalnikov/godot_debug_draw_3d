@@ -12,6 +12,7 @@ class DebugDraw3D;
 class DebugDrawManager;
 
 #ifndef DISABLE_DEBUG_RENDERING
+/// @private
 class DD3D_PhysicsWatcher : public Node {
 	GDCLASS(DD3D_PhysicsWatcher, Node)
 protected:
@@ -25,9 +26,36 @@ public:
 };
 #endif
 
+/**
+ * The main singleton class that handles DebugDraw2D and DebugDraw3D.
+ * 
+ * Several additional settings can be found in the project settings.
+ * 
+ * @note The following settings require a restart.
+ * 
+ * `debug_draw_3d/settings/initial_debug_state` sets the initial debugging state.
+ * 
+ * `debug_draw_3d/settings/common/DebugDrawManager_singleton_aliases` sets aliases for DebugDrawManager to be registered as additional singletons.
+ * 
+ * `debug_draw_3d/settings/common/DebugDraw2D_singleton_aliases` sets aliases for DebugDraw2D to be registered as additional singletons.
+ * 
+ * `debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases` sets aliases for DebugDraw3D to be registered as additional singletons.
+ * 
+ * Using these aliases you can reference singletons with shorter words:
+ * 
+ * ```python
+ * var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
+ * Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
+ * Dbg2.set_text("Frametime", delta)
+ * ```
+*/
 class DebugDrawManager : public CanvasLayer {
 	GDCLASS(DebugDrawManager, CanvasLayer)
 protected:
+	/// @private
+	static void _bind_methods();
+
+private:
 #ifndef DISABLE_DEBUG_RENDERING
 	friend DD3D_PhysicsWatcher;
 #endif
@@ -39,8 +67,6 @@ protected:
 	const static char *s_manager_aliases;
 	const static char *s_dd2d_aliases;
 	const static char *s_dd3d_aliases;
-
-	static void _bind_methods();
 
 	double log_flush_time = 0;
 	bool debug_enabled = true;
@@ -95,6 +121,7 @@ public:
 #endif
 
 public:
+	/// @private
 	static const char *s_extension_unloading;
 
 	DebugDrawManager();
@@ -104,14 +131,31 @@ public:
 		return singleton;
 	};
 
+#pragma region Exposed Methods
+	/**
+	 * Clear all 2D and 3D geometry
+	*/
 	void clear_all();
+	/**
+	 * Set whether to display 2D and 3D debug graphics
+	*/
 	void set_debug_enabled(bool value);
+	/**
+	 * Whether debug 2D and 3D graphics are disabled
+	*/
 	bool is_debug_enabled() const;
+#pragma endregion // Exposed Methods
 
+	/// @private
 	void init();
+	/// @private
 	void deinit();
+
+	/// @private
 	virtual void _process(double delta) override;
+	/// @private
 	void _physics_process_start(double delta);
+	/// @private
 	virtual void _physics_process(double delta) override;
 };
 

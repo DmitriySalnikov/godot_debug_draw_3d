@@ -205,7 +205,8 @@ func _ready():
 
 
 func _process(_delta):
-	draw_spectrum()
+	if %MusicPlayer.playing:
+		draw_spectrum()
 
 
 func _pressed():
@@ -334,6 +335,9 @@ extends Control
 var is_ready := false
 
 func _ready():
+	if Engine.is_editor_hint():
+		return
+	
 	if ProjectSettings.has_setting(\"application/config/no_csharp_support\"):
 		%SwitchLang.visible = false
 	
@@ -349,6 +353,9 @@ func _ready():
 	%ThicknessSlider.value = get_parent().debug_thickness
 	%UpdateInPhysics.text = \"Update in physics (%d Ticks)\" % ProjectSettings.get_setting(\"physics/common/physics_ticks_per_second\")
 	%UpdateInPhysics.button_pressed = get_parent().update_in_physics
+	
+	%ShowStats.button_pressed = get_parent().text_groups_show_stats
+	%DrawBoxes.button_pressed = get_parent().draw_array_of_boxes
 	
 	if get_tree():
 		await get_tree().create_timer(0.2).timeout
@@ -397,6 +404,14 @@ func _on_thickness_slider_value_changed(value):
 
 func _on_update_in_physics_toggled(toggled_on):
 	get_parent().update_in_physics = toggled_on
+
+
+func _on_show_stats_toggled(toggled_on):
+	get_parent().text_groups_show_stats = toggled_on
+
+
+func _on_draw_boxes_toggled(toggled_on):
+	get_parent().draw_array_of_boxes = toggled_on
 "
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oj5gf"]
@@ -418,7 +433,6 @@ corner_radius_bottom_left = 4
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-update_in_physics = true
 text_groups_position = 2
 
 [node name="Camera" type="Camera3D" parent="."]
@@ -460,7 +474,7 @@ far = 52.5
 transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -12.4687, 0.645876, -7.74484)
 
 [node name="Path" type="Node3D" parent="Zones"]
-transform = Transform3D(5.95153, 0, 0, 0, 6.78237, 0, 0, 0, 6.31617, 0.184938, 1.49839, -7.18731)
+transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1.12881, -7.18731)
 
 [node name="Boxes" type="Node3D" parent="Zones"]
 transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0.206735, 6.43672)
@@ -494,7 +508,7 @@ libraries = {
 autoplay = "New Anim"
 
 [node name="LinePath" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0543, -8)
 
 [node name="Spatial" type="Node3D" parent="LinePath"]
 
@@ -716,7 +730,6 @@ target_position = Vector3(0, -3.464, 0)
 
 [node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
 unique_name_in_owner = true
-callback_mode_process = 0
 libraries = {
 "": SubResource("AnimationLibrary_vh8ml")
 }
@@ -867,7 +880,6 @@ value = 0.05
 [node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-button_pressed = true
 text = "Update in physics (15 Ticks)"
 
 [node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
@@ -918,7 +930,22 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 min_value = 50.0
 max_value = 1000.0
-value = 200.0
+value = 128.0
+
+[node name="Label3" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "Misc:"
+
+[node name="ShowStats" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Show debug stats"
+
+[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Draw an array of boxes"
 
 [node name="SwitchLang" type="Button" parent="Settings/HBox/PanelContainer/VBox"]
 unique_name_in_owner = true
@@ -933,4 +960,6 @@ text = "Switch to C#"
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
 [connection signal="pressed" from="Settings/HBox/PanelContainer/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]

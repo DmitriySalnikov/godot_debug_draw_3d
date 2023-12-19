@@ -80,25 +80,25 @@ void GenerateCSharpBindingsPlugin::generate() {
 
 	generate_for_classes = TypedArray<StringName>(Array::make(
 			"DebugDraw2D",
-			"DebugDrawStats2D",
-			"DebugDrawConfig2D",
-			"DebugDrawGraph",
-			"DebugDrawFPSGraph",
+			"DebugDraw2DStats",
+			"DebugDraw2DConfig",
+			"DebugDraw2DGraph",
+			"DebugDraw2DFPSGraph",
 			"DebugDraw3D",
-			"DebugDrawStats3D",
-			"DebugDrawConfig3D",
-			"DDScopedConfig3D",
+			"DebugDraw3DStats",
+			"DebugDraw3DConfig",
+			"DebugDraw3DScopedConfig",
 			"DebugDrawManager"));
 
 	avoid_caching_for_classes = TypedArray<StringName>(Array::make(
-			"DDScopedConfig3D"));
+			"DebugDraw3DScopedConfig"));
 
 	additional_statics_for_classes = extend_class_strings{
-		{ "DDScopedConfig3D", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
+		{ "DebugDraw3DScopedConfig", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
 	};
 
 	override_disposable_for_classes = extend_class_strings{
-		{ "DDScopedConfig3D", { "Instance?.Call(___manual_unregister);" } }
+		{ "DebugDraw3DScopedConfig", { "Instance?.Call(___manual_unregister);" } }
 	};
 
 	singletons = Engine::get_singleton()->get_singleton_list();
@@ -155,7 +155,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 	bool is_singleton = singletons.has(cls);
 
 	line();
-	// class DebugDrawFPSGraph : DebugDrawGraph
+	// class DebugDraw2DFPSGraph : DebugDraw2DGraph
 	String static_modifier_str = is_singleton ? "static " : "";
 	String additional_inheritance = "";
 

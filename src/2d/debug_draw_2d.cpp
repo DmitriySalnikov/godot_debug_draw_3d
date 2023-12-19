@@ -63,6 +63,7 @@ void DebugDraw2D::init(DebugDrawManager *root) {
 	ZoneScoped;
 	root_node = root;
 	set_config(nullptr);
+	stats_2d.instantiate();
 
 #ifndef DISABLE_DEBUG_RENDERING
 	grouped_text = std::make_unique<GroupedText>();
@@ -233,7 +234,7 @@ bool DebugDraw2D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw2D::set_config(Ref<DebugDrawConfig2D> _cfg) {
+void DebugDraw2D::set_config(Ref<DebugDraw2DConfig> _cfg) {
 	ZoneScoped;
 	if (_cfg.is_valid()) {
 #ifndef DISABLE_DEBUG_RENDERING
@@ -242,7 +243,7 @@ void DebugDraw2D::set_config(Ref<DebugDrawConfig2D> _cfg) {
 
 		config = _cfg;
 	} else {
-		config = Ref<DebugDrawConfig2D>();
+		config = Ref<DebugDraw2DConfig>();
 		config.instantiate();
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -255,7 +256,7 @@ void DebugDraw2D::set_config(Ref<DebugDrawConfig2D> _cfg) {
 #endif
 }
 
-Ref<DebugDrawConfig2D> DebugDraw2D::get_config() const {
+Ref<DebugDraw2DConfig> DebugDraw2D::get_config() const {
 	return config;
 }
 
@@ -284,22 +285,18 @@ Control *DebugDraw2D::get_custom_canvas() const {
 
 #pragma region Draw Functions
 
-Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
+Ref<DebugDraw2DStats> DebugDraw2D::get_render_stats() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	Ref<DebugDrawStats2D> stats;
-	stats.instantiate();
-	stats->setup(
+	stats_2d->setup(
 			grouped_text->get_text_group_count(),
 			grouped_text->get_text_line_total_count(),
 
 			data_graphs->get_graphs_enabled(),
 			data_graphs->get_graphs_total());
-
-	return stats;
-#else
-	return Ref<DebugDrawStats2D>();
 #endif
+
+	return stats_2d;
 }
 
 void DebugDraw2D::clear_all() {
@@ -365,14 +362,14 @@ void DebugDraw2D::clear_texts() {
 #pragma endregion // Text
 #pragma region Graphs
 
-Ref<DebugDrawGraph> DebugDraw2D::create_graph(const StringName &title) {
+Ref<DebugDraw2DGraph> DebugDraw2D::create_graph(const StringName &title) {
 	ZoneScoped;
-	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDrawGraph>(), title);
+	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
-Ref<DebugDrawGraph> DebugDraw2D::create_fps_graph(const StringName &title) {
+Ref<DebugDraw2DGraph> DebugDraw2D::create_fps_graph(const StringName &title) {
 	ZoneScoped;
-	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDrawGraph>(), title);
+	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
 void DebugDraw2D::graph_update_data(const StringName &title, real_t data) {
@@ -390,9 +387,9 @@ void DebugDraw2D::clear_graphs() {
 	FORCE_CALL_TO_2D(data_graphs, clear_graphs);
 }
 
-Ref<DebugDrawGraph> DebugDraw2D::get_graph(const StringName &title) {
+Ref<DebugDraw2DGraph> DebugDraw2D::get_graph(const StringName &title) {
 	ZoneScoped;
-	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDrawGraph>(), title);
+	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
 PackedStringArray DebugDraw2D::get_graph_names() {

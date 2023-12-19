@@ -28,7 +28,8 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 
 	PopupMenu *menu = memnew(PopupMenu);
 	menu->connect("id_pressed", Callable(this, NAMEOF(_on_id_pressed)));
-	menu->add_item("Open project site", OPEN_LIBRARY_SITE);
+	menu->add_item("Open the project page", OPEN_LIBRARY_SITE);
+	menu->add_item("Open the documentation", OPEN_DOCUMENTATION_SITE);
 	menu->add_item("Generate C# bindings", GENERATE_CSHARP_BINDING);
 
 	add_tool_submenu_item(menu_item_name, menu);
@@ -56,6 +57,10 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId id) {
 	switch (id) {
 		case DebugDrawMenuExtensionPlugin::OPEN_LIBRARY_SITE: {
 			OS::get_singleton()->shell_open("https://github.com/DmitriySalnikov/godot_debug_draw_3d");
+			break;
+		}
+		case DebugDrawMenuExtensionPlugin::OPEN_DOCUMENTATION_SITE: {
+			OS::get_singleton()->shell_open("https://dd3d.dmitriysalnikov.ru/docs/stable");
 			break;
 		}
 		case DebugDrawMenuExtensionPlugin::GENERATE_CSHARP_BINDING: {
