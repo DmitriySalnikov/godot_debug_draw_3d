@@ -142,10 +142,6 @@ func _enter_tree():
 		viewport_size = viewport_size
 
 
-func _exit_tree():
-	DebugDraw2D.custom_canvas = null
-
-
 func _set_anim():
 	movie_name = PreviewCase.keys()[preview_case]
 	

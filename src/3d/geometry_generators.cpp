@@ -767,7 +767,7 @@ GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(cons
 	sphere.indexes.resize(currentIndexCount);
 
 	// Normalize all the positions to create the sphere
-	for (size_t i = 0; i < sphere.vertexes.size(); i++) {
+	for (int i = 0; i < sphere.vertexes.size(); i++) {
 		sphere.vertexes[i] = sphere.vertexes[i].normalized() * radius;
 	}
 

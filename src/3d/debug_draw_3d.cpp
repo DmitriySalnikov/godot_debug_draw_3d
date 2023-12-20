@@ -474,6 +474,7 @@ void DebugDraw3D::clear_all() {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!dgc) return;
 	dgc->clear_3d_objects();
+	set_custom_viewport(nullptr);
 #else
 	return;
 #endif

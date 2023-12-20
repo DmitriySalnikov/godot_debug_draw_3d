@@ -179,8 +179,9 @@ var transform: Transform3D:
 @export_exp_easing(\"inout\") var color_offset_speed := 0.4
 @export var colors: Gradient = null
 
+var MusicBus := &\"MusicVisualizer\"
 var MAX_HZ := 11050.0
-var MIN_DB := 60
+var MIN_DB := 60.0
 var spectrum: AudioEffectSpectrumAnalyzerInstance = null
 
 var smoothed_energy: Array[float] = []
@@ -189,7 +190,10 @@ var color_offset := 0.0
 var _on_data_loaded_callback = null
 
 func _ready():
-	var bus = AudioServer.get_bus_index(\"Music\")
+	var bus = AudioServer.get_bus_index(MusicBus)
+	if bus == -1:
+		print(\"'MusicVisualizer' audio bus not found.\\nSet 'VisualizerAudioBus.tres' as the default bus to use the audio visualizer.\")
+	
 	spectrum = AudioServer.get_bus_effect_instance(bus, 0)
 	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(&\"Master\"))
 	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&\"Master\")))
@@ -251,7 +255,7 @@ func open_stream(file_ext: String, data: PackedByteArray):
 		return
 	
 	%MusicPlayer.stream = stream
-	%MusicPlayer.bus = \"Music\"
+	%MusicPlayer.bus = MusicBus
 	%MusicPlayer.play()
 
 
@@ -260,11 +264,12 @@ func draw_spectrum():
 	var prev_hz = 0
 	smoothed_energy.resize(bars_count)
 	
-	var y := transform.basis.y
+	var xf := transform
+	var y := xf.basis.y
 	var h := y.length()
-	var x := transform.basis.x
-	var z := transform.basis.z
-	var origin := transform.origin - (x * bars_count + (x * bars_separation) * (bars_count - 1)) * 0.5
+	var x := xf.basis.x
+	var z := xf.basis.z
+	var origin := xf.origin - (x * bars_count + (x * bars_separation) * (bars_count - 1)) * 0.5
 	var sum := 0.0
 	
 	for ih in range(1, bars_count + 1):
@@ -280,7 +285,7 @@ func draw_spectrum():
 		var s := x * bars_separation
 		
 		var a := origin + x * i + s * i + (z * 0.5)
-		var b := origin + x * (i + 1) + s * i + (z * -0.5) + transform.basis.y.normalized() * clampf(height, 0.001, h)
+		var b := origin + x * (i + 1) + s * i + (z * -0.5) + xf.basis.y.normalized() * clampf(height, 0.001, h)
 		var c := Color.HOT_PINK
 		if colors:
 			c = colors.sample(wrapf(float(ih) / bars_count + color_offset, 0, 1))
@@ -764,7 +769,7 @@ libraries = {
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="MusicVisualizer"]
 unique_name_in_owner = true
 autoplay = true
-bus = &"Music"
+bus = &"MusicVisualizer"
 
 [node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
 layout_mode = 0

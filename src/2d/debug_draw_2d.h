@@ -40,6 +40,7 @@ private:
 	Ref<Font> _font;
 	Ref<DebugDraw2DStats> stats_2d;
 
+	Callable call_canvas_item_draw_cache;
 	Control *default_canvas = nullptr;
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -48,7 +49,9 @@ private:
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
-	void _finish_frame_and_update();
+	void _finish_frame_and_update(bool avoid_casts);
+	void _clear_all_internal(bool avoid_casts);
+	void _set_custom_canvas_internal(Control *_canvas, bool avoid_casts);
 #endif
 
 	void _on_canvas_item_draw(Control *ci);

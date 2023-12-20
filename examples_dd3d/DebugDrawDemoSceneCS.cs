@@ -321,13 +321,15 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Spheres
         DebugDraw3D.DrawSphereXf(dSphereTransform.GlobalTransform, Colors.Crimson);
-        DebugDraw3D.DrawSphereHdXf(dSphereHDTransform.GlobalTransform, Colors.OrangeRed);
+        using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
+            DebugDraw3D.DrawSphereXf(dSphereHDTransform.GlobalTransform, Colors.OrangeRed);
 
         // Delayed spheres
         if (timer_1 <= 0)
         {
             DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition, 2.0f, Colors.BlueViolet, 2.0f);
-            DebugDraw3D.DrawSphereHd(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
+            using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
+                DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
             timer_1 = 2;
         }
 

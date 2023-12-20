@@ -35,6 +35,7 @@ extends Node3D
 @export var graph_is_enabled := true
 
 var button_presses := {}
+
 var timer_1 := 0.0
 var timer_2 := 0.0
 var timer_3 := 0.0
@@ -59,7 +60,14 @@ func _is_key_just_pressed(key):
 
 
 func _update_keys_just_press():
-	var set_key = func (k: Key): return (1 if button_presses[k] == 0 else button_presses[k]) if Input.is_key_pressed(k) else 0
+	var set_key = func (k: Key): 
+		if Input.is_key_pressed(k) and button_presses.has(k):
+			if button_presses[k] == 0:
+				return 1
+			else:
+				return button_presses[k]
+		else:
+			return 0
 	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
 	button_presses[KEY_UP] = set_key.call(KEY_UP)
 	button_presses[KEY_CTRL] = set_key.call(KEY_CTRL)

@@ -62,6 +62,7 @@ DebugDraw2D::DebugDraw2D() {
 void DebugDraw2D::init(DebugDrawManager *root) {
 	ZoneScoped;
 	root_node = root;
+	call_canvas_item_draw_cache = Callable(this, NAMEOF(_on_canvas_item_draw));
 	set_config(nullptr);
 	stats_2d.instantiate();
 
@@ -80,9 +81,9 @@ DebugDraw2D::~DebugDraw2D() {
 	data_graphs.reset();
 	grouped_text.reset();
 
-	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache))
 		default_canvas->queue_redraw();
-	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache))
 		custom_canvas->queue_redraw();
 
 	if (!IS_EDITOR_HINT()) {
@@ -125,7 +126,7 @@ void DebugDraw2D::process(double delta) {
 	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
-	_finish_frame_and_update();
+	_finish_frame_and_update(false);
 #endif
 }
 
@@ -145,13 +146,13 @@ void DebugDraw2D::physics_process_end(double delta) {
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
-void DebugDraw2D::_finish_frame_and_update() {
+void DebugDraw2D::_finish_frame_and_update(bool avoid_casts) {
 	ZoneScoped;
 	if (_canvas_need_update) {
-		if (!UtilityFunctions::is_instance_valid(custom_canvas) && UtilityFunctions::is_instance_valid(default_canvas)) {
-			default_canvas->queue_redraw();
-		} else if (UtilityFunctions::is_instance_valid(custom_canvas)) {
+		if (!avoid_casts && UtilityFunctions::is_instance_valid(custom_canvas)) {
 			custom_canvas->queue_redraw();
+		} else if (UtilityFunctions::is_instance_valid(default_canvas)) {
+			default_canvas->queue_redraw();
 		} else {
 #ifdef TRACY_ENABLE
 			if (DebugDraw2D_frame_mark_2d_started) {
@@ -172,6 +173,50 @@ void DebugDraw2D::_finish_frame_and_update() {
 			DebugDraw2D_frame_mark_2d_started = false;
 		}
 #endif
+	}
+}
+
+void DebugDraw2D::_clear_all_internal(bool avoid_casts) {
+	if (grouped_text)
+		grouped_text->clear_groups();
+	if (data_graphs)
+		data_graphs->clear_graphs();
+	mark_canvas_dirty();
+	_finish_frame_and_update(avoid_casts);
+
+	_set_custom_canvas_internal(nullptr, avoid_casts);
+}
+
+void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts) {
+	static std::function<Callable()> create_default = [this]() {
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas));
+	};
+	static std::function<Callable()> create_custom = [this]() {
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(custom_canvas));
+	};
+
+	if (!_canvas) {
+		Utils::connect_safe(default_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_default);
+		if (!avoid_casts) {
+			if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				custom_canvas->queue_redraw();
+			}
+		}
+		custom_canvas = _canvas;
+	} else {
+		if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache)) {
+			default_canvas->queue_redraw();
+		}
+		if (!avoid_casts) {
+			if (custom_canvas != _canvas && Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				custom_canvas->queue_redraw();
+			}
+
+			custom_canvas = _canvas;
+			Utils::connect_safe(custom_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
+		} else {
+			custom_canvas = _canvas;
+		}
 	}
 }
 #endif
@@ -263,18 +308,10 @@ Ref<DebugDraw2DConfig> DebugDraw2D::get_config() const {
 void DebugDraw2D::set_custom_canvas(Control *_canvas) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!_canvas) {
-		Utils::connect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
-		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
-			custom_canvas->queue_redraw();
-	} else {
-		if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
-			default_canvas->queue_redraw();
-		Utils::connect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
-	}
-#endif
-
+	_set_custom_canvas_internal(_canvas, false);
+#else
 	custom_canvas = _canvas;
+#endif
 }
 
 Control *DebugDraw2D::get_custom_canvas() const {
@@ -302,14 +339,7 @@ Ref<DebugDraw2DStats> DebugDraw2D::get_render_stats() {
 void DebugDraw2D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (grouped_text)
-		grouped_text->clear_groups();
-	if (data_graphs)
-		data_graphs->clear_graphs();
-	mark_canvas_dirty();
-	_finish_frame_and_update();
-#else
-	return;
+	_clear_all_internal(false);
 #endif
 }
 

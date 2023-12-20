@@ -198,10 +198,11 @@ public:
 	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
 	static godot::String get_scene_tree_as_string(godot::Node *start);
 
+	// p_custom_callable_to_connect is used here to avoid constantly creating Callable().bindv()
 	template <class T>
-	static bool connect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr) {
+	static bool connect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr, std::function<godot::Callable()> p_custom_callable_to_connect = nullptr) {
 		if (godot::UtilityFunctions::is_instance_valid(p_inst) && !p_inst->is_connected(p_signal, p_callable)) {
-			godot::Error err = p_inst->connect(p_signal, p_callable, p_flags);
+			godot::Error err = p_inst->connect(p_signal, p_custom_callable_to_connect ? p_custom_callable_to_connect() : p_callable, p_flags);
 			if (p_out_error)
 				*p_out_error = err;
 			return true;
