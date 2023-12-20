@@ -9,9 +9,12 @@
 /.github			export-ignore
 /LICENSE			export-ignore
 /SConstruct			export-ignore
+/Doxyfile			export-ignore
 /*.*				export-ignore
 /src				export-ignore
 /godot-cpp			export-ignore
 /jni				export-ignore
 /patches			export-ignore
 /images				export-ignore
+/docs				export-ignore
+/dd3d_web_build		export-ignore
