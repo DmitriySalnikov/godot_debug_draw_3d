@@ -15,7 +15,7 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel) {
+DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel, const bool &use_icosphere, const bool &use_icosphere_hd) {
 	ZoneScoped;
 	owner = root;
 	RenderingServer *rs = RenderingServer::get_singleton();
@@ -53,13 +53,13 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 		auto array_mesh_pos = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices);
 		CreateMMI(InstanceType::POSITION, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
 
-		auto array_mesh_sphere = GeometryGenerator::CreateSphereLines(8, 8, 0.5f, Vector3_ZERO, 2);
+		auto array_mesh_sphere = use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
 		CreateMMI(InstanceType::SPHERE, UsingShaderType::Wireframe, NAMEOF(mmi_spheres), array_mesh_sphere);
 
-		auto array_mesh_sphere_hd = GeometryGenerator::CreateSphereLines(16, 16, 0.5f, Vector3_ZERO, 2);
+		auto array_mesh_sphere_hd = use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2);
 		CreateMMI(InstanceType::SPHERE_HD, UsingShaderType::Wireframe, NAMEOF(mmi_spheres_hd), array_mesh_sphere_hd);
 
-		auto array_mesh_cylinder = GeometryGenerator::CreateCylinderLines(16, 1, 1, Vector3_ZERO, 2);
+		auto array_mesh_cylinder = GeometryGenerator::CreateCylinderLines(16, 1, 1, 2);
 		CreateMMI(InstanceType::CYLINDER, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder);
 
 		// VOLUMETRIC

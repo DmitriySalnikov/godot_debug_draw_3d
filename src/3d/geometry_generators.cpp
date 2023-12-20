@@ -217,11 +217,12 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
 	PackedInt32Array indexes = arrs[ArrayMesh::ArrayType::ARRAY_INDEX];
 
-	ERR_FAIL_COND_V(vertexes.size() % 2 != 0, Ref<ArrayMesh>());
-	ERR_FAIL_COND_V(normals.size() && vertexes.size() != normals.size(), Ref<ArrayMesh>());
-
 	bool has_indexes = indexes.size();
 	bool has_normals = normals.size();
+
+	ERR_FAIL_COND_V(!has_indexes && vertexes.size() % 2 != 0, Ref<ArrayMesh>());
+	ERR_FAIL_COND_V(has_indexes && indexes.size() % 2 != 0, Ref<ArrayMesh>());
+	ERR_FAIL_COND_V(normals.size() && vertexes.size() != normals.size(), Ref<ArrayMesh>());
 
 	PackedVector3Array res_vertexes;
 	PackedVector3Array res_custom0;
@@ -603,7 +604,7 @@ void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &p
 	vertexes.resize(((size_t)path.size() - 1) * 2);
 
 	for (size_t i = 0; i < (size_t)path.size() - 1; i++) {
-		vertexes[i * 2] = path[(int)i];
+		vertexes[i * 2 + 0] = path[(int)i];
 		vertexes[i * 2 + 1] = path[(int)i + 1];
 	}
 }
@@ -612,12 +613,195 @@ void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &p
 	ZoneScoped;
 
 	for (size_t i = 0; i < (size_t)path.size() - 1; i++) {
-		vertexes[i * 2] = path[(int)i];
+		vertexes[i * 2 + 0] = path[(int)i];
 		vertexes[i * 2 + 1] = path[(int)i + 1];
 	}
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const Vector3 &position, const int &subdivide) {
+void GeometryGenerator::ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes) {
+	ZoneScoped;
+	indexes.resize((size_t)tri_indexes.size() * 2);
+
+	for (size_t i = 0; i < (size_t)tri_indexes.size() / 3; i++) {
+		indexes[i * 6 + 0] = tri_indexes[(int)i * 3 + 0];
+		indexes[i * 6 + 1] = tri_indexes[(int)i * 3 + 1];
+		indexes[i * 6 + 2] = tri_indexes[(int)i * 3 + 1];
+		indexes[i * 6 + 3] = tri_indexes[(int)i * 3 + 2];
+		indexes[i * 6 + 4] = tri_indexes[(int)i * 3 + 2];
+		indexes[i * 6 + 5] = tri_indexes[(int)i * 3 + 0];
+	}
+}
+
+void GeometryGenerator::ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes) {
+	ZoneScoped;
+
+	for (size_t i = 0; i < (size_t)tri_indexes.size() / 3; i++) {
+		indexes[i * 6 + 0] = tri_indexes[(int)i * 3 + 0];
+		indexes[i * 6 + 1] = tri_indexes[(int)i * 3 + 1];
+		indexes[i * 6 + 2] = tri_indexes[(int)i * 3 + 1];
+		indexes[i * 6 + 3] = tri_indexes[(int)i * 3 + 2];
+		indexes[i * 6 + 4] = tri_indexes[(int)i * 3 + 2];
+		indexes[i * 6 + 5] = tri_indexes[(int)i * 3 + 0];
+	}
+}
+
+GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(const real_t &radius, const int &resolution) {
+	// https://winter.dev/projects/mesh/icosphere
+	const float Z = (1.0f + Math::sqrt(5.0f)) / 2.0f; // Golden ratio
+
+	const int IcoVertexCount = 22;
+	const int IcoIndexCount = 60;
+
+	const Vector3 IcoVerts[] = {
+		Vector3(0, -1, -Z), Vector3(-1, -Z, 0), Vector3(Z, 0, -1), Vector3(1, -Z, 0),
+		Vector3(1, Z, 0), Vector3(-1, -Z, 0), Vector3(Z, 0, 1), Vector3(0, -1, Z),
+		Vector3(1, Z, 0), Vector3(-1, -Z, 0), Vector3(0, 1, Z), Vector3(-Z, 0, 1),
+		Vector3(1, Z, 0), Vector3(-1, -Z, 0), Vector3(-1, Z, 0), Vector3(-Z, 0, -1),
+		Vector3(1, Z, 0), Vector3(-1, -Z, 0), Vector3(0, 1, -Z), Vector3(0, -1, -Z),
+		Vector3(1, Z, 0), Vector3(Z, 0, -1)
+	};
+
+	const int IcoIndex[] = {
+		2, 6, 4, // Top
+		6, 10, 8,
+		10, 14, 12,
+		14, 18, 16,
+		18, 21, 20,
+
+		0, 3, 2, // Middle
+		2, 3, 6,
+		3, 7, 6,
+		6, 7, 10,
+		7, 11, 10,
+		10, 11, 14,
+		11, 15, 14,
+		14, 15, 18,
+		15, 19, 18,
+		18, 19, 21,
+
+		0, 1, 3, // Bottom
+		3, 5, 7,
+		7, 9, 11,
+		11, 13, 15,
+		15, 17, 19
+	};
+
+	const int rn = (int)Math::pow(4.f, (float)resolution);
+	const int totalIndexCount = IcoIndexCount * rn;
+	const int totalVertexCount = IcoVertexCount + IcoIndexCount * (1 - rn) / (1 - 4);
+
+	IcosphereTriMesh sphere;
+
+	sphere.indexes.resize(totalIndexCount);
+	sphere.vertexes.resize(totalVertexCount);
+	sphere.normals.resize(totalVertexCount);
+
+	for (int i = 0; i < IcoVertexCount; i++) { // Copy in initial mesh
+		sphere.vertexes[i] = IcoVerts[i];
+		sphere.normals[i] = IcoVerts[i].normalized();
+	}
+
+	for (int i = 0; i < IcoIndexCount; i++) {
+		sphere.indexes[i] = IcoIndex[i];
+	}
+
+	int currentIndexCount = IcoIndexCount;
+	int currentVertCount = IcoVertexCount;
+
+	for (int r = 0; r < resolution; r++) {
+		// Now split the triangles.
+		// This can be done in place, but needs to keep track of the unique triangles
+
+		std::unordered_map<uint64_t, int> triangleFromEdge;
+		int indexCount = currentIndexCount;
+
+		for (int t = 0; t < indexCount; t += 3) {
+			int midpoints[3] = {};
+
+			for (int e = 0; e < 3; e++) {
+				int first = sphere.indexes[t + e];
+				int second = sphere.indexes[t + (t + e + 1) % 3];
+
+				if (first > second) {
+					std::swap(first, second);
+				}
+
+				uint64_t hash = (uint64_t)first | (uint64_t)second << (sizeof(uint32_t) * 8);
+
+				auto [triangle, wasNewEdge] = triangleFromEdge.insert({ hash, currentVertCount });
+
+				if (wasNewEdge) {
+					sphere.vertexes[currentVertCount] = (sphere.vertexes[first] + sphere.vertexes[second]) / 2.0f;
+					sphere.normals[currentVertCount] = sphere.vertexes[currentVertCount].normalized();
+
+					currentVertCount += 1;
+				}
+
+				midpoints[e] = triangle->second;
+			}
+
+			int mid0 = midpoints[0];
+			int mid1 = midpoints[1];
+			int mid2 = midpoints[2];
+
+			sphere.indexes[currentIndexCount++] = sphere.indexes[t];
+			sphere.indexes[currentIndexCount++] = mid0;
+			sphere.indexes[currentIndexCount++] = mid2;
+
+			sphere.indexes[currentIndexCount++] = sphere.indexes[t + 1];
+			sphere.indexes[currentIndexCount++] = mid1;
+			sphere.indexes[currentIndexCount++] = mid0;
+
+			sphere.indexes[currentIndexCount++] = sphere.indexes[t + 2];
+			sphere.indexes[currentIndexCount++] = mid2;
+			sphere.indexes[currentIndexCount++] = mid1;
+
+			sphere.indexes[t] = mid0; // Overwrite the original triangle with the 4th new triangle
+			sphere.indexes[t + 1] = mid1;
+			sphere.indexes[t + 2] = mid2;
+		}
+	}
+
+	sphere.vertexes.resize(currentVertCount);
+	sphere.normals.resize(currentVertCount);
+	sphere.indexes.resize(currentIndexCount);
+
+	// Normalize all the positions to create the sphere
+	for (size_t i = 0; i < sphere.vertexes.size(); i++) {
+		sphere.vertexes[i] = sphere.vertexes[i].normalized() * radius;
+	}
+
+#if false
+	for (size_t i = 0; i < sphere.vertexes.size(); i++) {
+		for (size_t j = 0; j < sphere.vertexes.size(); j++) {
+			if (i != j && sphere.vertexes[i].is_equal_approx(sphere.vertexes[j])) {
+				PRINT("Duplicate: {0} {1} {2}", i, j, sphere.vertexes[i]);
+			}
+		}
+	}
+#endif
+
+	return sphere;
+}
+
+Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const real_t &radius, const int &depth) {
+	auto res = MakeIcosphereTriMesh(radius, depth);
+
+	// PRINT("{0} vertexes, {1} indexes", res.vertexes.size(), res.indexes.size());
+
+	PackedInt32Array indexes_lines;
+	indexes_lines.resize(res.indexes.size() * 2);
+	ConvertTriIndexesToWireframe(res.indexes, indexes_lines.ptrw());
+
+	return CreateMesh(
+			Mesh::PRIMITIVE_LINES,
+			res.vertexes,
+			indexes_lines,
+			PackedColorArray(),
+			res.normals);
+}
+
+Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const int &subdivide) {
 	ZoneScoped;
 	int lats = _lats * subdivide;
 	int lons = _lons * subdivide;
@@ -653,9 +837,9 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 			float y1 = sin(lng1);
 
 			Vector3 v[3]{
-				Vector3(x1 * zr0, z0, y1 * zr0) * radius + position,
-				Vector3(x1 * zr1, z1, y1 * zr1) * radius + position,
-				Vector3(x0 * zr0, z0, y0 * zr0) * radius + position
+				Vector3(x1 * zr0, z0, y1 * zr0) * radius,
+				Vector3(x1 * zr1, z1, y1 * zr1) * radius,
+				Vector3(x0 * zr0, z0, y0 * zr0) * radius
 			};
 
 			if (j % subdivide == 0) {
@@ -684,7 +868,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 			normals);
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const Vector3 &position, const int &subdivide) {
+Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const int &subdivide) {
 	ZoneScoped;
 	real_t angle = 360.f / edges;
 
@@ -696,8 +880,8 @@ Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const re
 	for (int i = 0; i < edges; i++) {
 		float ra = Math::deg_to_rad(i * angle);
 		float rb = Math::deg_to_rad((i + 1) * angle);
-		Vector3 center_current = Vector3(sin(ra), 0, cos(ra)) * radius + position;
-		Vector3 center_next = Vector3(sin(rb), 0, cos(rb)) * radius + position;
+		Vector3 center_current = Vector3(sin(ra), 0, cos(ra)) * radius;
+		Vector3 center_next = Vector3(sin(rb), 0, cos(rb)) * radius;
 
 		// Top
 		vertexes.push_back(center_current + helf_height);

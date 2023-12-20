@@ -44,6 +44,7 @@ private:
 	// Update constructor!
 	real_t thickness;
 	real_t center_brightness;
+	bool hd_sphere;
 
 public:
 	/// @private
@@ -65,6 +66,14 @@ public:
 	 */
 	Ref<DebugDraw3DScopedConfig> set_center_brightness(real_t value);
 	real_t get_center_brightness();
+
+	/**
+	 * Set the mesh density of the sphere
+	 *
+	 * ![](docs/images/SphereDensity.webp)
+	 */
+	Ref<DebugDraw3DScopedConfig> set_hd_sphere(bool value);
+	bool is_hd_sphere();
 
 	/// @private
 	DebugDraw3DScopedConfig();

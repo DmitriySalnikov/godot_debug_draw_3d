@@ -12,8 +12,15 @@ using namespace godot;
 
 class GeometryGenerator {
 private:
+	struct IcosphereTriMesh {
+		PackedInt32Array indexes;
+		PackedVector3Array vertexes;
+		PackedVector3Array normals;
+	};
+
 	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
 	static void GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
+	static IcosphereTriMesh MakeIcosphereTriMesh(const real_t &radius, const int &resolution);
 
 public:
 #pragma region Predefined Geometry Parts
@@ -58,9 +65,13 @@ public:
 	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes);
 	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes);
 	static Ref<ArrayMesh> CreateLinesFromPath(const PackedVector3Array &path);
+
 	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, std::vector<Vector3> &vertexes);
 	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, Vector3 *vertexes);
+	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes);
+	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes);
 
-	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const Vector3 &position, const int &subdivide = 1);
-	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const Vector3 &position, const int &subdivide = 1);
+	static Ref<ArrayMesh> CreateIcosphereLines(const real_t &radius, const int &depth);
+	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const int &subdivide = 1);
+	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const int &subdivide = 1);
 };

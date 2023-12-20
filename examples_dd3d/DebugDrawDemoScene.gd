@@ -167,12 +167,15 @@ func main_update(delta: float) -> void:
 	
 	# Spheres
 	DebugDraw3D.draw_sphere_xf($Spheres/SphereTransform.global_transform, Color.CRIMSON)
-	DebugDraw3D.draw_sphere_hd_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
+	if true:
+		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
+		DebugDraw3D.draw_sphere_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
 	# Delayed spheres
 	if timer_1 < 0:
 		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position, 2.0, Color.BLUE_VIOLET, 2.0)
-		DebugDraw3D.draw_sphere_hd($Spheres/SpherePosition.global_position + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
+		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
+		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		timer_1 = 2
 	
 	# Cylinders

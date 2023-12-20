@@ -34,9 +34,13 @@ enum class ConvertableInstanceType : char;
  *
  * You can use the project settings `debug_draw_3d/settings/3d` for additional customization.
  *
- * For example, `debug_draw_3d/settings/3d/add_bevel_to_volumetric_geometry` allows you to remove or add a bevel for volumetric lines.
+ * For example, `add_bevel_to_volumetric_geometry` allows you to remove or add a bevel for volumetric lines.
  *
  * ![](docs/images/LineBevel.webp)
+ *
+ * `use_icosphere` and `use_icosphere_for_hd` allow you to change the sphere mesh.
+ *
+ * ![](docs/images/IcoSphere.webp)
  */
 class DebugDraw3D : public Object, public IScopedStorage<DebugDraw3DScopedConfig> {
 	GDCLASS(DebugDraw3D, Object)
@@ -63,9 +67,12 @@ private:
 	static DebugDraw3D *singleton;
 
 	String root_settings_section;
+	const static char *s_use_icosphere;
+	const static char *s_use_icosphere_hd;
 	const static char *s_add_bevel_to_volumetric;
 	const static char *s_default_thickness;
 	const static char *s_default_center_brightness;
+	const static char *s_default_hd_spheres;
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
@@ -158,6 +165,7 @@ public:
 #pragma region Configs
 	/**
 	 * Create a new DebugDraw3DScopedConfig instance and register it.
+	 *
 	 * This class allows you to override some parameters within scope for the following `draw_*` calls.
 	 *
 	 * Store this instance in a local variable inside the method.
@@ -229,9 +237,7 @@ public:
 #pragma region Spheres
 
 	/// @private
-	void draw_sphere_base(const Vector3 &position, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0, const bool &hd = false) FAKE_FUNC_IMPL;
-	/// @private
-	void draw_sphere_xf_base(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0, const bool &hd = false) FAKE_FUNC_IMPL;
+	void draw_sphere_base(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw a sphere
 	 *
@@ -253,29 +259,6 @@ public:
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_sphere_xf(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
-
-	/**
-	 * Draw a sphere with more detail
-	 *
-	 * ![](docs/images/DrawSphereHd.webp)
-	 *
-	 * @param position Center of the sphere
-	 * @param radius Sphere radius
-	 * @param color Primary color
-	 * @param duration The duration of how long the object will be visible
-	 */
-	void draw_sphere_hd(const Vector3 &position, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
-
-	/**
-	 * Draw a sphere with more detail and a radius of 0.5
-	 *
-	 * ![](docs/images/DrawSphereHdXf.webp)
-	 *
-	 * @param transform Sphere transform
-	 * @param color Primary color
-	 * @param duration The duration of how long the object will be visible
-	 */
-	void draw_sphere_hd_xf(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Spheres
 

@@ -11,6 +11,9 @@ void DebugDraw3DScopedConfig::_bind_methods() {
 
 	REG_METHOD(set_center_brightness, "value");
 	REG_METHOD(get_center_brightness);
+
+	REG_METHOD(set_hd_sphere, "value");
+	REG_METHOD(is_hd_sphere);
 #undef REG_CLASS_NAME
 }
 
@@ -39,6 +42,15 @@ real_t DebugDraw3DScopedConfig::get_center_brightness() {
 	return center_brightness;
 }
 
+Ref<DebugDraw3DScopedConfig> DebugDraw3DScopedConfig::set_hd_sphere(bool value) {
+	hd_sphere = value;
+	return this;
+}
+
+bool DebugDraw3DScopedConfig::is_hd_sphere() {
+	return hd_sphere;
+}
+
 DebugDraw3DScopedConfig::DebugDraw3DScopedConfig() {
 	unregister_action = nullptr;
 	thread_id = 0;
@@ -46,6 +58,7 @@ DebugDraw3DScopedConfig::DebugDraw3DScopedConfig() {
 
 	thickness = 0;
 	center_brightness = 0;
+	hd_sphere = false;
 }
 
 DebugDraw3DScopedConfig::DebugDraw3DScopedConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopedConfig *parent, const unregister_func p_unreg) {
@@ -56,6 +69,7 @@ DebugDraw3DScopedConfig::DebugDraw3DScopedConfig(const uint64_t &p_thread_id, co
 
 	thickness = parent->thickness;
 	center_brightness = parent->center_brightness;
+	hd_sphere = parent->hd_sphere;
 }
 
 DebugDraw3DScopedConfig::~DebugDraw3DScopedConfig() {

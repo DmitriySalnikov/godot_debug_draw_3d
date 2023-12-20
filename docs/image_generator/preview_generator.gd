@@ -12,13 +12,13 @@ enum PreviewCase {
 	LineThickness,
 	LineCenterBrightness,
 	LineBevel,
+	SphereDensity,
+	IcoSphere,
 	Line,
 	Arrow,
 	
 	DrawSphere,
 	DrawSphereXf,
-	DrawSphereHd,
-	DrawSphereHdXf,
 	DrawCylinder,
 	DrawCylinderAb,
 	DrawBoxXf,
@@ -49,13 +49,13 @@ var case_maps = {
 	PreviewCase.LineThickness : CaseData.new(),
 	PreviewCase.LineCenterBrightness : CaseData.new(),
 	PreviewCase.LineBevel : CaseData.new(),
+	PreviewCase.SphereDensity : CaseData.new(),
+	PreviewCase.IcoSphere : CaseData.new(),
 	PreviewCase.Line : CaseData.new(),
 	PreviewCase.Arrow : CaseData.new("DrawMethods360Lines"),
 	
 	PreviewCase.DrawSphere : CaseData.new("DrawMethods"),
 	PreviewCase.DrawSphereXf : CaseData.new("DrawMethods"),
-	PreviewCase.DrawSphereHd : CaseData.new("DrawMethodsSlow"),
-	PreviewCase.DrawSphereHdXf : CaseData.new("DrawMethodsSlow"),
 	PreviewCase.DrawCylinder : CaseData.new("DrawMethods"),
 	PreviewCase.DrawCylinderAb : CaseData.new("DrawMethods360Wide"),
 	PreviewCase.DrawBoxXf : CaseData.new("DrawMethods"),
@@ -164,6 +164,13 @@ func _set_anim():
 func set_bevel(state: bool):
 	if not Engine.is_editor_hint():
 		ProjectSettings.set_setting("debug_draw_3d/settings/3d/add_bevel_to_volumetric_geometry", state)
+		DebugDraw3D.regenerate_geometry_meshes()
+
+
+func set_icosphere(state: bool):
+	if not Engine.is_editor_hint():
+		ProjectSettings.set_setting("debug_draw_3d/settings/3d/use_icosphere", state)
+		ProjectSettings.set_setting("debug_draw_3d/settings/3d/use_icosphere_for_hd", state)
 		DebugDraw3D.regenerate_geometry_meshes()
 
 
@@ -282,6 +289,13 @@ func _process(delta):
 		PreviewCase.LineBevel:
 			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.2)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.FIREBRICK)
+		PreviewCase.SphereDensity:
+			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02).set_hd_sphere(anim_value_1 == 1)
+			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform, Color.INDIAN_RED)
+		PreviewCase.IcoSphere:
+			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02)
+			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform, Color.INDIAN_RED)
+		
 		PreviewCase.Line:
 			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.2)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.FIREBRICK)
@@ -295,12 +309,6 @@ func _process(delta):
 		PreviewCase.DrawSphereXf:
 			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.03)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform.scaled_local(Vector3(0.8, 1.1, 0.8)))
-		PreviewCase.DrawSphereHd:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02)
-			DebugDraw3D.draw_sphere_hd_xf(%OriginInstances.global_transform.scaled_local(Vector3.ONE * 1.1), Color.INDIAN_RED)
-		PreviewCase.DrawSphereHdXf:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02)
-			DebugDraw3D.draw_sphere_hd_xf(%OriginInstances.global_transform.scaled_local(Vector3(0.8, 1.1, 0.8)))
 		PreviewCase.DrawCylinder:
 			DebugDraw3D.draw_cylinder(%OriginInstances.global_transform.scaled_local(Vector3(0.5, 1, 0.5)), Color.LIGHT_SALMON)
 		PreviewCase.DrawCylinderAb:

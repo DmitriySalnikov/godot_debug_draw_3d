@@ -16,9 +16,12 @@ GODOT_WARNING_RESTORE()
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
+const char *DebugDraw3D::s_use_icosphere = "use_icosphere";
+const char *DebugDraw3D::s_use_icosphere_hd = "use_icosphere_for_hd";
 const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
 const char *DebugDraw3D::s_default_thickness = "volumetric_defaults/thickness";
 const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/center_brightness";
+const char *DebugDraw3D::s_default_hd_spheres = "volumetric_defaults/hd_spheres";
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
@@ -41,9 +44,6 @@ void DebugDraw3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere), "position", "radius", "color", "duration"), &DebugDraw3D::draw_sphere, 0.5f, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_xf), "transform", "color", "duration"), &DebugDraw3D::draw_sphere_xf, Colors::empty_color, 0);
-
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_hd), "position", "radius", "color", "duration"), &DebugDraw3D::draw_sphere_hd, 0.5f, Colors::empty_color, 0);
-	ClassDB::bind_method(D_METHOD(NAMEOF(draw_sphere_hd_xf), "transform", "color", "duration"), &DebugDraw3D::draw_sphere_hd_xf, Colors::empty_color, 0);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder), "transform", "color", "duration"), &DebugDraw3D::draw_cylinder, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder_ab), "a", "b", "radius", "color", "duration"), &DebugDraw3D::draw_cylinder_ab, 0.5f, Colors::empty_color, 0);
@@ -105,15 +105,19 @@ void DebugDraw3D::init(DebugDrawManager *root) {
 	set_config(nullptr);
 
 	root_settings_section = String(Utils::root_settings_section) + "3d/";
-	DEFINE_SETTING_AND_GET(bool add_bevel, root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
+	DEFINE_SETTING(root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
+	DEFINE_SETTING(root_settings_section + s_use_icosphere, false, Variant::BOOL);
+	DEFINE_SETTING(root_settings_section + s_use_icosphere_hd, true, Variant::BOOL);
 	DEFINE_SETTING_AND_GET_HINT(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,100,0.0001");
 	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.8f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
+	DEFINE_SETTING_AND_GET(real_t def_hd_sphere, root_settings_section + s_default_hd_spheres, false, Variant::BOOL);
 
 	stats_3d.instantiate();
 	default_scoped_config.instantiate();
 
 	default_scoped_config->set_thickness(def_thickness);
 	default_scoped_config->set_center_brightness(def_brightness);
+	default_scoped_config->set_hd_sphere(def_hd_sphere);
 
 	_load_materials();
 
@@ -456,7 +460,11 @@ void DebugDraw3D::regenerate_geometry_meshes() {
 	Node *old_world = dgc ? dgc->get_world() : nullptr;
 	dgc.reset();
 
-	dgc = std::make_unique<DebugGeometryContainer>(this, PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric));
+	dgc = std::make_unique<DebugGeometryContainer>(
+			this,
+			PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric),
+			PS()->get_setting(root_settings_section + s_use_icosphere),
+			PS()->get_setting(root_settings_section + s_use_icosphere_hd));
 	dgc->set_world(old_world);
 #endif
 }
@@ -513,17 +521,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::uniqu
 
 #pragma region Spheres
 
-void DebugDraw3D::draw_sphere_base(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration, const bool &hd) {
-	ZoneScoped;
-	CHECK_BEFORE_CALL();
-
-	Transform3D t(Basis(), position);
-	t.basis.scale(Vector3_ONE * (radius * 2));
-
-	draw_sphere_xf_base(t, color, duration, hd);
-}
-
-void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color &color, const real_t &duration, const bool &hd) {
+void DebugDraw3D::draw_sphere_base(const Transform3D &transform, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
@@ -531,7 +529,7 @@ void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color 
 	DebugDraw3DScopedConfig *scfg = scoped_config_for_current_thread();
 
 	dgc->geometry_pool.add_or_update_instance(
-			_scoped_config_type_convert(hd ? ConvertableInstanceType::SPHERE_HD : ConvertableInstanceType::SPHERE, scfg),
+			_scoped_config_type_convert(scfg->is_hd_sphere() ? ConvertableInstanceType::SPHERE_HD : ConvertableInstanceType::SPHERE, scfg),
 			duration,
 			GET_PROC_TYPE(),
 			transform,
@@ -543,25 +541,13 @@ void DebugDraw3D::draw_sphere_xf_base(const Transform3D &transform, const Color 
 void DebugDraw3D::draw_sphere(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_sphere_base(position, radius, color, duration, false);
+	draw_sphere_base(Transform3D(Basis().scaled(Vector3_ONE * (radius * 2)), position), color, duration);
 }
 
 void DebugDraw3D::draw_sphere_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_sphere_xf_base(transform, color, duration, false);
-}
-
-void DebugDraw3D::draw_sphere_hd(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
-	ZoneScoped;
-	CHECK_BEFORE_CALL();
-	draw_sphere_base(position, radius, color, duration, true);
-}
-
-void DebugDraw3D::draw_sphere_hd_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
-	ZoneScoped;
-	CHECK_BEFORE_CALL();
-	draw_sphere_xf_base(transform, color, duration, true);
+	draw_sphere_base(transform, color, duration);
 }
 
 #pragma endregion // Spheres
