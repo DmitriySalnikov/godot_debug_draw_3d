@@ -23,7 +23,7 @@ func _process(delta: float) -> void:
 
 When you start the engine for the first time, bindings for `C#` will be generated automatically. If this does not happen, you can manually generate them through the `Project - Tools - Debug Draw` menu.
 
-![](/images/project_tools_menu.png)
+![](images/project_tools_menu.png)
 
 ```csharp
 public override void _Process(float delta)

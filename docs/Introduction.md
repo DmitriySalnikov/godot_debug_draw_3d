@@ -50,6 +50,8 @@ Precompiled for:
 
 To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or download the archive from the [GithHub](https://github.com/DmitriySalnikov/godot_debug_draw_3d) page by clicking the button at the top of the repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the `Source Codes` in assets).
 
+### Installation
+
 * Close editor
 * Copy `addons/debug_draw_3d` to your `addons` folder, create it if the folder doesn't exist
 * Launch editor
@@ -60,6 +62,8 @@ Your support adds motivation to develop my public projects.
 
 <a href="https://boosty.to/dmitriysalnikov/donate"><img src="https://static.boosty.to/assets/images/boostyDomainLogo.5Vlxt.svg" alt="Boosty" width=120px/></a>
 
-## Next step
+## Next steps
 
 [Examples](Examples.md)
+
+[Classes](annotated.html)
