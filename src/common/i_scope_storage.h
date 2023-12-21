@@ -10,7 +10,7 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 template <class TCfgStorage>
-class IScopedStorage {
+class IScopeStorage {
 private:
 #ifndef DISABLE_DEBUG_RENDERING
 	virtual void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, TCfgStorage *cfg) = 0;

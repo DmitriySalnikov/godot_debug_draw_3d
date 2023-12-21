@@ -44,7 +44,7 @@ public:
  * Using these aliases you can reference singletons with shorter words:
  * 
  * ```python
- * var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
+ * var _s = Dbg3.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
  * Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
  * Dbg2.set_text("Frametime", delta)
  * ```

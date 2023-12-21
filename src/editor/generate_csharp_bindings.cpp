@@ -87,18 +87,18 @@ void GenerateCSharpBindingsPlugin::generate() {
 			"DebugDraw3D",
 			"DebugDraw3DStats",
 			"DebugDraw3DConfig",
-			"DebugDraw3DScopedConfig",
+			"DebugDraw3DScopeConfig",
 			"DebugDrawManager"));
 
 	avoid_caching_for_classes = TypedArray<StringName>(Array::make(
-			"DebugDraw3DScopedConfig"));
+			"DebugDraw3DScopeConfig"));
 
 	additional_statics_for_classes = extend_class_strings{
-		{ "DebugDraw3DScopedConfig", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
+		{ "DebugDraw3DScopeConfig", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
 	};
 
 	override_disposable_for_classes = extend_class_strings{
-		{ "DebugDraw3DScopedConfig", { "Instance?.Call(___manual_unregister);" } }
+		{ "DebugDraw3DScopeConfig", { "Instance?.Call(___manual_unregister);" } }
 	};
 
 	singletons = Engine::get_singleton()->get_singleton_list();

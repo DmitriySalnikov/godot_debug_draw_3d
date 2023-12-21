@@ -13,22 +13,22 @@ using namespace godot;
  * This class is used to override scoped parameters for DebugDraw3D.
  * Scoped means that these overridden parameters will affect the displayed geometry until it exits the current scope.
  *
- * To create it, use DebugDraw3D.new_scoped_config. Immediately after creation, you can change the values and save the reference to a variable.
+ * To create it, use DebugDraw3D.new_scope_config. Immediately after creation, you can change the values and save the reference to a variable.
  *
  * But the main thing is not to save it outside the method or in other objects. After leaving the scope, this object should be deleted.
  *
  * ```python
- * var _s = DebugDraw3D.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
+ * var _s = DebugDraw3D.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
  * DebugDraw3D.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
  * ```
  *
  * ```cs
- * using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
+ * using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0))
  *     DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
  * ```
  */
-class DebugDraw3DScopedConfig : public RefCounted {
-	GDCLASS(DebugDraw3DScopedConfig, RefCounted)
+class DebugDraw3DScopeConfig : public RefCounted {
+	GDCLASS(DebugDraw3DScopeConfig, RefCounted)
 
 protected:
 	/// @private
@@ -54,32 +54,32 @@ public:
 	/**
 	 * Set the thickness of the volumetric lines. If the value is 0, the standard wireframe rendering will be used.
 	 *
-	 * ![](docs/images/LineThickness.webp)
+	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	Ref<DebugDraw3DScopedConfig> set_thickness(real_t value);
+	Ref<DebugDraw3DScopeConfig> set_thickness(real_t value);
 	real_t get_thickness();
 
 	/**
 	 * Set the brightness of the central part of the volumetric lines.
 	 *
-	 * ![](docs/images/LineCenterBrightness.webp)
+	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	Ref<DebugDraw3DScopedConfig> set_center_brightness(real_t value);
+	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t value);
 	real_t get_center_brightness();
 
 	/**
 	 * Set the mesh density of the sphere
 	 *
-	 * ![](docs/images/SphereDensity.webp)
+	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	Ref<DebugDraw3DScopedConfig> set_hd_sphere(bool value);
+	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool value);
 	bool is_hd_sphere();
 
 	/// @private
-	DebugDraw3DScopedConfig();
+	DebugDraw3DScopeConfig();
 
 	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
 	/// @private
-	DebugDraw3DScopedConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopedConfig *parent, const unregister_func p_unreg);
-	~DebugDraw3DScopedConfig();
+	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopeConfig *parent, const unregister_func p_unreg);
+	~DebugDraw3DScopeConfig();
 };

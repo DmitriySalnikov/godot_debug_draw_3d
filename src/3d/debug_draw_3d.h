@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/colors.h"
-#include "common/i_scoped_storage.h"
-#include "config_scoped_3d.h"
+#include "common/i_scope_storage.h"
+#include "config_scope_3d.h"
 #include "utils/profiler.h"
 
 #include <map>
@@ -36,13 +36,13 @@ enum class ConvertableInstanceType : char;
  *
  * For example, `add_bevel_to_volumetric_geometry` allows you to remove or add a bevel for volumetric lines.
  *
- * ![](docs/images/LineBevel.webp)
+ * ![](docs/images/classes/LineBevel.webp)
  *
  * `use_icosphere` and `use_icosphere_for_hd` allow you to change the sphere mesh.
  *
- * ![](docs/images/IcoSphere.webp)
+ * ![](docs/images/classes/IcoSphere.webp)
  */
-class DebugDraw3D : public Object, public IScopedStorage<DebugDraw3DScopedConfig> {
+class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
@@ -78,20 +78,20 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	Ref<DebugDraw3DStats> stats_3d;
-	Ref<DebugDraw3DScopedConfig> default_scoped_config;
+	Ref<DebugDraw3DScopeConfig> default_scoped_config;
 
 #ifndef DISABLE_DEBUG_RENDERING
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
 
-	typedef std::pair<uint64_t, DebugDraw3DScopedConfig *> ScopedPairIdConfig;
+	typedef std::pair<uint64_t, DebugDraw3DScopeConfig *> ScopedPairIdConfig;
 	// stores thread id and array of id's with ptrs
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
-	std::unordered_map<uint64_t, DebugDraw3DScopedConfig *> cached_scoped_configs;
+	std::unordered_map<uint64_t, DebugDraw3DScopeConfig *> cached_scoped_configs;
 	uint64_t create_scoped_configs = 0;
 
-	// Inherited via IScopedStorage
-	DebugDraw3DScopedConfig *scoped_config_for_current_thread() override;
+	// Inherited via IScopeStorage
+	DebugDraw3DScopeConfig *scoped_config_for_current_thread() override;
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
@@ -106,15 +106,15 @@ private:
 	Ref<ShaderMaterial> shader_extendable_mat;
 	Ref<Shader> shader_extendable_code;
 
-	// Inherited via IScopedStorage
-	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopedConfig *cfg) override;
+	// Inherited via IScopeStorage
+	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopeConfig *cfg) override;
 	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
 	void _clear_scoped_configs() override;
 
 	// Internal use of raw pointer to avoid ref/unref
-	Color _scoped_config_to_custom(DebugDraw3DScopedConfig *cfg);
-	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DebugDraw3DScopedConfig *cfg);
-	GeometryType _scoped_config_get_geometry_type(DebugDraw3DScopedConfig *cfg);
+	Color _scoped_config_to_custom(DebugDraw3DScopeConfig *cfg);
+	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DebugDraw3DScopeConfig *cfg);
+	GeometryType _scoped_config_get_geometry_type(DebugDraw3DScopeConfig *cfg);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
 	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
@@ -164,19 +164,19 @@ public:
 
 #pragma region Configs
 	/**
-	 * Create a new DebugDraw3DScopedConfig instance and register it.
+	 * Create a new DebugDraw3DScopeConfig instance and register it.
 	 *
 	 * This class allows you to override some parameters within scope for the following `draw_*` calls.
 	 *
 	 * Store this instance in a local variable inside the method.
 	 */
-	Ref<DebugDraw3DScopedConfig> new_scoped_config();
+	Ref<DebugDraw3DScopeConfig> new_scope_config();
 	/**
 	 * Returns the default scoped settings that will be applied at the start of each new frame.
 	 *
 	 * Default values can be overridden in the project settings `debug_draw_3d/settings/3d/volumetric_defaults`.
 	 */
-	Ref<DebugDraw3DScopedConfig> scoped_config() override;
+	Ref<DebugDraw3DScopeConfig> scoped_config() override;
 
 	/**
 	 * Set the configuration global for everything in DebugDraw3D.
@@ -241,7 +241,7 @@ public:
 	/**
 	 * Draw a sphere
 	 *
-	 * ![](docs/images/DrawSphere.webp)
+	 * ![](docs/images/classes/DrawSphere.webp)
 	 *
 	 * @param position Center of the sphere
 	 * @param radius Sphere radius
@@ -252,7 +252,7 @@ public:
 	/**
 	 * Draw a sphere with a radius of 0.5
 	 *
-	 * ![](docs/images/DrawSphereXf.webp)
+	 * ![](docs/images/classes/DrawSphereXf.webp)
 	 *
 	 * @param transform Sphere transform
 	 * @param color Primary color
@@ -267,7 +267,7 @@ public:
 	/**
 	 * Draw a vertical cylinder with radius 0.5 and height 1.0
 	 *
-	 * ![](docs/images/DrawCylinder.webp)
+	 * ![](docs/images/classes/DrawCylinder.webp)
 	 *
 	 * @param transform Cylinder transform
 	 * @param color Primary color
@@ -278,7 +278,7 @@ public:
 	/**
 	 * Draw a cylinder between points A and B with a certain radius
 	 *
-	 * ![](docs/images/DrawCylinderAb.webp)
+	 * ![](docs/images/classes/DrawCylinderAb.webp)
 	 *
 	 * @param a Bottom point of the Cylinder
 	 * @param b Top point of the Cylinder
@@ -295,9 +295,9 @@ public:
 	/**
 	 * Draw a box
 	 *
-	 * ![is_box_centered = true](docs/images/DrawBoxXf.webp)
+	 * ![is_box_centered = true](docs/images/classes/DrawBoxXf.webp)
 	 *
-	 * ![is_box_centered = false](docs/images/DrawBoxXfCorner.webp)
+	 * ![is_box_centered = false](docs/images/classes/DrawBoxXfCorner.webp)
 	 *
 	 * @param position Position of the Box
 	 * @param rotation Rotation of the box
@@ -311,9 +311,9 @@ public:
 	/**
 	 * Draw a box between points A and B by rotating and scaling based on the up vector
 	 *
-	 * ![is_ab_diagonal = true](docs/images/DrawBoxAb.webp)
+	 * ![is_ab_diagonal = true](docs/images/classes/DrawBoxAb.webp)
 	 *
-	 * ![is_ab_diagonal = false](docs/images/DrawBoxAbEdge.webp)
+	 * ![is_ab_diagonal = false](docs/images/classes/DrawBoxAbEdge.webp)
 	 *
 	 * @param a Start position
 	 * @param b End position
@@ -362,7 +362,7 @@ public:
 	 *
 	 * Some of the default settings can be overridden in DebugDraw3DConfig.
 	 *
-	 * ![](docs/images/DrawLineHit.webp)
+	 * ![](docs/images/classes/DrawLineHit.webp)
 	 *
 	 * @param start Start point
 	 * @param end End point
@@ -400,7 +400,7 @@ public:
 	/**
 	 * Draw a single line
 	 *
-	 * ![](docs/images/Line.webp)
+	 * ![](docs/images/classes/Line.webp)
 	 *
 	 * @param a Start point
 	 * @param b End point
@@ -425,7 +425,7 @@ public:
 	/**
 	 * Draw an array of lines. Each line is two points, so the array must be of even size.
 	 *
-	 * ![](docs/images/DrawLines.webp)
+	 * ![](docs/images/classes/DrawLines.webp)
 	 *
 	 * @param lines An array of points of lines. 1 line = 2 vectors3. The array size must be even.
 	 * @param color Primary color
@@ -464,7 +464,7 @@ public:
 	/**
 	 * Draw line with arrowhead
 	 *
-	 * ![](docs/images/Arrow.webp)
+	 * ![](docs/images/classes/Arrow.webp)
 	 *
 	 * @param a Start point
 	 * @param b End point
@@ -491,7 +491,7 @@ public:
 	/**
 	 * Draw a sequence of points connected by lines with arrows like DebugDraw3D.draw_line_path.
 	 *
-	 * ![](docs/images/DrawArrowPath.webp)
+	 * ![](docs/images/classes/DrawArrowPath.webp)
 	 *
 	 * @param path Sequence of points
 	 * @param color Primary color
@@ -507,9 +507,9 @@ public:
 	/**
 	 * Draw a sequence of points connected by lines using billboard squares or spheres like DebugDraw3D.draw_line_path.
 	 *
-	 * ![type = DebugDraw3D.POINT_TYPE_SQUARE](docs/images/DrawPointsPath.webp)
+	 * ![type = DebugDraw3D.POINT_TYPE_SQUARE](docs/images/classes/DrawPointsPath.webp)
 	 *
-	 * ![type = DebugDraw3D.POINT_TYPE_SPHERE](docs/images/DrawPointsPathSpheres.webp)
+	 * ![type = DebugDraw3D.POINT_TYPE_SPHERE](docs/images/classes/DrawPointsPathSpheres.webp)
 	 *
 	 * @param path Sequence of points
 	 * @param type Type of points
@@ -528,7 +528,7 @@ public:
 	/**
 	 * Draw a sequence of points using billboard squares or spheres.
 	 *
-	 * ![](docs/images/DrawPoints.webp)
+	 * ![](docs/images/classes/DrawPoints.webp)
 	 *
 	 * @param path Sequence of points
 	 * @param color Primary color
@@ -550,7 +550,7 @@ public:
 	/**
 	 * Draw 3 intersecting lines with the given transformations
 	 *
-	 * ![](docs/images/DrawPosition.webp)
+	 * ![](docs/images/classes/DrawPosition.webp)
 	 *
 	 * @param transform Transform3D of lines
 	 * @param color Primary color
@@ -561,9 +561,9 @@ public:
 	/**
 	 * Draw 3 lines with the given transformations and arrows at the ends
 	 *
-	 * ![is_centered = false](docs/images/DrawGizmo.webp)
+	 * ![is_centered = false](docs/images/classes/DrawGizmo.webp)
 	 *
-	 * ![is_centered = true](docs/images/DrawGizmoCentered.webp)
+	 * ![is_centered = true](docs/images/classes/DrawGizmoCentered.webp)
 	 *
 	 * @param transform Transform3D of lines
 	 * @param color Primary color
@@ -575,7 +575,7 @@ public:
 	/**
 	 * Draw simple grid with given size and subdivision
 	 *
-	 * ![](docs/images/DrawGrid.webp)
+	 * ![](docs/images/classes/DrawGrid.webp)
 	 *
 	 * @param origin Grid origin
 	 * @param x_size Direction and size of the X side. As an axis in the Basis.
@@ -607,7 +607,7 @@ public:
 	/**
 	 * Draw camera frustum area.
 	 *
-	 * ![](docs/images/DrawFrustum.webp)
+	 * ![](docs/images/classes/DrawFrustum.webp)
 	 *
 	 * @param camera Camera node
 	 * @param color Primary color

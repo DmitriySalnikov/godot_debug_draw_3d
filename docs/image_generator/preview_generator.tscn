@@ -2406,7 +2406,7 @@ grow_vertical = 2
 script = ExtResource("1_1iqys")
 preview_case = 4
 anim_value_1 = 0.1
-metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/temp/_.png"
+metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 
 [node name="FakeCamera" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23, 0, -23)

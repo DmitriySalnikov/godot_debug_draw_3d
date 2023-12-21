@@ -237,8 +237,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
 #pragma warning disable CS0162 // Unreachable code detected
         if (false) // #test
         {
-            using var s11 = DebugDraw3D.NewScopedConfig().SetThickness(1);
-            using var s13 = DebugDraw3D.NewScopedConfig();
+            using var s11 = DebugDraw3D.NewScopeConfig().SetThickness(1);
+            using var s13 = DebugDraw3D.NewScopeConfig();
             s13.SetThickness(3);
         }
 #pragma warning restore CS0162 // Unreachable code detected
@@ -321,14 +321,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Spheres
         DebugDraw3D.DrawSphereXf(dSphereTransform.GlobalTransform, Colors.Crimson);
-        using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
+        using (var _s1 = DebugDraw3D.NewScopeConfig().SetHdSphere(true))
             DebugDraw3D.DrawSphereXf(dSphereHDTransform.GlobalTransform, Colors.OrangeRed);
 
         // Delayed spheres
         if (timer_1 <= 0)
         {
             DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition, 2.0f, Colors.BlueViolet, 2.0f);
-            using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
+            using (var _s1 = DebugDraw3D.NewScopeConfig().SetHdSphere(true))
                 DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
             timer_1 = 2;
         }
@@ -419,12 +419,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
 
         // Misc
-        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
+        using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0))
         {
             DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
         }
 
-        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.1f))
+        using (var s = DebugDraw3D.NewScopeConfig().SetCenterBrightness(0.1f))
         {
             DebugDraw3D.DrawArrowhead(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
         }
@@ -435,7 +435,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         DebugDraw3D.DrawGizmo(dMisc_GizmoTransform.GlobalTransform, null, true);
         DebugDraw3D.DrawGizmo(dMisc_GizmoOneColor.GlobalTransform, Colors.Brown, true);
-        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.5f))
+        using (var s = DebugDraw3D.NewScopeConfig().SetCenterBrightness(0.5f))
         {
             DebugDraw3D.DrawGizmo(dMisc_GizmoNormal.GlobalTransform.Orthonormalized(), null, false);
         }
@@ -600,7 +600,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
 
         // Delayed line render
-        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.035f))
+        using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0.035f))
         {
             DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
         }

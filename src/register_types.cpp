@@ -5,7 +5,7 @@
 #include "2d/graphs.h"
 #include "2d/stats_2d.h"
 #include "3d/config_3d.h"
-#include "3d/config_scoped_3d.h"
+#include "3d/config_scope_3d.h"
 #include "3d/debug_draw_3d.h"
 #include "3d/stats_3d.h"
 #include "debug_draw_manager.h"
@@ -43,7 +43,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDraw3D>();
 		ClassDB::register_class<DebugDraw3DStats>();
 		ClassDB::register_class<DebugDraw3DConfig>();
-		ClassDB::register_class<DebugDraw3DScopedConfig>();
+		ClassDB::register_class<DebugDraw3DScopeConfig>();
 
 		ClassDB::register_class<DebugDrawManager>();
 #ifndef DISABLE_DEBUG_RENDERING

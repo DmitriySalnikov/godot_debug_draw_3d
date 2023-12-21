@@ -44,4 +44,4 @@ src/gen/*
 addons/debug_draw_3d/libs/~*
 addons/debug_draw_3d/csharp/*
 clang_rt.asan_*
-docs/images/temp/
+docs/images/classes/temp/

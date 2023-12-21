@@ -251,7 +251,7 @@ func _process(delta):
 		%AnimationPlayer.advance(delta)
 	
 	# Default 3D
-	var _s_def = DebugDraw3D.new_scoped_config().set_thickness(0.05)
+	var _s_def = DebugDraw3D.new_scope_config().set_thickness(0.05)
 	
 	# Default 2D
 	DebugDraw2D.custom_canvas = $Control/PanelContainer
@@ -270,40 +270,40 @@ func _process(delta):
 	
 	# Grid
 	if true:
-		var _s = DebugDraw3D.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
+		var _s = DebugDraw3D.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
 		DebugDraw3D.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
 	
 	var up_vec = $OriginUpVector.global_position - $OriginUpVector/Up.global_position
 	
 	match preview_case:
 		PreviewCase.LineThickness:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(anim_value_1)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(anim_value_1)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.DARK_SLATE_BLUE)
 		PreviewCase.LineCenterBrightness:
-			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(anim_value_1).set_thickness(0.2)
+			var _s = DebugDraw3D.new_scope_config().set_center_brightness(anim_value_1).set_thickness(0.2)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.DARK_SLATE_BLUE)
 		PreviewCase.LineBevel:
-			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.2)
+			var _s = DebugDraw3D.new_scope_config().set_center_brightness(0.7).set_thickness(0.2)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.FIREBRICK)
 		PreviewCase.SphereDensity:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02).set_hd_sphere(anim_value_1 == 1)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.02).set_hd_sphere(anim_value_1 == 1)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform, Color.INDIAN_RED)
 		PreviewCase.IcoSphere:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.02)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.02)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform, Color.INDIAN_RED)
 		
 		PreviewCase.Line:
-			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.2)
+			var _s = DebugDraw3D.new_scope_config().set_center_brightness(0.7).set_thickness(0.2)
 			DebugDraw3D.draw_line(%OriginLine/A.global_position, %OriginLine/B.global_position, Color.FIREBRICK)
 		PreviewCase.Arrow:
-			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.05)
+			var _s = DebugDraw3D.new_scope_config().set_center_brightness(0.7).set_thickness(0.05)
 			DebugDraw3D.draw_arrow(%OriginInstances/A.global_position, %OriginInstances/B.global_position, Color.FIREBRICK, 0.2)
 		
 		PreviewCase.DrawSphere:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.03)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.03)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform.scaled_local(Vector3.ONE * 1.1), Color.INDIAN_RED)
 		PreviewCase.DrawSphereXf:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.03)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.03)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform.scaled_local(Vector3(0.8, 1.1, 0.8)))
 		PreviewCase.DrawCylinder:
 			DebugDraw3D.draw_cylinder(%OriginInstances.global_transform.scaled_local(Vector3(0.5, 1, 0.5)), Color.LIGHT_SALMON)
@@ -333,7 +333,7 @@ func _process(delta):
 		PreviewCase.DrawPointsPath:
 			DebugDraw3D.draw_point_path(path, DebugDraw3D.POINT_TYPE_SQUARE, 0.15, Color.SLATE_BLUE)
 		PreviewCase.DrawPointsPathSpheres:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.015)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.015)
 			DebugDraw3D.draw_point_path(path, DebugDraw3D.POINT_TYPE_SPHERE, 0.15, Color.SLATE_BLUE)
 		PreviewCase.DrawPoints:
 			DebugDraw3D.draw_points(path, DebugDraw3D.POINT_TYPE_SQUARE, 0.15, Color.SLATE_BLUE)
@@ -348,7 +348,7 @@ func _process(delta):
 			var xf: Transform3D = %OriginInstances.global_transform
 			DebugDraw3D.draw_grid(xf.origin, xf.basis.x.rotated(xf.basis.z.normalized(), deg_to_rad(45)), xf.basis.y.rotated(xf.basis.z.normalized(), deg_to_rad(45)), Vector2i(2,2), Color.YELLOW_GREEN, true)
 		PreviewCase.DrawFrustum:
-			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.015)
+			var _s = DebugDraw3D.new_scope_config().set_thickness(0.015)
 			DebugDraw3D.draw_camera_frustum($OriginCameraFrustum/Camera3D, Color.CORAL)
 	
 	

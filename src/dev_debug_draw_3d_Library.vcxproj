@@ -305,9 +305,7 @@
     <ClCompile Include="2d\grouped_text.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
-    <ClCompile Include="3d\config_scoped_3d.cpp">
-      <DeploymentContent>false</DeploymentContent>
-    </ClCompile>
+    <ClCompile Include="3d\config_scope_3d.cpp" />
     <ClCompile Include="3d\debug_draw_3d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -364,9 +362,7 @@
     <ClInclude Include="2d\grouped_text.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="3d\config_scoped_3d.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
+    <ClInclude Include="3d\config_scope_3d.h" />
     <ClInclude Include="3d\debug_draw_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -391,7 +387,7 @@
     <ClInclude Include="common\colors.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
-    <ClInclude Include="common\i_scoped_storage.h">
+    <ClInclude Include="common\i_scope_storage.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
     <ClInclude Include="debug_draw_manager.h" />
