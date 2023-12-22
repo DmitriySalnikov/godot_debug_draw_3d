@@ -28,27 +28,27 @@ public:
 
 /**
  * The main singleton class that handles DebugDraw2D and DebugDraw3D.
- * 
+ *
  * Several additional settings can be found in the project settings.
- * 
+ *
  * @note The following settings require a restart.
- * 
+ *
  * `debug_draw_3d/settings/initial_debug_state` sets the initial debugging state.
- * 
+ *
  * `debug_draw_3d/settings/common/DebugDrawManager_singleton_aliases` sets aliases for DebugDrawManager to be registered as additional singletons.
- * 
+ *
  * `debug_draw_3d/settings/common/DebugDraw2D_singleton_aliases` sets aliases for DebugDraw2D to be registered as additional singletons.
- * 
+ *
  * `debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases` sets aliases for DebugDraw3D to be registered as additional singletons.
- * 
+ *
  * Using these aliases you can reference singletons with shorter words:
- * 
+ *
  * ```python
  * var _s = Dbg3.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
  * Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
  * Dbg2.set_text("Frametime", delta)
  * ```
-*/
+ */
 class DebugDrawManager : public CanvasLayer {
 	GDCLASS(DebugDrawManager, CanvasLayer)
 protected:
@@ -127,6 +127,9 @@ public:
 	DebugDrawManager();
 	~DebugDrawManager();
 
+	/**
+	 * Get singleton. Not available in GDScript.
+	 */
 	static DebugDrawManager *get_singleton() {
 		return singleton;
 	};
@@ -134,15 +137,15 @@ public:
 #pragma region Exposed Methods
 	/**
 	 * Clear all 2D and 3D geometry
-	*/
+	 */
 	void clear_all();
 	/**
 	 * Set whether to display 2D and 3D debug graphics
-	*/
+	 */
 	void set_debug_enabled(bool value);
 	/**
 	 * Whether debug 2D and 3D graphics are disabled
-	*/
+	 */
 	bool is_debug_enabled() const;
 #pragma endregion // Exposed Methods
 

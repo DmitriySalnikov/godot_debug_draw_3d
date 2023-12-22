@@ -12,6 +12,19 @@ inputs:
     description: Arch (universal|x86_32|x86_64|arm32|arm64|rv64|ppc32|ppc64|wasm32)
     required: true
     default: ""
+  artifact:
+    description: Artifact name. This name will be used for caching.
+    required: true
+    default: "bin"
+  additional:
+    description: Any additional arguments
+    default: ""
+  additional_enabled_dd3d:
+    description: Use force_enabled_dd3d if possible
+    default: "true"
+  gh_token:
+    description: GITHUB_TOKEN
+    required: true
   output_libs_path:
     description: Path to compiled libraries
     required: true
@@ -19,15 +32,8 @@ inputs:
   use_cache:
     description: Use cache
     default: "true"
-  artifact:
-    description: Artifact name
-    required: true
-    default: "bin"
-  additional:
-    description: Any additional arguments
-    default: ""
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Get godot-cpp SHA
       shell: bash
@@ -40,10 +46,10 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: ${{env.SCONS_CACHE}}
-        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+        key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
-          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}
+          ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
+          ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}
       continue-on-error: true
 
     - name: Set up Python 3.x
@@ -64,11 +70,11 @@ runs:
 
     - name: Linux dependencies
       shell: bash
-      if: runner.os == 'Linux'
+      if: (runner.os == 'Linux') && (inputs.platform == 'linux')
       run: |
-        sudo apt-get update
+        sudo apt update
         if [[ "${{inputs.arch}}" == *"32" ]];then
-          sudo apt-get install gcc-multilib g++-multilib
+          sudo apt install gcc-multilib g++-multilib
         fi
 
     - name: Compilation
@@ -81,7 +87,7 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
         cd ..
         scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
-        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.platform}}" != "android" ]; then
+        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.additional_enabled_dd3d}}" == "true" ]; then
           scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} force_enabled_dd3d=yes ${{inputs.additional}}
         fi
         echo "::endgroup::"
@@ -102,8 +108,14 @@ runs:
       run: |
         Remove-Item ${{inputs.output_libs_path}}/* -Recurse -Include *.exp,*.lib,*.pdb -Force
 
+    - name: Remove `${{inputs.artifact}}` if the action was restarted
+      uses: ./.github/actions/delete_artifact
+      with:
+        artifact: ${{inputs.artifact}}
+        token: ${{inputs.gh_token}}
+
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{inputs.artifact}}
         retention-days: 7
@@ -114,5 +126,5 @@ runs:
       uses: actions/cache/save@v3
       with:
         path: ${{env.SCONS_CACHE}}
-        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+        key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
       continue-on-error: true

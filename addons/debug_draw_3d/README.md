@@ -6,7 +6,7 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 
 Based on my previous addon, which was developed [only for C#](https://github.com/DmitriySalnikov/godot_debug_draw_cs), and which was inspired by [Zylann's GDScript addon](https://github.com/Zylann/godot_debug_draw)
 
-## [Documentation](https://dd3d.dmitriysalnikov.ru/)
+## [Documentation](https://dd3d.dmitriysalnikov.ru/docs/)
 
 ## [Godot 3 version](https://github.com/DmitriySalnikov/godot_debug_draw_3d/tree/godot_3)
 
@@ -54,9 +54,9 @@ Precompiled for:
 * Android
 * Web (WebAssembly)
 
-## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/)
+## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 
-[![screenshot_web](/images/screenshot_web.png)](https://dd3d.dmitriysalnikov.ru/)
+[![screenshot_web](/images/screenshot_web.png)](https://dd3d.dmitriysalnikov.ru/demo/)
 
 Thanks to Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) ([#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24))
 
@@ -68,7 +68,7 @@ Thanks to Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie))
 
 To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or download the archive by clicking the button at the top of the main repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the `Source Codes` in assets).
 
-## Usage
+### Installation
 
 * Close editor
 * Copy `addons/debug_draw_3d` to your `addons` folder, create it if the folder doesn't exist
@@ -99,11 +99,11 @@ func _process(delta: float) -> void:
 
 ## API
 
-A list of all functions is available in the documentation inside the editor.
+This project has a separate [documentation](https://dd3d.dmitriysalnikov.ru/docs/) page.
+
+Also, a list of all functions is available in the documentation inside the editor (see `DebugDraw3D` and `DebugDraw2D`).
 
 ![screenshot_4](/images/screenshot_4.png)
-
-But also this project has a separate [documentation](https://dd3d.dmitriysalnikov.ru/) page.
 
 ## Known issues and limitations
 

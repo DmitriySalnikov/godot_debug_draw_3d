@@ -31,7 +31,7 @@ scons platform=web target=template_debug
 
 If you have problems running the Web version of your project, you can try using the scripts and tips from [this page](https://gist.github.com/DmitriySalnikov/ce12ff100df4e3352176768f5232abfa).
 
-If you too want to add an [Interactive Demo](https://dmitriysalnikov.github.io/godot_debug_draw_3d/) to your GitHub repository, then you can see how Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) added this feature to this repository in PR [#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24)!
+If you too want to add an [Interactive Demo](https://dd3d.dmitriysalnikov.ru/demo/) to your GitHub repository, then you can see how Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) added this feature to this repository in PR [#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24)!
 
 In short, you need to activate `Extension Support` when exporting and add the [gzuidhof/coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker) to the \<head\> and to the export folder. Then you will need to somehow publish a demo on the GitHub pages, as for example done in [#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24/files#diff-46a620e221376649fe75b0aaf2f607fee47f0d47db1d37bc08bb4a5f11b1af98).
 

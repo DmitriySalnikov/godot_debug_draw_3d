@@ -958,15 +958,15 @@ void DebugDraw3D::draw_grid(const Vector3 &origin, const Vector3 &x_size, const 
 			subdivision, color, is_centered, duration);
 }
 
-void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &_subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
+void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_subdivision, const Color &color, const bool &is_centered, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 #define MAX_SUBDIVISIONS 1024 * 1024
-	ERR_FAIL_COND(_subdivision.x > MAX_SUBDIVISIONS);
-	ERR_FAIL_COND(_subdivision.y > MAX_SUBDIVISIONS);
+	ERR_FAIL_COND(p_subdivision.x > MAX_SUBDIVISIONS);
+	ERR_FAIL_COND(p_subdivision.y > MAX_SUBDIVISIONS);
 
-	Vector2i subdivision = _subdivision.abs();
+	Vector2i subdivision = p_subdivision.abs();
 	subdivision = Vector2i(Math::clamp(subdivision.x, 1, MAX_SUBDIVISIONS), Math::clamp(subdivision.y, 1, MAX_SUBDIVISIONS));
 	Vector3 x_axis = transform.basis.get_column(0);
 	Vector3 z_axis = transform.basis.get_column(2);

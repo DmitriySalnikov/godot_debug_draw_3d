@@ -167,15 +167,15 @@ _data = {
 
 [sub_resource type="GDScript" id="GDScript_atshy"]
 script/source = "@tool
-extends Button
+extends VBoxContainer
 
 @export_range(1, 128)  var bars_count := 32
 var transform: Transform3D:
 	get:
 		return %AudioVisualizer.global_transform
 @export_exp_easing(\"inout\") var motion_smoothing := 0.06
-@export_range(0, 0.5) var bar_thickness := 0.02
-@export_range(0, 10) var bars_separation := 0.1
+@export_range(0, 0.5) var bar_thickness := 0.065
+@export_range(0, 10) var bars_separation := 0.325
 @export_exp_easing(\"inout\") var color_offset_speed := 0.4
 @export var colors: Gradient = null
 
@@ -260,7 +260,7 @@ func open_stream(file_ext: String, data: PackedByteArray):
 
 
 func draw_spectrum():
-	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness)
+	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness).set_center_brightness(0.9)
 	var prev_hz = 0
 	smoothed_energy.resize(bars_count)
 	
@@ -298,12 +298,12 @@ func draw_spectrum():
 	color_offset = wrapf(color_offset + sum / smoothed_energy.size() * clampf(get_process_delta_time() / color_offset_speed if color_offset_speed else 1.0, 0, 1), 0, 1)
 
 
-func _on_mute_toggled(toggled_on):
-	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
-
-
 func _on_volume_slider_value_changed(value):
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&\"Master\"), linear_to_db(value))
+
+
+func _on_mute_master_toggled(toggled_on):
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
 "
 
 [sub_resource type="Gradient" id="Gradient_tup4c"]
@@ -315,7 +315,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("%MusicPlayer:stream")
+tracks/0/path = NodePath("../MusicPlayer:stream")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -750,18 +750,21 @@ libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
 
-[node name="MusicVisualizer" type="Button" parent="."]
+[node name="MusicVisualizer" type="VBoxContainer" parent="."]
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 98.0
-offset_bottom = 41.0
-text = "OPEN FILE"
+offset_right = 50.0
+offset_bottom = 50.0
 script = SubResource("GDScript_atshy")
-bar_thickness = 0.065
-bars_separation = 0.325
 colors = SubResource("Gradient_tup4c")
 
+[node name="OpenFile" type="Button" parent="MusicVisualizer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "OPEN FILE"
+
 [node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
+root_node = NodePath("../OpenFile")
 libraries = {
 "": SubResource("AnimationLibrary_0ity1")
 }
@@ -772,10 +775,7 @@ autoplay = true
 bus = &"MusicVisualizer"
 
 [node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
-layout_mode = 0
-offset_top = 35.0
-offset_right = 40.0
-offset_bottom = 75.0
+layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MusicVisualizer/VBox"]
 layout_mode = 2
@@ -957,8 +957,10 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Switch to C#"
 
+[connection signal="pressed" from="MusicVisualizer/OpenFile" to="MusicVisualizer" method="_pressed"]
 [connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
-[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_toggled"]
+[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer/OpenFile" method="_on_volume_slider_value_changed"]
+[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_master_toggled"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]

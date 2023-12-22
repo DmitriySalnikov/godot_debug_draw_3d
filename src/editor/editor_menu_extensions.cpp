@@ -3,6 +3,7 @@
 #include "editor_menu_extensions.h"
 #include "generate_csharp_bindings.h"
 #include "utils/utils.h"
+#include "version.h"
 
 GODOT_WARNING_DISABLE()
 #include "gen/editor_resources.gen.h"
@@ -60,7 +61,7 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId id) {
 			break;
 		}
 		case DebugDrawMenuExtensionPlugin::OPEN_DOCUMENTATION_SITE: {
-			OS::get_singleton()->shell_open("https://dd3d.dmitriysalnikov.ru/docs/stable");
+			OS::get_singleton()->shell_open("https://dd3d.dmitriysalnikov.ru/docs/" DD3D_VERSION_STR);
 			break;
 		}
 		case DebugDrawMenuExtensionPlugin::GENERATE_CSHARP_BINDING: {

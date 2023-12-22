@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
       
@@ -24,22 +24,26 @@ jobs:
         with:
           workflow: gdextension_build.yml
           branch: ${{github.ref_name}}
-          name: gdextension_libs
+          name: .gdextension_libs
           path: extracted_files/
 
       - name: Replace with new files
+        shell: bash
         run: |
           ls -R extracted_files
           rm -rf ${{env.ADDON_LIBS_PATH}}/
           mv -f extracted_files ${{env.ADDON_LIBS_PATH}}
 
-      - name: Commit report
+      - name: Commit and report
+        shell: bash
         run: |
-          git config --global user.name 'Auto Updater'
-          git config --global user.email 'auto-updater@users.noreply.github.com'
+          git config --global user.name 'github-actions-auto-updater[bot]'
+          git config --global user.email 'github-actions-auto-updater[bot]@users.noreply.github.com'
           git diff
-          echo "# Changed files:" >> $GITHUB_STEP_SUMMARY
-          git diff --name-only >> $GITHUB_STEP_SUMMARY
           git add -A
-          git commit -am "[CI] ↗️ Updated Binaries"
+          git commit --allow-empty -am "[CI] ↗️ Updated Binaries: ${{github.sha}}"
           git push
+
+          echo "## Changed files:" >> $GITHUB_STEP_SUMMARY
+          codeblock_tmp=$'```\nSTATS\n```'
+          echo "${codeblock_tmp//STATS/$(git diff --stat HEAD~)}" >> $GITHUB_STEP_SUMMARY
