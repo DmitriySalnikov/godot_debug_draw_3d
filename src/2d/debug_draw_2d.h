@@ -83,6 +83,9 @@ public:
 	/// @private
 	void init(DebugDrawManager *root);
 
+	/**
+	 * Get singleton. Not available in GDScript.
+	 */
 	static DebugDraw2D *get_singleton() {
 		return singleton;
 	};
@@ -148,6 +151,8 @@ public:
 	 * @param group_priority Group priority based on which groups will be sorted from top to bottom.
 	 * @param group_color Main color of the group
 	 * @param show_title Whether to show the title
+	 * @param title_size Title font size
+	 * @param text_size Text font size
 	 */
 	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true, int title_size = 14, int text_size = 12);
 	/**

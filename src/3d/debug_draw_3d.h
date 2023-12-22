@@ -58,6 +58,9 @@ class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig> 
 #endif
 
 public:
+	/**
+	 * Appearance of points on the path
+	 */
 	enum PointType : int {
 		POINT_TYPE_SQUARE,
 		POINT_TYPE_SPHERE,
@@ -158,6 +161,9 @@ public:
 	DebugDraw3D();
 	~DebugDraw3D();
 
+	/**
+	 * Get singleton. Not available in GDScript.
+	 */
 	static DebugDraw3D *get_singleton() {
 		return singleton;
 	};
@@ -455,7 +461,7 @@ public:
 	/**
 	 * Draw the arrowhead
 	 *
-	 * @param Transform Transform3D of the Arrowhead
+	 * @param transform Transform3D of the Arrowhead
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
@@ -470,7 +476,7 @@ public:
 	 * @param b End point
 	 * @param color Primary color
 	 * @param arrow_size Size of the arrow
-	 * @param absolute_size Is `arrow_size` absolute or relative to the length of the string?
+	 * @param is_absolute_size Is `arrow_size` absolute or relative to the length of the string?
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_arrow(const Vector3 &a, const Vector3 &b, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
@@ -483,7 +489,7 @@ public:
 	 * @param length Length
 	 * @param color Primary color
 	 * @param arrow_size Size of the arrow
-	 * @param absolute_size Is `arrow_size` absolute or relative to the line length?
+	 * @param is_absolute_size Is `arrow_size` absolute or relative to the line length?
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_arrow_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
@@ -496,7 +502,7 @@ public:
 	 * @param path Sequence of points
 	 * @param color Primary color
 	 * @param arrow_size Size of the arrow
-	 * @param absolute_size Is the `arrow_size` absolute or relative to the length of the line?
+	 * @param is_absolute_size Is the `arrow_size` absolute or relative to the length of the line?
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_arrow_path(const PackedVector3Array &path, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
@@ -530,9 +536,10 @@ public:
 	 *
 	 * ![](docs/images/classes/DrawPoints.webp)
 	 *
-	 * @param path Sequence of points
-	 * @param color Primary color
+	 * @param points Sequence of points
+	 * @param type Type of points
 	 * @param size Size of squares
+	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_points(const PackedVector3Array &points, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
@@ -593,12 +600,12 @@ public:
 	 * Like DebugDraw3D.draw_grid, but instead of origin, x_size and y_size, a single transform is used.
 	 *
 	 * @param transform Transform3D of the Grid
-	 * @param subdivision Number of cells for the X and Y axes
+	 * @param p_subdivision Number of cells for the X and Y axes
 	 * @param color Primary color
 	 * @param is_centered Draw lines relative to origin
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_grid_xf(const Transform3D &transform, const Vector2i &_subdivision, const Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_grid_xf(const Transform3D &transform, const Vector2i &p_subdivision, const Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma region Camera Frustum
 

@@ -2404,7 +2404,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1iqys")
-preview_case = 4
+preview_case = 24
 anim_value_1 = 0.1
 metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 

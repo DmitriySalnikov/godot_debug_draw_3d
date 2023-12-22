@@ -41,47 +41,6 @@ var timer_2 := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
-func _ready() -> void:
-	_update_keys_just_press()
-	
-	await get_tree().process_frame
-	
-	# this check is required for inherited scenes, because an instance of this 
-	# script is created first, and then overridden by another
-	if !is_inside_tree():
-		return
-
-
-func _is_key_just_pressed(key):
-	if (button_presses[key] == 1):
-		button_presses[key] = 2
-		return true
-	return false
-
-
-func _update_keys_just_press():
-	var set_key = func (k: Key): 
-		if Input.is_key_pressed(k) and button_presses.has(k):
-			if button_presses[k] == 0:
-				return 1
-			else:
-				return button_presses[k]
-		else:
-			return 0
-	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
-	button_presses[KEY_UP] = set_key.call(KEY_UP)
-	button_presses[KEY_CTRL] = set_key.call(KEY_CTRL)
-	button_presses[KEY_F1] = set_key.call(KEY_F1)
-	button_presses[KEY_1] = set_key.call(KEY_1)
-	button_presses[KEY_2] = set_key.call(KEY_2)
-	button_presses[KEY_3] = set_key.call(KEY_3)
-
-func _update_timers(delta : float):
-	timer_1 -= delta
-	timer_2 -= delta
-	timer_3 -= delta
-	timer_text -= delta
-
 func _process(delta):
 	if !update_in_physics:
 		%RayEmitterAnimationPlayer.callback_mode_process = AnimationPlayer.ANIMATION_PROCESS_IDLE
@@ -525,3 +484,47 @@ func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side 
 			graph.set_parent(parent, parent_side)
 	
 	return graph
+
+
+func _ready() -> void:
+	_update_keys_just_press()
+	
+	await get_tree().process_frame
+	
+	# this check is required for inherited scenes, because an instance of this 
+	# script is created first, and then overridden by another
+	if !is_inside_tree():
+		return
+
+
+func _is_key_just_pressed(key):
+	if (button_presses[key] == 1):
+		button_presses[key] = 2
+		return true
+	return false
+
+
+func _update_keys_just_press():
+	var set_key = func (k: Key): 
+		if Input.is_key_pressed(k) and button_presses.has(k):
+			if button_presses[k] == 0:
+				return 1
+			else:
+				return button_presses[k]
+		else:
+			return 0
+	button_presses[KEY_LEFT] = set_key.call(KEY_LEFT)
+	button_presses[KEY_UP] = set_key.call(KEY_UP)
+	button_presses[KEY_CTRL] = set_key.call(KEY_CTRL)
+	button_presses[KEY_F1] = set_key.call(KEY_F1)
+	button_presses[KEY_1] = set_key.call(KEY_1)
+	button_presses[KEY_2] = set_key.call(KEY_2)
+	button_presses[KEY_3] = set_key.call(KEY_3)
+
+
+func _update_timers(delta : float):
+	timer_1 -= delta
+	timer_2 -= delta
+	timer_3 -= delta
+	timer_text -= delta
+

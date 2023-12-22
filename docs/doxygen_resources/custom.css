@@ -1,19 +1,28 @@
 html {
-    --top-nav-height: 150px
+    --top-height: 120px;
+    --side-nav_offset: 20px;
 }
 
 @media screen and (min-width: 768px) {
     #top {
-        height: var(--top-nav-height);
+        height: calc(var(--top-height) + var(--side-nav_offset));
     }
 
     #nav-tree,
     #side-nav {
-        height: calc(100vh - var(--top-nav-height)) !important;
+        height: calc(100vh - var(--top-height) - var(--side-nav_offset)) !important;
     }
 
     #side-nav {
-        top: var(--top-nav-height);
+        top: calc(var(--top-height) + var(--side-nav_offset));
+    }
+
+    #doc-content {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+        left: 0px;
     }
 }
 
@@ -75,3 +84,59 @@ span.mlabel {
     color: rgb(20, 20, 20);
     font-weight: 800;
 }
+
+select#dd3d_version_select {
+    color: var(--primary-color);
+    font-weight: 600;
+    background-color: var(--code-background);
+    border-color: var(--separator-color);
+    border-radius: var(--border-radius-small);
+}
+
+select#dd3d_version_select option {
+    color: var(--page-foreground-color);
+}
+
+/* Octocat corner */
+
+a.github-corner:hover .octo-arm {
+    animation: octocat-wave 560ms ease-in-out
+}
+
+@keyframes octocat-wave {
+
+    0%,
+    100% {
+        transform: rotate(0)
+    }
+
+    20%,
+    60% {
+        transform: rotate(-25deg)
+    }
+
+    40%,
+    80% {
+        transform: rotate(10deg)
+    }
+}
+
+@media (max-width:500px) {
+    a.github-corner:hover .octo-arm {
+        animation: none
+    }
+
+    a.github-corner .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+    }
+}
+
+a.github-corner {
+    position: absolute;
+    top: 0;
+    border: 0;
+    right: 0;
+    z-index: 1;
+}
+
+/* !Octocat corner */

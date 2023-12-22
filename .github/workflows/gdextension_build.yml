@@ -10,22 +10,26 @@ on:
         description: Use Cache
         default: true
         type: boolean
-  repository_dispatch:
 
 # Stop the same workflow actions
 concurrency:
-  group: ${{github.workflow}}-${{github.event.pull_request.number || github.run_id}}
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
   cancel-in-progress: true
+
+permissions:
+  actions: write
 
 env:
   SCONS_CACHE: ${{github.workspace}}/.scons-cache/
+  USE_CACHE: ${{!format('{0}', inputs.use_cache) && 'true' || format('{0}', inputs.use_cache)}} # Default true
   OUTPUT_LIBS_PATH: bin
   FORCE_DISABLE_UNITY: yes
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   windows-gdextension:
     name: 🏁 Windows
-    runs-on: "windows-latest"
+    runs-on: windows-latest
 
     strategy:
       fail-fast: false
@@ -35,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
@@ -46,16 +50,16 @@ jobs:
           platform: windows
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{format('{0}', inputs.use_cache)}} # Cast to string
-          artifact: windows
+          artifact: windows.${{matrix.target}}.${{matrix.arch}}
           additional: lto=yes
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   linux-gdextension:
     name: 🐧 Linux
-    runs-on: "ubuntu-20.04"
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
@@ -65,7 +69,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
@@ -76,16 +80,16 @@ jobs:
           platform: linux
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{format('{0}', inputs.use_cache)}}
-          artifact: linux
+          artifact: linux.${{matrix.target}}.${{matrix.arch}}
           additional: lto=yes
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   macos-gdextension:
     name: 🍏 MacOS
-    runs-on: "macos-latest"
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
@@ -95,7 +99,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
@@ -106,16 +110,16 @@ jobs:
           platform: macos
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{format('{0}', inputs.use_cache)}}
-          artifact: macos
+          artifact: macos.${{matrix.target}}.${{matrix.arch}}
           additional: lto=yes macos_deployment_target=10.14
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   android-gdextension:
     name: 🤖 Android
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
@@ -125,7 +129,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
@@ -156,16 +160,17 @@ jobs:
           platform: android
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{format('{0}', inputs.use_cache)}}
-          artifact: android
+          artifact: android.${{matrix.target}}.${{matrix.arch}}
           additional: lto=yes
+          additional_enabled_dd3d: false
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   web-gdextension:
     name: 🕸 Web
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
@@ -178,14 +183,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           lfs: true
           submodules: recursive
 
-      - uses: mymindstorm/setup-emsdk@v12
+      - name: Download Emscripten
+        uses: mymindstorm/setup-emsdk@v12
+        # Continue if failed to cache
+        # https://github.com/mymindstorm/setup-emsdk/issues/20
+        continue-on-error: true
         with:
           version: ${{env.EM_VERSION}}
+          actions-cache-folder: obj/emsdk_cache
 
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
@@ -193,10 +203,10 @@ jobs:
           platform: web
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{format('{0}', inputs.use_cache)}}
-          artifact: web
+          artifact: web.${{matrix.target}}.${{matrix.arch}}
           additional: lto=yes
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
@@ -213,14 +223,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # https://github.com/actions/download-artifact/issues/249
       - name: Download Binaries
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: extracted_files
-
-      - name: Remove `gdextension_libs` if the action was restarted
-        run: |
-          rm -rf extracted_files/gdextension_libs/
 
       - name: Store all libraries in one directory
         run: |
@@ -229,9 +239,14 @@ jobs:
           rm -rf extracted_files/**/
           touch extracted_files/.gdignore
 
+      - name: Output file information
+        run: |
+          cd extracted_files
+          echo "Total size: $(du -ch -b | grep total | cut -f1 | awk '{printf "%.2f", $1/1048576}') MB, Total number of files: $(find . -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload GDExtension
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: gdextension_libs
+          name: .gdextension_libs
           retention-days: 7
           path: extracted_files/*

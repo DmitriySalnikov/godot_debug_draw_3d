@@ -1,5 +1,5 @@
 ## Please define "editor/movie_writer/base_folder" with output path
-## Also specify movie FPS "editor/movie_writer/fps" (default 48)
+## Also specify movie FPS "editor/movie_writer/fps" (default 30)
 ## It is advisable to override this setting for .movie: "rendering/viewport/transparent_background"
 ## Override "rendering/anti_aliasing/quality/msaa_2d" for better quality
 ## Override "display/window/size/transparent" to display transparency
@@ -117,7 +117,7 @@ var movie_temp_path: String = movie_base_path.path_join("temp")
 var movie_input_template: String = "_%08d.png"
 var movie_output_ext: String = ".webp"
 var movie_name: String = "output"
-var movie_FPS: int = 48
+var movie_FPS: int = 30
 var movie_compression: int = 4 # 0-6
 var movie_quality: int = 90 # 0-100
 

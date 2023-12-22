@@ -1,3 +1,4 @@
+@mainpage
 # Introduction
 
 This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in `C++` and can be used with `GDScript` or `C#`.
@@ -48,7 +49,7 @@ Precompiled for:
 
 ## Download
 
-To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or download the archive from the [GithHub](https://github.com/DmitriySalnikov/godot_debug_draw_3d) page by clicking the button at the top of the repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the `Source Codes` in assets).
+To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or download the archive from the [GitHub](https://github.com/DmitriySalnikov/godot_debug_draw_3d) page by clicking the button at the top of the repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the `Source Codes` in assets).
 
 ### Installation
 
@@ -60,7 +61,11 @@ To download, use the [Godot Asset Library](https://godotengine.org/asset-library
 
 Your support adds motivation to develop my public projects.
 
-<a href="https://boosty.to/dmitriysalnikov/donate"><img src="https://static.boosty.to/assets/images/boostyDomainLogo.5Vlxt.svg" alt="Boosty" width=120px/></a>
+[![](images/boosty.png){html: width=192px}](https://boosty.to/dmitriysalnikov/donate)
+
+<h2><a href="https://dd3d.dmitriysalnikov.ru/demo/">Interactive Web Demo</a></h2>
+
+[![](/images/screenshot_web.png)](https://dd3d.dmitriysalnikov.ru/demo/)
 
 ## Next steps
 

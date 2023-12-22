@@ -17,6 +17,11 @@ using namespace godot;
 
 class DataGraphManager;
 
+/**
+ * Base class for drawing graphs.
+ * 
+ * Must be created via DebugDraw2D.create_graph.
+*/
 class DebugDraw2DGraph : public RefCounted {
 	GDCLASS(DebugDraw2DGraph, RefCounted);
 
@@ -304,7 +309,9 @@ VARIANT_ENUM_CAST(DebugDraw2DGraph::GraphSide);
 VARIANT_BITFIELD_CAST(DebugDraw2DGraph::TextFlags);
 
 /**
- * This version of the graphs is automatically updated and displays FPS or Frametime
+ * This version of the graphs is automatically updated and displays FPS or Frametime.
+ * 
+ * Must be created via DebugDraw2D.create_fps_graph.
  */
 class DebugDraw2DFPSGraph : public DebugDraw2DGraph {
 	GDCLASS(DebugDraw2DFPSGraph, DebugDraw2DGraph);

@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=23 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -167,20 +167,21 @@ _data = {
 
 [sub_resource type="GDScript" id="GDScript_atshy"]
 script/source = "@tool
-extends Button
+extends VBoxContainer
 
 @export_range(1, 128)  var bars_count := 32
 var transform: Transform3D:
 	get:
 		return %AudioVisualizer.global_transform
-@export_exp_easing(\"inout\") var motion_smoothing := 0.06
-@export_range(0, 0.5) var bar_thickness := 0.02
-@export_range(0, 10) var bars_separation := 0.1
+@export_exp_easing(\"inout\") var motion_smoothing := 0.025
+@export_range(0, 0.5) var bar_thickness := 0.065
+@export_range(0, 10) var bars_separation := 0.325
 @export_exp_easing(\"inout\") var color_offset_speed := 0.4
 @export var colors: Gradient = null
 
 var MusicBus := &\"MusicVisualizer\"
-var MAX_HZ := 11050.0
+var MAX_HZ := 16000.0
+var MIN_HZ := 50.0
 var MIN_DB := 60.0
 var spectrum: AudioEffectSpectrumAnalyzerInstance = null
 
@@ -257,11 +258,16 @@ func open_stream(file_ext: String, data: PackedByteArray):
 	%MusicPlayer.stream = stream
 	%MusicPlayer.bus = MusicBus
 	%MusicPlayer.play()
+	
+	# Debugging frequencies
+	for ih in range(1, bars_count + 1):
+		var _hz: float = log_freq(ih / float(bars_count), MIN_HZ, MAX_HZ)
+		#print(\"%.0f hz %.2f\" % [_hz, ih / float(bars_count)])
 
 
 func draw_spectrum():
-	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness)
-	var prev_hz = 0
+	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness).set_center_brightness(0.9)
+	var prev_hz = MIN_HZ
 	smoothed_energy.resize(bars_count)
 	
 	var xf := transform
@@ -274,8 +280,8 @@ func draw_spectrum():
 	
 	for ih in range(1, bars_count + 1):
 		var i := ih - 1
-		var hz: float = ih * MAX_HZ / bars_count
-		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz).length()
+		var hz: float = log_freq(ih / float(bars_count), MIN_HZ, MAX_HZ)
+		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz, 0).length()
 		var energy: float = clampf((MIN_DB + linear_to_db(magnitude)) / MIN_DB, 0, 1)
 		var e: float = lerp(smoothed_energy[i], energy, clampf(get_process_delta_time() / motion_smoothing if motion_smoothing else 1.0, 0, 1))
 		smoothed_energy[i] = e
@@ -298,12 +304,20 @@ func draw_spectrum():
 	color_offset = wrapf(color_offset + sum / smoothed_energy.size() * clampf(get_process_delta_time() / color_offset_speed if color_offset_speed else 1.0, 0, 1), 0, 1)
 
 
-func _on_mute_toggled(toggled_on):
-	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
+func log10(val: float) -> float:
+	return log(val) / 2.302585
+
+
+func log_freq(pos: float, min_hz: float, max_hz: float) -> float:
+	return pow(10, log10(min_hz) + (log10(max_hz) - log10(min_hz)) * pos)
 
 
 func _on_volume_slider_value_changed(value):
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&\"Master\"), linear_to_db(value))
+
+
+func _on_mute_master_toggled(toggled_on):
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
 "
 
 [sub_resource type="Gradient" id="Gradient_tup4c"]
@@ -315,7 +329,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath("%MusicPlayer:stream")
+tracks/0/path = NodePath("../MusicPlayer:stream")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -356,7 +370,7 @@ func _ready():
 		%BufferSlider.value = test.buffer_size
 	
 	%ThicknessSlider.value = get_parent().debug_thickness
-	%UpdateInPhysics.text = \"Update in physics (%d Ticks)\" % ProjectSettings.get_setting(\"physics/common/physics_ticks_per_second\")
+	%UpdateInPhysics.text = \"Update in physics (%d Ticks) *\" % ProjectSettings.get_setting(\"physics/common/physics_ticks_per_second\")
 	%UpdateInPhysics.button_pressed = get_parent().update_in_physics
 	
 	%ShowStats.button_pressed = get_parent().text_groups_show_stats
@@ -417,6 +431,51 @@ func _on_show_stats_toggled(toggled_on):
 
 func _on_draw_boxes_toggled(toggled_on):
 	get_parent().draw_array_of_boxes = toggled_on
+"
+
+[sub_resource type="GDScript" id="GDScript_h0fpq"]
+script/source = "extends HBoxContainer
+
+var _on_versions_loaded_callback = null
+@onready var btn: OptionButton = $OptionButton
+
+func _enter_tree():
+	hide()
+
+
+func _ready():
+	if OS.has_feature('web'):
+		_on_versions_loaded_callback = JavaScriptBridge.create_callback(_on_versions_loaded)
+		var versions_callbacks: JavaScriptObject = JavaScriptBridge.get_interface(\"versions_callbacks\")
+		versions_callbacks.loaded = _on_versions_loaded_callback
+		
+		JavaScriptBridge.eval(\"loadVersions()\")
+
+
+func _on_versions_loaded(args: Array) -> void:
+	if (args.size() == 0):
+		return
+	
+	var current_version: String = args[0]
+	
+	var versions_str: String = JavaScriptBridge.eval(\"versions_callbacks.versions;\")
+	var version_urls_str: String = JavaScriptBridge.eval(\"versions_callbacks.version_urls;\")
+	var versions: PackedStringArray = versions_str.split(\";\", false)
+	var version_urls: PackedStringArray = version_urls_str.split(\";\", false)
+	
+	if versions:
+		show()
+		btn.clear()
+		btn.item_selected.connect(func(idx):
+			# move to another version
+			JavaScriptBridge.eval(\"window.location.href = \\\"%s\\\"\" % version_urls[idx])
+		)
+		
+		for i in range(versions.size()):
+			btn.add_item(versions[i], i)
+			
+			if versions[i] == current_version:
+				btn.select(i)
 "
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oj5gf"]
@@ -750,18 +809,21 @@ libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
 
-[node name="MusicVisualizer" type="Button" parent="."]
+[node name="MusicVisualizer" type="VBoxContainer" parent="."]
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 98.0
-offset_bottom = 41.0
-text = "OPEN FILE"
+offset_right = 50.0
+offset_bottom = 50.0
 script = SubResource("GDScript_atshy")
-bar_thickness = 0.065
-bars_separation = 0.325
 colors = SubResource("Gradient_tup4c")
 
+[node name="OpenFile" type="Button" parent="MusicVisualizer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "OPEN FILE"
+
 [node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
+root_node = NodePath("../OpenFile")
 libraries = {
 "": SubResource("AnimationLibrary_0ity1")
 }
@@ -772,10 +834,7 @@ autoplay = true
 bus = &"MusicVisualizer"
 
 [node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
-layout_mode = 0
-offset_top = 35.0
-offset_right = 40.0
-offset_bottom = 75.0
+layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MusicVisualizer/VBox"]
 layout_mode = 2
@@ -841,7 +900,32 @@ offset_bottom = -10.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="Label" type="Label" parent="Settings/HBox"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Settings/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+
+[node name="VersionBlock" type="HBoxContainer" parent="Settings/HBox/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+script = SubResource("GDScript_h0fpq")
+
+[node name="Label" type="Label" parent="Settings/HBox/VBoxContainer/VersionBlock"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 13
+text = "Demo version:"
+
+[node name="OptionButton" type="OptionButton" parent="Settings/HBox/VBoxContainer/VersionBlock"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 13
+item_count = 1
+selected = 0
+popup/item_0/text = "1.0.0"
+popup/item_0/id = 0
+
+[node name="Label" type="Label" parent="Settings/HBox/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 8
@@ -885,7 +969,10 @@ value = 0.05
 [node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Update in physics (15 Ticks)"
+tooltip_text = "Because of the low physics tick rate,
+you can see how RayCast's can shake.
+This is expected behavior."
+text = "Update in physics (15 Ticks) *"
 
 [node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
@@ -957,8 +1044,10 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Switch to C#"
 
+[connection signal="pressed" from="MusicVisualizer/OpenFile" to="MusicVisualizer" method="_pressed"]
 [connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
-[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_toggled"]
+[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer/OpenFile" method="_on_volume_slider_value_changed"]
+[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_master_toggled"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]

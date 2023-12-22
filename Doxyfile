@@ -98,6 +98,82 @@ IMAGE_PATH             = docs/images \
                         docs/images/classes \
                         images
 
+# The HTML_HEADER tag can be used to specify a user-defined HTML header file for
+# each generated HTML page. If the tag is left blank doxygen will generate a
+# standard header.
+#
+# To get valid HTML the header file that includes any scripts and style sheets
+# that doxygen needs, which is dependent on the configuration options used (e.g.
+# the setting GENERATE_TREEVIEW). It is highly recommended to start with a
+# default header using
+# doxygen -w html new_header.html new_footer.html new_stylesheet.css
+# YourConfigFile
+# and then modify the file new_header.html. See also section "Doxygen usage"
+# for information on how to generate the default header that doxygen normally
+# uses.
+# Note: The header is subject to change so you typically have to regenerate the
+# default header when upgrading to a newer version of doxygen. For a description
+# of the possible markers and block names see the documentation.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_HEADER            = docs/doxygen_resources/header.html
+
+# The HTML_FOOTER tag can be used to specify a user-defined HTML footer for each
+# generated HTML page. If the tag is left blank doxygen will generate a standard
+# footer. See HTML_HEADER for more information on how to generate a default
+# footer and what special commands can be used inside the footer. See also
+# section "Doxygen usage" for information on how to generate the default footer
+# that doxygen normally uses.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_FOOTER            = docs/doxygen_resources/footer.html
+
+# The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
+# sheet that is used by each HTML page. It can be used to fine-tune the look of
+# the HTML output. If left blank doxygen will generate a default style sheet.
+# See also section "Doxygen usage" for information on how to generate the style
+# sheet that doxygen normally uses.
+# Note: It is recommended to use HTML_EXTRA_STYLESHEET instead of this tag, as
+# it is more robust and this tag (HTML_STYLESHEET) will in the future become
+# obsolete.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_STYLESHEET        =
+
+# The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
+# cascading style sheets that are included after the standard style sheets
+# created by doxygen. Using this option one can overrule certain style aspects.
+# This is preferred over using HTML_STYLESHEET since it does not replace the
+# standard style sheet and is therefore more robust against future updates.
+# Doxygen will copy the style sheet files to the output directory.
+# Note: The order of the extra style sheet files is of importance (e.g. the last
+# style sheet in the list overrules the setting of the previous ones in the
+# list).
+# Note: Since the styling of scrollbars can currently not be overruled in
+# Webkit/Chromium, the styling will be left out of the default doxygen.css if
+# one or more extra stylesheets have been specified. So if scrollbar
+# customization is desired it has to be added explicitly. For an example see the
+# documentation.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_EXTRA_STYLESHEET  = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome.css \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                        docs/doxygen_resources/custom.css
+
+# The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
+# other source files which should be copied to the HTML output directory. Note
+# that these files will be copied to the base HTML output directory. Use the
+# $relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these
+# files. In the HTML_STYLESHEET file, use the file name only. Also note that the
+# files will be copied as-is; there are no commands or markers available.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_EXTRA_FILES       = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
+                        docs/doxygen_resources/doc_version_select.js \
+                        images/icon_3d_32.png \
+
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create up to 4096
 # sub-directories (in 2 levels) under the output directory of each output format
 # and will distribute the generated files over these directories. Enabling this
@@ -1348,81 +1424,6 @@ HTML_OUTPUT            = html
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_FILE_EXTENSION    = .html
-
-# The HTML_HEADER tag can be used to specify a user-defined HTML header file for
-# each generated HTML page. If the tag is left blank doxygen will generate a
-# standard header.
-#
-# To get valid HTML the header file that includes any scripts and style sheets
-# that doxygen needs, which is dependent on the configuration options used (e.g.
-# the setting GENERATE_TREEVIEW). It is highly recommended to start with a
-# default header using
-# doxygen -w html new_header.html new_footer.html new_stylesheet.css
-# YourConfigFile
-# and then modify the file new_header.html. See also section "Doxygen usage"
-# for information on how to generate the default header that doxygen normally
-# uses.
-# Note: The header is subject to change so you typically have to regenerate the
-# default header when upgrading to a newer version of doxygen. For a description
-# of the possible markers and block names see the documentation.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_HEADER            = docs/doxygen_resources/header.html
-
-# The HTML_FOOTER tag can be used to specify a user-defined HTML footer for each
-# generated HTML page. If the tag is left blank doxygen will generate a standard
-# footer. See HTML_HEADER for more information on how to generate a default
-# footer and what special commands can be used inside the footer. See also
-# section "Doxygen usage" for information on how to generate the default footer
-# that doxygen normally uses.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_FOOTER            =
-
-# The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
-# sheet that is used by each HTML page. It can be used to fine-tune the look of
-# the HTML output. If left blank doxygen will generate a default style sheet.
-# See also section "Doxygen usage" for information on how to generate the style
-# sheet that doxygen normally uses.
-# Note: It is recommended to use HTML_EXTRA_STYLESHEET instead of this tag, as
-# it is more robust and this tag (HTML_STYLESHEET) will in the future become
-# obsolete.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_STYLESHEET        =
-
-# The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
-# cascading style sheets that are included after the standard style sheets
-# created by doxygen. Using this option one can overrule certain style aspects.
-# This is preferred over using HTML_STYLESHEET since it does not replace the
-# standard style sheet and is therefore more robust against future updates.
-# Doxygen will copy the style sheet files to the output directory.
-# Note: The order of the extra style sheet files is of importance (e.g. the last
-# style sheet in the list overrules the setting of the previous ones in the
-# list).
-# Note: Since the styling of scrollbars can currently not be overruled in
-# Webkit/Chromium, the styling will be left out of the default doxygen.css if
-# one or more extra stylesheets have been specified. So if scrollbar
-# customization is desired it has to be added explicitly. For an example see the
-# documentation.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_EXTRA_STYLESHEET  = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome.css \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
-                        docs/doxygen_resources/custom.css
-
-# The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
-# other source files which should be copied to the HTML output directory. Note
-# that these files will be copied to the base HTML output directory. Use the
-# $relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these
-# files. In the HTML_STYLESHEET file, use the file name only. Also note that the
-# files will be copied as-is; there are no commands or markers available.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_EXTRA_FILES       = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
-                        images/icon_3d_32.png \
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme.
