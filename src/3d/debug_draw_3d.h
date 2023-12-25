@@ -30,6 +30,7 @@ enum class ConvertableInstanceType : char;
 #endif
 
 /**
+ * Test
  * This is a singleton class for calling debugging 3D methods.
  *
  * You can use the project settings `debug_draw_3d/settings/3d` for additional customization.

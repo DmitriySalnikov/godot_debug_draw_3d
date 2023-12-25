@@ -3,6 +3,9 @@ on:
   push:
     branches-ignore: gh-pages
     paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
+  pull_request:
+    branches-ignore: gh-pages
+    paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
   workflow_dispatch:
     inputs:
       dev_deploy:
@@ -14,6 +17,8 @@ on:
 # demo/ for demo project
 # dev/ for development version
 # dev/BRANCH/docs and dev/BRANCH/demo for dev docs/ and demo/
+
+
 
 # Permissions to update the PAGES_BRANCH branch
 permissions:
