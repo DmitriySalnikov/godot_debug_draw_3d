@@ -26,6 +26,9 @@ env:
   FORCE_DISABLE_UNITY: yes
 
 jobs:
+  call-workflow-2-in-local-repo:
+    uses: ./.github/workflows/web_deploy.yml
+  
   windows-gdextension:
     name: 🏁 Windows
     runs-on: windows-latest
