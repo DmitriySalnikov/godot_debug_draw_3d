@@ -16,7 +16,7 @@ Your support adds motivation to develop my public projects.
 
 <a href="https://boosty.to/dmitriysalnikov/donate"><img src="./docs/images/boosty.png" alt="Boosty" width=150px/></a>
 
-<a href="https://qiwi.com/n/DMITRIYSALNIKOV"><img src="https://upload.wikimedia.org/wikipedia/commons/8/8f/QIWI_logo.svg" alt="qiwi" width=90px/></a>
+<b>USDT-TRC20 TEw934PrsffHsAn5M63SoHYRuZo984EF6v</b>
 
 ## Features
 

@@ -167,8 +167,9 @@ def generate_sources_for_resources(env, src_out):
 
     shared_files = [
         ("src/resources/extendable_meshes.gdshader", True),
-        ("src/resources/basic_unshaded.gdshader", True),
+        ("src/resources/wireframe_unshaded.gdshader", True),
         ("src/resources/billboard_unshaded.gdshader", True),
+        ("src/resources/plane_unshaded.gdshader", True),
     ]
     generate_resources_cpp_h_files(shared_files, "DD3DResources", "shared_resources.gen", src_out)
 
@@ -177,6 +178,17 @@ def generate_sources_for_resources(env, src_out):
 
 
 def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_out):
+    """
+    input_files
+        (path, is_text)
+    namespace : str
+        source code namespace
+    output_no_ext : str
+        name of the source pair (cpp/h)
+    src_out : list of str
+        array which will be extended with generated sources
+    """
+
     print(f"Generating sources '{output_no_ext}.[cpp/h]' with content from resources:")
     print("\n".join([f"{i[0]} as {'text' if i[1] else 'binary'}" for i in input_files]))
     print()

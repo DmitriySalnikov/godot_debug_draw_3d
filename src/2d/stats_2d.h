@@ -8,10 +8,13 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 /**
- * You can get basic statistics about 2D rendering from this class. All names try to reflect what they mean.
+ * @brief
+ * You can get basic statistics about 2D rendering from this class.
  * 
+ * All names try to reflect what they mean.
+ *
  * To get an instance of this class with current statistics, use DebugDraw2D.get_render_stats.
-*/
+ */
 class DebugDraw2DStats : public RefCounted {
 	GDCLASS(DebugDraw2DStats, RefCounted)
 

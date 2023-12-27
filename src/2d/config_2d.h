@@ -12,10 +12,11 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 /**
+ * @brief
  * This is a class for storing part of the DebugDraw2D configuration.
- * 
+ *
  * You can use DebugDraw2D.get_config to get the current instance of the configuration.
-*/
+ */
 class DebugDraw2DConfig : public RefCounted {
 	GDCLASS(DebugDraw2DConfig, RefCounted)
 

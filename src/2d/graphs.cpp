@@ -299,7 +299,8 @@ void DebugDraw2DGraph::graph_interpolated_values_range::update(const double &_mi
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 
-	double _center_offset = abs(max - min) * (0.25 * 0.5); // react when the new limit is below 25% of the half range
+	double _center_offset = Math::clamp(abs(max - min) * (0.25 * 0.5), 0.5, 1000.0); // react when the new limit is below 25% of the half range
+	double range = abs(max - min);
 	if (_max > max) {
 		max = _max;
 		upd_timer_max = max_timer_delay;
@@ -308,8 +309,7 @@ void DebugDraw2DGraph::graph_interpolated_values_range::update(const double &_mi
 			if (upd_timer_max > 0) {
 				upd_timer_max -= _delta;
 
-				double range = abs(max - min);
-				if (range)
+				if (range > 1.0)
 					shrink_weight_max = buffer_size / range;
 				else
 					shrink_weight_max = 1.0;
@@ -332,8 +332,7 @@ void DebugDraw2DGraph::graph_interpolated_values_range::update(const double &_mi
 			if (upd_timer_min > 0) {
 				upd_timer_min -= _delta;
 
-				double range = abs(max - min);
-				if (range)
+				if (range > 1.0)
 					shrink_weight_min = buffer_size / range;
 				else
 					shrink_weight_max = 1.0;

@@ -2,7 +2,11 @@ name: 🚀 Deploy content to Github Pages
 on:
   push:
     branches-ignore: gh-pages
-    paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
+    # Must not overlap with conditions in `gdextension_build.yml`
+    paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, 
+      src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct
+    ]
+  workflow_call:
   workflow_dispatch:
     inputs:
       dev_deploy:
@@ -159,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DOXYGEN_VERSION: 1.9.8
+      DOXYGEN_VERSION: 1.10.0
 
     steps:
       - name: Checkout
@@ -168,13 +172,28 @@ jobs:
           lfs: true
           submodules: recursive
 
+      - name: Restore doxygen directory
+        uses: actions/cache/restore@v3
+        id: restore_doxygen
+        with:
+          path: obj/doxygen-${{env.DOXYGEN_VERSION}}
+          key: doxygen-${{env.DOXYGEN_VERSION}}
+
       - name: Install Doxygen
+        if: ${{!steps.restore_doxygen.outputs.cache-hit}}
         shell: bash
         run: |
           mkdir obj
           cd obj
           wget -nv https://www.doxygen.nl/files/doxygen-${{env.DOXYGEN_VERSION}}.linux.bin.tar.gz
           tar -xf doxygen-${{env.DOXYGEN_VERSION}}.linux.bin.tar.gz
+
+      - name: Save doxygen directory
+        if: ${{!steps.restore_doxygen.outputs.cache-hit}}
+        uses: actions/cache/save@v3
+        with:
+          path: obj/doxygen-${{env.DOXYGEN_VERSION}}
+          key: doxygen-${{env.DOXYGEN_VERSION}}
 
       - name: Run Doxygen
         shell: bash

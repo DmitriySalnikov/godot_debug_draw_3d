@@ -42,6 +42,6 @@ obj/
 bin/
 src/gen/*
 addons/debug_draw_3d/libs/~*
-addons/debug_draw_3d/csharp/*
+addons/debug_draw_3d/gen/*
 clang_rt.asan_*
 docs/images/classes/temp/

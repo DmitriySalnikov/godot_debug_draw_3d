@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode shadows_disabled, unshaded, depth_prepass_alpha;
+render_mode cull_back, shadows_disabled, unshaded;
 
 uniform sampler2D depth_value : hint_depth_texture;
 

@@ -5,7 +5,9 @@
 using namespace godot;
 
 const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
+const godot::Vector3 Vector3_INF = godot::Vector3(INFINITY, INFINITY, INFINITY);
 const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
+const godot::Vector3 Vector3_UP_OF_S = godot::Vector3(1, 1, 0).normalized();
 const godot::Vector3 Vector3_UP_OF = godot::Vector3(1, 1, 1).normalized();
 const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
 const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);

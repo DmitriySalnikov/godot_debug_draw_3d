@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords, depth_prepass_alpha;
+render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords;
 
 varying float brightness_of_center;
 

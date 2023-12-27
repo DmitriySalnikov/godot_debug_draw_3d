@@ -27,6 +27,7 @@ public:
 #endif
 
 /**
+ * @brief
  * The main singleton class that handles DebugDraw2D and DebugDraw3D.
  *
  * Several additional settings can be found in the project settings.

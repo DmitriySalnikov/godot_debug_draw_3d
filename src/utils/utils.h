@@ -166,7 +166,9 @@ static String get_file_name_in_repository(const String &name) {
 // TODO: temp constants.
 
 const extern godot::Vector3 Vector3_ZERO;
+const extern godot::Vector3 Vector3_INF;
 const extern godot::Vector3 Vector3_ONE;
+const extern godot::Vector3 Vector3_UP_OF_S;
 const extern godot::Vector3 Vector3_UP_OF;
 const extern godot::Vector3 Vector3_UP;
 const extern godot::Vector3 Vector3_DOWN;

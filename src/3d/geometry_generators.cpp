@@ -8,7 +8,7 @@ using namespace godot;
 
 #pragma region Predefined Geometry Parts
 
-const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertices{
+const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertexes{
 	Vector3(-0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, -0.5f),
 	Vector3(0.5f, -0.5f, 0.5f),
@@ -19,7 +19,7 @@ const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertices{
 	Vector3(-0.5f, 0.5f, 0.5f)
 };
 
-const std::array<Vector3, 8> GeometryGenerator::CubeVertices{
+const std::array<Vector3, 8> GeometryGenerator::CubeVertexes{
 	Vector3(0, 0, 0),
 	Vector3(1, 0, 0),
 	Vector3(1, 0, 1),
@@ -30,7 +30,7 @@ const std::array<Vector3, 8> GeometryGenerator::CubeVertices{
 	Vector3(0, 1, 1)
 };
 
-const std::array<int, 24> GeometryGenerator::CubeIndices{
+const std::array<int, 24> GeometryGenerator::CubeIndexes{
 	0,
 	1,
 	1,
@@ -59,7 +59,7 @@ const std::array<int, 24> GeometryGenerator::CubeIndices{
 	7,
 };
 
-const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndices{
+const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndexes{
 	0, 1,
 	1, 2,
 	2, 3,
@@ -96,12 +96,12 @@ const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndices{
 	// 2, 5,
 };
 
-const std::array<Vector3, 2> GeometryGenerator::LineVertices{
+const std::array<Vector3, 2> GeometryGenerator::LineVertexes{
 	Vector3(0, 0, 0),
 	Vector3(0, 0, -1),
 };
 
-const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertices{
+const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertexes{
 	Vector3(0, 0, 0),
 	Vector3(0, 0.25f, 1),
 	Vector3(0, -0.25f, 1),
@@ -111,7 +111,7 @@ const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertices{
 	Vector3(0, 0, 0.8f),
 };
 
-const std::array<int, 18> GeometryGenerator::ArrowheadIndices{
+const std::array<int, 18> GeometryGenerator::ArrowheadIndexes{
 	0,
 	1,
 	0,
@@ -137,7 +137,7 @@ const std::array<int, 18> GeometryGenerator::ArrowheadIndices{
 	4,
 };
 
-const std::array<int, 18> GeometryGenerator::ArrowheadIndicesSimplified{
+const std::array<int, 18> GeometryGenerator::ArrowheadIndexesSimplified{
 	0,
 	1,
 	0,
@@ -148,14 +148,14 @@ const std::array<int, 18> GeometryGenerator::ArrowheadIndicesSimplified{
 	4,
 };
 
-const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertices{
+const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertexes{
 	Vector3(0.5f, 0.5f, 0),
 	Vector3(0.5f, -0.5f, 0),
 	Vector3(-0.5f, -0.5f, 0),
 	Vector3(-0.5f, 0.5f, 0),
 };
 
-const std::array<int, 6> GeometryGenerator::SquareIndices{
+const std::array<int, 6> GeometryGenerator::SquareBackwardsIndexes{
 	0,
 	1,
 	2,
@@ -164,7 +164,16 @@ const std::array<int, 6> GeometryGenerator::SquareIndices{
 	0,
 };
 
-const std::array<Vector3, 6> GeometryGenerator::PositionVertices{
+const std::array<int, 6> GeometryGenerator::SquareIndexes{
+	0,
+	2,
+	1,
+	2,
+	0,
+	3,
+};
+
+const std::array<Vector3, 6> GeometryGenerator::PositionVertexes{
 	Vector3(0.5f, 0, 0),
 	Vector3(-0.5f, 0, 0),
 	Vector3(0, 0.5f, 0),
@@ -173,7 +182,7 @@ const std::array<Vector3, 6> GeometryGenerator::PositionVertices{
 	Vector3(0, 0, -0.5f),
 };
 
-const std::array<int, 6> GeometryGenerator::PositionIndices{
+const std::array<int, 6> GeometryGenerator::PositionIndexes{
 	0,
 	1,
 	2,
@@ -184,16 +193,16 @@ const std::array<int, 6> GeometryGenerator::PositionIndices{
 
 #pragma endregion
 
-Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices, const PackedColorArray &colors, const PackedVector3Array &normals, const PackedVector2Array &uv, const PackedFloat32Array &custom0, BitField<Mesh::ArrayFormat> flags) {
+Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes, const PackedColorArray &colors, const PackedVector3Array &normals, const PackedVector2Array &uv, const PackedFloat32Array &custom0, BitField<Mesh::ArrayFormat> flags) {
 	ZoneScoped;
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
 	Array a;
 	a.resize((int)ArrayMesh::ArrayType::ARRAY_MAX);
 
-	a[(int)ArrayMesh::ArrayType::ARRAY_VERTEX] = vertices;
-	if (indices.size())
-		a[(int)ArrayMesh::ArrayType::ARRAY_INDEX] = indices;
+	a[(int)ArrayMesh::ArrayType::ARRAY_VERTEX] = vertexes;
+	if (indexes.size())
+		a[(int)ArrayMesh::ArrayType::ARRAY_INDEX] = indexes;
 	if (colors.size())
 		a[(int)ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
 	if (normals.size())
@@ -206,6 +215,45 @@ Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const Pac
 	mesh->add_surface_from_arrays(type, a, Array(), Dictionary(), flags);
 
 	return mesh;
+}
+
+Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const real_t &angle) {
+	Array arrs = mesh->surface_get_arrays(0);
+	Mesh::PrimitiveType ptype = mesh->surface_get_primitive_type(0);
+	ERR_FAIL_COND_V(arrs.size() == 0, mesh);
+
+	PackedVector3Array vertexes = arrs[ArrayMesh::ArrayType::ARRAY_VERTEX];
+	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
+	PackedFloat32Array custom0 = arrs[ArrayMesh::ArrayType::ARRAY_CUSTOM0];
+
+	auto rotate_vec3 = [&axis, &angle](PackedVector3Array &arr) {
+		for (auto &v : arr) {
+			v.rotate(axis, angle);
+		}
+	};
+
+	auto rotate_f32 = [&axis, &angle](PackedFloat32Array &arr) {
+		for (int i = 0; i < arr.size(); i += 3) {
+			Vector3 v = Vector3(arr[i + 0], arr[i + 1], arr[i + 2]).rotated(axis, angle);
+			arr[i + 0] = v.x;
+			arr[i + 1] = v.y;
+			arr[i + 2] = v.z;
+		}
+	};
+
+	rotate_vec3(vertexes);
+	rotate_vec3(normals);
+	rotate_f32(custom0);
+
+	return CreateMesh(
+			ptype,
+			vertexes,
+			arrs[ArrayMesh::ArrayType::ARRAY_INDEX],
+			arrs[ArrayMesh::ArrayType::ARRAY_COLOR],
+			normals,
+			arrs[ArrayMesh::ArrayType::ARRAY_TEX_UV],
+			custom0,
+			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
 Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps) {
@@ -555,7 +603,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plan
 
 void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes) {
 	ZoneScoped;
-	vertexes.resize(CubeIndices.size());
+	vertexes.resize(CubeIndexes.size());
 	CreateCameraFrustumLinesWireframe(frustum, vertexes.data());
 }
 
@@ -582,8 +630,8 @@ void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane
 		intersect_planes(frustum[1], frustum[5], frustum[2]),
 	};
 
-	for (int i = 0; i < CubeIndices.size(); i++)
-		vertexes[i] = cube[CubeIndices[i]];
+	for (int i = 0; i < CubeIndexes.size(); i++)
+		vertexes[i] = cube[CubeIndexes[i]];
 }
 
 Ref<ArrayMesh> GeometryGenerator::CreateLinesFromPath(const PackedVector3Array &path) {

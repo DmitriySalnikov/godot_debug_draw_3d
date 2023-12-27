@@ -14,6 +14,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_hd_sphere, "value");
 	REG_METHOD(is_hd_sphere);
+
+	REG_METHOD(set_plane_size, "value");
+	REG_METHOD(get_plane_size);
 #undef REG_CLASS_NAME
 }
 
@@ -51,6 +54,15 @@ bool DebugDraw3DScopeConfig::is_hd_sphere() {
 	return hd_sphere;
 }
 
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t value) {
+	plane_size = value;
+	return this;
+}
+
+real_t DebugDraw3DScopeConfig::get_plane_size() {
+	return plane_size;
+}
+
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
 	unregister_action = nullptr;
 	thread_id = 0;
@@ -59,6 +71,7 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
 	thickness = 0;
 	center_brightness = 0;
 	hd_sphere = false;
+	plane_size = INFINITY;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopeConfig *parent, const unregister_func p_unreg) {
@@ -70,6 +83,7 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, cons
 	thickness = parent->thickness;
 	center_brightness = parent->center_brightness;
 	hd_sphere = parent->hd_sphere;
+	plane_size = parent->plane_size;
 }
 
 DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {

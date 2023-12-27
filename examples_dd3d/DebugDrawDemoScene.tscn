@@ -1,7 +1,70 @@
-[gd_scene load_steps=23 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=28 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_87638"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_4jfme"]
+sky_material = SubResource("ProceduralSkyMaterial_87638")
+
+[sub_resource type="Environment" id="Environment_38m85"]
+sky = SubResource("Sky_4jfme")
+tonemap_mode = 2
+
+[sub_resource type="GDScript" id="GDScript_yp7g8"]
+script/source = "extends Camera3D
+
+@export var mouse_sensitivity := 0.25
+@export var camera_speed := 10.0
+@export var camera_speed_fast := 30.0
+
+var btn_clicked := false
+
+
+func _input(event):
+	if event is InputEventMouseButton:
+		btn_clicked = event.pressed
+	
+	if btn_clicked:
+		if event is InputEventMouseMotion:
+			if event.button_mask == MOUSE_BUTTON_LEFT:
+				var b := global_transform.basis
+				b = b.rotated(Vector3.UP, -deg_to_rad(event.relative.x * mouse_sensitivity))
+				b = b.rotated(b[0], -deg_to_rad(event.relative.y * mouse_sensitivity))
+				
+				global_transform.basis = b
+
+
+func get_axis(neg : Array[Key], pos : Array[Key]) -> float:
+	var np: float = 0
+	for k in neg:
+		if Input.is_physical_key_pressed(k):
+			np = 1
+			break
+	
+	var pp: float = 0
+	for k in pos:
+		if Input.is_physical_key_pressed(k):
+			pp = 1
+			break
+	
+	return pp - np
+
+
+func _process(delta):
+	var velocity := Vector2(get_axis([KEY_S], [KEY_W]), get_axis([KEY_A], [KEY_D]))
+	var lift := get_axis([KEY_Q, KEY_CTRL], [KEY_E, KEY_SPACE])
+	var speed := camera_speed_fast if Input.is_physical_key_pressed(KEY_SHIFT) else camera_speed
+	velocity = velocity.limit_length()
+	
+	var b := global_transform.basis
+	var v := (-b.z * velocity.x) + (b.x * velocity.y) + (b.y * lift)
+	global_position += v.normalized() * speed * delta
+	
+"
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
@@ -140,6 +203,16 @@ _data = {
 "RESET": SubResource("7")
 }
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rbfyn"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.215686, 0.215686, 0.215686, 0.764706)
+
+[sub_resource type="QuadMesh" id="QuadMesh_1t0id"]
+material = SubResource("StandardMaterial3D_rbfyn")
+orientation = 1
+
 [sub_resource type="StandardMaterial3D" id="1"]
 shading_mode = 0
 albedo_color = Color(0.533333, 0.105882, 0.105882, 1)
@@ -157,7 +230,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector3(10.4482, -1.49353, -0.450473)]
+"values": [Vector3(7, -2, 0)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a7f1a"]
@@ -281,7 +354,7 @@ func draw_spectrum():
 	for ih in range(1, bars_count + 1):
 		var i := ih - 1
 		var hz: float = log_freq(ih / float(bars_count), MIN_HZ, MAX_HZ)
-		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz, 0).length()
+		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_AVERAGE).length()
 		var energy: float = clampf((MIN_DB + linear_to_db(magnitude)) / MIN_DB, 0, 1)
 		var e: float = lerp(smoothed_energy[i], energy, clampf(get_process_delta_time() / motion_smoothing if motion_smoothing else 1.0, 0, 1))
 		smoothed_energy[i] = e
@@ -499,8 +572,16 @@ script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 text_groups_position = 2
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+visible = false
+directional_shadow_max_distance = 200.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_38m85")
+
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
+transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -6.988, 13.525, 37.21)
 cull_mask = 1
 current = true
 fov = 38.8
@@ -535,16 +616,16 @@ far = 52.5
 [node name="Zones" type="Node3D" parent="."]
 
 [node name="Spheres" type="Node3D" parent="Zones"]
-transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -12.4687, 0.645876, -7.74484)
+transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -11.1864, 0.645876, -7.86506)
 
 [node name="Path" type="Node3D" parent="Zones"]
 transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1.12881, -7.18731)
 
 [node name="Boxes" type="Node3D" parent="Zones"]
-transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0.206735, 6.43672)
+transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -16.0257, -0.206735, 6.27643)
 
 [node name="Misc" type="Node3D" parent="Zones"]
-transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -3.37336, -0.206735, 4.28992)
+transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -5.69728, -0.206735, 4.4244)
 
 [node name="Cylinders" type="Node3D" parent="Zones"]
 transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0.015712, -6.19233)
@@ -610,10 +691,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35527, -0.655492, -0.352802
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.419773, -2.38419e-07, -1.40591)
 
 [node name="2" type="Node3D" parent="Cylinders/Cylinder3"]
-transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 1.01018, 0.486778, 1.32635)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.01018, 0.486778, 1.32635)
 
 [node name="Spheres" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.4024, 0.166728, -7.77279)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1201, 0.166728, -7.893)
 
 [node name="SphereTransform" type="Node3D" parent="Spheres"]
 transform = Transform3D(3.018, 0, 0, 0, 0.945452, -3.30182, 0, 1.04515, 2.98686, -2.14465, 4.76837e-07, 2.11952)
@@ -625,7 +706,7 @@ transform = Transform3D(1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, 
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.76745, 0.458486, 1.95921)
 
 [node name="Boxes" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.0454, 0, 6.58072)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.2493, 0, 6.42043)
 
 [node name="Box1" type="Node3D" parent="Boxes"]
 transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.0141019, 0.556318, -0.0303774, 1.91619, -0.961557, 0, -3.78672)
@@ -638,7 +719,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104528, -0.809874, 2.10804
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)
 
 [node name="BoxOutOfDistanceCulling" type="Node3D" parent="Boxes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.43744, 0.344, -22.8947)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.43744, 0.344, -27.9652)
 
 [node name="AABB_fixed" type="Node3D" parent="Boxes"]
 transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.12735, -0.835878, 0.470324)
@@ -672,7 +753,7 @@ transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.55
 transform = Transform3D(0.965926, -0.0669873, -0.25, 0, 0.965926, -0.258819, 0.258819, 0.25, 0.933013, 0.348115, -1.30239, 4.88007)
 
 [node name="a" type="Node3D" parent="Boxes/BoxABEdge"]
-transform = Transform3D(0.241143, 0.650584, 0.720132, -0.123077, 0.756539, -0.642262, -0.962654, 0.066246, 0.262507, 0.384618, -0.635015, 0.0956125)
+transform = Transform3D(0.241143, 0.650584, 0.720132, -0.123077, 0.756539, -0.642262, -0.962654, 0.066246, 0.262507, 0.384618, -0.635015, 0.0956135)
 
 [node name="b" type="Node3D" parent="Boxes/BoxABEdge"]
 transform = Transform3D(0.241143, 0.650584, 0.720133, -0.123077, 0.756539, -0.642261, -0.962654, 0.0662459, 0.262507, -0.287622, 0.997905, -0.144578)
@@ -684,24 +765,8 @@ metadata/_edit_group_ = true
 [node name="up" type="Node3D" parent="Boxes/BoxABEdge/o"]
 transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
 
-[node name="Grids" type="Node3D" parent="."]
-transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 4.21038, -2.5, 2.93281)
-
-[node name="GridCentered" type="Node3D" parent="Grids"]
-transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
-rotation_edit_mode = 2
-
-[node name="Subdivision" type="Node3D" parent="Grids/GridCentered"]
-transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
-
-[node name="Grid" type="Node3D" parent="Grids"]
-transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
-
-[node name="Subdivision" type="Node3D" parent="Grids/Grid"]
-transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
-
 [node name="Misc" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.35867, 0, 4.33293)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)
 
 [node name="Billboard" type="Node3D" parent="Misc"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.403353, -0.331599, 2.22542)
@@ -720,6 +785,80 @@ transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.1
 
 [node name="GizmoOneColor" type="Node3D" parent="Misc"]
 transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -0.838587, -0.139425, -1.93055)
+
+[node name="HitTest" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.724359, -1.03227, 7.85404)
+
+[node name="StaticBody" type="StaticBody3D" parent="HitTest"]
+
+[node name="CollisionShape" type="CollisionShape3D" parent="HitTest/StaticBody"]
+shape = SubResource("4")
+
+[node name="CSGSphere" type="CSGSphere3D" parent="HitTest/StaticBody"]
+radius = 1.0
+radial_segments = 16
+rings = 10
+material = SubResource("5")
+
+[node name="RayEmitter" type="Node3D" parent="HitTest"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.03574, 2.47907, -0.819963)
+
+[node name="RayCast" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayCast2" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayCast3" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayCast4" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayCast5" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayCast6" type="RayCast3D" parent="HitTest/RayEmitter"]
+transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
+enabled = false
+target_position = Vector3(0, -3.464, 0)
+
+[node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
+unique_name_in_owner = true
+libraries = {
+"": SubResource("AnimationLibrary_vh8ml")
+}
+autoplay = "New Anim"
+
+[node name="Grids" type="Node3D" parent="."]
+transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 0.730597, -2.5, 2.76274)
+
+[node name="GridCentered" type="Node3D" parent="Grids"]
+transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
+rotation_edit_mode = 2
+
+[node name="Subdivision" type="Node3D" parent="Grids/GridCentered"]
+transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
+
+[node name="Grid" type="Node3D" parent="Grids"]
+transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
+
+[node name="Subdivision" type="Node3D" parent="Grids/Grid"]
+transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
+
+[node name="PlaneOrigin" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 11.0482, 7.33669, -13.1715)
+mesh = SubResource("QuadMesh_1t0id")
 
 [node name="Lines" type="Node3D" parent="."]
 transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326)
@@ -751,56 +890,8 @@ transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855353, -0.5714, -
 [node name="Target" type="Node3D" parent="Lines"]
 transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
 
-[node name="HitTest" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.21084, -1.03227, 8.02411)
-
-[node name="StaticBody" type="StaticBody3D" parent="HitTest"]
-
-[node name="CollisionShape" type="CollisionShape3D" parent="HitTest/StaticBody"]
-shape = SubResource("4")
-
-[node name="CSGSphere" type="CSGSphere3D" parent="HitTest/StaticBody"]
-radius = 1.0
-radial_segments = 16
-rings = 10
-material = SubResource("5")
-
-[node name="RayEmitter" type="Node3D" parent="HitTest"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.03574, 2.47907, -0.819963)
-
-[node name="RayCast" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayCast2" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayCast3" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayCast4" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayCast5" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayCast6" type="RayCast3D" parent="HitTest/RayEmitter"]
-transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
-target_position = Vector3(0, -3.464, 0)
-
-[node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
-unique_name_in_owner = true
-libraries = {
-"": SubResource("AnimationLibrary_vh8ml")
-}
-autoplay = "New Anim"
-
 [node name="LagTest" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -2, 0)
 size = Vector3(2, 2, 2)
 material = SubResource("1")
 
@@ -857,7 +948,7 @@ text = "Mute"
 
 [node name="AudioVisualizer" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -3.988, -1.422, 14.14)
+transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -5.31036, -1.422, 14.14)
 
 [node name="CustomCanvas" type="Control" parent="."]
 unique_name_in_owner = true
@@ -969,9 +1060,6 @@ value = 0.05
 [node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-tooltip_text = "Because of the low physics tick rate,
-you can see how RayCast's can shake.
-This is expected behavior."
 text = "Update in physics (15 Ticks) *"
 
 [node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]

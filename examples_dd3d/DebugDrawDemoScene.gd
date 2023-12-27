@@ -8,9 +8,9 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
-@export_range(0, 5, 0.001) var debug_thickness := 0.05
+@export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
-@export_range(0, 1024) var start_culling_distance := 55.0
+@export_range(0, 1024) var start_culling_distance := 60.0
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
@@ -35,27 +35,36 @@ extends Node3D
 @export var graph_is_enabled := true
 
 var button_presses := {}
+var frame_rendered := false
+var phys_frame_called := false
 
 var timer_1 := 0.0
 var timer_2 := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
-func _process(delta):
+
+func _process(delta) -> void:
+	phys_frame_called = false
 	if !update_in_physics:
-		%RayEmitterAnimationPlayer.callback_mode_process = AnimationPlayer.ANIMATION_PROCESS_IDLE
 		main_update(delta)
 		_update_timers(delta)
 
 
+## Since physics frames may not be called every frame or may be called multiple times in one frame,
+## there is an additional check to ensure that a new frame has been drawn before updating the data.
 func _physics_process(delta: float) -> void:
 	if update_in_physics:
-		%RayEmitterAnimationPlayer.callback_mode_process = AnimationPlayer.ANIMATION_PROCESS_PHYSICS
-		main_update(delta)
+		if !phys_frame_called:
+			phys_frame_called = true
+			main_update(delta)
 		_update_timers(delta)
 	
+	# Physics specific:
 	if not zylann_example:
 		DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
+		
+		_draw_rays_casts()
 
 
 func main_update(delta: float) -> void:
@@ -215,7 +224,9 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_points(points_below, DebugDraw3D.POINT_TYPE_SQUARE, 0.2, Color.DARK_GREEN)
 	DebugDraw3D.draw_point_path(points_below2, DebugDraw3D.POINT_TYPE_SQUARE, 0.25, Color.BLUE, Color.TOMATO)
 	DebugDraw3D.draw_arrow_path(points_below3, Color.GOLD, 0.5)
-	DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
+	if true:
+		var _sl = DebugDraw3D.new_scope_config().set_thickness(0.05)
+		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 	
 	# Misc
 	if true:
@@ -350,16 +361,43 @@ func _text_tests():
 		DebugDraw2D.end_text_group()
 
 
-func _more_tests():
+func _draw_rays_casts():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast3D:
-			DebugDraw3D.draw_line_hit(ray.global_position, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.15)
-	
+			ray.force_raycast_update()
+			DebugDraw3D.draw_line_hit(ray.global_position, ray.to_global(ray.target_position), ray.get_collision_point(), ray.is_colliding(), 0.3)
+
+
+func _more_tests():
 	# Delayed line render
 	if true:
 		var _a12 = DebugDraw3D.new_scope_config().set_thickness(0.035)
 		DebugDraw3D.draw_line($LagTest.global_position + Vector3.UP, $LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
+	
+	# Draw plane
+	if true:
+		var _s11 = DebugDraw3D.new_scope_config().set_thickness(0.02).set_plane_size(10)
+		
+		var pl_node: Node3D = $PlaneOrigin
+		var xf: Transform3D = pl_node.global_transform
+		var normal: = xf.basis.y.normalized()
+		var plane = Plane(normal, xf.origin.dot(normal))
+		
+		var vp: Viewport = get_viewport()
+		if Engine.is_editor_hint() and Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0):
+			vp = Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0)
+		
+		var cam = vp.get_camera_3d()
+		if cam:
+			var dir = vp.get_camera_3d().project_ray_normal(vp.get_mouse_position())
+			var intersect = plane.intersects_ray(cam.global_position, dir)
+			
+			DebugDraw3D.draw_plane(plane, Color.CORAL * Color(1,1,1, 0.4), pl_node.global_position)
+			if intersect and intersect.distance_to(pl_node.global_position) < _s11.get_plane_size() * 0.5:
+				# Need to test different colors on both sides of the plane
+				var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
+				DebugDraw3D.draw_sphere(intersect, 0.3, col)
 
 
 func _draw_array_of_boxes():

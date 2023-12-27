@@ -14,6 +14,8 @@ enum PreviewCase {
 	LineBevel,
 	SphereDensity,
 	IcoSphere,
+	PlaneSize,
+	
 	Line,
 	Arrow,
 	
@@ -38,6 +40,7 @@ enum PreviewCase {
 	DrawGizmoCentered,
 	DrawGrid,
 	DrawFrustum,
+	DrawPlane,
 }
 
 class CaseData:
@@ -51,6 +54,8 @@ var case_maps = {
 	PreviewCase.LineBevel : CaseData.new(),
 	PreviewCase.SphereDensity : CaseData.new(),
 	PreviewCase.IcoSphere : CaseData.new(),
+	PreviewCase.PlaneSize : CaseData.new(),
+	
 	PreviewCase.Line : CaseData.new(),
 	PreviewCase.Arrow : CaseData.new("DrawMethods360Lines"),
 	
@@ -75,6 +80,7 @@ var case_maps = {
 	PreviewCase.DrawGizmoCentered : CaseData.new("DrawMethods360Lines"),
 	PreviewCase.DrawGrid : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawFrustum : CaseData.new("DrawMethods360Camera"),
+	PreviewCase.DrawPlane : CaseData.new(),
 }
 
 var changed_by_code := false
@@ -275,6 +281,11 @@ func _process(delta):
 	
 	var up_vec = $OriginUpVector.global_position - $OriginUpVector/Up.global_position
 	
+	# Plane
+	var pxf: Transform3D = $OriginPlane.global_transform
+	var normal: = pxf.basis.y.normalized()
+	var plane = Plane(normal, pxf.origin.dot(normal))
+	
 	match preview_case:
 		PreviewCase.LineThickness:
 			var _s = DebugDraw3D.new_scope_config().set_thickness(anim_value_1)
@@ -291,6 +302,9 @@ func _process(delta):
 		PreviewCase.IcoSphere:
 			var _s = DebugDraw3D.new_scope_config().set_thickness(0.02)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform, Color.INDIAN_RED)
+		PreviewCase.PlaneSize:
+			var _s = DebugDraw3D.new_scope_config().set_plane_size(anim_value_1)
+			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
 		
 		PreviewCase.Line:
 			var _s = DebugDraw3D.new_scope_config().set_center_brightness(0.7).set_thickness(0.2)
@@ -350,6 +364,9 @@ func _process(delta):
 		PreviewCase.DrawFrustum:
 			var _s = DebugDraw3D.new_scope_config().set_thickness(0.015)
 			DebugDraw3D.draw_camera_frustum($OriginCameraFrustum/Camera3D, Color.CORAL)
+		PreviewCase.DrawPlane:
+			var _s = DebugDraw3D.new_scope_config().set_plane_size(1)
+			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
 	
 	
 	_end_of_frame(delta)

@@ -20,6 +20,7 @@ class DebugGeometryContainer {
 	enum class UsingShaderType {
 		Wireframe,
 		Billboard,
+		Solid,
 		Expandable,
 	};
 

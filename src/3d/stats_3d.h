@@ -8,17 +8,19 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 /**
+ * @brief
  * You can get statistics about 3D rendering from this class.
+ * 
  * All names try to reflect what they mean.
- * 
+ *
  * To get an instance of this class with current statistics, use DebugDraw3D.get_render_stats.
- * 
+ *
  * `instances` lets you know how many instances have been created.
- * 
+ *
  * `instances_physics` reports how many instances were created inside `_physics_process`.
- * 
+ *
  * `total_time_spent_usec` reports the time in microseconds spent to process everything and display the geometry on the screen.
-*/
+ */
 class DebugDraw3DStats : public RefCounted {
 	GDCLASS(DebugDraw3DStats, RefCounted)
 

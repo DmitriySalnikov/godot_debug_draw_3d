@@ -35,8 +35,8 @@ html {
 html {
     /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
     --primary-color: #ff810b;
-    --primary-dark-color: #f18c2c;
-    --primary-light-color: #e0c33e;
+    --primary-dark-color: #d56f15;
+    --primary-light-color: #dd9921;
 
     --page-background-color: #ffffff;
     --page-foreground-color: #1b1e21;
@@ -45,11 +45,15 @@ html {
     --side-nav-background: #f3f3f3;
 }
 
+.paramname em {
+    color: var(--primary-light-color);
+}
+
 @media (prefers-color-scheme: dark) {
     html:not(.light-mode) {
         --primary-color: #f59031;
-        --primary-dark-color: #c07f42;
-        --primary-light-color: #e0c33e;
+        --primary-dark-color: #dd7d22;
+        --primary-light-color: #d9c775;
 
         --page-background-color: #21232b;
         --page-foreground-color: #ebf0f1;
@@ -57,14 +61,18 @@ html {
 
         --side-nav-background: #282b35;
     }
+
+    .paramname em {
+        color: var(--primary-light-color);
+    }
 }
 
 html.dark-mode {
     color-scheme: dark;
 
     --primary-color: #f59031;
-    --primary-dark-color: #c07f42;
-    --primary-light-color: #e0c33e;
+    --primary-dark-color: #dd7d22;
+    --primary-light-color: #d9c775;
 
     --page-background-color: #21232b;
     --page-foreground-color: #ebf0f1;
@@ -74,8 +82,22 @@ html.dark-mode {
 }
 
 #nav-tree .selected .arrow {
-    color: #f59031;
+    color: var(--primary-color);
     text-shadow: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    background: none;
+}
+
+#nav-tree .label a:hover {
+    background: linear-gradient(to bottom, transparent 0, transparent calc(100% - 1px), currentColor 100%);
+}
+
+a:hover>span.arrow {
+    text-decoration: none;
+    background: transparent;
 }
 
 span.mlabel {
@@ -84,6 +106,8 @@ span.mlabel {
     color: rgb(20, 20, 20);
     font-weight: 800;
 }
+
+/* Version select */
 
 select#dd3d_version_select {
     color: var(--primary-color);
@@ -96,6 +120,8 @@ select#dd3d_version_select {
 select#dd3d_version_select option {
     color: var(--page-foreground-color);
 }
+
+/* !Version select */
 
 /* Octocat corner */
 

@@ -40,6 +40,7 @@ runs:
 
     - name: Restore .scons_cache directory
       if: inputs.use_cache != 'false'
+      id: restore_scons_cache
       uses: actions/cache/restore@v3
       with:
         path: ${{env.SCONS_CACHE}}
@@ -47,7 +48,6 @@ runs:
         restore-keys: |
           ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
           ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}
-      continue-on-error: true
 
     - name: Set up Python 3.x
       uses: actions/setup-python@v4
@@ -113,9 +113,8 @@ runs:
         path: ${{inputs.output_libs_path}}/*
 
     - name: Save .scons_cache directory
-      if: inputs.use_cache != 'false'
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.use_cache != 'false'}}
       uses: actions/cache/save@v3
       with:
         path: ${{env.SCONS_CACHE}}
         key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
-      continue-on-error: true

@@ -15,7 +15,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool test_graphs = false;
     [Export] bool more_test_cases = true;
     [Export] bool draw_array_of_boxes = false;
-    [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.05f;
+    [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.1f;
     [Export(PropertyHint.Range, "0, 1024")] float start_culling_distance = 55.0f;
 
     [ExportGroup("Text groups", "text_groups")]
@@ -205,8 +205,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         button_presses[Key.Key3] = set(Key.Key3);
     }
 
+    bool phys_frame_called = false;
     public override void _Process(double delta)
     {
+        phys_frame_called = false;
         if (!update_in_physics)
         {
             MainUpdate(delta);
@@ -218,13 +220,19 @@ public partial class DebugDrawDemoSceneCS : Node3D
     {
         if (update_in_physics)
         {
-            MainUpdate(delta);
+            if (!phys_frame_called)
+            {
+                phys_frame_called = true;
+                MainUpdate(delta);
+            }
             _update_timers(delta);
         }
 
+        // Physics specific:
         if (!zylann_example)
         {
             DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
+            _draw_rays_casts();
         }
     }
 
@@ -416,7 +424,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawPoints(points_below.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.DarkGreen);
         DebugDraw3D.DrawPointPath(points_below2.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.25f, Colors.Blue, Colors.Tomato);
         DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
-        DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
+        using (var _sl = DebugDraw3D.NewScopeConfig().SetThickness(0.05f))
+            DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
 
         // Misc
         using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0))
@@ -588,21 +597,55 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
     }
 
-    void _more_tests()
+    void _draw_rays_casts()
     {
         // Line hits render
         foreach (var node in dHitTest_RayEmitter.GetChildren())
         {
             if (node is RayCast3D ray)
             {
-                DebugDraw3D.DrawLineHit(ray.GlobalPosition, ray.ToGlobal(ray.TargetPosition), ray.GetCollisionPoint(), ray.IsColliding(), 0.15f);
+                ray.ForceRaycastUpdate();
+                DebugDraw3D.DrawLineHit(ray.GlobalPosition, ray.ToGlobal(ray.TargetPosition), ray.GetCollisionPoint(), ray.IsColliding(), 0.3f);
             }
         }
+    }
 
+    void _more_tests()
+    {
         // Delayed line render
         using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0.035f))
         {
             DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
+        }
+
+        // Draw plane
+        using (var _s11 = DebugDraw3D.NewScopeConfig().SetThickness(0.02f).SetPlaneSize(10))
+        {
+            var pl_node = GetNode<Node3D>("PlaneOrigin");
+            var xf = pl_node.GlobalTransform;
+            var normal = xf.Basis.Y.Normalized();
+            var plane = new Plane(normal, xf.Origin.Dot(normal));
+
+            var vp = GetViewport();
+            if (Engine.IsEditorHint() && EditorInterface.Singleton.GetEditorViewport3D(0) != null)
+            {
+                vp = EditorInterface.Singleton.GetEditorViewport3D(0);
+            }
+
+            var cam = vp.GetCamera3D();
+            if (cam != null)
+            {
+                var dir = vp.GetCamera3D().ProjectRayNormal(vp.GetMousePosition());
+                Vector3? intersect = plane.IntersectsRay(cam.GlobalPosition, dir);
+
+                DebugDraw3D.DrawPlane(plane, Colors.Coral * new Color(1, 1, 1, 0.4f), pl_node.GlobalPosition);
+                if (intersect.HasValue && intersect.Value.DistanceTo(pl_node.GlobalPosition) < _s11.GetPlaneSize() * 0.5f)
+                {
+                    // Need to test different colors on both sides of the plane
+                    var col = plane.IsPointOver(cam.GlobalPosition) ? Colors.Firebrick : Colors.Aquamarine;
+                    DebugDraw3D.DrawSphere(intersect.Value, 0.3f, col);
+                }
+            }
         }
     }
 

@@ -31,7 +31,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 		rs->instance_geometry_set_flag(_immediate_instance, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 		rs->instance_geometry_set_flag(_immediate_instance, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-		Ref<ShaderMaterial> mat = owner->get_basic_unshaded_material();
+		Ref<ShaderMaterial> mat = owner->get_wireframe_material();
 		rs->instance_geometry_set_material_override(_immediate_instance, mat->get_rid());
 
 		immediate_mesh_storage.instance = _immediate_instance;
@@ -41,16 +41,16 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 
 	// Generate geometry and create MMI's in RenderingServer
 	{
-		auto array_mesh_cube = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertices, GeometryGenerator::CubeIndices);
+		auto array_mesh_cube = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertexes, GeometryGenerator::CubeIndexes);
 		CreateMMI(InstanceType::CUBE, UsingShaderType::Wireframe, NAMEOF(mmi_cubes), array_mesh_cube);
 
-		auto array_mesh_cube_center = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertices, GeometryGenerator::CubeIndices);
+		auto array_mesh_cube_center = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertexes, GeometryGenerator::CubeIndexes);
 		CreateMMI(InstanceType::CUBE_CENTERED, UsingShaderType::Wireframe, NAMEOF(mmi_cubes_centered), array_mesh_cube_center);
 
-		auto array_mesh_arrow_head = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertices, GeometryGenerator::ArrowheadIndices);
+		auto array_mesh_arrow_head = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertexes, GeometryGenerator::ArrowheadIndexes);
 		CreateMMI(InstanceType::ARROWHEAD, UsingShaderType::Wireframe, NAMEOF(mmi_arrowheads), array_mesh_arrow_head);
 
-		auto array_mesh_pos = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertices, GeometryGenerator::PositionIndices);
+		auto array_mesh_pos = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes);
 		CreateMMI(InstanceType::POSITION, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
 
 		auto array_mesh_sphere = use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
@@ -62,9 +62,12 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 		auto array_mesh_cylinder = GeometryGenerator::CreateCylinderLines(16, 1, 1, 2);
 		CreateMMI(InstanceType::CYLINDER, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder);
 
+		auto array_mesh_cylinder_ab = GeometryGenerator::RotatedMesh(GeometryGenerator::CreateCylinderLines(16, 1, 1, 2), Vector3_RIGHT, Math::deg_to_rad(90.f));
+		CreateMMI(InstanceType::CYLINDER_AB, UsingShaderType::Wireframe, NAMEOF(mmi_cylinders), array_mesh_cylinder_ab);
+
 		// VOLUMETRIC
 
-		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertices), add_bevel);
+		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), add_bevel);
 		CreateMMI(InstanceType::LINE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_line_volumetric);
 
 		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube, add_bevel);
@@ -88,10 +91,16 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 		auto array_mesh_cylinder_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder, false);
 		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cylinders_volumetric), array_mesh_cylinder_volumetric);
 
+		auto array_mesh_cylinder_ab_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cylinder_ab, false);
+		CreateMMI(InstanceType::CYLINDER_AB_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cylinders_volumetric), array_mesh_cylinder_ab_volumetric);
+
 		// SOLID
 
-		auto array_mesh_billboard = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertices, GeometryGenerator::SquareIndices);
+		auto array_mesh_billboard = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareBackwardsIndexes);
 		CreateMMI(InstanceType::BILLBOARD_SQUARE, UsingShaderType::Billboard, NAMEOF(mmi_billboard_squares), array_mesh_billboard);
+
+		auto array_mesh_plane = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes);
+		CreateMMI(InstanceType::PLANE, UsingShaderType::Solid, NAMEOF(mmi_planes), array_mesh_plane);
 
 		set_render_layer_mask(1);
 	}
@@ -125,10 +134,13 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 	Ref<ShaderMaterial> mat;
 	switch (shader) {
 		case UsingShaderType::Wireframe:
-			mat = owner->get_basic_unshaded_material();
+			mat = owner->get_wireframe_material();
 			break;
 		case UsingShaderType::Billboard:
-			mat = owner->get_billboard_unshaded_material();
+			mat = owner->get_billboard_material();
+			break;
+		case UsingShaderType::Solid:
+			mat = owner->get_plane_material();
 			break;
 		case UsingShaderType::Expandable:
 			mat = owner->get_extendable_material();
@@ -201,7 +213,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 
 	// TODO: try to get all active cameras inside scene to properly calculate visibilty for SubViewports
 
-	// Get camera frustum
+	// Get camera
 	Camera3D *vp_cam = owner->get_root_node()->get_viewport()->get_camera_3d();
 	if (IS_EDITOR_HINT()) {
 		auto s_root = SCENE_TREE()->get_edited_scene_root();
@@ -213,6 +225,9 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	// Collect frustums and camera positions
 	std::vector<std::vector<Plane> > frustum_planes;
 	std::vector<Vector3> cameras_positions;
+
+	// Reset camera far plane
+	owner->previous_camera_far_plane = 1000;
 	{
 		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewports();
 		std::vector<Array> frustum_arrays;
@@ -222,10 +237,14 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		if ((owner->get_config()->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
 			cameras_positions.push_back(vp_cam->get_position());
-		} else if (owner->get_custom_viewport()) {
+
+			owner->previous_camera_far_plane = vp_cam->get_far();
+		} else if (owner->get_custom_viewport() && owner->get_custom_viewport()->get_camera_3d()) {
 			auto c = owner->get_custom_viewport()->get_camera_3d();
 			frustum_arrays.push_back(c->get_frustum());
 			cameras_positions.push_back(c->get_position());
+
+			owner->previous_camera_far_plane = c->get_far();
 		} else if (editor_viewports.size() > 0) {
 			for (auto vp : editor_viewports) {
 				if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
@@ -234,6 +253,8 @@ void DebugGeometryContainer::update_geometry(double delta) {
 					cameras_positions.push_back(c->get_position());
 				}
 			}
+
+			owner->previous_camera_far_plane = editor_viewports[0]->get_camera_3d()->get_far();
 		}
 
 		// Convert frustum to vector
@@ -250,6 +271,10 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			}
 		}
 	}
+
+	// Store the camera position for `draw`ing around the camera
+	// Vector3::ZERO is used when no camera is found
+	owner->previous_camera_position = cameras_positions.size() ? cameras_positions[0] : Vector3();
 
 	// Update visibility
 	geometry_pool.update_visibility(

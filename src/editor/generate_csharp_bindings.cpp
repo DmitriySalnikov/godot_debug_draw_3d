@@ -47,7 +47,7 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 void GenerateCSharpBindingsPlugin::generate() {
 	ZoneScoped;
 	const String out_path = output_directory.path_join(api_file_name);
-	const String out_log_path = output_directory.path_join("log.txt");
+	const String out_log_path = output_directory.path_join(log_file_name);
 
 	ERR_FAIL_COND(DirAccess::make_dir_recursive_absolute(output_directory) != Error::OK);
 	auto dir = DirAccess::open(output_directory);
@@ -59,6 +59,16 @@ void GenerateCSharpBindingsPlugin::generate() {
 		if ((f.begins_with("Deb") || f.begins_with("log")) && f.ends_with(".tmp")) {
 			dir->remove(f);
 		}
+	}
+
+	// TODO remove in the next minor update
+	if (DirAccess::dir_exists_absolute(old_output_directory)) {
+		PRINT_WARNING(FMT_STR("Found an old folder for C# bindings \"{0}\".\nThis folder will be deleted as it will no longer be used.", old_output_directory));
+		auto files = DirAccess::get_files_at(old_output_directory);
+		for (String f : files) {
+			DirAccess::remove_absolute(old_output_directory.path_join(f));
+		}
+		DirAccess::remove_absolute(old_output_directory);
 	}
 
 	// First, delete the old file to check for locks
@@ -784,6 +794,16 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 	_type val = def_val; \
 	bool _need_remap = (val != _type())
 
+		auto fp = [](const real_t &f) {
+			if (f == INFINITY) {
+				return String("float.PositiveInfinity");
+			} else if (f == -INFINITY) {
+				return String("float.NegativeInfinity");
+			} else {
+				return FMT_STR("{0}f", f);
+			}
+		};
+
 		switch (arg_data.type) {
 			case godot::Variant::NIL: // aka Variant
 				if (def_val.get_type() == 0) {
@@ -801,10 +821,11 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			case godot::Variant::INT:
 				return DefaultData(arg_data, false, FMT_STR("{0}", def_val));
 			case godot::Variant::FLOAT: {
-				return DefaultData(arg_data, false, FMT_STR("{0}f", def_val));
+				return DefaultData(arg_data, false, FMT_STR("{0}", fp(def_val)));
 			}
 			case godot::Variant::STRING: {
-				return DefaultData(arg_data, false, FMT_STR("\"{0}\"", def_val));
+				IS_DEF(String);
+				return DefaultData(arg_data, _need_remap, FMT_STR("\"{0}\"", def_val), true);
 			}
 			case godot::Variant::STRING_NAME: {
 				IS_DEF(StringName);
@@ -817,7 +838,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 
 			case godot::Variant::VECTOR2: {
 				IS_DEF(Vector2);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2({0}f, {1}f)", val.x, val.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2({0}, {1})", fp(val.x), fp(val.y)));
 			}
 			case godot::Variant::VECTOR2I: {
 				IS_DEF(Vector2i);
@@ -825,7 +846,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			}
 			case godot::Variant::RECT2: {
 				IS_DEF(Rect2);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2({0}f, {1}f, {2}f, {3}f)", val.position.x, val.position.y, val.size.x, val.size.y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2({0}, {1}, {2}, {3})", fp(val.position.x), fp(val.position.y), fp(val.size.x), fp(val.size.y)));
 			}
 			case godot::Variant::RECT2I: {
 				IS_DEF(Rect2i);
@@ -833,7 +854,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			}
 			case godot::Variant::VECTOR3: {
 				IS_DEF(Vector3);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3({0}f, {1}f, {2}f)", val.x, val.y, val.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3({0}, {1}, {2})", fp(val.x), fp(val.y), fp(val.z)));
 			}
 			case godot::Variant::VECTOR3I: {
 				IS_DEF(Vector3i);
@@ -841,11 +862,11 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			}
 			case godot::Variant::TRANSFORM2D: {
 				IS_DEF(Transform2D);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform2D(new Vector2({0}f, {1}f), new Vector2({2}f, {3}f), new Vector2({4}f, {5}f))", val.columns[0].x, val.columns[0].y, val.columns[1].x, val.columns[1].y, val.columns[2].x, val.columns[2].y));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform2D(new Vector2({0}, {1}), new Vector2({2}, {3}), new Vector2({4}, {5}))", fp(val.columns[0].x), fp(val.columns[0].y), fp(val.columns[1].x), fp(val.columns[1].y), fp(val.columns[2].x), fp(val.columns[2].y)));
 			}
 			case godot::Variant::VECTOR4: {
 				IS_DEF(Vector4);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4({0}, {1}, {2}, {3})", fp(val.x), fp(val.y), fp(val.z), fp(val.w)));
 			}
 			case godot::Variant::VECTOR4I: {
 				IS_DEF(Vector4i);
@@ -853,31 +874,31 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			}
 			case godot::Variant::PLANE: {
 				IS_DEF(Plane);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Plane({0}f, {1}f, {2}f, {3}f)", val.normal.x, val.normal.y, val.normal.z, val.d));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Plane({0}, {1}, {2}, {3})", fp(val.normal.x), fp(val.normal.y), fp(val.normal.z), fp(val.d)));
 			}
 			case godot::Variant::QUATERNION: {
 				IS_DEF(Quaternion);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Quaternion({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Quaternion({0}, {1}, {2}, {3})", fp(val.x), fp(val.y), fp(val.z), fp(val.w)));
 			}
 			case godot::Variant::AABB: {
 				IS_DEF(AABB);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Aabb(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f))", val.position.x, val.position.y, val.position.z, val.size.x, val.size.y, val.size.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Aabb(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}))", fp(val.position.x), fp(val.position.y), fp(val.position.z), fp(val.size.x), fp(val.size.y), fp(val.size.z)));
 			}
 			case godot::Variant::BASIS: {
 				IS_DEF(Basis);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Basis(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f))", val.rows[0].x, val.rows[1].x, val.rows[2].x, val.rows[0].y, val.rows[1].y, val.rows[2].y, val.rows[0].z, val.rows[1].z, val.rows[2].z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Basis(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}), new Vector3({6}, {7}, {8}))", fp(val.rows[0].x), fp(val.rows[1].x), fp(val.rows[2].x), fp(val.rows[0].y), fp(val.rows[1].y), fp(val.rows[2].y), fp(val.rows[0].z), fp(val.rows[1].z), fp(val.rows[2].z)));
 			}
 			case godot::Variant::TRANSFORM3D: {
 				IS_DEF(Transform3D);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform3D(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f), new Vector3({9}f, {10}f, {11}f))", val.basis.rows[0].x, val.basis.rows[1].x, val.basis.rows[2].x, val.basis.rows[0].y, val.basis.rows[1].y, val.basis.rows[2].y, val.basis.rows[0].z, val.basis.rows[1].z, val.basis.rows[2].z, val.origin.x, val.origin.y, val.origin.z));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform3D(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}), new Vector3({6}, {7}, {8}), new Vector3({9}, {10}, {11}))", fp(val.basis.rows[0].x), fp(val.basis.rows[1].x), fp(val.basis.rows[2].x), fp(val.basis.rows[0].y), fp(val.basis.rows[1].y), fp(val.basis.rows[2].y), fp(val.basis.rows[0].z), fp(val.basis.rows[1].z), fp(val.basis.rows[2].z), fp(val.origin.x), fp(val.origin.y), fp(val.origin.z)));
 			}
 			case godot::Variant::PROJECTION: {
 				IS_DEF(Projection);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Projection(new Vector4({0}f, {1}f, {2}f, {3}f), new Vector4({4}f, {5}f, {6}f, {7}f), new Vector4({8}f, {9}f, {10}f, {11}f), new Vector4({12}f, {13}f, {14}f, {15}f))", val.columns[0].x, val.columns[0].y, val.columns[0].z, val.columns[0].w, val.columns[1].x, val.columns[1].y, val.columns[1].z, val.columns[1].w, val.columns[2].x, val.columns[2].y, val.columns[2].z, val.columns[2].w, val.columns[3].x, val.columns[3].y, val.columns[3].z, val.columns[3].w));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Projection(new Vector4({0}, {1}, {2}, {3}), new Vector4({4}, {5}, {6}, {7}), new Vector4({8}, {9}, {10}, {11}), new Vector4({12}, {13}, {14}, {15}))", fp(val.columns[0].x), fp(val.columns[0].y), fp(val.columns[0].z), fp(val.columns[0].w), fp(val.columns[1].x), fp(val.columns[1].y), fp(val.columns[1].z), fp(val.columns[1].w), fp(val.columns[2].x), fp(val.columns[2].y), fp(val.columns[2].z), fp(val.columns[2].w), fp(val.columns[3].x), fp(val.columns[3].y), fp(val.columns[3].z), fp(val.columns[3].w)));
 			}
 			case godot::Variant::COLOR: {
 				IS_DEF(Color);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Color({0}f, {1}f, {2}f, {3}f)", val.r, val.g, val.b, val.a));
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Color({0}, {1}, {2}, {3})", fp(val.r), fp(val.g), fp(val.b), fp(val.a)));
 			}
 			case godot::Variant::RID: {
 				IS_DEF(RID);

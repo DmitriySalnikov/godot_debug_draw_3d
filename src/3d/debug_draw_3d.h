@@ -30,7 +30,8 @@ enum class ConvertableInstanceType : char;
 #endif
 
 /**
- * This is a singleton class for calling debugging 3D methods.
+ * @brief
+ * Singleton class for calling debugging 3D methods.
  *
  * You can use the project settings `debug_draw_3d/settings/3d` for additional customization.
  *
@@ -41,6 +42,34 @@ enum class ConvertableInstanceType : char;
  * `use_icosphere` and `use_icosphere_for_hd` allow you to change the sphere mesh.
  *
  * ![](docs/images/classes/IcoSphere.webp)
+ *
+ * @note
+ * Wireframe shapes and volumetric wireframes do not support translucency to avoid overlap issues and for better performance.
+ * At this point, you can use translucency when drawing planes DebugDraw3D.draw_plane.
+ *
+ * ---
+ * @note
+ * Objects created in `_physics_process` are processed separately from those created in `_process`,
+ * so they will be deleted only in the first physics tick after rendering.
+ * This allows to display objects even if several frames passed between physics ticks.
+ *
+ * ---
+ * @note
+ * You can use this class anywhere, including in `_physics_process` and `_process` (and probably from other threads).
+ * It is worth mentioning that physics ticks may not be called every frame or may be called several times in one frame.
+ * So if you want to avoid multiple identical `draw_` calls, you can call `draw_` methods in `_process` or use such a check:
+ * ```python
+ * var physics_frame_called := false
+ * func _process(delta: float) -> void:
+ * 	# Reset after rendering frame
+ * 	physics_frame_called = false
+ * 	# some logic
+ *
+ * func _physics_process(delta: float) -> void:
+ * 	if not physics_frame_called:
+ * 		physics_frame_called = true
+ * 		# some DD3D logic
+ * ```
  */
 class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig> {
 	GDCLASS(DebugDraw3D, Object)
@@ -76,6 +105,7 @@ private:
 	const static char *s_default_thickness;
 	const static char *s_default_center_brightness;
 	const static char *s_default_hd_spheres;
+	const static char *s_default_plane_size;
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
@@ -99,12 +129,18 @@ private:
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
 
+	Vector3 previous_camera_position;
+	double previous_camera_far_plane = 0;
+
 	// Default materials and shaders
-	Ref<ShaderMaterial> shader_unshaded_mat;
-	Ref<Shader> shader_unshaded_code;
+	Ref<ShaderMaterial> shader_wireframe_mat;
+	Ref<Shader> shader_wireframe_code;
 
 	Ref<ShaderMaterial> shader_billboard_mat;
 	Ref<Shader> shader_billboard_code;
+
+	Ref<ShaderMaterial> shader_plane_mat;
+	Ref<Shader> shader_plane_code;
 
 	Ref<ShaderMaterial> shader_extendable_mat;
 	Ref<Shader> shader_extendable_code;
@@ -123,6 +159,8 @@ private:
 	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 	Node *get_root_node();
 
+	void create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration = 0);
+
 #endif
 
 	void init(DebugDrawManager *root);
@@ -130,8 +168,9 @@ private:
 	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
 
-	Ref<ShaderMaterial> get_basic_unshaded_material();
-	Ref<ShaderMaterial> get_billboard_unshaded_material();
+	Ref<ShaderMaterial> get_wireframe_material();
+	Ref<ShaderMaterial> get_billboard_material();
+	Ref<ShaderMaterial> get_plane_material();
 	Ref<ShaderMaterial> get_extendable_material();
 
 	void _load_materials();
@@ -456,8 +495,6 @@ public:
 
 #pragma region Arrows
 
-	/// @private
-	void create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw the arrowhead
 	 *
@@ -553,6 +590,20 @@ public:
 	 * @param duration The duration of how long the object will be visible
 	 */
 	void draw_square(const Vector3 &position, const real_t &size = 0.2f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+	/**
+	 * Draws a plane of non-infinite size relative to the position of the current camera.
+	 *
+	 * The plane size is set based on the `Far` parameter of the current camera or with DebugDraw3DScopeConfig.set_plane_size.
+	 *
+	 * ![](docs/images/classes/DrawPlane.webp)
+	 *
+	 * @param plane Plane data
+	 * @param color Primary color
+	 * @param anchor_point A point that is projected onto a Plane, and its projection is used as the center of the drawn plane
+	 * @param duration The duration of how long the object will be visible
+	 */
+	void draw_plane(const Plane &plane, const Color &color = Colors::empty_color, const Vector3 &anchor_point = Vector3(INFINITY, INFINITY, INFINITY), const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw 3 intersecting lines with the given transformations

@@ -9,8 +9,9 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 /**
+ * @brief
  * This is a class for storing part of the DebugDraw3D configuration.
- * 
+ *
  * You can use DebugDraw3D.get_config to get the current instance of the configuration.
  */
 class DebugDraw3DConfig : public RefCounted {

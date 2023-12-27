@@ -10,8 +10,10 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 /**
- * This class is used to override scoped parameters for DebugDraw3D.
- * Scoped means that these overridden parameters will affect the displayed geometry until it exits the current scope.
+ * @brief
+ * This class is used to override scope parameters for DebugDraw3D.
+ * 
+ * `Scope` means that these overridden parameters will affect the displayed geometry until it exits the current scope.
  *
  * To create it, use DebugDraw3D.new_scope_config. Immediately after creation, you can change the values and save the reference to a variable.
  *
@@ -45,6 +47,7 @@ private:
 	real_t thickness;
 	real_t center_brightness;
 	bool hd_sphere;
+	real_t plane_size;
 
 public:
 	/// @private
@@ -74,6 +77,14 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool value);
 	bool is_hd_sphere();
+
+	/**
+	 * Set the size of the `Plane` in DebugDraw3D.draw_plane. If set to `INF`, the `Far` parameter of the current camera will be used.
+	 *
+	 * ![](docs/images/classes/PlaneSize.webp)
+	 */
+	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t value);
+	real_t get_plane_size();
 
 	/// @private
 	DebugDraw3DScopeConfig();

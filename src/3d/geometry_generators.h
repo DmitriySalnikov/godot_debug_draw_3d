@@ -25,30 +25,31 @@ private:
 public:
 #pragma region Predefined Geometry Parts
 
-	const static std::array<Vector3, 2> LineVertices;
+	const static std::array<Vector3, 2> LineVertexes;
 
-	const static std::array<Vector3, 8> CenteredCubeVertices;
-	const static std::array<Vector3, 8> CubeVertices;
-	const static std::array<int, 24> CubeIndices;
-	const static std::array<int, 36> CubeWithDiagonalsIndices;
+	const static std::array<Vector3, 8> CenteredCubeVertexes;
+	const static std::array<Vector3, 8> CubeVertexes;
+	const static std::array<int, 24> CubeIndexes;
+	const static std::array<int, 36> CubeWithDiagonalsIndexes;
 
-	const static std::array<Vector3, 6> ArrowheadVertices;
-	const static std::array<int, 18> ArrowheadIndices;
-	const static std::array<int, 18> ArrowheadIndicesSimplified;
+	const static std::array<Vector3, 6> ArrowheadVertexes;
+	const static std::array<int, 18> ArrowheadIndexes;
+	const static std::array<int, 18> ArrowheadIndexesSimplified;
 
-	const static std::array<Vector3, 4> CenteredSquareVertices;
-	const static std::array<int, 6> SquareIndices;
+	const static std::array<Vector3, 4> CenteredSquareVertexes;
+	const static std::array<int, 6> SquareBackwardsIndexes;
+	const static std::array<int, 6> SquareIndexes;
 
-	const static std::array<Vector3, 6> PositionVertices;
-	const static std::array<int, 6> PositionIndices;
+	const static std::array<Vector3, 6> PositionVertexes;
+	const static std::array<int, 6> PositionIndexes;
 
 #pragma endregion
 
-	template <class TVertices, class TIndices = std::array<int, 0>, class TColors = std::array<Color, 0>, class TNormal = std::array<Vector3, 0>, class TUV = std::array<Vector2, 0>, class TCustom0 = std::array<Vector3, 0> >
-	static Ref<ArrayMesh> CreateMeshNative(Mesh::PrimitiveType type, const TVertices &vertices, const TIndices &indices = {}, const TColors &colors = {}, const TNormal &normals = {}, const TUV &uv = {}, const TCustom0 &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0) {
+	template <class TVertexes, class TIndexes = std::array<int, 0>, class TColors = std::array<Color, 0>, class TNormal = std::array<Vector3, 0>, class TUV = std::array<Vector2, 0>, class TCustom0 = std::array<Vector3, 0> >
+	static Ref<ArrayMesh> CreateMeshNative(Mesh::PrimitiveType type, const TVertexes &vertexes, const TIndexes &indexes = {}, const TColors &colors = {}, const TNormal &normals = {}, const TUV &uv = {}, const TCustom0 &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0) {
 		return CreateMesh(type,
-				Utils::convert_to_packed_array<PackedVector3Array>(vertices),
-				Utils::convert_to_packed_array<PackedInt32Array>(indices),
+				Utils::convert_to_packed_array<PackedVector3Array>(vertexes),
+				Utils::convert_to_packed_array<PackedInt32Array>(indexes),
 				Utils::convert_to_packed_array<PackedColorArray>(colors),
 				Utils::convert_to_packed_array<PackedVector3Array>(normals),
 				Utils::convert_to_packed_array<PackedVector2Array>(uv),
@@ -56,7 +57,8 @@ public:
 				flags);
 	}
 
-	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertices, const PackedInt32Array &indices = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
+	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
+	static Ref<ArrayMesh> RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const real_t &angle);
 
 	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps = false);
 	static Ref<ArrayMesh> CreateVolumetricArrowHead(const real_t &radius, const real_t &length, const real_t &offset_mult, const bool &add_bevel);

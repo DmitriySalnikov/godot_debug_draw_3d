@@ -196,39 +196,39 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 	size_t spent_timer = Time::get_singleton()->get_ticks_usec();
 
 	// Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
-	size_t used_vertices = 0;
+	size_t used_vertexes = 0;
 
 	// pre calculate buffer size
 	for (auto &proc : pools) {
 		for (size_t i = 0; i < proc.lines.used_instant; i++) {
 			auto &o = proc.lines.instant[i];
 			if (o.is_visible) {
-				used_vertices += o.get_lines_count();
+				used_vertexes += o.get_lines_count();
 			}
 		}
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
 			auto &o = proc.lines.delayed[i];
 			if (o.is_visible && !o.is_expired()) {
-				used_vertices += o.get_lines_count();
+				used_vertexes += o.get_lines_count();
 			}
 		}
 	}
 
 	thread_local static auto verices_buffer = TempBigBuffer<Vector3, PackedVector3Array, 64 * 1024>();
 	thread_local static auto colors_buffer = TempBigBuffer<Color, PackedColorArray, 64 * 1024>();
-	verices_buffer.prepare_buffer(used_vertices);
-	colors_buffer.prepare_buffer(used_vertices);
-	verices_buffer.update(used_vertices, delta);
-	colors_buffer.update(used_vertices, delta);
+	verices_buffer.prepare_buffer(used_vertexes);
+	colors_buffer.prepare_buffer(used_vertexes);
+	verices_buffer.update(used_vertexes, delta);
+	colors_buffer.update(used_vertexes, delta);
 
 	size_t prev_pos = 0;
-	auto vertices_write = verices_buffer.ptrw();
+	auto vertexes_write = verices_buffer.ptrw();
 	auto colors_write = colors_buffer.ptrw();
 
-	auto append_lines = [&vertices_write, &colors_write, &prev_pos](const DelayedRendererLine &o) {
+	auto append_lines = [&vertexes_write, &colors_write, &prev_pos](const DelayedRendererLine &o) {
 		size_t lines_size = o.get_lines_count();
 
-		memcpy(vertices_write + prev_pos, o.get_lines(), o.get_lines_count() * sizeof(Vector3));
+		memcpy(vertexes_write + prev_pos, o.get_lines(), o.get_lines_count() * sizeof(Vector3));
 		std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, o.color);
 
 		prev_pos += lines_size;
@@ -257,11 +257,11 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 		}
 	}
 
-	if (used_vertices > 1) {
+	if (used_vertexes > 1) {
 		Array mesh = Array();
 		mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
-		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verices_buffer.slice(0, used_vertices);
-		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors_buffer.slice(0, used_vertices);
+		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verices_buffer.slice(0, used_vertexes);
+		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors_buffer.slice(0, used_vertexes);
 
 		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}

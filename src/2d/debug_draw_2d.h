@@ -19,7 +19,8 @@ class DebugDraw2DStats;
 class GroupedText;
 
 /**
- * This is a singleton class for calling debugging methods for 2D drawing.
+ * @brief
+ * Singleton class for calling debugging 2D methods.
  *
  * Currently, this class supports drawing an overlay with text and graphs.
  */

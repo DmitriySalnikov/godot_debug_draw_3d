@@ -18,10 +18,11 @@ using namespace godot;
 class DataGraphManager;
 
 /**
+ * @brief
  * Base class for drawing graphs.
- * 
+ *
  * Must be created via DebugDraw2D.create_graph.
-*/
+ */
 class DebugDraw2DGraph : public RefCounted {
 	GDCLASS(DebugDraw2DGraph, RefCounted);
 
@@ -267,24 +268,24 @@ public:
 	int get_text_precision() const;
 	/**
 	 * Set the parent graph relative to which this graph will be drawn
-	*/
+	 */
 	void set_parent_graph(const StringName &_graph);
 	StringName get_parent_graph() const;
 	/**
 	 * Set the side of the parent graph relative to which this graph will be drawn.
 	 * It only works if the parent graph is set via DebugDraw2DGraph.set_parent_graph
-	*/
+	 */
 	void set_parent_graph_side(const GraphSide _side);
 	GraphSide get_parent_graph_side() const;
 	/**
 	 * Set a Callable that will be called every frame to get a new value
-	*/
+	 */
 	virtual void set_data_getter(const Callable &_callable);
 	Callable get_data_getter() const;
 
 	/**
 	 * Set DebugDraw2DGraph.set_parent_graph and DebugDraw2DGraph.set_parent_graph_side at the same time
-	*/
+	 */
 	void set_parent(const StringName &_name, const GraphSide _side = GraphSide::SIDE_BOTTOM);
 
 public:
@@ -309,8 +310,9 @@ VARIANT_ENUM_CAST(DebugDraw2DGraph::GraphSide);
 VARIANT_BITFIELD_CAST(DebugDraw2DGraph::TextFlags);
 
 /**
+ * @brief
  * This version of the graphs is automatically updated and displays FPS or Frametime.
- * 
+ *
  * Must be created via DebugDraw2D.create_fps_graph.
  */
 class DebugDraw2DFPSGraph : public DebugDraw2DGraph {
