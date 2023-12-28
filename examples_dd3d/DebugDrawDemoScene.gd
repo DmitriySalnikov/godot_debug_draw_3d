@@ -10,7 +10,7 @@ extends Node3D
 @export var draw_array_of_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
-@export_range(0, 1024) var start_culling_distance := 60.0
+@export_range(0, 1024) var start_culling_distance := 75.0
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
@@ -106,9 +106,9 @@ func main_update(delta: float) -> void:
 	$LagTest.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
-	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_SHIFT) else 0b10010
-	$Panel.visible = Input.is_key_pressed(KEY_SHIFT)
-	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_SHIFT) else null
+	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_ALT) else 0b10010
+	$Panel.visible = Input.is_key_pressed(KEY_ALT)
+	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_ALT) else null
 	
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
@@ -166,8 +166,6 @@ func main_update(delta: float) -> void:
 	
 	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_position, Vector3(2, 1, 2)), Color.AQUA)
 	DebugDraw3D.draw_aabb_ab($Boxes/AABB/a.global_position, $Boxes/AABB/b.global_position, Color.DEEP_PINK)
-	
-	DebugDraw3D.draw_box_xf($Boxes/BoxOutOfDistanceCulling.global_transform, Color.RED)
 	
 	# Boxes AB
 	DebugDraw3D.draw_arrow($Boxes/BoxAB.global_position, $Boxes/BoxAB/o/up.global_position, Color.GOLD, 0.1, true)
@@ -350,11 +348,14 @@ func _text_tests():
 	
 	if text_groups_show_hints:
 		DebugDraw2D.begin_text_group("controls", 1024, Color.WHITE, false)
-		DebugDraw2D.set_text("Shift: change render layers", DebugDraw3D.config.geometry_render_layers, 1)
+		if not Engine.is_editor_hint():
+			DebugDraw2D.set_text("WASD QE, LMB", "To move", 0)
+		DebugDraw2D.set_text("Alt: change render layers", DebugDraw3D.config.geometry_render_layers, 1)
 		if not OS.has_feature("web"):
 			DebugDraw2D.set_text("Ctrl: toggle anti-aliasing", "MSAA 4x" if get_viewport().msaa_3d == Viewport.MSAA_4X else "Disabled", 2)
 		DebugDraw2D.set_text("Down: freeze render", DebugDraw3D.config.freeze_3d_render, 3)
-		DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 4)
+		if Engine.is_editor_hint():
+			DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 4)
 		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 5)
 		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 6)
 		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 7)

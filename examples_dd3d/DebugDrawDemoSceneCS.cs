@@ -67,7 +67,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dBox1;
     Node3D dBox2;
     Node3D dBox3;
-    Node3D dBoxOutOfDistanceCulling;
     Node3D dBoxAB;
     Node3D dBoxABa;
     Node3D dBoxABb;
@@ -123,7 +122,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dBox1 = GetNode<Node3D>("Boxes/Box1");
         dBox2 = GetNode<Node3D>("Boxes/Box2");
         dBox3 = GetNode<Node3D>("Boxes/Box3");
-        dBoxOutOfDistanceCulling = GetNode<Node3D>("Boxes/BoxOutOfDistanceCulling");
         dBoxAB = GetNode<Node3D>("Boxes/BoxAB");
         dBoxABa = GetNode<Node3D>("Boxes/BoxAB/a");
         dBoxABb = GetNode<Node3D>("Boxes/BoxAB/b");
@@ -279,9 +277,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dLagTest.Visible = true;
 
         // Testing the rendering layers by showing the image from the second camera inside the 2D panel
-        DebugDraw3D.Config.GeometryRenderLayers = !Input.IsKeyPressed(Key.Shift) ? 1 : 0b10010;
-        dPanel.Visible = Input.IsKeyPressed(Key.Shift);
-        DebugDraw2D.CustomCanvas = Input.IsKeyPressed(Key.Shift) ? dCustomCanvas : null;
+        DebugDraw3D.Config.GeometryRenderLayers = !Input.IsKeyPressed(Key.Alt) ? 1 : 0b10010;
+        dPanel.Visible = Input.IsKeyPressed(Key.Alt);
+        DebugDraw2D.CustomCanvas = Input.IsKeyPressed(Key.Alt) ? dCustomCanvas : null;
 
         // More property toggles
         DebugDraw3D.Config.Freeze3dRender = Input.IsKeyPressed(Key.Down);
@@ -355,8 +353,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         DebugDraw3D.DrawAabb(new Aabb(dAABB_fixed.GlobalPosition, new Vector3(2, 1, 2)), Colors.Aqua);
         DebugDraw3D.DrawAabbAb(dAABB.GetChild<Node3D>(0).GlobalPosition, dAABB.GetChild<Node3D>(1).GlobalPosition, Colors.DeepPink);
-
-        DebugDraw3D.DrawBoxXf(dBoxOutOfDistanceCulling.GlobalTransform, Colors.Red);
 
         // Boxes AB
 
@@ -587,10 +583,20 @@ public partial class DebugDrawDemoSceneCS : Node3D
         if (text_groups_show_hints)
         {
             DebugDraw2D.BeginTextGroup("controls", 1024, Colors.White, false);
-            DebugDraw2D.SetText("Shift: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
-            DebugDraw2D.SetText("Ctrl: toggle anti-aliasing", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
+            if (!Engine.IsEditorHint())
+            {
+                DebugDraw2D.SetText("WASD QE, LMB", "To move", 0);
+            }
+            DebugDraw2D.SetText("Alt: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
+            if (!OS.HasFeature("web"))
+            {
+                DebugDraw2D.SetText("Ctrl: toggle anti-aliasing", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
+            }
             DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 3);
-            DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
+            if (Engine.IsEditorHint())
+            {
+                DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
+            }
             DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
             DebugDraw2D.SetText("Left: toggle frustum culling", DebugDraw3D.Config.UseFrustumCulling, 6);
             DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 7);

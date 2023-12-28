@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=29 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -22,48 +22,55 @@ script/source = "extends Camera3D
 @export var camera_speed_fast := 30.0
 
 var btn_clicked := false
+const hPI := PI/2
+var rot_x := 0.0
+var rot_y := 0.0
 
 
-func _input(event):
+func _ready():
+	rot_x = rotation.y
+	rot_y = rotation.x
+
+
+func _unhandled_input(event) -> void:
 	if event is InputEventMouseButton:
 		btn_clicked = event.pressed
-	
+
+
+func _input(event) -> void:
 	if btn_clicked:
 		if event is InputEventMouseMotion:
 			if event.button_mask == MOUSE_BUTTON_LEFT:
-				var b := global_transform.basis
-				b = b.rotated(Vector3.UP, -deg_to_rad(event.relative.x * mouse_sensitivity))
-				b = b.rotated(b[0], -deg_to_rad(event.relative.y * mouse_sensitivity))
+				rot_x += -deg_to_rad(event.relative.x * mouse_sensitivity)
+				rot_y += -deg_to_rad(event.relative.y * mouse_sensitivity)
+				rot_y = clamp(rot_y, -hPI, hPI)
 				
-				global_transform.basis = b
+				transform.basis = Basis()
+				rotate_object_local(Vector3.UP, rot_x)
+				rotate_object_local(Vector3.RIGHT, rot_y)
 
 
 func get_axis(neg : Array[Key], pos : Array[Key]) -> float:
-	var np: float = 0
-	for k in neg:
-		if Input.is_physical_key_pressed(k):
-			np = 1
-			break
+	var pressed = func (arr: Array[Key]):
+		var p: float = 0
+		for k in arr:
+			if Input.is_physical_key_pressed(k):
+				p = 1
+				break
+		return p
 	
-	var pp: float = 0
-	for k in pos:
-		if Input.is_physical_key_pressed(k):
-			pp = 1
-			break
-	
-	return pp - np
+	return pressed.call(pos) - pressed.call(neg)
 
 
-func _process(delta):
-	var velocity := Vector2(get_axis([KEY_S], [KEY_W]), get_axis([KEY_A], [KEY_D]))
+func _process(delta) -> void:
+	var motion := Vector2(get_axis([KEY_S], [KEY_W]), get_axis([KEY_A], [KEY_D]))
 	var lift := get_axis([KEY_Q, KEY_CTRL], [KEY_E, KEY_SPACE])
 	var speed := camera_speed_fast if Input.is_physical_key_pressed(KEY_SHIFT) else camera_speed
-	velocity = velocity.limit_length()
+	motion = motion.limit_length()
 	
 	var b := global_transform.basis
-	var v := (-b.z * velocity.x) + (b.x * velocity.y) + (b.y * lift)
-	global_position += v.normalized() * speed * delta
-	
+	var v := (-b.z * motion.x) + (b.x * motion.y) + (b.y * lift)
+	global_position += v.limit_length() * speed * delta
 "
 
 [sub_resource type="Animation" id="9"]
@@ -106,6 +113,18 @@ tracks/2/keys = {
 "update": 0,
 "values": [Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, -0.791383, 1.53767)]
 }
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Spatial7:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.4, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(1.33, -0.119, -0.025), Vector3(1.32989, -0.583818, -0.025198)]
+}
 
 [sub_resource type="Animation" id="10"]
 length = 0.001
@@ -144,6 +163,18 @@ tracks/2/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Spatial7:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1.32989, -0.583818, -0.025198)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nj4nv"]
@@ -560,7 +591,7 @@ content_margin_left = 5.0
 content_margin_top = 5.0
 content_margin_right = 5.0
 content_margin_bottom = 5.0
-bg_color = Color(0.0705882, 0.0705882, 0.0705882, 0.682353)
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 0.784314)
 corner_radius_top_left = 4
 corner_radius_top_right = 4
 corner_radius_bottom_right = 4
@@ -581,12 +612,12 @@ directional_shadow_max_distance = 200.0
 environment = SubResource("Environment_38m85")
 
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -6.988, 13.525, 37.21)
+transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -6.988, 10.986, 29.2059)
 cull_mask = 1
 current = true
-fov = 38.8
-near = 2.63
-far = 60.0
+fov = 53.0
+far = 100.0
+script = SubResource("GDScript_yp7g8")
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -673,7 +704,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1, 1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -1)
 
 [node name="Spatial7" type="Node3D" parent="LinePath"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32989, -0.583818, -0.025198)
 
 [node name="Cylinders" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5266, 4.76837e-07, -5.82213)
@@ -717,9 +748,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104528, -0.809874, 2.10804
 
 [node name="Box3" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)
-
-[node name="BoxOutOfDistanceCulling" type="Node3D" parent="Boxes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.43744, 0.344, -27.9652)
 
 [node name="AABB_fixed" type="Node3D" parent="Boxes"]
 transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.12735, -0.835878, 0.470324)
