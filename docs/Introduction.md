@@ -63,7 +63,7 @@ Your support adds motivation to develop my public projects.
 
 [![](images/boosty.png){html: width=192px}](https://boosty.to/dmitriysalnikov/donate)
 
-![USDT-TRC20 TEw934PrsffHsAn5M63SoHYRuZo984EF6v](images/USDT-TRC20.png)
+![USDT-TRC20 TEw934PrsffHsAn5M63SoHYRuZo984EF6v](images/USDT-TRC20.png){html: width=192px}
 
 <h2><a href="https://dd3d.dmitriysalnikov.ru/demo/">Interactive Web Demo</a></h2>
 

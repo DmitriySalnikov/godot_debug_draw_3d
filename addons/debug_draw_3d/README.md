@@ -16,6 +16,8 @@ Your support adds motivation to develop my public projects.
 
 <a href="https://boosty.to/dmitriysalnikov/donate"><img src="./docs/images/boosty.png" alt="Boosty" width=150px/></a>
 
+<img src="./docs/images/USDT-TRC20.png" alt="USDT-TRC20" width=150px/>
+
 <b>USDT-TRC20 TEw934PrsffHsAn5M63SoHYRuZo984EF6v</b>
 
 ## Features
