@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_87638"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -13,65 +17,6 @@ sky_material = SubResource("ProceduralSkyMaterial_87638")
 [sub_resource type="Environment" id="Environment_38m85"]
 sky = SubResource("Sky_4jfme")
 tonemap_mode = 2
-
-[sub_resource type="GDScript" id="GDScript_yp7g8"]
-script/source = "extends Camera3D
-
-@export var mouse_sensitivity := 0.25
-@export var camera_speed := 10.0
-@export var camera_speed_fast := 30.0
-
-var btn_clicked := false
-const hPI := PI/2
-var rot_x := 0.0
-var rot_y := 0.0
-
-
-func _ready():
-	rot_x = rotation.y
-	rot_y = rotation.x
-
-
-func _unhandled_input(event) -> void:
-	if event is InputEventMouseButton:
-		btn_clicked = event.pressed
-
-
-func _input(event) -> void:
-	if btn_clicked:
-		if event is InputEventMouseMotion:
-			if event.button_mask == MOUSE_BUTTON_LEFT:
-				rot_x += -deg_to_rad(event.relative.x * mouse_sensitivity)
-				rot_y += -deg_to_rad(event.relative.y * mouse_sensitivity)
-				rot_y = clamp(rot_y, -hPI, hPI)
-				
-				transform.basis = Basis()
-				rotate_object_local(Vector3.UP, rot_x)
-				rotate_object_local(Vector3.RIGHT, rot_y)
-
-
-func get_axis(neg : Array[Key], pos : Array[Key]) -> float:
-	var pressed = func (arr: Array[Key]):
-		var p: float = 0
-		for k in arr:
-			if Input.is_physical_key_pressed(k):
-				p = 1
-				break
-		return p
-	
-	return pressed.call(pos) - pressed.call(neg)
-
-
-func _process(delta) -> void:
-	var motion := Vector2(get_axis([KEY_S], [KEY_W]), get_axis([KEY_A], [KEY_D]))
-	var lift := get_axis([KEY_Q, KEY_CTRL], [KEY_E, KEY_SPACE])
-	var speed := camera_speed_fast if Input.is_physical_key_pressed(KEY_SHIFT) else camera_speed
-	motion = motion.limit_length()
-	
-	var b := global_transform.basis
-	var v := (-b.z * motion.x) + (b.x * motion.y) + (b.y * lift)
-	global_position += v.limit_length() * speed * delta
-"
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
@@ -269,161 +214,6 @@ _data = {
 "RESET": SubResource("8")
 }
 
-[sub_resource type="GDScript" id="GDScript_atshy"]
-script/source = "@tool
-extends VBoxContainer
-
-@export_range(1, 128)  var bars_count := 32
-var transform: Transform3D:
-	get:
-		return %AudioVisualizer.global_transform
-@export_exp_easing(\"inout\") var motion_smoothing := 0.025
-@export_range(0, 0.5) var bar_thickness := 0.065
-@export_range(0, 10) var bars_separation := 0.325
-@export_exp_easing(\"inout\") var color_offset_speed := 0.4
-@export var colors: Gradient = null
-
-var MusicBus := &\"MusicVisualizer\"
-var MAX_HZ := 16000.0
-var MIN_HZ := 50.0
-var MIN_DB := 60.0
-var spectrum: AudioEffectSpectrumAnalyzerInstance = null
-
-var smoothed_energy: Array[float] = []
-var color_offset := 0.0
-
-var _on_data_loaded_callback = null
-
-func _ready():
-	var bus = AudioServer.get_bus_index(MusicBus)
-	if bus == -1:
-		print(\"'MusicVisualizer' audio bus not found.\\nSet 'VisualizerAudioBus.tres' as the default bus to use the audio visualizer.\")
-	
-	spectrum = AudioServer.get_bus_effect_instance(bus, 0)
-	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(&\"Master\"))
-	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&\"Master\")))
-	
-	if OS.has_feature('web'):
-		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
-		
-		# Retrieve the 'gd_callbacks' object
-		var gdcallbacks: JavaScriptObject = JavaScriptBridge.get_interface(\"gd_callbacks\")
-		
-		# Assign the callbacks
-		gdcallbacks.dataLoaded = _on_data_loaded_callback
-
-
-func _process(_delta):
-	if %MusicPlayer.playing:
-		draw_spectrum()
-
-
-func _pressed():
-	if DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
-		DisplayServer.file_dialog_show(\"Select audio file\", \"\", \"\", true, DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, [\"*.mp3\"], 
-		func (status: bool, selected: PackedStringArray, _fileter: int):
-			if status and selected.size():
-				print(selected)
-				var file = FileAccess.open(selected[0], FileAccess.READ)
-				var data = file.get_buffer(file.get_length())
-				open_stream(selected[0].get_extension(), data)
-		)
-	elif OS.has_feature('web'):
-		JavaScriptBridge.eval(\"loadData()\")
-	else:
-		print(\"Not implemented!\")
-
-func _on_data_loaded(data: Array) -> void:
-	# Make sure there is something
-	if (data.size() == 0):
-		return
-	
-	var file_name: String = data[0]
-	print(\"Opening %s\" % file_name)
-	
-	var arr: PackedByteArray = JavaScriptBridge.eval(\"gd_callbacks.dataLoadedResult;\")
-	open_stream(file_name.get_extension(), arr)
-
-
-func open_stream(file_ext: String, data: PackedByteArray):
-	var stream: AudioStream = null
-	if file_ext == \"mp3\":
-		stream = AudioStreamMP3.new()
-		stream.data = data
-		
-		if not stream.data:
-			print(\"Failed to load MP3!\")
-			return
-	
-	if not stream:
-		print(\"Failed to load music!\")
-		return
-	
-	%MusicPlayer.stream = stream
-	%MusicPlayer.bus = MusicBus
-	%MusicPlayer.play()
-	
-	# Debugging frequencies
-	for ih in range(1, bars_count + 1):
-		var _hz: float = log_freq(ih / float(bars_count), MIN_HZ, MAX_HZ)
-		#print(\"%.0f hz %.2f\" % [_hz, ih / float(bars_count)])
-
-
-func draw_spectrum():
-	var _s1 = DebugDraw3D.scoped_config().set_thickness(bar_thickness).set_center_brightness(0.9)
-	var prev_hz = MIN_HZ
-	smoothed_energy.resize(bars_count)
-	
-	var xf := transform
-	var y := xf.basis.y
-	var h := y.length()
-	var x := xf.basis.x
-	var z := xf.basis.z
-	var origin := xf.origin - (x * bars_count + (x * bars_separation) * (bars_count - 1)) * 0.5
-	var sum := 0.0
-	
-	for ih in range(1, bars_count + 1):
-		var i := ih - 1
-		var hz: float = log_freq(ih / float(bars_count), MIN_HZ, MAX_HZ)
-		var magnitude: float = spectrum.get_magnitude_for_frequency_range(prev_hz, hz, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_AVERAGE).length()
-		var energy: float = clampf((MIN_DB + linear_to_db(magnitude)) / MIN_DB, 0, 1)
-		var e: float = lerp(smoothed_energy[i], energy, clampf(get_process_delta_time() / motion_smoothing if motion_smoothing else 1.0, 0, 1))
-		smoothed_energy[i] = e
-		var height: float = e * h
-		sum += e
-		
-		var s := x * bars_separation
-		
-		var a := origin + x * i + s * i + (z * 0.5)
-		var b := origin + x * (i + 1) + s * i + (z * -0.5) + xf.basis.y.normalized() * clampf(height, 0.001, h)
-		var c := Color.HOT_PINK
-		if colors:
-			c = colors.sample(wrapf(float(ih) / bars_count + color_offset, 0, 1))
-			c.s = smoothed_energy[i] * 0.3 + 0.7
-		
-		DebugDraw3D.draw_box_ab(a, b, y, c)
-		
-		prev_hz = hz
-	
-	color_offset = wrapf(color_offset + sum / smoothed_energy.size() * clampf(get_process_delta_time() / color_offset_speed if color_offset_speed else 1.0, 0, 1), 0, 1)
-
-
-func log10(val: float) -> float:
-	return log(val) / 2.302585
-
-
-func log_freq(pos: float, min_hz: float, max_hz: float) -> float:
-	return pow(10, log10(min_hz) + (log10(max_hz) - log10(min_hz)) * pos)
-
-
-func _on_volume_slider_value_changed(value):
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&\"Master\"), linear_to_db(value))
-
-
-func _on_mute_master_toggled(toggled_on):
-	AudioServer.set_bus_mute(AudioServer.get_bus_index(&\"Master\"), toggled_on)
-"
-
 [sub_resource type="Gradient" id="Gradient_tup4c"]
 offsets = PackedFloat32Array(0.00471698, 0.316038, 0.646226, 1)
 colors = PackedColorArray(0, 0.0156863, 1, 1, 0.0988327, 1, 0.122977, 1, 1, 0.111986, 0.118936, 1, 0, 0.0156863, 1, 1)
@@ -449,138 +239,6 @@ _data = {
 }
 
 [sub_resource type="Theme" id="3"]
-
-[sub_resource type="GDScript" id="2"]
-script/source = "@tool
-extends Control
-
-@export var switch_to_scene = \"\"
-var is_ready := false
-
-func _ready():
-	if Engine.is_editor_hint():
-		return
-	
-	if ProjectSettings.has_setting(\"application/config/no_csharp_support\"):
-		%SwitchLang.visible = false
-	
-	%SwitchLang.disabled = true
-	
-	var test := DebugDraw2D.get_graph(&\"FPS\")
-	if test:
-		%FPSEnabled.button_pressed = test.enabled
-		%FPSMS.button_pressed = test.frame_time_mode
-		%WidthSlider.value = test.size.x
-		%BufferSlider.value = test.buffer_size
-	
-	%ThicknessSlider.value = get_parent().debug_thickness
-	%UpdateInPhysics.text = \"Update in physics (%d Ticks) *\" % ProjectSettings.get_setting(\"physics/common/physics_ticks_per_second\")
-	%UpdateInPhysics.button_pressed = get_parent().update_in_physics
-	
-	%ShowStats.button_pressed = get_parent().text_groups_show_stats
-	%DrawBoxes.button_pressed = get_parent().draw_array_of_boxes
-	
-	if get_tree():
-		await get_tree().create_timer(0.2).timeout
-	
-	%SwitchLang.disabled = false
-	is_ready = true
-
-
-func _on_CheckBox_toggled(button_pressed: bool) -> void:
-	if not is_ready: return
-	
-	var cfg = DebugDraw2D.get_graph(&\"FPS\")
-	if cfg:
-		cfg.enabled = button_pressed
-
-
-func _on_FPSMS_toggled(button_pressed: bool) -> void:
-	if not is_ready: return
-	
-	var cfg = DebugDraw2D.get_graph(&\"FPS\")
-	if cfg:
-		cfg.frame_time_mode = button_pressed
-
-
-func _on_Button_pressed() -> void:
-	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
-
-
-func _on_width_slider_value_changed(value):
-	if not is_ready: return
-	
-	get_parent().graph_size = Vector2i(int(value), get_parent().graph_size.y)
-
-
-func _on_buffer_slider_value_changed(value):
-	if not is_ready: return
-	
-	get_parent().graph_buffer_size = int(value)
-
-
-func _on_thickness_slider_value_changed(value):
-	if not is_ready: return
-	
-	get_parent().debug_thickness = value
-
-
-func _on_update_in_physics_toggled(toggled_on):
-	get_parent().update_in_physics = toggled_on
-
-
-func _on_show_stats_toggled(toggled_on):
-	get_parent().text_groups_show_stats = toggled_on
-
-
-func _on_draw_boxes_toggled(toggled_on):
-	get_parent().draw_array_of_boxes = toggled_on
-"
-
-[sub_resource type="GDScript" id="GDScript_h0fpq"]
-script/source = "extends HBoxContainer
-
-var _on_versions_loaded_callback = null
-@onready var btn: OptionButton = $OptionButton
-
-func _enter_tree():
-	hide()
-
-
-func _ready():
-	if OS.has_feature('web'):
-		_on_versions_loaded_callback = JavaScriptBridge.create_callback(_on_versions_loaded)
-		var versions_callbacks: JavaScriptObject = JavaScriptBridge.get_interface(\"versions_callbacks\")
-		versions_callbacks.loaded = _on_versions_loaded_callback
-		
-		JavaScriptBridge.eval(\"loadVersions()\")
-
-
-func _on_versions_loaded(args: Array) -> void:
-	if (args.size() == 0):
-		return
-	
-	var current_version: String = args[0]
-	
-	var versions_str: String = JavaScriptBridge.eval(\"versions_callbacks.versions;\")
-	var version_urls_str: String = JavaScriptBridge.eval(\"versions_callbacks.version_urls;\")
-	var versions: PackedStringArray = versions_str.split(\";\", false)
-	var version_urls: PackedStringArray = version_urls_str.split(\";\", false)
-	
-	if versions:
-		show()
-		btn.clear()
-		btn.item_selected.connect(func(idx):
-			# move to another version
-			JavaScriptBridge.eval(\"window.location.href = \\\"%s\\\"\" % version_urls[idx])
-		)
-		
-		for i in range(versions.size()):
-			btn.add_item(versions[i], i)
-			
-			if versions[i] == current_version:
-				btn.select(i)
-"
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oj5gf"]
 content_margin_top = 5.0
@@ -617,7 +275,7 @@ cull_mask = 1
 current = true
 fov = 53.0
 far = 100.0
-script = SubResource("GDScript_yp7g8")
+script = ExtResource("3_3m1mp")
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -933,7 +591,7 @@ offset_left = 10.0
 offset_top = 10.0
 offset_right = 50.0
 offset_bottom = 50.0
-script = SubResource("GDScript_atshy")
+script = ExtResource("4_eq2lt")
 colors = SubResource("Gradient_tup4c")
 
 [node name="OpenFile" type="Button" parent="MusicVisualizer"]
@@ -1001,7 +659,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("3")
-script = SubResource("2")
+script = ExtResource("5_31v5h")
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
 metadata/_edit_lock_ = true
 
@@ -1027,7 +685,7 @@ size_flags_vertical = 8
 [node name="VersionBlock" type="HBoxContainer" parent="Settings/HBox/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-script = SubResource("GDScript_h0fpq")
+script = ExtResource("6_07f7q")
 
 [node name="Label" type="Label" parent="Settings/HBox/VBoxContainer/VersionBlock"]
 layout_mode = 2

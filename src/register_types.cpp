@@ -22,7 +22,7 @@ GODOT_WARNING_RESTORE()
 #include "editor/editor_menu_extensions.h"
 
 #include "editor/asset_library_update_checker.h"
-Ref<AssetLibraryUpdateChecker> upd_checker;
+Ref<_DebugDraw3DAssetLibraryUpdateChecker> upd_checker;
 #endif
 #endif
 using namespace godot;
@@ -64,7 +64,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		EditorPlugins::add_by_type<DebugDrawMenuExtensionPlugin>();
 
 		// TODO register as unexposed
-		ClassDB::register_class<AssetLibraryUpdateChecker>();
+		ClassDB::register_class<_DebugDraw3DAssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
 	}
 #endif

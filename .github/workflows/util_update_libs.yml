@@ -20,12 +20,13 @@ jobs:
           lfs: true
       
       - name: Download GDExtension Binaries
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         with:
           workflow: gdextension_build.yml
           branch: ${{github.ref_name}}
-          name: .gdextension_libs
+          name: .gdextension_libs_production
           path: extracted_files/
+          event: workflow_dispatch
 
       - name: Replace with new files
         shell: bash
@@ -41,7 +42,7 @@ jobs:
           git config --global user.email 'github-actions-auto-updater[bot]@users.noreply.github.com'
           git diff
           git add -A
-          git commit --allow-empty -am "[CI] ↗️ Updated Binaries: ${{github.sha}}"
+          git commit -am "[CI] ↗️ Updated Binaries: ${{github.sha}}"
           git push
 
           echo "## Changed files:" >> $GITHUB_STEP_SUMMARY

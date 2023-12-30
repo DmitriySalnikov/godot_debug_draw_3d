@@ -29,6 +29,11 @@ inputs:
   use_cache:
     description: Use cache
     default: "true"
+  token:
+    description: Secrets token
+  telemetry_version:
+    description: Telemetry version
+    default: 2fcd3ec9e528d1cd26978d0d27e9c6a3b2006270
 runs:
   using: composite
   steps:
@@ -37,6 +42,17 @@ runs:
       id: get_godot_cpp_sha
       run: |
         echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
+
+    - name: Checkout telemetry repo
+      uses: actions/checkout@v4
+      id: checkout_tele_repo
+      if: ${{env.PRODUCTION_BUILD == 'true' && inputs.target == 'editor'}}
+      continue-on-error: true
+      with:
+        repository: ${{github.repository_owner}}/my_telemetry_modules
+        token: ${{inputs.token}}
+        ref: ${{inputs.telemetry_version}}
+        path: src/editor/my_telemetry_modules
 
     - name: Restore .scons_cache directory
       if: inputs.use_cache != 'false'
@@ -83,7 +99,13 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
         cd ..
-        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
+
+        telemetry_args=""
+        if [ "${{env.PRODUCTION_BUILD}}" == "true" ] && [ "${{inputs.target}}" == "editor" ] && [ "${{steps.checkout_tele_repo.conclusion}}" == "success" ]; then
+          telemetry_args="telemetry_enabled=yes"
+        fi
+
+        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}} $telemetry_args
         if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.additional_enabled_dd3d}}" == "true" ]; then
           scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} force_enabled_dd3d=yes ${{inputs.additional}}
         fi

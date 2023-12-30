@@ -60,6 +60,12 @@ void DebugDrawManager::_bind_methods() {
 
 #define REG_CLASS_NAME DebugDrawManager
 
+#ifdef TOOLS_ENABLED
+#ifdef TELEMETRY_ENABLED
+	ClassDB::bind_method(D_METHOD(NAMEOF(_on_telemetry_sending_completed)), &DebugDrawManager::_on_telemetry_sending_completed);
+#endif
+#endif
+
 	// TODO use CALLABLE_MP in 4.2!
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDrawManager::_on_scene_changed);
@@ -325,8 +331,13 @@ void DebugDrawManager::_integrate_into_engine() {
 #endif
 
 #ifdef TOOLS_ENABLED
-	if (IS_EDITOR_HINT())
+	if (IS_EDITOR_HINT()) {
 		_try_to_update_cs_bindings();
+
+#ifdef TELEMETRY_ENABLED
+		time_usage_reporter = std::make_unique<UsageTimeReporter>([&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
+#endif
+	}
 #endif
 }
 
@@ -392,4 +403,10 @@ void DebugDrawManager::_try_to_update_cs_bindings() {
 		g.generate();
 	}
 }
+
+#ifdef TELEMETRY_ENABLED
+void DebugDrawManager::_on_telemetry_sending_completed() {
+	time_usage_reporter->stop_thread();
+}
+#endif
 #endif

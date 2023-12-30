@@ -13,13 +13,12 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-class AssetLibraryUpdateChecker : public RefCounted {
-	GDCLASS(AssetLibraryUpdateChecker, RefCounted)
+class _DebugDraw3DAssetLibraryUpdateChecker : public RefCounted {
+	GDCLASS(_DebugDraw3DAssetLibraryUpdateChecker, RefCounted)
 
 private:
 	std::thread http_thread;
 	bool is_thread_closing = false;
-	Ref<HTTPClient> http = nullptr;
 	int addon_id;
 	String addon_name;
 	String repository_name;
@@ -34,11 +33,11 @@ protected:
 	static void _bind_methods();
 
 public:
-	void request_completed(PackedByteArray body);
+	void request_completed(String body);
 	void init();
 
-	AssetLibraryUpdateChecker();
-	~AssetLibraryUpdateChecker();
+	_DebugDraw3DAssetLibraryUpdateChecker();
+	~_DebugDraw3DAssetLibraryUpdateChecker();
 };
 
 #endif

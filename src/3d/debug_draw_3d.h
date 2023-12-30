@@ -59,15 +59,15 @@ enum class ConvertableInstanceType : char;
  * It is worth mentioning that physics ticks may not be called every frame or may be called several times in one frame.
  * So if you want to avoid multiple identical `draw_` calls, you can call `draw_` methods in `_process` or use such a check:
  * ```python
- * var physics_frame_called := false
+ * var physics_tick_processed := false
  * func _process(delta: float) -> void:
  * 	# Reset after rendering frame
- * 	physics_frame_called = false
+ * 	physics_tick_processed = false
  * 	# some logic
  *
  * func _physics_process(delta: float) -> void:
- * 	if not physics_frame_called:
- * 		physics_frame_called = true
+ * 	if not physics_tick_processed:
+ * 		physics_tick_processed = true
  * 		# some DD3D logic
  * ```
  */

@@ -3,10 +3,9 @@
 import os
 import json
 from patches import unity_tools
-from pathlib import Path
 
 lib_name = "dd3d"
-output_dir = Path("addons") / "debug_draw_3d" / "libs"
+output_dir = os.path.join("addons", "debug_draw_3d", "libs")
 src_folder = "src"
 
 
@@ -15,6 +14,7 @@ def setup_options(env, arguments, gen_help):
 
     opts = Variables([], arguments)
 
+    opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
@@ -30,6 +30,15 @@ def setup_defines_and_flags(env, src_out):
     if "release" in env["target"] and not env["force_enabled_dd3d"]:
         env.Append(CPPDEFINES=["DISABLE_DEBUG_RENDERING"])
 
+    if env["telemetry_enabled"]:
+        tele_src = "src/editor/my_telemetry_modules/GDExtension/usage_time_reporter.cpp"
+        if os.path.exists(tele_src):
+            env.Append(CPPDEFINES=["TELEMETRY_ENABLED"])
+            src_out.append(tele_src)
+            print("Compiling with telemetry support!")
+        else:
+            print("No telemetry source file found. telemetry_enabled will be ignored!")
+
     if env["lto"]:
         if env.get("is_msvc", False):
             env.AppendUnique(CCFLAGS=["/GL"])
@@ -40,11 +49,9 @@ def setup_defines_and_flags(env, src_out):
             env.AppendUnique(LINKFLAGS=["-flto"])
 
     if env["tracy_enabled"]:
-        env.Append(CPPDEFINES=["TRACY_ENABLE"])
-        env.Append(CPPDEFINES=["TRACY_ON_DEMAND"])
-        env.Append(CPPDEFINES=["TRACY_DELAYED_INIT"])
-        env.Append(CPPDEFINES=["TRACY_MANUAL_LIFETIME"])
+        env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
         src_out.append("src/thirdparty/tracy/public/TracyClient.cpp")
+    print()
 
 
 # A utility function for getting the name of an unblocked file
@@ -195,7 +202,7 @@ def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_ou
 
     gen_dir = "gen/"
     out_dir = src_folder + "/" + gen_dir
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
+    os.makedirs(out_dir, exist_ok=True)
 
     cpp_name = output_no_ext + ".cpp"
     h_name = output_no_ext + ".h"

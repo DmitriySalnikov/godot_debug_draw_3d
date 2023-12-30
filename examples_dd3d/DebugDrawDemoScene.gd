@@ -36,16 +36,18 @@ extends Node3D
 
 var button_presses := {}
 var frame_rendered := false
-var phys_frame_called := false
+var physics_tick_processed := false
 
 var timer_1 := 0.0
 var timer_2 := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
+var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_version_info()["minor"] >= 2
+
 
 func _process(delta) -> void:
-	phys_frame_called = false
+	physics_tick_processed = false
 	if !update_in_physics:
 		main_update(delta)
 		_update_timers(delta)
@@ -55,8 +57,8 @@ func _process(delta) -> void:
 ## there is an additional check to ensure that a new frame has been drawn before updating the data.
 func _physics_process(delta: float) -> void:
 	if update_in_physics:
-		if !phys_frame_called:
-			phys_frame_called = true
+		if !physics_tick_processed:
+			physics_tick_processed = true
 			main_update(delta)
 		_update_timers(delta)
 	
@@ -386,8 +388,9 @@ func _more_tests():
 		var plane = Plane(normal, xf.origin.dot(normal))
 		
 		var vp: Viewport = get_viewport()
-		if Engine.is_editor_hint() and Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0):
-			vp = Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0)
+		if is_4_2_and_higher:
+			if Engine.is_editor_hint() and Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0):
+				vp = Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0)
 		
 		var cam = vp.get_camera_3d()
 		if cam:
@@ -395,10 +398,11 @@ func _more_tests():
 			var intersect = plane.intersects_ray(cam.global_position, dir)
 			
 			DebugDraw3D.draw_plane(plane, Color.CORAL * Color(1,1,1, 0.4), pl_node.global_position)
-			if intersect and intersect.distance_to(pl_node.global_position) < _s11.get_plane_size() * 0.5:
-				# Need to test different colors on both sides of the plane
-				var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
-				DebugDraw3D.draw_sphere(intersect, 0.3, col)
+			if is_4_2_and_higher:
+				if intersect and intersect.distance_to(pl_node.global_position) < _s11.get_plane_size() * 0.5:
+					# Need to test different colors on both sides of the plane
+					var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
+					DebugDraw3D.draw_sphere(intersect, 0.3, col)
 
 
 func _draw_array_of_boxes():

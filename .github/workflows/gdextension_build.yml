@@ -6,6 +6,10 @@ on:
     paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
   workflow_dispatch:
     inputs:
+      production_build:
+        description: Production build
+        default: true
+        type: boolean
       use_cache:
         description: Use Cache
         default: true
@@ -22,6 +26,7 @@ permissions:
 env:
   SCONS_CACHE: ${{github.workspace}}/.scons-cache/
   USE_CACHE: ${{!format('{0}', inputs.use_cache) && 'true' || format('{0}', inputs.use_cache)}} # Default true
+  PRODUCTION_BUILD: ${{!format('{0}', inputs.production_build) && 'false' || format('{0}', inputs.production_build)}} # Default false
   OUTPUT_LIBS_PATH: bin
   FORCE_DISABLE_UNITY: yes
   GH_TOKEN: ${{ github.token }}
@@ -54,6 +59,7 @@ jobs:
           additional: lto=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
+          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
@@ -84,6 +90,7 @@ jobs:
           additional: lto=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
+          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
@@ -114,6 +121,7 @@ jobs:
           additional: lto=yes macos_deployment_target=10.14
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
+          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
@@ -247,6 +255,6 @@ jobs:
       - name: Upload GDExtension
         uses: actions/upload-artifact@v4
         with:
-          name: .gdextension_libs
+          name: ${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}
           retention-days: 7
           path: extracted_files/*
