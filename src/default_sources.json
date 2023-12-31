@@ -5,6 +5,7 @@
   "2d/grouped_text.cpp",
   "2d/stats_2d.cpp",
   "3d/config_3d.cpp",
+  "3d/config_scope_3d.cpp",
   "3d/debug_draw_3d.cpp",
   "3d/debug_geometry_container.cpp",
   "3d/geometry_generators.cpp",

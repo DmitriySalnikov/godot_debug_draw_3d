@@ -6,21 +6,36 @@ inputs:
     required: true
   target:
     description: Compilation target (editor|template_release|template_debug)
+    required: true
     default: "release"
   arch:
     description: Arch (universal|x86_32|x86_64|arm32|arm64|rv64|ppc32|ppc64|wasm32)
+    required: true
     default: ""
+  artifact:
+    description: Artifact name. This name will be used for caching.
+    required: true
+    default: "bin"
   additional:
     description: Any additional arguments
     default: ""
-  artifact:
-    description: Artifact name
-    default: "bin"
+  additional_enabled_dd3d:
+    description: Use force_enabled_dd3d if possible
+    default: "true"
   output_libs_path:
     description: Path to compiled libraries
+    required: true
     default: "bin"
+  use_cache:
+    description: Use cache
+    default: "true"
+  token:
+    description: Secrets token
+  telemetry_version:
+    description: Telemetry version
+    default: 2fcd3ec9e528d1cd26978d0d27e9c6a3b2006270
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Get godot-cpp SHA
       shell: bash
@@ -28,15 +43,27 @@ runs:
       run: |
         echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
 
+    - name: Checkout telemetry repo
+      uses: actions/checkout@v4
+      id: checkout_tele_repo
+      if: ${{env.PRODUCTION_BUILD == 'true' && inputs.target == 'editor'}}
+      continue-on-error: true
+      with:
+        repository: ${{github.repository_owner}}/my_telemetry_modules
+        token: ${{inputs.token}}
+        ref: ${{inputs.telemetry_version}}
+        path: src/editor/my_telemetry_modules
+
     - name: Restore .scons_cache directory
+      if: inputs.use_cache != 'false'
+      id: restore_scons_cache
       uses: actions/cache/restore@v3
       with:
         path: ${{env.SCONS_CACHE}}
-        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
+        key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
         restore-keys: |
-          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
-          ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}
-      continue-on-error: true
+          ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}
+          ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}
 
     - name: Set up Python 3.x
       uses: actions/setup-python@v4
@@ -56,11 +83,11 @@ runs:
 
     - name: Linux dependencies
       shell: bash
-      if: runner.os == 'Linux'
+      if: (runner.os == 'Linux') && (inputs.platform == 'linux')
       run: |
-        sudo apt-get update
+        sudo apt update
         if [[ "${{inputs.arch}}" == *"32" ]];then
-          sudo apt-get install gcc-multilib g++-multilib
+          sudo apt install gcc-multilib g++-multilib
         fi
 
     - name: Compilation
@@ -72,8 +99,14 @@ runs:
         git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
         git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
         cd ..
-        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}
-        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.platform}}" != "android" ]; then
+
+        telemetry_args=""
+        if [ "${{env.PRODUCTION_BUILD}}" == "true" ] && [ "${{inputs.target}}" == "editor" ] && [ "${{steps.checkout_tele_repo.conclusion}}" == "success" ]; then
+          telemetry_args="telemetry_enabled=yes"
+        fi
+
+        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}} $telemetry_args
+        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.additional_enabled_dd3d}}" == "true" ]; then
           scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} force_enabled_dd3d=yes ${{inputs.additional}}
         fi
         echo "::endgroup::"
@@ -95,15 +128,15 @@ runs:
         Remove-Item ${{inputs.output_libs_path}}/* -Recurse -Include *.exp,*.lib,*.pdb -Force
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{inputs.artifact}}
         retention-days: 7
         path: ${{inputs.output_libs_path}}/*
 
     - name: Save .scons_cache directory
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.use_cache != 'false'}}
       uses: actions/cache/save@v3
       with:
         path: ${{env.SCONS_CACHE}}
-        key: ${{github.job}}-${{inputs.arch}}_${{inputs.target}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
-      continue-on-error: true
+        key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}

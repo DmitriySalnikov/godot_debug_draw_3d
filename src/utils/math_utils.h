@@ -2,18 +2,17 @@
 
 #include "compiler.h"
 
-GODOT_WARNING_DISABLE()
-#include <godot_cpp/godot.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
-GODOT_WARNING_RESTORE()
-
 #include <vector>
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/variant/builtin_types.hpp>
+GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class MathUtils {
 
 public:
+	static const float Sqrt2;
 	static const float CubeRadiusForSphere;
 	static const float CylinderRadiusForSphere;
 	static const float AxisRadiusForSphere;

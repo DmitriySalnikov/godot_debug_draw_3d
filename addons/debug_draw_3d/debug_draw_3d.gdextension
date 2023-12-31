@@ -27,7 +27,7 @@ macos.template_release = { }
 windows.template_release.x86_64 = { }
 linux.template_release.x86_64 = { }
 
-web.template_release.wasm32 = {}
+web.template_release.wasm32 = { }
 
 android.template_release.arm32 = { }
 android.template_release.arm64 = { }
@@ -40,7 +40,7 @@ macos.template_release.forced_dd3d = { }
 windows.template_release.x86_64.forced_dd3d = { }
 linux.template_release.x86_64.forced_dd3d = { }
 
-web.template_release.wasm32.forced_dd3d = {}
+web.template_release.wasm32.forced_dd3d = { }
 
 [libraries]
 

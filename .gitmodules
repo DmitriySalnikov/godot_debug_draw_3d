@@ -3,3 +3,9 @@
 	url = https://github.com/godotengine/godot-cpp.git
 	branch = 3.4
 	
+[submodule "src/thirdparty/tracy"]
+	path = src/thirdparty/tracy
+	url = https://github.com/wolfpld/tracy.git
+[submodule "docs/doxygen_resources/doxygen-awesome-css"]
+	path = docs/doxygen_resources/doxygen-awesome-css
+	url = https://github.com/jothepro/doxygen-awesome-css.git

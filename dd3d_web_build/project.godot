@@ -12,8 +12,26 @@ config_version=5
 
 config/name="Debug Drawing Utility for Godot"
 run/main_scene="res://examples_dd3d/DebugDrawDemoScene.tscn"
-config/features=PackedStringArray("4.1", "GL Compatibility")
-config/icon="res://icon.svg"
+config/features=PackedStringArray("4.2", "GL Compatibility")
+config/icon="res://icon.png"
+config/no_csharp_support=true
+
+[audio]
+
+buses/default_bus_layout="res://examples_dd3d/VisualizerAudioBus.tres"
+
+[dotnet]
+
+project/assembly_name="Debug Drawing Utility for Godot"
+
+[gui]
+
+timers/tooltip_delay_sec=0.2
+
+[physics]
+
+common/physics_ticks_per_second=15
+common/max_physics_steps_per_frame=2
 
 [rendering]
 

@@ -3,7 +3,16 @@
   <ItemGroup>
     <ClCompile Include="debug_draw_manager.cpp" />
     <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="3d\config_scope_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="thirdparty\tracy\public\TracyClient.cpp">
+      <Filter>thirdparty\tracy\public</Filter>
+    </ClCompile>
     <ClCompile Include="gen\editor_resources.gen.cpp">
+      <Filter>gen</Filter>
+    </ClCompile>
+    <ClCompile Include="gen\shared_resources.gen.cpp">
       <Filter>gen</Filter>
     </ClCompile>
     <ClCompile Include="editor\asset_library_update_checker.cpp">
@@ -61,7 +70,16 @@
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="3d\config_scope_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="thirdparty\tracy\public\tracy\Tracy.hpp">
+      <Filter>thirdparty\tracy\public\tracy</Filter>
+    </ClInclude>
     <ClInclude Include="gen\editor_resources.gen.h">
+      <Filter>gen</Filter>
+    </ClInclude>
+    <ClInclude Include="gen\shared_resources.gen.h">
       <Filter>gen</Filter>
     </ClInclude>
     <ClInclude Include="editor\asset_library_update_checker.h">
@@ -94,6 +112,9 @@
     <ClInclude Include="utils\math_utils.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="utils\profiler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="utils\utils.h">
       <Filter>utils</Filter>
     </ClInclude>
@@ -121,6 +142,9 @@
     <ClInclude Include="common\colors.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="common\i_scope_storage.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debug_strings.natvis" />
@@ -129,23 +153,35 @@
     <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>
+    <Filter Include="3d">
+      <UniqueIdentifier>{41bf4d2b-e2a7-4109-bad0-948fa34741d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{d2dca650-da5d-42d5-a533-a4cb3529c4e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy">
+      <UniqueIdentifier>{efda6ef3-f051-4442-bc2f-6c63cca454d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public">
+      <UniqueIdentifier>{bc54e771-22f9-483b-a35c-5a48ee64eb21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public\tracy">
+      <UniqueIdentifier>{36333054-a1bd-4649-9207-8d8bce0b984a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="gen">
-      <UniqueIdentifier>{1a8048be-fc09-4529-a762-b7023d364296}</UniqueIdentifier>
+      <UniqueIdentifier>{aea0059b-e5e1-4da7-aeb4-ac472710074d}</UniqueIdentifier>
     </Filter>
     <Filter Include="editor">
-      <UniqueIdentifier>{19bc93ad-656f-449d-a72e-981f5848716d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="3d">
-      <UniqueIdentifier>{c39ccef7-9ef3-4fbb-9844-d5e5b2e97b51}</UniqueIdentifier>
+      <UniqueIdentifier>{10105c02-b1e0-40f4-9047-8ae4a2fa42f6}</UniqueIdentifier>
     </Filter>
     <Filter Include="utils">
-      <UniqueIdentifier>{59428385-d293-452e-948a-6e1ac5bab0a4}</UniqueIdentifier>
+      <UniqueIdentifier>{3404b05e-f966-44bc-af61-f57bc56b8a05}</UniqueIdentifier>
     </Filter>
     <Filter Include="2d">
-      <UniqueIdentifier>{abfb64ff-0ae9-4a48-a301-3cbb051264d2}</UniqueIdentifier>
+      <UniqueIdentifier>{965d83d6-bdd9-46a6-8730-dff1da56df4b}</UniqueIdentifier>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{f8a128a9-229e-4586-aed3-b0f259bfe7a9}</UniqueIdentifier>
+      <UniqueIdentifier>{7d8a069a-6586-404e-94cb-6d3870d25eb5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

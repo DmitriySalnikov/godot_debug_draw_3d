@@ -10,26 +10,24 @@
 GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
-#include <limits.h>
-
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw2D *DebugDraw2D::singleton = nullptr;
+const char *DebugDraw2D::s_marked_dirty = "marked_dirty";
 
 void DebugDraw2D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw2D
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(_on_canvas_marked_dirty)), &DebugDraw2D::_on_canvas_marked_dirty);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_on_canvas_item_draw)), &DebugDraw2D::_on_canvas_item_draw);
 
 #pragma region Parameters
 
-	REG_PROP(empty_color, Variant::COLOR);
-	REG_PROP_BOOL(debug_enabled);
+	REG_PROP(empty_color, Variant::COLOR, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
+	REG_PROP_BOOL(debug_enabled, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(config, Variant::OBJECT);
+	REG_PROP(config, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
-	REG_PROP(custom_canvas, Variant::OBJECT);
+	REG_PROP(custom_canvas, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
 #pragma endregion
 #undef REG_CLASS_NAME
@@ -40,6 +38,7 @@ void DebugDraw2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(begin_text_group), "group_title", "group_priority", "group_color", "show_title", "title_size", "text_size"), &DebugDraw2D::begin_text_group, 0, Colors::empty_color, true, -1, -1);
 	ClassDB::bind_method(D_METHOD(NAMEOF(end_text_group)), &DebugDraw2D::end_text_group);
 	ClassDB::bind_method(D_METHOD(NAMEOF(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw2D::set_text, Variant(), 0, Colors::empty_color, -1.0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(clear_texts)), &DebugDraw2D::clear_texts);
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(create_graph), "title"), &DebugDraw2D::create_graph);
 	ClassDB::bind_method(D_METHOD(NAMEOF(create_fps_graph), "title"), &DebugDraw2D::create_fps_graph);
@@ -52,6 +51,8 @@ void DebugDraw2D::_bind_methods() {
 #pragma endregion // Draw Functions
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(get_render_stats)), &DebugDraw2D::get_render_stats);
+
+	ADD_SIGNAL(MethodInfo(s_marked_dirty));
 }
 
 DebugDraw2D::DebugDraw2D() {
@@ -59,8 +60,11 @@ DebugDraw2D::DebugDraw2D() {
 }
 
 void DebugDraw2D::init(DebugDrawManager *root) {
+	ZoneScoped;
 	root_node = root;
+	call_canvas_item_draw_cache = Callable(this, NAMEOF(_on_canvas_item_draw));
 	set_config(nullptr);
+	stats_2d.instantiate();
 
 #ifndef DISABLE_DEBUG_RENDERING
 	grouped_text = std::make_unique<GroupedText>();
@@ -70,15 +74,16 @@ void DebugDraw2D::init(DebugDrawManager *root) {
 }
 
 DebugDraw2D::~DebugDraw2D() {
+	ZoneScoped;
 	UNASSIGN_SINGLETON(DebugDraw2D);
 
 #ifndef DISABLE_DEBUG_RENDERING
 	data_graphs.reset();
 	grouped_text.reset();
 
-	if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache))
 		default_canvas->queue_redraw();
-	if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
+	if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache))
 		custom_canvas->queue_redraw();
 
 	if (!IS_EDITOR_HINT()) {
@@ -89,10 +94,30 @@ DebugDraw2D::~DebugDraw2D() {
 	}
 #endif
 
+	if (config.is_valid()) {
+		config->unregister_config();
+	}
+
 	root_node = nullptr;
 }
 
+#ifdef TRACY_ENABLE
+static bool DebugDraw2D_frame_mark_2d_started = false;
+#endif
+
 void DebugDraw2D::process(double delta) {
+	ZoneScoped;
+
+#ifdef TRACY_ENABLE
+	if (DebugDraw2D_frame_mark_2d_started) {
+		FrameMarkEnd("2D Draw");
+		FrameMark;
+	}
+	FrameMarkStart("2D Draw");
+
+	DebugDraw2D_frame_mark_2d_started = true;
+#endif
+
 #ifndef DISABLE_DEBUG_RENDERING
 	// Clean texts
 	grouped_text->cleanup_text(delta);
@@ -101,38 +126,117 @@ void DebugDraw2D::process(double delta) {
 	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
-	_finish_frame_and_update();
+	_finish_frame_and_update(false);
+#endif
+}
+
+void DebugDraw2D::physics_process_start(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	FrameMarkStart("2D Physics Step");
+#endif
+}
+
+void DebugDraw2D::physics_process_end(double delta) {
+	ZoneScoped;
+#ifndef DISABLE_DEBUG_RENDERING
+	// TODO implement
+	FrameMarkEnd("2D Physics Step");
 #endif
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
-void DebugDraw2D::_finish_frame_and_update() {
+void DebugDraw2D::_finish_frame_and_update(bool avoid_casts) {
+	ZoneScoped;
 	if (_canvas_need_update) {
-		if (!UtilityFunctions::is_instance_valid(custom_canvas) && UtilityFunctions::is_instance_valid(default_canvas))
-			default_canvas->queue_redraw();
-		else if (UtilityFunctions::is_instance_valid(custom_canvas))
+		if (!avoid_casts && UtilityFunctions::is_instance_valid(custom_canvas)) {
 			custom_canvas->queue_redraw();
+		} else if (UtilityFunctions::is_instance_valid(default_canvas)) {
+			default_canvas->queue_redraw();
+		} else {
+#ifdef TRACY_ENABLE
+			if (DebugDraw2D_frame_mark_2d_started) {
+				FrameMarkEnd("2D Draw");
+				DebugDraw2D_frame_mark_2d_started = false;
+			}
+#endif
+		}
 
 		// reset some values
 		_canvas_need_update = false;
-		grouped_text->end_text_group();
+		if (grouped_text)
+			grouped_text->end_text_group();
+	} else {
+#ifdef TRACY_ENABLE
+		if (DebugDraw2D_frame_mark_2d_started) {
+			FrameMarkEnd("2D Draw");
+			DebugDraw2D_frame_mark_2d_started = false;
+		}
+#endif
+	}
+}
+
+void DebugDraw2D::_clear_all_internal(bool avoid_casts) {
+	if (grouped_text)
+		grouped_text->clear_groups();
+	if (data_graphs)
+		data_graphs->clear_graphs();
+	mark_canvas_dirty();
+	_finish_frame_and_update(avoid_casts);
+
+	_set_custom_canvas_internal(nullptr, avoid_casts);
+}
+
+void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts) {
+	static std::function<Callable()> create_default = [this]() {
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas));
+	};
+	static std::function<Callable()> create_custom = [this]() {
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(custom_canvas));
+	};
+
+	if (!_canvas) {
+		Utils::connect_safe(default_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_default);
+		if (!avoid_casts) {
+			if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				custom_canvas->queue_redraw();
+			}
+		}
+		custom_canvas = _canvas;
+	} else {
+		if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache)) {
+			default_canvas->queue_redraw();
+		}
+		if (!avoid_casts) {
+			if (custom_canvas != _canvas && Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				custom_canvas->queue_redraw();
+			}
+
+			custom_canvas = _canvas;
+			Utils::connect_safe(custom_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
+		} else {
+			custom_canvas = _canvas;
+		}
 	}
 }
 #endif
 
-void DebugDraw2D::_on_canvas_marked_dirty() {
-	mark_canvas_dirty();
-}
-
 void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
 	data_graphs->draw(ci, _font, vp_size, ci->get_process_delta_time());
-#else
-	return;
 #endif
+
+#ifdef TRACY_ENABLE
+	if (DebugDraw2D_frame_mark_2d_started) {
+		FrameMarkEnd("2D Draw");
+		DebugDraw2D_frame_mark_2d_started = false;
+	}
+#endif
+	FrameMark;
 }
 
 bool DebugDraw2D::_is_enabled_override() const {
@@ -140,7 +244,14 @@ bool DebugDraw2D::_is_enabled_override() const {
 }
 
 void DebugDraw2D::mark_canvas_dirty() {
+	if (!_canvas_need_update)
+		emit_signal(s_marked_dirty);
+
 	_canvas_need_update = true;
+}
+
+bool DebugDraw2D::is_drawing_frame() const {
+	return _is_drawing_frame;
 }
 
 Node *DebugDraw2D::get_root_node() {
@@ -168,42 +279,39 @@ bool DebugDraw2D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw2D::set_config(Ref<DebugDrawConfig2D> _cfg) {
+void DebugDraw2D::set_config(Ref<DebugDraw2DConfig> _cfg) {
+	ZoneScoped;
 	if (_cfg.is_valid()) {
 #ifndef DISABLE_DEBUG_RENDERING
-		Utils::disconnect_safe(config, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
+		config->unregister_config();
 #endif
 
 		config = _cfg;
 	} else {
-		config = Ref<DebugDrawConfig2D>();
+		config = Ref<DebugDraw2DConfig>();
 		config.instantiate();
+
+#ifndef DISABLE_DEBUG_RENDERING
+		config->register_config([this]() { mark_canvas_dirty(); });
+#endif
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING
 	mark_canvas_dirty();
-	Utils::connect_safe(config, DebugDrawConfig2D::s_marked_dirty, Callable(this, NAMEOF(_on_canvas_marked_dirty)));
 #endif
 }
 
-Ref<DebugDrawConfig2D> DebugDraw2D::get_config() const {
+Ref<DebugDraw2DConfig> DebugDraw2D::get_config() const {
 	return config;
 }
 
 void DebugDraw2D::set_custom_canvas(Control *_canvas) {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!_canvas) {
-		Utils::connect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas)));
-		if (Utils::disconnect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
-			custom_canvas->queue_redraw();
-	} else {
-		if (Utils::disconnect_safe(default_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw))))
-			default_canvas->queue_redraw();
-		Utils::connect_safe(custom_canvas, "draw", Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(_canvas)));
-	}
-#endif
-
+	_set_custom_canvas_internal(_canvas, false);
+#else
 	custom_canvas = _canvas;
+#endif
 }
 
 Control *DebugDraw2D::get_custom_canvas() const {
@@ -214,32 +322,24 @@ Control *DebugDraw2D::get_custom_canvas() const {
 
 #pragma region Draw Functions
 
-Ref<DebugDrawStats2D> DebugDraw2D::get_render_stats() {
+Ref<DebugDraw2DStats> DebugDraw2D::get_render_stats() {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	Ref<DebugDrawStats2D> stats;
-	stats.instantiate();
-	stats->setup(
+	stats_2d->setup(
 			grouped_text->get_text_group_count(),
 			grouped_text->get_text_line_total_count(),
 
 			data_graphs->get_graphs_enabled(),
 			data_graphs->get_graphs_total());
-
-	return stats;
-#else
-	return Ref<DebugDrawStats2D>();
 #endif
+
+	return stats_2d;
 }
 
 void DebugDraw2D::clear_all() {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!grouped_text || !data_graphs) return;
-	grouped_text->clear_text();
-	data_graphs->clear_graphs();
-	mark_canvas_dirty();
-	_finish_frame_and_update();
-#else
-	return;
+	_clear_all_internal(false);
 #endif
 }
 
@@ -270,45 +370,60 @@ void DebugDraw2D::clear_all() {
 #endif
 
 void DebugDraw2D::begin_text_group(String group_title, int group_priority, Color group_color, bool show_title, int title_size, int text_size) {
+	ZoneScoped;
 	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title, title_size, text_size);
 }
 
 void DebugDraw2D::end_text_group() {
+	ZoneScoped;
 	CALL_TO_2D(grouped_text, end_text_group);
 }
 
 void DebugDraw2D::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
+	ZoneScoped;
 	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
+}
+
+void DebugDraw2D::clear_texts() {
+	ZoneScoped;
+	FORCE_CALL_TO_2D(grouped_text, clear_groups);
 }
 
 #pragma endregion // Text
 #pragma region Graphs
 
-Ref<DebugDrawGraph> DebugDraw2D::create_graph(const StringName &title) {
-	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDrawGraph>(), title);
+Ref<DebugDraw2DGraph> DebugDraw2D::create_graph(const StringName &title) {
+	ZoneScoped;
+	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
-Ref<DebugDrawGraph> DebugDraw2D::create_fps_graph(const StringName &title) {
-	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDrawGraph>(), title);
+Ref<DebugDraw2DGraph> DebugDraw2D::create_fps_graph(const StringName &title) {
+	ZoneScoped;
+	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
 void DebugDraw2D::graph_update_data(const StringName &title, real_t data) {
+	ZoneScoped;
 	CALL_TO_2D(data_graphs, graph_update_data, title, data);
 }
 
 void DebugDraw2D::remove_graph(const StringName &title) {
+	ZoneScoped;
 	FORCE_CALL_TO_2D(data_graphs, remove_graph, title);
 }
 
 void DebugDraw2D::clear_graphs() {
+	ZoneScoped;
 	FORCE_CALL_TO_2D(data_graphs, clear_graphs);
 }
 
-Ref<DebugDrawGraph> DebugDraw2D::get_graph(const StringName &title) {
-	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDrawGraph>(), title);
+Ref<DebugDraw2DGraph> DebugDraw2D::get_graph(const StringName &title) {
+	ZoneScoped;
+	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDraw2DGraph>(), title);
 }
 
 PackedStringArray DebugDraw2D::get_graph_names() {
+	ZoneScoped;
 	FORCE_CALL_TO_2D_RET(data_graphs, get_graph_names, PackedStringArray());
 }
 

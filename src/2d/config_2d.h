@@ -3,17 +3,27 @@
 #include "common/colors.h"
 #include "utils/compiler.h"
 
+#include <functional>
+
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
-class DebugDrawConfig2D : public RefCounted {
-	GDCLASS(DebugDrawConfig2D, RefCounted)
+/**
+ * @brief
+ * This is a class for storing part of the DebugDraw2D configuration.
+ *
+ * You can use DebugDraw2D.get_config to get the current instance of the configuration.
+ */
+class DebugDraw2DConfig : public RefCounted {
+	GDCLASS(DebugDraw2DConfig, RefCounted)
 
 public:
+	/**
+	 * Available positions for placing text blocks.
+	 */
 	enum BlockPosition : int {
 		POSITION_LEFT_TOP = 0,
 		POSITION_RIGHT_TOP = 1,
@@ -21,85 +31,95 @@ public:
 		POSITION_RIGHT_BOTTOM = 3,
 	};
 
-	// TEST C# API GENERATOR
-#ifdef DEV_ENABLED
-	// Test regular arguments
-	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath){};
-	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
-	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
-	void api_test4(RID, Callable, Signal, Dictionary, Array){};
-	void api_test5(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
-	// Test with default arguments
-	Variant api_test6(Object *, Variant, Variant, bool, int, BlockPosition, float, String, StringName, NodePath) { return "test var"; };
-	Color api_test7(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i) { return Color(4, 3, 2, 1); };
-	BlockPosition api_test8(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection) { return (BlockPosition)1; };
-	Object *api_test9(RID, Callable, Signal, Dictionary, Array) { return this; };
-	void api_test10(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
-#endif
-
 private:
 #pragma region Exposed Parameter Values
 
+	/// @private
 	void mark_canvas_dirty();
-	// 2D
-	/// Base offset for all graphs
+
+	// Graphs
 	Vector2i graphs_base_offset = Vector2i(8, 8);
 
 	// TEXT
-	/// Position of text block
 	BlockPosition text_block_position = BlockPosition::POSITION_LEFT_TOP;
-	/// Offset from the corner selected in 'text_block_position'
 	Vector2i text_block_offset = Vector2i(8, 8);
-	/// Text padding for each line
 	Vector2i text_padding = Vector2i(3, 1);
-	/// How long text remain shown after being invoked.
 	real_t text_default_duration = 0.5f;
-	/// Default text size
 	int text_default_size = 12;
-	/// Default color of the text
 	Color text_foreground_color = Colors::white;
-	/// Background color of the text
 	Color text_background_color = Colors::gray_bg;
-	/// Custom text Font
 	Ref<Font> text_custom_font = nullptr;
 
 #pragma endregion // Exposed Parameter Values
 
+	std::function<void()> mark_dirty_func = nullptr;
+
 protected:
+	/// @private
 	static void _bind_methods();
 
 public:
-	const static char *s_marked_dirty;
+	DebugDraw2DConfig();
+	~DebugDraw2DConfig();
 
-	DebugDrawConfig2D();
-	~DebugDrawConfig2D();
+	/// @private
+	void register_config(std::function<void()> p_mark_dirty);
+	/// @private
+	void unregister_config();
 
+	/**
+	 * Base offset for all graphs
+	 */
 	void set_graphs_base_offset(const Vector2i &_offset);
 	Vector2i get_graphs_base_offset() const;
 
+	/**
+	 * Position of the text block
+	 */
 	void set_text_block_position(BlockPosition _position);
 	BlockPosition get_text_block_position() const;
 
+	/**
+	 * Offset from the corner selected in 'set_text_block_position'
+	 */
 	void set_text_block_offset(const Vector2i &_offset);
 	Vector2i get_text_block_offset() const;
 
+	/**
+	 * Text padding for each line
+	 */
 	void set_text_padding(const Vector2i &_padding);
 	Vector2i get_text_padding() const;
 
+	/**
+	 * How long the text remains visible after creation.
+	 */
 	void set_text_default_duration(const real_t &_duration);
 	real_t get_text_default_duration() const;
 
+	/**
+	 * Default text size
+	 */
 	void set_text_default_size(const int &_size);
 	int get_text_default_size() const;
 
+	/**
+	 * Default color of the text
+	 */
 	void set_text_foreground_color(const Color &_new_color);
 	Color get_text_foreground_color() const;
 
+	/**
+	 * Background color of the text
+	 */
 	void set_text_background_color(const Color &_new_color);
 	Color get_text_background_color() const;
 
+	/**
+	 * Custom text Font
+	 */
 	void set_text_custom_font(const Ref<Font> &_custom_font);
 	Ref<Font> get_text_custom_font() const;
 };
 
-VARIANT_ENUM_CAST(DebugDrawConfig2D::BlockPosition);
+VARIANT_ENUM_CAST(DebugDraw2DConfig::BlockPosition);

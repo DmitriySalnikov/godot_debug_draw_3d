@@ -4,12 +4,27 @@
 
 using namespace godot;
 
+const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
+const godot::Vector3 Vector3_INF = godot::Vector3(INFINITY, INFINITY, INFINITY);
+const godot::Vector3 Vector3_ONE = godot::Vector3(1, 1, 1);
+const godot::Vector3 Vector3_UP_OF_S = godot::Vector3(1, 1, 0).normalized();
+const godot::Vector3 Vector3_UP_OF = godot::Vector3(1, 1, 1).normalized();
+const godot::Vector3 Vector3_UP = godot::Vector3(0, 1, 0);
+const godot::Vector3 Vector3_DOWN = godot::Vector3(0, -1, 0);
+const godot::Vector3 Vector3_LEFT = godot::Vector3(-1, 0, 0);
+const godot::Vector3 Vector3_RIGHT = godot::Vector3(1, 0, 0);
+const godot::Vector3 Vector3_BACK = godot::Vector3(0, 0, 1);
+const godot::Vector3 Vector3_FORWARD = godot::Vector3(0, 0, -1);
+
+const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
+
 #if DEBUG_ENABLED
 std::queue<Utils::LogData> Utils::log_buffer;
 #endif
 const char *Utils::root_settings_section = "debug_draw_3d/settings/";
 
-void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
+void Utils::_logv(bool p_err, bool p_force_print, const char *p_format, ...) {
+	ZoneScoped;
 #if DEBUG_ENABLED
 
 	const int static_buf_size = 512;
@@ -17,7 +32,7 @@ void Utils::logv(const char *p_format, bool p_err, bool p_force_print, ...) {
 	char *buf = static_buf;
 
 	va_list list_copy;
-	va_start(list_copy, (const char *)p_force_print);
+	va_start(list_copy, p_format);
 
 	va_list p_list;
 	va_copy(p_list, list_copy);
@@ -60,16 +75,16 @@ void Utils::print_logs() {
 		auto &l = log_buffer.front();
 		if (l.repeat > 1) {
 			if (l.is_error) {
-				fprintf(stderr, "[x%d] %s", l.repeat, l.text.c_str());
+				fprintf(stderr, "[Error] [x%d] %s", l.repeat, l.text.c_str());
 			} else {
-				printf("[x%d] %s", l.repeat, l.text.c_str());
+				printf("[Info] [x%d] %s", l.repeat, l.text.c_str());
 				// fflush(stdout);
 			}
 		} else {
 			if (l.is_error) {
-				fprintf(stderr, l.text.c_str());
+				fprintf(stderr, "[Error] %s", l.text.c_str());
 			} else {
-				printf(l.text.c_str());
+				printf("[Info] %s", l.text.c_str());
 				// fflush(stdout);
 			}
 		}
@@ -80,6 +95,7 @@ void Utils::print_logs() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 Node *Utils::find_node_by_class(Node *start_node, const String &class_name) {
+	ZoneScoped;
 	for (int i = 0; i < start_node->get_child_count(); i++) {
 		auto c = start_node->get_child(i);
 		if (c->get_class() == class_name)
@@ -92,6 +108,7 @@ Node *Utils::find_node_by_class(Node *start_node, const String &class_name) {
 }
 
 String Utils::get_scene_tree_as_string(Node *start) {
+	ZoneScoped;
 	String output = "";
 	std::function<void(Node *, int)> get_node_tree;
 	get_node_tree = [&output, &get_node_tree](Node *node, int depth) {

@@ -26,6 +26,7 @@ GenerateCSharpBindingsPlugin::IndentGuard::~IndentGuard() {
 }
 
 bool GenerateCSharpBindingsPlugin::is_need_to_update() {
+	ZoneScoped;
 	if (!ClassDB::class_exists("CSharpScript"))
 		return false;
 
@@ -44,8 +45,9 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 }
 
 void GenerateCSharpBindingsPlugin::generate() {
+	ZoneScoped;
 	const String out_path = output_directory.path_join(api_file_name);
-	const String out_log_path = output_directory.path_join("log.txt");
+	const String out_log_path = output_directory.path_join(log_file_name);
 
 	ERR_FAIL_COND(DirAccess::make_dir_recursive_absolute(output_directory) != Error::OK);
 	auto dir = DirAccess::open(output_directory);
@@ -57,6 +59,16 @@ void GenerateCSharpBindingsPlugin::generate() {
 		if ((f.begins_with("Deb") || f.begins_with("log")) && f.ends_with(".tmp")) {
 			dir->remove(f);
 		}
+	}
+
+	// TODO remove in the next minor update
+	if (DirAccess::dir_exists_absolute(old_output_directory)) {
+		PRINT_WARNING(FMT_STR("Found an old folder for C# bindings \"{0}\".\nThis folder will be deleted as it will no longer be used.", old_output_directory));
+		auto files = DirAccess::get_files_at(old_output_directory);
+		for (String f : files) {
+			DirAccess::remove_absolute(old_output_directory.path_join(f));
+		}
+		DirAccess::remove_absolute(old_output_directory);
 	}
 
 	// First, delete the old file to check for locks
@@ -71,16 +83,34 @@ void GenerateCSharpBindingsPlugin::generate() {
 	opened_log_file = FileAccess::open(out_log_path, FileAccess::ModeFlags::WRITE);
 	ERR_FAIL_COND(FileAccess::get_open_error() != Error::OK);
 
+	property_method_prefix = TypedArray<String>(Array::make(
+			"set",
+			"get",
+			"is"));
+
 	generate_for_classes = TypedArray<StringName>(Array::make(
 			"DebugDraw2D",
-			"DebugDrawStats2D",
-			"DebugDrawConfig2D",
-			"DebugDrawGraph",
-			"DebugDrawFPSGraph",
+			"DebugDraw2DStats",
+			"DebugDraw2DConfig",
+			"DebugDraw2DGraph",
+			"DebugDraw2DFPSGraph",
 			"DebugDraw3D",
-			"DebugDrawStats3D",
-			"DebugDrawConfig3D",
+			"DebugDraw3DStats",
+			"DebugDraw3DConfig",
+			"DebugDraw3DScopeConfig",
 			"DebugDrawManager"));
+
+	avoid_caching_for_classes = TypedArray<StringName>(Array::make(
+			"DebugDraw3DScopeConfig"));
+
+	additional_statics_for_classes = extend_class_strings{
+		{ "DebugDraw3DScopeConfig", { "private static readonly StringName ___manual_unregister = \"_manual_unregister\";" } }
+	};
+
+	override_disposable_for_classes = extend_class_strings{
+		{ "DebugDraw3DScopeConfig", { "Instance?.Call(___manual_unregister);" } }
+	};
+
 	singletons = Engine::get_singleton()->get_singleton_list();
 
 	generate_header();
@@ -121,6 +151,7 @@ void GenerateCSharpBindingsPlugin::generate_header() {
 }
 
 void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_data &remapped_data) {
+	ZoneScoped;
 	log("Class: " + cls, 1);
 
 	StringName parent_name = ClassDB::get_parent_class(cls);
@@ -134,12 +165,18 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 	bool is_singleton = singletons.has(cls);
 
 	line();
-	// class DebugDrawFPSGraph : DebugDrawGraph
+	// class DebugDraw2DFPSGraph : DebugDraw2DGraph
 	String static_modifier_str = is_singleton ? "static " : "";
+	String additional_inheritance = "";
+
+	if (override_disposable_for_classes.find(cls) != override_disposable_for_classes.end()) {
+		additional_inheritance += ", IDisposable";
+	}
+
 	if (is_preserved_inheritance) {
-		line(FMT_STR("internal class {0} : {1}", cls, parent_name));
+		line(FMT_STR("internal class {0} : {1}{2}", cls, parent_name, additional_inheritance));
 	} else {
-		line(FMT_STR("{0}internal class {1}{2}", static_modifier_str, cls, is_singleton ? "" : " : _DebugDrawInstanceWrapper_"));
+		line(FMT_STR("{0}internal class {1}{2}{3}", static_modifier_str, cls, is_singleton ? "" : " : _DebugDrawInstanceWrapper_", additional_inheritance));
 	}
 
 	{
@@ -173,11 +210,14 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 
 			for (int i = 0; i < methods.size(); i++) {
 				String name = ((Dictionary)methods[i])["name"];
+				auto split = name.split("_", true, 1);
 
 				for (int j = 0; j < properties.size(); j++) {
 					String prop_name = ((Dictionary)properties[j])["name"];
-					auto split = name.split("_", true, 1);
-					if (split.size() == 2 && split[1] == prop_name) {
+
+					// check for prefix (set, get, is) and name of property
+					// to avoid confusion between `config` and `scoped_config`
+					if (split.size() == 2 && split[1] == prop_name && (property_method_prefix.has(split[0].to_lower()))) {
 						is_property.append(name);
 
 						std::map<String, ArgumentData>::iterator it = properties_map.find(prop_name);
@@ -205,8 +245,30 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 				}
 			}
 
+			const auto &it_add = additional_statics_for_classes.find(cls);
+			if (it_add != additional_statics_for_classes.end()) {
+				line("// Additional custom statics");
+				for (const auto &i : it_add->second) {
+					added++;
+					line(i);
+				}
+			}
+
 			if (added)
 				line();
+
+			const auto &it_over = override_disposable_for_classes.find(cls);
+			if (it_over != override_disposable_for_classes.end()) {
+				line("// Custom Disposable");
+				line("public new void Dispose()");
+				{
+					TAB();
+					for (const auto &i : it_over->second) {
+						line(i);
+					}
+				}
+				line();
+			}
 
 			for (int i = 0; i < methods.size(); i++) {
 				String name = ((Dictionary)methods[i])["name"];
@@ -229,6 +291,7 @@ void GenerateCSharpBindingsPlugin::generate_class(const StringName &cls, remap_d
 }
 
 void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &remapped_data) {
+	ZoneScoped;
 	log("DebugDraw utilities:", 1);
 
 	line("internal class _DebugDrawInstanceWrapper_ : IDisposable");
@@ -277,7 +340,7 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 		line("public void Dispose()");
 		{
 			TAB();
-			line("Instance.Dispose();");
+			line("Instance?.Dispose();");
 			line("Instance = null;");
 		}
 		line();
@@ -385,7 +448,9 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 							{
 								TAB();
 								line(FMT_STR("_DebugDrawInstanceWrapper_ new_instance = new {0}(_instance);", cls));
-								line("cached_instances[id] = new_instance;");
+								if (!avoid_caching_for_classes.has(cls)) {
+									line("cached_instances[id] = new_instance;");
+								}
 								line("return new_instance;");
 							}
 						}
@@ -398,6 +463,7 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 }
 
 void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool is_static, bool inheritance) {
+	ZoneScoped;
 	if (is_static) {
 		String lowered_name = cls;
 
@@ -468,6 +534,7 @@ void GenerateCSharpBindingsPlugin::generate_wrapper(const StringName &cls, bool 
 }
 
 void GenerateCSharpBindingsPlugin::generate_constants(const StringName &cls) {
+	ZoneScoped;
 	int added_items = 0;
 	PackedStringArray consts = ClassDB::class_get_integer_constant_list(cls, true);
 
@@ -486,6 +553,7 @@ void GenerateCSharpBindingsPlugin::generate_constants(const StringName &cls) {
 }
 
 void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const StringName &enm) {
+	ZoneScoped;
 	log(enm, 3);
 
 	int added_items = 0;
@@ -533,6 +601,7 @@ void GenerateCSharpBindingsPlugin::generate_enum(const StringName &cls, const St
 }
 
 void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const Dictionary &method, bool is_static, remap_data &remapped_data) {
+	ZoneScoped;
 	String name = (String)method["name"];
 
 	log(name, 3);
@@ -592,6 +661,7 @@ void GenerateCSharpBindingsPlugin::generate_method(const StringName &cls, const 
 }
 
 void GenerateCSharpBindingsPlugin::generate_default_arguments_remap(const remap_data &remapped_data) {
+	ZoneScoped;
 	if (!remapped_data.size())
 		return;
 
@@ -612,6 +682,7 @@ void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, co
 	// Methods Set: 60,477 ms
 	// ClassDB_SetGet Get: 28,660 ms
 	// ClassDB_SetGet Set: 26,918 ms
+	ZoneScoped;
 
 	for (int i = 0; i < props.size(); i++) {
 		String name = ((Dictionary)props[i])["name"];
@@ -645,6 +716,7 @@ void GenerateCSharpBindingsPlugin::generate_properties(const StringName &cls, co
 }
 
 GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argument_parse(const Dictionary &arg, bool is_return) {
+	ZoneScoped;
 	StringName class_name = arg["class_name"];
 	String name = arg["name"];
 	Variant::Type var_type = (Variant::Type)(int)arg["type"];
@@ -671,10 +743,12 @@ GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argumen
 }
 
 GenerateCSharpBindingsPlugin::ArgumentData GenerateCSharpBindingsPlugin::argument_parse(const StringName &class_name, const String &name, const Variant::Type type) {
+	ZoneScoped;
 	return argument_parse(Utils::make_dict("class_name", class_name, "name", name, "type", type));
 }
 
 std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlugin::arguments_parse_values(const TypedArray<Dictionary> &args, const Array &def_args, remap_data &remapped_data) {
+	ZoneScoped;
 	std::vector<DefaultData> res;
 
 	int start_idx = (int)(args.size() - def_args.size());
@@ -712,12 +786,23 @@ std::vector<GenerateCSharpBindingsPlugin::DefaultData> GenerateCSharpBindingsPlu
 }
 
 GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::arguments_get_formatted_value(const ArgumentData &arg_data, const Variant &def_val) {
+	ZoneScoped;
 	if (arg_data.is_enum) {
 		return DefaultData(arg_data.name, arg_data.type_name, false, FMT_STR("({0}){1}", arg_data.type_name, def_val));
 	} else {
 #define IS_DEF(_type)    \
 	_type val = def_val; \
 	bool _need_remap = (val != _type())
+
+		auto fp = [](const real_t &f) {
+			if (f == INFINITY) {
+				return String("float.PositiveInfinity");
+			} else if (f == -INFINITY) {
+				return String("float.NegativeInfinity");
+			} else {
+				return FMT_STR("{0}f", f);
+			}
+		};
 
 		switch (arg_data.type) {
 			case godot::Variant::NIL: // aka Variant
@@ -735,132 +820,108 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 				return DefaultData(arg_data, false, FMT_STR("{0}", def_val ? "true" : "false"));
 			case godot::Variant::INT:
 				return DefaultData(arg_data, false, FMT_STR("{0}", def_val));
-				break;
 			case godot::Variant::FLOAT: {
-				return DefaultData(arg_data, false, FMT_STR("{0}f", def_val));
-				break;
+				return DefaultData(arg_data, false, FMT_STR("{0}", fp(def_val)));
 			}
 			case godot::Variant::STRING: {
-				return DefaultData(arg_data, false, FMT_STR("\"{0}\"", def_val));
-				break;
+				IS_DEF(String);
+				return DefaultData(arg_data, _need_remap, FMT_STR("\"{0}\"", def_val), true);
 			}
 			case godot::Variant::STRING_NAME: {
 				IS_DEF(StringName);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new StringName(\"{0}\")", val), true);
-				break;
 			}
 			case godot::Variant::NODE_PATH: {
 				IS_DEF(NodePath);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new NodePath(\"{0}\")", val), true);
-				break;
 			}
 
 			case godot::Variant::VECTOR2: {
 				IS_DEF(Vector2);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2({0}f, {1}f)", val.x, val.y));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2({0}, {1})", fp(val.x), fp(val.y)));
 			}
 			case godot::Variant::VECTOR2I: {
 				IS_DEF(Vector2i);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector2I({0}, {1})", val.x, val.y));
-				break;
 			}
 			case godot::Variant::RECT2: {
 				IS_DEF(Rect2);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2({0}f, {1}f, {2}f, {3}f)", val.position.x, val.position.y, val.size.x, val.size.y));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2({0}, {1}, {2}, {3})", fp(val.position.x), fp(val.position.y), fp(val.size.x), fp(val.size.y)));
 			}
 			case godot::Variant::RECT2I: {
 				IS_DEF(Rect2i);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new Rect2I({0}, {1}, {2}, {3})", val.position.x, val.position.y, val.size.x, val.size.y));
-				break;
 			}
 			case godot::Variant::VECTOR3: {
 				IS_DEF(Vector3);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3({0}f, {1}f, {2}f)", val.x, val.y, val.z));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3({0}, {1}, {2})", fp(val.x), fp(val.y), fp(val.z)));
 			}
 			case godot::Variant::VECTOR3I: {
 				IS_DEF(Vector3i);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector3I({0}, {1}, {2})", val.x, val.y, val.z));
-				break;
 			}
 			case godot::Variant::TRANSFORM2D: {
 				IS_DEF(Transform2D);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform2D(new Vector2({0}f, {1}f), new Vector2({2}f, {3}f), new Vector2({4}f, {5}f))", val.columns[0].x, val.columns[0].y, val.columns[1].x, val.columns[1].y, val.columns[2].x, val.columns[2].y));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform2D(new Vector2({0}, {1}), new Vector2({2}, {3}), new Vector2({4}, {5}))", fp(val.columns[0].x), fp(val.columns[0].y), fp(val.columns[1].x), fp(val.columns[1].y), fp(val.columns[2].x), fp(val.columns[2].y)));
 			}
 			case godot::Variant::VECTOR4: {
 				IS_DEF(Vector4);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4({0}, {1}, {2}, {3})", fp(val.x), fp(val.y), fp(val.z), fp(val.w)));
 			}
 			case godot::Variant::VECTOR4I: {
 				IS_DEF(Vector4i);
 				return DefaultData(arg_data, _need_remap, FMT_STR("new Vector4I({0}, {1}, {2}, {3})", val.x, val.y, val.z, val.w));
-				break;
 			}
 			case godot::Variant::PLANE: {
 				IS_DEF(Plane);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Plane({0}f, {1}f, {2}f, {3}f)", val.normal.x, val.normal.y, val.normal.z, val.d));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Plane({0}, {1}, {2}, {3})", fp(val.normal.x), fp(val.normal.y), fp(val.normal.z), fp(val.d)));
 			}
 			case godot::Variant::QUATERNION: {
 				IS_DEF(Quaternion);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Quaternion({0}f, {1}f, {2}f, {3}f)", val.x, val.y, val.z, val.w));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Quaternion({0}, {1}, {2}, {3})", fp(val.x), fp(val.y), fp(val.z), fp(val.w)));
 			}
 			case godot::Variant::AABB: {
 				IS_DEF(AABB);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Aabb(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f))", val.position.x, val.position.y, val.position.z, val.size.x, val.size.y, val.size.z));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Aabb(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}))", fp(val.position.x), fp(val.position.y), fp(val.position.z), fp(val.size.x), fp(val.size.y), fp(val.size.z)));
 			}
 			case godot::Variant::BASIS: {
 				IS_DEF(Basis);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Basis(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f))", val.rows[0].x, val.rows[1].x, val.rows[2].x, val.rows[0].y, val.rows[1].y, val.rows[2].y, val.rows[0].z, val.rows[1].z, val.rows[2].z));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Basis(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}), new Vector3({6}, {7}, {8}))", fp(val.rows[0].x), fp(val.rows[1].x), fp(val.rows[2].x), fp(val.rows[0].y), fp(val.rows[1].y), fp(val.rows[2].y), fp(val.rows[0].z), fp(val.rows[1].z), fp(val.rows[2].z)));
 			}
 			case godot::Variant::TRANSFORM3D: {
 				IS_DEF(Transform3D);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform3D(new Vector3({0}f, {1}f, {2}f), new Vector3({3}f, {4}f, {5}f), new Vector3({6}f, {7}f, {8}f), new Vector3({9}f, {10}f, {11}f))", val.basis.rows[0].x, val.basis.rows[1].x, val.basis.rows[2].x, val.basis.rows[0].y, val.basis.rows[1].y, val.basis.rows[2].y, val.basis.rows[0].z, val.basis.rows[1].z, val.basis.rows[2].z, val.origin.x, val.origin.y, val.origin.z));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Transform3D(new Vector3({0}, {1}, {2}), new Vector3({3}, {4}, {5}), new Vector3({6}, {7}, {8}), new Vector3({9}, {10}, {11}))", fp(val.basis.rows[0].x), fp(val.basis.rows[1].x), fp(val.basis.rows[2].x), fp(val.basis.rows[0].y), fp(val.basis.rows[1].y), fp(val.basis.rows[2].y), fp(val.basis.rows[0].z), fp(val.basis.rows[1].z), fp(val.basis.rows[2].z), fp(val.origin.x), fp(val.origin.y), fp(val.origin.z)));
 			}
 			case godot::Variant::PROJECTION: {
 				IS_DEF(Projection);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Projection(new Vector4({0}f, {1}f, {2}f, {3}f), new Vector4({4}f, {5}f, {6}f, {7}f), new Vector4({8}f, {9}f, {10}f, {11}f), new Vector4({12}f, {13}f, {14}f, {15}f))", val.columns[0].x, val.columns[0].y, val.columns[0].z, val.columns[0].w, val.columns[1].x, val.columns[1].y, val.columns[1].z, val.columns[1].w, val.columns[2].x, val.columns[2].y, val.columns[2].z, val.columns[2].w, val.columns[3].x, val.columns[3].y, val.columns[3].z, val.columns[3].w));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Projection(new Vector4({0}, {1}, {2}, {3}), new Vector4({4}, {5}, {6}, {7}), new Vector4({8}, {9}, {10}, {11}), new Vector4({12}, {13}, {14}, {15}))", fp(val.columns[0].x), fp(val.columns[0].y), fp(val.columns[0].z), fp(val.columns[0].w), fp(val.columns[1].x), fp(val.columns[1].y), fp(val.columns[1].z), fp(val.columns[1].w), fp(val.columns[2].x), fp(val.columns[2].y), fp(val.columns[2].z), fp(val.columns[2].w), fp(val.columns[3].x), fp(val.columns[3].y), fp(val.columns[3].z), fp(val.columns[3].w)));
 			}
 			case godot::Variant::COLOR: {
 				IS_DEF(Color);
-				return DefaultData(arg_data, _need_remap, FMT_STR("new Color({0}f, {1}f, {2}f, {3}f)", val.r, val.g, val.b, val.a));
-				break;
+				return DefaultData(arg_data, _need_remap, FMT_STR("new Color({0}, {1}, {2}, {3})", fp(val.r), fp(val.g), fp(val.b), fp(val.a)));
 			}
 			case godot::Variant::RID: {
 				IS_DEF(RID);
 				if (_need_remap)
 					log_warning(FMT_STR("'RID' can't have a default value: {0}", arg_data.name), 4);
 				return DefaultData(arg_data, false, "default");
-				break;
 			}
 			case godot::Variant::OBJECT: {
 				if ((Object *)def_val != nullptr)
 					log_warning(FMT_STR("'Object' can't have a default value: {0}", arg_data.name), 4);
 				return DefaultData(arg_data, false, "null");
-				break;
 			}
 			case godot::Variant::CALLABLE: {
 				IS_DEF(Callable);
 				if (_need_remap)
 					log_warning(FMT_STR("'Callable' can't have a default value: {0}", arg_data.name), 4);
 				return DefaultData(arg_data, false, "default");
-				break;
 			}
 			case godot::Variant::SIGNAL: {
 				IS_DEF(Signal);
 				if (_need_remap)
 					log_warning(FMT_STR("'Signal' can't have a default value: {0}", arg_data.name), 4);
 				return DefaultData(arg_data, false, "default");
-				break;
 			}
 
 #define PACKED_ARRAY(_type, _var_type)                                                                                                    \
@@ -876,7 +937,6 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 			}                                                                                                                             \
 			return DefaultData(arg_data, true, FMT_STR("new {0} { {1} }", types_map[def_val.get_type()], String(", ").join(strs)), true); \
 		}                                                                                                                                 \
-		break;                                                                                                                            \
 	}
 
 			case godot::Variant::DICTIONARY: {
@@ -894,7 +954,6 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 					}
 					return DefaultData(arg_data, true, String("new {0} { {1} }").format(Array::make(types_map[def_val.get_type()], String(", ").join(strs))), true);
 				}
-				break;
 			};
 			case godot::Variant::ARRAY:
 				PACKED_ARRAY(Array, val[i].get_type());
@@ -914,10 +973,10 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 				PACKED_ARRAY(PackedVector2Array, Variant::VECTOR2);
 			case godot::Variant::PACKED_VECTOR3_ARRAY:
 				PACKED_ARRAY(PackedVector3Array, Variant::VECTOR3);
-			case godot::Variant::PACKED_COLOR_ARRAY: {
+			case godot::Variant::PACKED_COLOR_ARRAY:
 				PACKED_ARRAY(PackedColorArray, Variant::COLOR);
+			default:
 				break;
-			}
 #undef PACKED_ARRAY
 		}
 #undef IS_DEF
@@ -927,6 +986,7 @@ GenerateCSharpBindingsPlugin::DefaultData GenerateCSharpBindingsPlugin::argument
 }
 
 String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dictionary> &args, bool with_defaults, std::vector<DefaultData> def_args_data) {
+	ZoneScoped;
 	PackedStringArray arg_strs;
 	for (int i = 0; i < args.size(); i++) {
 		ArgumentData arg_data = argument_parse(args[i]);
@@ -955,6 +1015,7 @@ String GenerateCSharpBindingsPlugin::arguments_string_decl(const TypedArray<Dict
 }
 
 String GenerateCSharpBindingsPlugin::arguments_string_call(const TypedArray<Dictionary> &args, const std::vector<DefaultData> &def_remap) {
+	ZoneScoped;
 	PackedStringArray arg_strs;
 	for (int i = 0; i < args.size(); i++) {
 		ArgumentData arg_data = argument_parse((Dictionary)args[i]);
@@ -977,6 +1038,7 @@ String GenerateCSharpBindingsPlugin::arguments_string_call(const TypedArray<Dict
 }
 
 void GenerateCSharpBindingsPlugin::line(const String &str, int indent_override) {
+	ZoneScoped;
 	if (indent_override < 0) {
 		opened_file->store_string(indent);
 	} else {

@@ -12,6 +12,7 @@ public:
 	const static godot::Color axis_x;
 	const static godot::Color axis_y;
 	const static godot::Color axis_z;
+	const static godot::Color plane_light_sky_blue;
 	const static godot::Color black;
 	const static godot::Color chartreuse;
 	const static godot::Color crimson;
@@ -23,6 +24,7 @@ public:
 	const static godot::Color gray_bg;
 	const static godot::Color gray_graph_bg;
 	const static godot::Color green;
+	const static godot::Color light_sky_blue;
 	const static godot::Color light_green;
 	const static godot::Color orange_red;
 	const static godot::Color orange;

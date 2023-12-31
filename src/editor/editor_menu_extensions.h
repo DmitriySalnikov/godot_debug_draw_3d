@@ -6,15 +6,15 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/editor_plugin.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 class DebugDrawMenuExtensionPlugin : public EditorPlugin {
 	GDCLASS(DebugDrawMenuExtensionPlugin, EditorPlugin)
 public:
 	enum MenuItemId {
-		OPEN_LIBRARY_SITE = 1,
-		GENERATE_CSHARP_BINDING = 2,
+		OPEN_LIBRARY_SITE,
+		OPEN_DOCUMENTATION_SITE,
+		GENERATE_CSHARP_BINDING,
 	};
 
 private:

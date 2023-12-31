@@ -2,18 +2,17 @@
 #ifndef DISABLE_DEBUG_RENDERING
 
 #include "utils/compiler.h"
-
-GODOT_WARNING_DISABLE()
-#include <godot_cpp/classes/canvas_item.hpp>
-#include <godot_cpp/classes/font.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
-GODOT_WARNING_RESTORE()
+#include "utils/profiler.h"
 
 #include <functional>
 #include <memory>
 #include <mutex>
 #include <unordered_set>
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/canvas_item.hpp>
+#include <godot_cpp/classes/font.hpp>
+GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class TextGroupItem {
@@ -49,7 +48,7 @@ private:
 public:
 	bool is_used_one_time = false;
 	String title;
-	std::unordered_set<TextGroupItem_ptr> Texts;
+	std::vector<TextGroupItem_ptr> Texts;
 	class DebugDraw2D *owner;
 
 	void set_group_priority(int _val);
@@ -103,16 +102,17 @@ class GroupedText {
 	};
 
 	TextGroupItem_ptr item_for_title_of_groups;
-	std::unordered_set<TextGroup_ptr> _text_groups;
+	std::vector<TextGroup_ptr> _text_groups;
 	TextGroup_ptr _current_text_group;
 	class DebugDraw2D *owner = nullptr;
-	std::recursive_mutex datalock;
+
+	ProfiledMutex(std::recursive_mutex, datalock, "Text lock");
 
 	void _create_new_default_group_if_needed();
 
 public:
 	void init_group(class DebugDraw2D *p_owner);
-	void clear_text();
+	void clear_groups();
 	void cleanup_text(const double &_delta);
 	void begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size);
 	void end_text_group();

@@ -2,7 +2,9 @@
 .godot/
 
 # Copied files for testing
+examples_dd3d
 examples_dd3d/
+addons
 addons/
 
 # Exported builds

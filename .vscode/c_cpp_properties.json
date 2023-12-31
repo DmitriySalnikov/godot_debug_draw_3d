@@ -10,12 +10,15 @@
             ],
             "defines": [
                 "DEBUG_ENABLED",
+                "DEV_ENABLED",
                 "UNICODE",
                 "_UNICODE",
                 "GDEXTENSION_LIBRARY",
                 "NOMINMAX",
                 "TYPED_METHOD_BIND",
-                "HOT_RELOAD_ENABLED"
+                "HOT_RELOAD_ENABLED",
+                "TOOLS_ENABLED",
+                "TELEMETRY_ENABLED"
             ],
             "cStandard": "c17",
             "cppStandard": "c++17",

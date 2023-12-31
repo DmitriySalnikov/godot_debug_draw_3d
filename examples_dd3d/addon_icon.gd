@@ -2,6 +2,7 @@
 extends Node3D
 
 func _process(delta: float) -> void:
+	var a = DebugDraw3D.new_scope_config().set_thickness(0.015)
 	DebugDraw3D.draw_box_xf($box.global_transform, Color.GREEN)
 	DebugDraw3D.draw_gizmo($gizmo.global_transform)
 	DebugDraw3D.draw_grid_xf($gizmo/grid.global_transform, Vector2i(2,2), DebugDraw3D.empty_color, false)

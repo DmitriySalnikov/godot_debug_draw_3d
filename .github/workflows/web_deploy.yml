@@ -1,0 +1,635 @@
+name: 🚀 Deploy content to Github Pages
+on:
+  push:
+    branches-ignore: gh-pages
+    # Must not overlap with conditions in `gdextension_build.yml`
+    paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, 
+      src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct
+    ]
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      dev_deploy:
+        description: Dev deploy
+        default: true
+        type: boolean
+
+# docs/ for documentation
+# demo/ for demo project
+# dev/ for development version
+# dev/BRANCH/docs and dev/BRANCH/demo for dev docs/ and demo/
+
+# Permissions to update the PAGES_BRANCH branch
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  actions: write
+
+# Stop the same workflow actions
+concurrency:
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
+  cancel-in-progress: true
+
+env:
+  PAGES_BRANCH: gh-pages
+  DEV_DEPLOY: ${{!format('{0}', inputs.dev_deploy) && 'true' || format('{0}', inputs.dev_deploy)}} # Default true
+  GH_TOKEN: ${{github.token}}
+
+jobs:
+  data_preparation:
+    name: ⛏ Data preparation
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{steps.get_sha.outputs.head_sha}}
+      lib_version: ${{steps.get_lib_version.outputs.version}}
+      domain: ${{steps.get_domain.outputs.domain}}
+
+    steps:
+      - name: Is development version
+        shell: bash
+        run: |
+          echo "Is a development build: \`${{env.DEV_DEPLOY}}\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Get HEAD
+        shell: bash
+        id: get_sha
+        run: |
+          sha=$(gh api \
+            -H "Accept: application/vnd.github.sha" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{github.repository}}/commits/${{env.PAGES_BRANCH}})
+
+          if [ $? -ne 0 ]; then
+            echo "Curl failed with error: $?"
+            exit $?
+          fi
+          echo "head_sha=$sha" >> $GITHUB_OUTPUT
+          echo "\`$sha\` will be used as a restore point." >> $GITHUB_STEP_SUMMARY
+
+      - name: Checkout version.h
+        uses: actions/checkout@v4
+        with:
+          path: current
+          sparse-checkout: |
+            src/version.h
+
+      - name: Get library version
+        id: get_lib_version
+        shell: bash
+        run: |
+          # Get DD3D version
+          source_file="current/src/version.h"
+
+          major=$(grep -oP '(?<=#define DD3D_MAJOR )\d+' "$source_file")
+          minor=$(grep -oP '(?<=#define DD3D_MINOR )\d+' "$source_file")
+          patch=$(grep -oP '(?<=#define DD3D_PATCH )\d+' "$source_file")
+
+          version_string="$major.$minor.$patch"
+
+          echo "version=$version_string" >> $GITHUB_OUTPUT
+          echo "Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Checkout CNAME
+        uses: actions/checkout@v4
+        continue-on-error: true
+        id: checkout_cname
+        with:
+          ref: ${{env.PAGES_BRANCH}}
+          path: pages
+          sparse-checkout: |
+            CNAME
+
+      - name: Get CNAME or domain
+        id: get_domain
+        run: |
+          if [ "${{steps.checkout_cname.conclusion}}" == "success" ]; then
+            cname=$(cat pages/CNAME)
+            echo "domain=$cname" >> $GITHUB_OUTPUT
+            echo "Found CNAME record: \`$cname\`" >> $GITHUB_STEP_SUMMARY
+          else
+            domain="${{github.repository_owner}}.github.io/${{github.event.repository.name}}"
+            echo "domain=$domain" >> $GITHUB_OUTPUT
+            echo "CNAME not found, presumably domain of gh-pages: \`$domain\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+
+  web-gdextension:
+    name: 🕸 Build a Web library
+    needs: data_preparation
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    env:
+      EM_VERSION: 3.1.39
+      # Faster build, but bigger library size (726KB vs 680KB)
+      FORCE_DISABLE_UNITY: no
+      SCONS_CACHE: ${{github.workspace}}/.scons-cache/
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Download Emscripten
+        uses: mymindstorm/setup-emsdk@v12
+        # Continue if failed to cache
+        # https://github.com/mymindstorm/setup-emsdk/issues/20
+        continue-on-error: true
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: obj/emsdk_cache
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: web
+          target: template_release
+          arch: wasm32
+          artifact: web.demo_build
+          additional: lto=yes force_enabled_dd3d=yes
+          additional_enabled_dd3d: false
+          output_libs_path: bin
+          use_cache: true
+
+
+  generate_docs:
+    name: 📚 Generate Docs
+    needs: data_preparation
+    runs-on: ubuntu-latest
+
+    env:
+      DOXYGEN_VERSION: 1.10.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          submodules: recursive
+
+      - name: Restore doxygen directory
+        uses: actions/cache/restore@v3
+        id: restore_doxygen
+        with:
+          path: obj/doxygen-${{env.DOXYGEN_VERSION}}
+          key: doxygen-${{env.DOXYGEN_VERSION}}
+
+      - name: Install Doxygen
+        if: ${{!steps.restore_doxygen.outputs.cache-hit}}
+        shell: bash
+        run: |
+          mkdir obj
+          cd obj
+          wget -nv https://www.doxygen.nl/files/doxygen-${{env.DOXYGEN_VERSION}}.linux.bin.tar.gz
+          tar -xf doxygen-${{env.DOXYGEN_VERSION}}.linux.bin.tar.gz
+
+      - name: Save doxygen directory
+        if: ${{!steps.restore_doxygen.outputs.cache-hit}}
+        uses: actions/cache/save@v3
+        with:
+          path: obj/doxygen-${{env.DOXYGEN_VERSION}}
+          key: doxygen-${{env.DOXYGEN_VERSION}}
+
+      - name: Run Doxygen
+        shell: bash
+        run: |
+          ( cat Doxyfile ; echo "PROJECT_NUMBER=${{needs.data_preparation.outputs.lib_version}}" ) | ./obj/doxygen-${{env.DOXYGEN_VERSION}}/bin/doxygen -
+
+      - name: Get destination_dir
+        id: get_ref
+        shell: bash
+        env:
+          REF: ${{github.ref_name}}
+          content_dir: docs
+        # dev folder name must be synced with :fix_ref_names
+        run: |
+          fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
+          new_ref_name=""
+          if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
+            new_ref_name="dev/$fixed_ref_name/$content_dir"
+            echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
+          else
+            new_ref_name="$content_dir/${{needs.data_preparation.outputs.lib_version}}"
+            echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
+          fi
+          echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          publish_dir: obj/doxygen/html
+          destination_dir: ${{steps.get_ref.outputs.new_ref_name}}
+          publish_branch: ${{env.PAGES_BRANCH}}
+          allow_empty_commit: true
+          keep_files: true
+          commit_message: Updated documentation
+          user_name: 'github-actions-deploy[bot]'
+          user_email: 'github-actions-deploy[bot]@users.noreply.github.com'
+
+
+  export_demo_project:
+    name: 🌐📦 Export Demo Project
+    runs-on: ubuntu-20.04
+    needs: [data_preparation, generate_docs, web-gdextension]
+    container:
+      image: barichello/godot-ci:4.2.1
+
+    env:
+      # Sync with container: image:
+      GODOT_VERSION: 4.2.1
+      PROJECT_PATH: dd3d_web_build
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Download Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: addons/debug_draw_3d/libs
+          name: web.demo_build
+
+      - name: Prepare Web Build
+        run: |
+          ls addons/debug_draw_3d/libs
+          ls ${GITHUB_WORKSPACE}/addons/debug_draw_3d/libs
+          cp -r addons ${PROJECT_PATH}/addons
+          cp -r examples_dd3d ${PROJECT_PATH}/examples_dd3d
+
+      - name: Import Assets
+        run: godot -v -e --headless --path ${PROJECT_PATH} --quit || true
+
+      - name: Web Build
+        run: |
+          mkdir ${GITHUB_WORKSPACE}/demo
+          cp ${PROJECT_PATH}/coi-serviceworker.min.js ${GITHUB_WORKSPACE}/demo/coi-serviceworker.min.js
+          godot -v --headless --path ${PROJECT_PATH} --export-release web ${GITHUB_WORKSPACE}/demo/index.html
+
+      - name: Fix Permissions
+        run: |
+          chmod -c -R +rX "demo/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
+
+      - name: Get destination_dir
+        id: get_ref
+        shell: bash
+        env:
+          REF: ${{github.ref_name}}
+          content_dir: demo
+        # dev folder name must be synced with :fix_ref_names
+        run: |
+          fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
+          new_ref_name=""
+          if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
+            new_ref_name="dev/$fixed_ref_name/$content_dir"
+            echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
+          else
+            new_ref_name="$content_dir/${{needs.data_preparation.outputs.lib_version}}"
+            echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
+          fi
+          echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          publish_dir: demo
+          destination_dir: ${{steps.get_ref.outputs.new_ref_name}}
+          publish_branch: ${{env.PAGES_BRANCH}}
+          allow_empty_commit: true
+          keep_files: true
+          commit_message: Updated demo build
+          user_name: 'github-actions-deploy[bot]'
+          user_email: 'github-actions-deploy[bot]@users.noreply.github.com'
+
+
+  finalization:
+    name: 🏁 Finalization
+    needs: [data_preparation, export_demo_project]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{env.PAGES_BRANCH}}
+          # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT
+          fetch-depth: 4
+          lfs: true
+
+      - name: Clean unused folders
+        if: env.DEV_DEPLOY == 'false'
+        continue-on-error: true
+        # default bash without -e (fail-fast) 
+        # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
+        shell: bash --noprofile --norc -o pipefail {0}
+        run: |
+          # Get branches
+          response=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{github.repository}}/branches)
+
+          # Can't compare existing folders with no branches
+          if [ $? -ne 0 ]; then
+            echo "Error: Could not load the list of branches. Exiting."
+            exit 1
+          fi
+
+          git_branches=$(echo "$response" | jq -r '.[].name')
+          # Fix ref names
+          # :fix_ref_names
+          for ((i=0; i<${#git_branches[@]}; i++)); do
+            git_branches[$i]=$(echo "${git_branches[$i]}" | tr -c [:alnum:]+[:cntrl:] [_*])
+          done
+          echo "Found branches:"
+          echo "${git_branches[@]}"
+
+          cd dev
+          # 'cd' must run successfully to avoid accidentally deleting anything unnecessary
+          if [ $? -ne 0 ]; then
+            echo "Error: Could not change folder to 'dev'. Exiting."
+            exit 1
+          fi
+
+          # Get directories
+          folders=$(find . -mindepth 1 -maxdepth 1 -type d)
+          echo "Existing folders:"
+          echo ${folders[@]}
+
+          for folder in $folders; do
+              folder_name=$(basename "$folder")
+
+              # Check if the branch exists
+              if ! echo "$git_branches" | grep -q "^$folder_name$"; then
+                  echo "Removing the folder: $folder_name"
+                  rm -r "$folder_name"
+              fi
+          done
+
+      - name: Add a dev index.html
+        shell: bash --noprofile --norc -o pipefail {0}
+        run: |
+          html_template='
+          <!DOCTYPE html>
+          <head>
+              <meta charset="utf-8">
+              <title>Development versions</title>
+              <style>
+                  html {
+                      background: #21232b;
+                      color: #ebf0f1;
+                  }
+                  a {
+                      color: #f59031;
+                      text-decoration-line: none;
+                      font-weight: 600;
+                  }
+                  a:hover,
+                  a:focus {
+                      text-decoration-line: underline;
+                  }
+              </style>
+              <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+              <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+              <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+              <link rel="manifest" href="/site.webmanifest">
+          </head>
+          <body>
+              <h1>Links to versions in development</h1>
+              <ul id="links-list"></ul>
+              <script>
+                  document.addEventListener("DOMContentLoaded", function () {
+                      fetch("/dev_versions.json")
+                          .then(response => response.json())
+                          .then(data => {
+                              var linksList = document.getElementById("links-list");
+                              data.forEach(function (url) {
+                                  ["demo", "docs"].forEach(function (suffix) {
+                                      var listItem = document.createElement("li");
+                                      var link = document.createElement("a");
+                                      link.href = url + "/" + suffix;
+                                      link.textContent = url + "/" + suffix;
+                                      listItem.appendChild(link);
+                                      linksList.appendChild(listItem);
+                                  })
+                                  linksList.appendChild(document.createElement("br"));
+                              });
+                          })
+                          .catch(error => {
+                              console.error("Error loading JSON file:", error);
+                              var linksList = document.getElementById("links-list");
+                              var listItem = document.createElement("li");
+                              listItem.textContent = "Error loading a file with available versions";
+                              linksList.appendChild(listItem);
+                          });
+                  });
+              </script>
+          </body>
+          </html>
+          '
+
+          cd dev
+          # 'cd' must run successfully
+          if [ $? -ne 0 ]; then
+            echo "The 'dev' folder does not exist."
+            exit 1
+          fi
+          echo "$html_template" > index.html
+          echo "Updated navigation in 'dev' folder"
+
+      - name: Generate a list of available versions
+        shell: bash --noprofile --norc -o pipefail {0}
+        run: |
+          generate_json() {
+            # Go to
+            pushd "$1" > /dev/null
+            if [ $? -ne 0 ]; then
+              echo "Error: Could not change folder to '$1'. Exiting."
+              return 1
+            fi
+
+            # Find all folders, sort, remove './'
+            folders=$(find . -mindepth 1 -maxdepth 1 -type d | sort -r | sed 's|^\./||')
+            if [ -z "$folders" ]; then
+              json="[]"
+            else
+              # Folders to JSON array
+              json=$(echo "$folders" | jq -R -s 'split("\n")[:-1]')
+            fi
+
+            # Go back to the root
+            popd > /dev/null
+            echo "$json" > $2
+            echo "Saved folder list for '$1' to '$2'."
+          }
+
+          if [ "${{env.DEV_DEPLOY}}" = "false" ]; then
+            # Only on release
+            generate_json "docs" "docs_versions.json"
+            generate_json "demo" "demo_versions.json"
+          fi
+          generate_json "dev" "dev_versions.json"
+
+      - name: Generate redirects
+        if: env.DEV_DEPLOY == 'false'
+        shell: bash --noprofile --norc -o pipefail {0}
+        run: |
+          # Redirect template
+          html_template='
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Redirecting to REDIRECT_TO_FOLDER/</title>
+            <noscript>
+              <meta http-equiv="refresh" content="1; url=REDIRECT_TO_FOLDER/" />
+            </noscript>
+            <script>
+              window.location.replace("REDIRECT_TO_FOLDER/" + window.location.hash);
+            </script>
+            <style>
+                html {
+                    background: #21232b;
+                    color: #ebf0f1;
+                }
+                a {
+                    color: #f59031;
+                    font-weight: 600;
+                }
+            </style>
+          </head>
+          <body>
+            Redirecting to <a href="REDIRECT_TO_FOLDER/">REDIRECT_TO_FOLDER/</a>...
+          </body>
+          </html>
+          '
+
+          generate_redirect() {
+            # Go to
+            pushd "$1" > /dev/null
+            if [ $? -ne 0 ]; then
+              echo "Error: Could not change folder to '$1'. Exiting."
+              return 1
+            fi
+
+            # Find all the folders, sort, remove './' and get only the first one, most likely the newest version
+            first_folder=$(find . -mindepth 1 -maxdepth 1 -type d | sort -r | sed 's|^\./||' | head -n 1)
+
+            if [ -n "$first_folder" ]; then
+              echo "${html_template//REDIRECT_TO_FOLDER/$first_folder}" > index.html
+              echo "Created a redirect from '$1' to '$first_folder'"
+            else
+              echo "The '$1' folder is empty. Exiting."
+            fi
+
+            # Go back to the root
+            popd > /dev/null
+          }
+
+          generate_redirect "docs"
+          generate_redirect "demo"
+
+          # Root to docs/ redirect
+          echo "${html_template//REDIRECT_TO_FOLDER/docs}" > index.html
+          echo "Added redirection to docs/"
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config --global user.name 'github-actions-auto-updater[bot]'
+          git config --global user.email 'github-actions-auto-updater[bot]@users.noreply.github.com'
+          git diff
+          git add -A
+          git commit --allow-empty -am "Folder structure updated"
+
+      - name: Squash and push
+        shell: bash
+        run: |
+          git reset --soft ${{needs.data_preparation.outputs.head_sha}}
+          msg=$'Pages have been updated: ${{github.sha}}\n'
+          git commit -am "${msg}$(git log --format=%B --reverse HEAD..HEAD@{1})"
+          git push -f
+
+          echo "## Changed files:" >> $GITHUB_STEP_SUMMARY
+          codeblock_tmp=$'```\nSTATS\n```'
+          echo "${codeblock_tmp//STATS/$(git diff --stat HEAD~)}" >> $GITHUB_STEP_SUMMARY
+
+
+  deploy:
+    name: 🌐 Deploy
+    needs: [finalization]
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+
+    steps:
+      - name: Checkout Action
+        uses: actions/checkout@v4
+        with:
+          path: temp_repo
+          sparse-checkout: .github/actions/delete_artifact
+
+      - name: Remove `github-pages` if the action was restarted
+        uses: ./temp_repo/.github/actions/delete_artifact
+        with:
+          artifact: github-pages
+
+      - name: Remove Action
+        run: rm -rf temp_repo/
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{env.PAGES_BRANCH}}
+          lfs: true
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
+  restore_on_fail:
+    name: 🔄 Restore gh-pages
+    needs: [data_preparation, generate_docs, export_demo_project, finalization, deploy]
+    if: failure() || cancelled()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{env.PAGES_BRANCH}}
+          # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT
+          fetch-depth: 4
+          lfs: true
+
+      - name: Reset and push
+        shell: bash
+        continue-on-error: true
+        run: |
+          if [ -n "${{needs.data_preparation.outputs.head_sha}}" ]; then
+            git reset --hard ${{needs.data_preparation.outputs.head_sha}}
+            git push -f
+            echo "The branch has been reset to \`${{needs.data_preparation.outputs.head_sha}}\`" >> $GITHUB_STEP_SUMMARY
+          fi

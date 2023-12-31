@@ -33,8 +33,7 @@ def extract_used_classes(folder_path: str):
     print(godot_cpp_include)
     print()
 
-    find_class = re.compile(
-        r'(?:#include [<\"]godot_cpp\/classes\/)(.*)(?:.hpp[>\"])', re.MULTILINE)
+    find_class = re.compile(r"(?:#include [<\"]godot_cpp\/classes\/)(.*)(?:.hpp[>\"])", re.MULTILINE)
 
     found_classes = set()
 
@@ -60,8 +59,12 @@ def extract_used_classes(folder_path: str):
                         with open(Path(dir) / f, "r", encoding="utf-8") as file:
                             read_data(file)
                     except UnicodeDecodeError as e:
-                        print("Skipping file due to 'UnicodeDecodeError' exception: " +
-                              (Path(dir) / f).resolve().as_posix() + "\nException: " + str(e))
+                        print(
+                            "Skipping file due to 'UnicodeDecodeError' exception: "
+                            + (Path(dir) / f).resolve().as_posix()
+                            + "\nException: "
+                            + str(e)
+                        )
                         skips += 1
                         continue
         return skips
@@ -98,11 +101,9 @@ def scan_dependencies(api):
     for name in used_classes:
         _get_dependencies(api, name)
 
-    print("Provided", len(used_classes),
-          "explicit classes:", str(sorted(used_classes)))
+    print("Provided", len(used_classes), "explicit classes:", str(sorted(used_classes)))
     print()
-    print("A total of", len(found_dependencies),
-          "classes were found:", str(sorted(found_dependencies)))
+    print("A total of", len(found_dependencies), "classes were found:", str(sorted(found_dependencies)))
     print()
 
     temp_engine_class_names.clear()
@@ -112,7 +113,7 @@ def _get_dependencies(api, name):
     def _add_dependency_engine_class(_class, _to_scan):
         for start in ["enum::", "typedarray::", "bitfield::"]:
             if _class.startswith(start):
-                _class = _class[len(start):].partition(".")[0]
+                _class = _class[len(start) :].partition(".")[0]
                 break
 
         if _class in temp_engine_class_names:
@@ -131,8 +132,7 @@ def _get_dependencies(api, name):
 
         for method in class_api.get("methods", []):
             if "return_value" in method:
-                _add_dependency_engine_class(
-                    method["return_value"]["type"], need_to_scan)
+                _add_dependency_engine_class(method["return_value"]["type"], need_to_scan)
 
             for arg in method.get("arguments", []):
                 _add_dependency_engine_class(arg["type"], need_to_scan)
@@ -163,8 +163,7 @@ def delete_useless(files):
     deps_file_names = [camel_to_snake(c) + ".cpp" for c in found_dependencies]
 
     src_path = "gen/src/classes/"
-    print("These", len(deps_file_names), "files from the",
-          src_path, "directory will be compiled:", deps_file_names)
+    print("These", len(deps_file_names), "files from the", src_path, "directory will be compiled:", deps_file_names)
     print()
 
     new_files_list = []

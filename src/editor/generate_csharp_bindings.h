@@ -7,11 +7,8 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/core/defs.hpp>
-#include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/typed_array.hpp>
 GODOT_WARNING_RESTORE()
-
 using namespace godot;
 
 class GenerateCSharpBindingsPlugin {
@@ -82,13 +79,24 @@ class GenerateCSharpBindingsPlugin {
 		}
 	};
 
-	String output_directory = "res://addons/debug_draw_3d/csharp";
+	String output_directory = "res://addons/debug_draw_3d/gen/csharp";
+	// TODO remove in the next minor update
+	String old_output_directory = "res://addons/debug_draw_3d/csharp";
 	String api_file_name = "DebugDrawGeneratedAPI.cs";
+	String log_file_name = "log.txt";
 	String indent_template = "    ";
 	String indent;
 	Ref<FileAccess> opened_file;
 	Ref<FileAccess> opened_log_file;
+	TypedArray<String> property_method_prefix;
+
 	TypedArray<StringName> generate_for_classes;
+	TypedArray<StringName> avoid_caching_for_classes;
+
+	typedef std::map<StringName, std::vector<String> > extend_class_strings;
+	extend_class_strings additional_statics_for_classes;
+	extend_class_strings override_disposable_for_classes;
+
 	PackedStringArray singletons;
 	bool is_shift_pressed = false;
 	bool is_generate_unload_event = false;

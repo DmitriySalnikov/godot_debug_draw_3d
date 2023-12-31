@@ -1,7 +1,22 @@
-[gd_scene load_steps=16 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=29 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
+[ext_resource type="Script" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_87638"]
+sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+ground_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
+
+[sub_resource type="Sky" id="Sky_4jfme"]
+sky_material = SubResource("ProceduralSkyMaterial_87638")
+
+[sub_resource type="Environment" id="Environment_38m85"]
+sky = SubResource("Sky_4jfme")
+tonemap_mode = 2
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
@@ -43,6 +58,18 @@ tracks/2/keys = {
 "update": 0,
 "values": [Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, -0.791383, 1.53767)]
 }
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Spatial7:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0.4, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(1.33, -0.119, -0.025), Vector3(1.32989, -0.583818, -0.025198)]
+}
 
 [sub_resource type="Animation" id="10"]
 length = 0.001
@@ -81,6 +108,18 @@ tracks/2/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.443643, 0, 1.53767)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Spatial7:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1.32989, -0.583818, -0.025198)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nj4nv"]
@@ -140,6 +179,16 @@ _data = {
 "RESET": SubResource("7")
 }
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rbfyn"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.215686, 0.215686, 0.215686, 0.764706)
+
+[sub_resource type="QuadMesh" id="QuadMesh_1t0id"]
+material = SubResource("StandardMaterial3D_rbfyn")
+orientation = 1
+
 [sub_resource type="StandardMaterial3D" id="1"]
 shading_mode = 0
 albedo_color = Color(0.533333, 0.105882, 0.105882, 1)
@@ -157,7 +206,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector3(10.4482, -1.49353, -0.450473)]
+"values": [Vector3(7, -2, 0)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a7f1a"]
@@ -165,75 +214,68 @@ _data = {
 "RESET": SubResource("8")
 }
 
+[sub_resource type="Gradient" id="Gradient_tup4c"]
+offsets = PackedFloat32Array(0.00471698, 0.316038, 0.646226, 1)
+colors = PackedColorArray(0, 0.0156863, 1, 1, 0.0988327, 1, 0.122977, 1, 1, 0.111986, 0.118936, 1, 0, 0.0156863, 1, 1)
+
+[sub_resource type="Animation" id="Animation_n750a"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("../MusicPlayer:stream")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [null]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_0ity1"]
+_data = {
+"RESET": SubResource("Animation_n750a")
+}
+
 [sub_resource type="Theme" id="3"]
 
-[sub_resource type="GDScript" id="2"]
-script/source = "@tool
-extends Control
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oj5gf"]
+content_margin_top = 5.0
+content_margin_bottom = 7.0
 
-@export var switch_to_scene = \"\"
-
-var frames := 0
-
-func _process(_delta):
-	frames += 1
-	if frames == 3:
-		_deferred_init()
-		set_process(false)
-
-func _deferred_init():
-	$GC/VB/H/Button.disabled = true
-	
-	var test := DebugDraw2D.get_graph(&\"FPS\")
-	if test:
-		$GC/VB/H/FPSEnabled.button_pressed = test.enabled
-		$GC/VB/FPSMS.button_pressed = test.frame_time_mode
-		$GC/VB/HSlider.value = test.size.x
-		$GC/VB/HSlider2.value = test.buffer_size
-	
-	if get_tree():
-		await get_tree().create_timer(0.2).timeout
-	
-	$GC/VB/H/Button.disabled = false
-
-func _on_CheckBox_toggled(button_pressed: bool) -> void:
-	var cfg = DebugDraw2D.get_graph(&\"FPS\")
-	if cfg:
-		cfg.enabled = button_pressed
-
-func _on_FPSMS_toggled(button_pressed: bool) -> void:
-	var cfg = DebugDraw2D.get_graph(&\"FPS\")
-	if cfg:
-		cfg.frame_time_mode = button_pressed
-
-func _on_HSlider_value_changed(value: float) -> void:
-	get_parent().graph_size = Vector2i(int(value), get_parent().graph_size.y)
-
-func _on_HSlider2_value_changed(value: float) -> void:
-	get_parent().graph_buffer_size = int(value)
-
-func _on_Button_pressed() -> void:
-	get_tree().call_deferred(\"change_scene_to_file\", switch_to_scene)
-"
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boyhr"]
+content_margin_left = 5.0
+content_margin_top = 5.0
+content_margin_right = 5.0
+content_margin_bottom = 5.0
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 0.784314)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="DebugDrawDemoScene" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-start_culling_distance = 55.0
 text_groups_position = 2
-text_groups_default_font_size = 15
-text_groups_title_font_size = 20
-text_groups_text_font_size = 17
-graph_text_precision = 1
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+visible = false
+directional_shadow_max_distance = 200.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_38m85")
 
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -3.988, 13.525, 37.21)
+transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -6.988, 10.986, 29.2059)
 cull_mask = 1
 current = true
-fov = 38.8
-near = 2.63
-far = 60.0
+fov = 53.0
+far = 100.0
+script = ExtResource("3_3m1mp")
 
 [node name="Panel" type="PanelContainer" parent="."]
 visible = false
@@ -263,16 +305,16 @@ far = 52.5
 [node name="Zones" type="Node3D" parent="."]
 
 [node name="Spheres" type="Node3D" parent="Zones"]
-transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -12.4687, 0.645876, -7.74484)
+transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -11.1864, 0.645876, -7.86506)
 
 [node name="Path" type="Node3D" parent="Zones"]
-transform = Transform3D(5.95153, 0, 0, 0, 6.78237, 0, 0, 0, 6.31617, 0.184938, 1.49839, -7.18731)
+transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1.12881, -7.18731)
 
 [node name="Boxes" type="Node3D" parent="Zones"]
-transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -13.8218, -0.206735, 6.43672)
+transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -16.0257, -0.206735, 6.27643)
 
 [node name="Misc" type="Node3D" parent="Zones"]
-transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -3.37336, -0.206735, 4.28992)
+transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -5.69728, -0.206735, 4.4244)
 
 [node name="Cylinders" type="Node3D" parent="Zones"]
 transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0.015712, -6.19233)
@@ -280,7 +322,19 @@ transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -
 [node name="Lines" type="Node3D" parent="Zones"]
 transform = Transform3D(10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416)
 
-[node name="LinePathAnim" type="AnimationPlayer" parent="."]
+[node name="Label3D" type="Label3D" parent="."]
+transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 0, 0, 0)
+visible = false
+pixel_size = 0.0025
+billboard = 1
+double_sided = false
+modulate = Color(0, 0, 0, 1)
+outline_modulate = Color(1, 1, 1, 1)
+text = "TestTestTestTest
+TestTestTest"
+font_size = 80
+
+[node name="LinesAnim" type="AnimationPlayer" parent="."]
 root_node = NodePath("../LinePath")
 libraries = {
 "": SubResource("AnimationLibrary_nj4nv")
@@ -288,7 +342,7 @@ libraries = {
 autoplay = "New Anim"
 
 [node name="LinePath" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.67362, -8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.0543, -8)
 
 [node name="Spatial" type="Node3D" parent="LinePath"]
 
@@ -308,109 +362,118 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -1, 1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, -1)
 
 [node name="Spatial7" type="Node3D" parent="LinePath"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.32989, -0.583818, -0.025198)
 
-[node name="Cylinder1" type="Node3D" parent="."]
-transform = Transform3D(1.30832, 0.213863, -3.73947e-07, 0.60031, -0.408523, 0.929687, 0.225355, -0.153359, -2.47654, -25.6488, 0, -6.39029)
+[node name="Cylinders" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5266, 4.76837e-07, -5.82213)
 
-[node name="Cylinder2" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.134, -9.53674e-07, -6.39029)
+[node name="Cylinder1" type="Node3D" parent="Cylinders"]
+transform = Transform3D(1.20775, 0.591481, -3.4521e-07, 0.554162, -1.12986, 0.858242, 0.208031, -0.424147, -2.28622, -3.03832, 0, -0.377882)
 
-[node name="SphereTransform" type="Node3D" parent="."]
-transform = Transform3D(3.018, 0, 0, 0, 0.945452, -0.636291, 0, 1.04515, 4.40664, -14.547, 0.166728, -5.65327)
+[node name="Cylinder2" type="Node3D" parent="Cylinders"]
+transform = Transform3D(0.667622, 0.306331, 0.114996, 0.327448, -0.625499, -0.23481, -5.73853e-08, 0.143919, -0.383377, 0.234978, -0.4237, 0.332998)
 
-[node name="SphereHDTransform" type="Node3D" parent="."]
-transform = Transform3D(1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, -2.65493, 0.587941, -1.00109, -14.5341, 0.166728, -10.3981)
+[node name="Cylinder3" type="Node3D" parent="Cylinders"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35527, -0.655492, -0.352802)
 
-[node name="SpherePosition" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.6349, 0.625214, -5.81358)
+[node name="1" type="Node3D" parent="Cylinders/Cylinder3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.419773, -2.38419e-07, -1.40591)
 
-[node name="Box1" type="Node3D" parent="."]
-transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.0141019, 0.556318, -0.0303774, 1.91619, -14.007, 0, 2.794)
+[node name="2" type="Node3D" parent="Cylinders/Cylinder3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.01018, 0.486778, 1.32635)
 
-[node name="Box2" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.4103, 0, 6.71577)
+[node name="Spheres" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1201, 0.166728, -7.893)
 
-[node name="Box3" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14.0067, 0, 10.5182)
+[node name="SphereTransform" type="Node3D" parent="Spheres"]
+transform = Transform3D(3.018, 0, 0, 0, 0.945452, -3.30182, 0, 1.04515, 2.98686, -2.14465, 4.76837e-07, 2.11952)
 
-[node name="BoxOutOfDistanceCulling" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.608, 0.344, -16.314)
+[node name="SphereHDTransform" type="Node3D" parent="Spheres"]
+transform = Transform3D(1.26984, 1.16629, -2.42095, 0.098772, 0.80937, 4.21576, -2.65493, 0.587941, -1.00109, -2.13175, 4.76837e-07, -2.62531)
 
-[node name="AABB" type="Node3D" parent="."]
-transform = Transform3D(-0.919907, -0.386434, 0.0666312, -0.388017, 0.921572, -0.0121951, -0.0566928, -0.0370723, -0.997703, -11.4765, -4.76837e-07, 7.18889)
+[node name="SpherePosition" type="Node3D" parent="Spheres"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.76745, 0.458486, 1.95921)
 
-[node name="a" type="Node3D" parent="AABB"]
-transform = Transform3D(1, -1.53668e-08, 2.23517e-08, 1.7928e-08, 1, 1.11759e-08, -1.49012e-08, 0, 1, -0.5468, -2.45083, -0.991707)
+[node name="Boxes" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.2493, 0, 6.42043)
 
-[node name="b" type="Node3D" parent="AABB"]
-transform = Transform3D(1, -1.53668e-08, 1.86265e-08, -1.18744e-08, 1, 1.11759e-08, -1.11759e-08, 0, 1, 0.821057, 1.16918, 2.89658)
-
-[node name="AABB_fixed" type="Node3D" parent="."]
-transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -16.8188, -1.788, 7.05104)
-
-[node name="Misc" type="Node3D" parent="."]
-
-[node name="Billboard" type="Node3D" parent="Misc"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.18606, -0.331599, 6.66091)
-
-[node name="Arrow" type="Node3D" parent="Misc"]
-transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -4.38512, -1.18432, 6.66091)
-
-[node name="Position" type="Node3D" parent="Misc"]
-transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, -2.73567, -0.331599, 2.69873)
-
-[node name="GizmoNormal" type="Node3D" parent="Misc"]
-transform = Transform3D(1.98138, 0, -0.70285, 0, 0.999999, 0, 0.434655, 0, 3.20395, -2.69921, -0.331599, 4.79165)
-
-[node name="GizmoTransform" type="Node3D" parent="Misc"]
-transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -4.428, -0.458, 4.259)
-
-[node name="GizmoOneColor" type="Node3D" parent="Misc"]
-transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -4.428, -0.139425, 2.50494)
-
-[node name="Grids" type="Node3D" parent="Misc"]
-transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 7.45433, -2.5, 5.15179)
-
-[node name="GridCentered" type="Node3D" parent="Misc/Grids"]
-transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
+[node name="Box1" type="Node3D" parent="Boxes"]
+transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.0141019, 0.556318, -0.0303774, 1.91619, -0.961557, 0, -3.78672)
 rotation_edit_mode = 2
 
-[node name="Subdivision" type="Node3D" parent="Misc/Grids/GridCentered"]
-transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
+[node name="Box2" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104528, -0.809874, 2.10804)
 
-[node name="Grid" type="Node3D" parent="Misc/Grids"]
-transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
+[node name="Box3" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)
 
-[node name="Subdivision" type="Node3D" parent="Misc/Grids/Grid"]
-transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
+[node name="AABB_fixed" type="Node3D" parent="Boxes"]
+transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.12735, -0.835878, 0.470324)
 
-[node name="Lines" type="Node3D" parent="."]
-transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326)
+[node name="AABB" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99963, -0.869998, 0.205034)
 
-[node name="1" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.46213, -4.03317, 0.61692)
+[node name="a" type="Node3D" parent="Boxes/AABB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 1.48526, -1.45318, 1.96619)
 
-[node name="2" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.01875, -1.79584, -0.163045)
+[node name="b" type="Node3D" parent="Boxes/AABB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -1.24128, 1.47773, -2.13102)
 
-[node name="3" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 6.87561e-07, 1, 0, -2.87275e-08, -1.49012e-08, 1, -0.1559, -0.407045, 0.0523388)
+[node name="BoxAB" type="Node3D" parent="Boxes"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.66169, -2.2624, 4.04042)
 
-[node name="4" type="Node3D" parent="Lines"]
-transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 3.42235e-07, 1, 0, -4.57815e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906)
+[node name="a" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, 0.556136, -0.666145, 0.951601)
 
-[node name="5" type="Node3D" parent="Lines"]
-transform = Transform3D(-0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -2.68836, 0.0136011, -0.249864, 0.572532, 1.43126, 0.26242, 1.92347)
+[node name="b" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.864099, 0.258702, 0.431747, -1.49012e-08, 0.857796, -0.51399, -0.503322, 0.444139, 0.741221, -0.548804, 0.715255, -0.942184)
 
-[node name="6" type="Node3D" parent="Lines"]
-transform = Transform3D(-0.998872, -0.0207882, -0.0355643, 0.0855371, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028)
+[node name="o" type="Node3D" parent="Boxes/BoxAB"]
+transform = Transform3D(0.826805, 0.360538, 0.431748, -0.102949, 0.851596, -0.51399, -0.552988, 0.380522, 0.741221, 0, 0, 0)
+metadata/_edit_group_ = true
 
-[node name="Target" type="Node3D" parent="Lines"]
-transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.30799e-06, 1, 0, -3.51517e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
+[node name="up" type="Node3D" parent="Boxes/BoxAB/o"]
+transform = Transform3D(1, -1.49012e-08, 0, -1.04308e-07, 1, 0, 0, 0, 1, 0, 0.553809, -0.331842)
+
+[node name="BoxABEdge" type="Node3D" parent="Boxes"]
+transform = Transform3D(0.965926, -0.0669873, -0.25, 0, 0.965926, -0.258819, 0.258819, 0.25, 0.933013, 0.348115, -1.30239, 4.88007)
+
+[node name="a" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(0.241143, 0.650584, 0.720132, -0.123077, 0.756539, -0.642262, -0.962654, 0.066246, 0.262507, 0.384618, -0.635015, 0.0956135)
+
+[node name="b" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(0.241143, 0.650584, 0.720133, -0.123077, 0.756539, -0.642261, -0.962654, 0.0662459, 0.262507, -0.287622, 0.997905, -0.144578)
+
+[node name="o" type="Node3D" parent="Boxes/BoxABEdge"]
+transform = Transform3D(1, 1.49012e-08, 2.98023e-08, 7.45058e-09, 1, -1.49012e-08, -1.49012e-08, -1.49012e-08, 1, 0, 0, 0)
+metadata/_edit_group_ = true
+
+[node name="up" type="Node3D" parent="Boxes/BoxABEdge/o"]
+transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
+
+[node name="Misc" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)
+
+[node name="Billboard" type="Node3D" parent="Misc"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.403353, -0.331599, 2.22542)
+
+[node name="Arrow" type="Node3D" parent="Misc"]
+transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -0.475607, -0.670307, 2.30581)
+
+[node name="Position" type="Node3D" parent="Misc"]
+transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 0.853743, -0.331599, -1.73676)
+
+[node name="GizmoNormal" type="Node3D" parent="Misc"]
+transform = Transform3D(1.95938, 0, -0.848962, 0, 0.999999, 0, 0.525014, 0, 3.16837, 0.890203, -0.306246, 0.356159)
+
+[node name="GizmoTransform" type="Node3D" parent="Misc"]
+transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -0.838587, -0.458, -0.176491)
+
+[node name="GizmoOneColor" type="Node3D" parent="Misc"]
+transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -0.838587, -0.139425, -1.93055)
 
 [node name="HitTest" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.48967, -1.03227, 9.524)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.724359, -1.03227, 7.85404)
 
 [node name="StaticBody" type="StaticBody3D" parent="HitTest"]
 
@@ -428,37 +491,93 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.03574, 2.47907, -0.819963)
 
 [node name="RayCast" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.732104, 0, -0.814761)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast2" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.684873, 0, -0.791145)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast3" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.708488, 0, 0.543175)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast4" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.708489, 0, 0.566791)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast5" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.974217, -0.225614, 0, 0.225614, 0.974217, 0, 0, 0, 1, -0.447564, 0, -0.259778)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
 [node name="RayCast6" type="RayCast3D" parent="HitTest/RayEmitter"]
 transform = Transform3D(0.935992, 0.352021, 0, -0.352021, 0.935992, 0, 0, 0, 1, 0.35227, -0.245904, -0.25849)
+enabled = false
 target_position = Vector3(0, -3.464, 0)
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="HitTest"]
-callback_mode_process = 0
+[node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
+unique_name_in_owner = true
 libraries = {
 "": SubResource("AnimationLibrary_vh8ml")
 }
 autoplay = "New Anim"
 
+[node name="Grids" type="Node3D" parent="."]
+transform = Transform3D(0.707106, 0, -0.707108, 0, 1, 0, 0.707108, 0, 0.707106, 0.730597, -2.5, 2.76274)
+
+[node name="GridCentered" type="Node3D" parent="Grids"]
+transform = Transform3D(1.74492, 0.723785, -1.74493, -1.24976, -7.72562e-08, -1.24975, -1.74493, 0.723783, 1.74493, 1.74919, -0.0010004, 1.75466)
+rotation_edit_mode = 2
+
+[node name="Subdivision" type="Node3D" parent="Grids/GridCentered"]
+transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
+
+[node name="Grid" type="Node3D" parent="Grids"]
+transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
+
+[node name="Subdivision" type="Node3D" parent="Grids/Grid"]
+transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
+
+[node name="PlaneOrigin" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 11.0482, 7.33669, -13.1715)
+mesh = SubResource("QuadMesh_1t0id")
+
+[node name="Lines" type="Node3D" parent="."]
+transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 10.2488, -0.331599, -10.3326)
+
+[node name="1" type="Node3D" parent="Lines"]
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.46213, -4.03317, 0.61692)
+
+[node name="2" type="Node3D" parent="Lines"]
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 9.40939e-07, 1, 0, -2.76085e-08, -1.49012e-08, 1, -1.01875, -1.79584, -0.163045)
+
+[node name="3" type="Node3D" parent="Lines"]
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 6.87561e-07, 1, 0, -2.87275e-08, -1.49012e-08, 1, -0.1559, -0.407045, 0.0523388)
+
+[node name="4" type="Node3D" parent="Lines"]
+transform = Transform3D(1, 6.61592e-09, 2.23038e-08, 4.9239e-07, 1, 0, -3.40677e-08, -1.49012e-08, 1, 1.18591, 1.8987, 0.301906)
+
+[node name="5" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998871, -0.0207882, -0.0355643, 0.0855375, -0.5714, -2.68836, 0.0136011, -0.249864, 0.572532, 1.43126, 0.26242, 1.92347)
+
+[node name="6" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998872, -0.0207882, -0.0355643, 0.085537, -0.5714, -2.68836, 0.0136012, -0.249864, 0.572533, 1.43441, 1.50606, 1.20028)
+
+[node name="7" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855357, -0.5714, -2.68836, 0.0136014, -0.249864, 0.572533, 0.0511096, -1.3236, 1.06745)
+
+[node name="8" type="Node3D" parent="Lines"]
+transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855353, -0.5714, -2.68836, 0.0136016, -0.249864, 0.572533, -1.01372, -3.80486, 1.25019)
+
+[node name="Target" type="Node3D" parent="Lines"]
+transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
+
 [node name="LagTest" type="CSGBox3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.4482, -1.49353, -0.450473)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -2, 0)
 size = Vector3(2, 2, 2)
 material = SubResource("1")
 
@@ -467,19 +586,69 @@ libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
 
+[node name="MusicVisualizer" type="VBoxContainer" parent="."]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 50.0
+offset_bottom = 50.0
+script = ExtResource("4_eq2lt")
+colors = SubResource("Gradient_tup4c")
+
+[node name="OpenFile" type="Button" parent="MusicVisualizer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "OPEN FILE"
+
+[node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
+root_node = NodePath("../OpenFile")
+libraries = {
+"": SubResource("AnimationLibrary_0ity1")
+}
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="MusicVisualizer"]
+unique_name_in_owner = true
+autoplay = true
+bus = &"MusicVisualizer"
+
+[node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MusicVisualizer/VBox"]
+layout_mode = 2
+
+[node name="VolumeSlider" type="HSlider" parent="MusicVisualizer/VBox/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.1
+
+[node name="MuteMaster" type="CheckBox" parent="MusicVisualizer/VBox/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Mute"
+
+[node name="AudioVisualizer" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(0.2, 0, 0, 0, 5, 0, 0, 0, 0.2, -5.31036, -1.422, 14.14)
+
 [node name="CustomCanvas" type="Control" parent="."]
+unique_name_in_owner = true
 layout_mode = 3
-anchors_preset = 11
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -639.0
-offset_top = 36.0
-offset_right = -36.0
-offset_bottom = -36.0
+offset_left = -545.0
+offset_top = 46.0
+offset_right = -37.0
+offset_bottom = 638.0
 grow_horizontal = 0
-grow_vertical = 2
 mouse_filter = 2
+metadata/_edit_lock_ = true
 
 [node name="Settings" type="Control" parent="."]
 layout_mode = 3
@@ -490,62 +659,175 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("3")
-script = SubResource("2")
+script = ExtResource("5_31v5h")
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
+metadata/_edit_lock_ = true
 
-[node name="GC" type="GridContainer" parent="Settings"]
+[node name="HBox" type="HBoxContainer" parent="Settings"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-columns = 3
+offset_left = -497.0
+offset_top = -372.0
+offset_right = -10.0006
+offset_bottom = -10.0
+grow_horizontal = 0
+grow_vertical = 0
 
-[node name="Label" type="Label" parent="Settings/GC"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Settings/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
+size_flags_vertical = 8
+
+[node name="VersionBlock" type="HBoxContainer" parent="Settings/HBox/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("6_07f7q")
+
+[node name="Label" type="Label" parent="Settings/HBox/VBoxContainer/VersionBlock"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_font_sizes/font_size = 13
+text = "Demo version:"
+
+[node name="OptionButton" type="OptionButton" parent="Settings/HBox/VBoxContainer/VersionBlock"]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_font_sizes/font_size = 13
+item_count = 1
+selected = 0
+popup/item_0/text = "1.0.0"
+popup/item_0/id = 0
+
+[node name="Label" type="Label" parent="Settings/HBox/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 8
+theme_override_styles/normal = SubResource("StyleBoxEmpty_oj5gf")
 text = "GDScript example"
 horizontal_alignment = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VB" type="VBoxContainer" parent="Settings/GC"]
+[node name="PanelContainer" type="PanelContainer" parent="Settings/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 8
+theme_override_styles/panel = SubResource("StyleBoxFlat_boyhr")
 
-[node name="H" type="HBoxContainer" parent="Settings/GC/VB"]
+[node name="VBox" type="VBoxContainer" parent="Settings/HBox/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "Common:"
+
+[node name="HBox3" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
 
-[node name="FPSEnabled" type="CheckBox" parent="Settings/GC/VB/H"]
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+layout_mode = 2
+text = "Thickness "
+
+[node name="ThicknessSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 0.5
+step = 0.001
+value = 0.05
+
+[node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Update in physics (15 Ticks) *"
+
+[node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "FPS Graph:"
+
+[node name="FPSEnabled" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 button_pressed = true
 text = "FPS Graph enabled"
 
-[node name="Button" type="Button" parent="Settings/GC/VB/H"]
-layout_mode = 2
-text = "Switch to C#"
-
-[node name="FPSMS" type="CheckBox" parent="Settings/GC/VB"]
+[node name="FPSMS" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "FPS Graph ms or FPS"
 
-[node name="HSlider" type="HSlider" parent="Settings/GC/VB"]
+[node name="HBox" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+layout_mode = 2
+text = "Width       "
+
+[node name="WidthSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 50.0
 max_value = 1000.0
 value = 200.0
 
-[node name="HSlider2" type="HSlider" parent="Settings/GC/VB"]
+[node name="HBox2" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+layout_mode = 2
+text = "BufferSize"
+
+[node name="BufferSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
 min_value = 50.0
 max_value = 1000.0
 value = 128.0
 
-[connection signal="toggled" from="Settings/GC/VB/H/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
-[connection signal="pressed" from="Settings/GC/VB/H/Button" to="Settings" method="_on_Button_pressed"]
-[connection signal="toggled" from="Settings/GC/VB/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
-[connection signal="value_changed" from="Settings/GC/VB/HSlider" to="Settings" method="_on_HSlider_value_changed"]
-[connection signal="value_changed" from="Settings/GC/VB/HSlider2" to="Settings" method="_on_HSlider2_value_changed"]
+[node name="Label3" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "Misc:"
+
+[node name="ShowStats" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Show debug stats"
+
+[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Draw an array of boxes"
+
+[node name="SwitchLang" type="Button" parent="Settings/HBox/PanelContainer/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Switch to C#"
+
+[connection signal="pressed" from="MusicVisualizer/OpenFile" to="MusicVisualizer" method="_pressed"]
+[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
+[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer/OpenFile" method="_on_volume_slider_value_changed"]
+[connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_master_toggled"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
+[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
+[connection signal="pressed" from="Settings/HBox/PanelContainer/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]
