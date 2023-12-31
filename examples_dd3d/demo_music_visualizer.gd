@@ -11,9 +11,10 @@ var transform: Transform3D:
 @export_exp_easing("inout") var color_offset_speed := 0.4
 @export var colors: Gradient = null
 
-var MusicBus := &"MusicVisualizer"
+var MusicAnalyzerBus := &"MusicAnalyzer"
+var MasterBus := &"Master"
 var MAX_HZ := 16000.0
-var MIN_HZ := 50.0
+var MIN_HZ := 20.0
 var MIN_DB := 60.0
 var spectrum: AudioEffectSpectrumAnalyzerInstance = null
 
@@ -22,14 +23,18 @@ var color_offset := 0.0
 
 var _on_data_loaded_callback = null
 
+# TODO remove after moving to 4.2
+var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_version_info()["minor"] >= 2
+
+
 func _ready():
-	var bus = AudioServer.get_bus_index(MusicBus)
+	var bus = AudioServer.get_bus_index(MusicAnalyzerBus)
 	if bus == -1:
 		print("'MusicVisualizer' audio bus not found.\nSet 'VisualizerAudioBus.tres' as the default bus to use the audio visualizer.")
 	
 	spectrum = AudioServer.get_bus_effect_instance(bus, 0)
-	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(&"Master"))
-	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(&"Master")))
+	%MuteMaster.button_pressed = AudioServer.is_bus_mute(AudioServer.get_bus_index(MasterBus))
+	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(MasterBus)))
 	
 	if OS.has_feature('web'):
 		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
@@ -47,19 +52,40 @@ func _process(_delta):
 
 
 func _pressed():
-	if DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
-		DisplayServer.file_dialog_show("Select audio file", "", "", true, DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, ["*.mp3"], 
-		func (status: bool, selected: PackedStringArray, _fileter: int):
-			if status and selected.size():
-				print(selected)
-				var file = FileAccess.open(selected[0], FileAccess.READ)
-				var data = file.get_buffer(file.get_length())
-				open_stream(selected[0].get_extension(), data)
+	var open_file = func(filepath: String):
+		print("Opening '%s'" % filepath)
+		var file = FileAccess.open(filepath, FileAccess.READ)
+		var data = file.get_buffer(file.get_length())
+		open_stream(filepath.get_extension(), data)
+	
+	if is_4_2_and_higher and DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
+		# TODO remove call() and get() after moving to 4.2
+		DisplayServer.call("file_dialog_show", "Select audio file", "", "", true, DisplayServer.get("FILE_DIALOG_MODE_OPEN_FILE"), ["*.mp3"], 
+			func (status: bool, selected: PackedStringArray, _fileter: int):
+				if status and selected.size():
+					open_file.call(selected[0])
 		)
 	elif OS.has_feature('web'):
 		JavaScriptBridge.eval("loadData()")
 	else:
-		print("Not implemented!")
+		var fd := FileDialog.new()
+		add_child(fd)
+		
+		fd.title = "Select audio file"
+		fd.access = FileDialog.ACCESS_FILESYSTEM
+		fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		fd.add_filter("*.mp3")
+		fd.popup_centered_ratio(0.8)
+		
+		fd.file_selected.connect(func(path: String):
+			open_file.call(path)
+		)
+		
+		fd.visibility_changed.connect(func():
+			if not fd.visible:
+				fd.queue_free()
+		)
+
 
 func _on_data_loaded(data: Array) -> void:
 	# Make sure there is something
@@ -67,7 +93,7 @@ func _on_data_loaded(data: Array) -> void:
 		return
 	
 	var file_name: String = data[0]
-	print("Opening %s" % file_name)
+	print("Opening '%s'" % file_name)
 	
 	var arr: PackedByteArray = JavaScriptBridge.eval("gd_callbacks.dataLoadedResult;")
 	open_stream(file_name.get_extension(), arr)
@@ -88,7 +114,7 @@ func open_stream(file_ext: String, data: PackedByteArray):
 		return
 	
 	%MusicPlayer.stream = stream
-	%MusicPlayer.bus = MusicBus
+	%MusicPlayer.bus = MusicAnalyzerBus
 	%MusicPlayer.play()
 	
 	# Debugging frequencies
@@ -145,8 +171,8 @@ func log_freq(pos: float, min_hz: float, max_hz: float) -> float:
 
 
 func _on_volume_slider_value_changed(value):
-	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(&"Master"), linear_to_db(value))
+	AudioServer.set_bus_volume_db(AudioServer.get_bus_index(MasterBus), linear_to_db(value))
 
 
 func _on_mute_master_toggled(toggled_on):
-	AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), toggled_on)
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(MasterBus), toggled_on)

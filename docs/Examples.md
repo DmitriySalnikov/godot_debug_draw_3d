@@ -50,7 +50,7 @@ C# bindings work using ClassDB, which greatly decreases its performance and it c
 If you don't want to write `DebugDraw3D`/`DebugDraw2D` every time, so you can use aliases for these singletons.
 
 ```python
-var _s = Dbg3.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
+var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
 Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
 Dbg2.set_text("Frametime", delta)
 ```
@@ -59,7 +59,7 @@ There is more information in the description of DebugDrawManager.
 
 ## Scope configs
 
-When using DebugDraw3D, you will probably want to use the scope configurations DebugDraw3DScopeConfig. With this class you will be able to change the thickness of the geometry, the brightness of the volumetric shapes, the density of the sphere mesh and possibly other parameters in the future.
+When using DebugDraw3D, you will probably want to use the scoped configurations DebugDraw3DScopeConfig. With this class you will be able to change the thickness of the geometry, the brightness of the volumetric shapes, the density of the sphere mesh and possibly other parameters in the future.
 
 ![](images/classes/LineThickness.webp)
 

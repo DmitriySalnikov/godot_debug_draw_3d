@@ -33,7 +33,7 @@ inputs:
     description: Secrets token
   telemetry_version:
     description: Telemetry version
-    default: 2fcd3ec9e528d1cd26978d0d27e9c6a3b2006270
+    default: 2ed8ace3201d466c0bac4f0d40f05d2ec85a6bd3
 runs:
   using: composite
   steps:

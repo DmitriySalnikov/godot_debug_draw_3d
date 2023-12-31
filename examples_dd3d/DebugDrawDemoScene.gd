@@ -43,6 +43,7 @@ var timer_2 := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
+# TODO remove after moving to 4.2
 var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_version_info()["minor"] >= 2
 
 
@@ -75,10 +76,10 @@ func main_update(delta: float) -> void:
 	
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness).set_center_brightness(debug_center_brightness)
 	if false: #test
-		var _s11 = DebugDraw3D.new_scope_config().set_thickness(1)
+		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
 		if true:
 			pass
-			var _s13 = DebugDraw3D.new_scope_config()
+			var _s13 = DebugDraw3D.new_scoped_config()
 			_s13.set_thickness(3)
 	
 	_update_keys_just_press()
@@ -146,13 +147,13 @@ func main_update(delta: float) -> void:
 	# Spheres
 	DebugDraw3D.draw_sphere_xf($Spheres/SphereTransform.global_transform, Color.CRIMSON)
 	if true:
-		var _shd = DebugDraw3D.new_scope_config().set_hd_sphere(true)
+		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
 		DebugDraw3D.draw_sphere_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
 	# Delayed spheres
 	if timer_1 < 0:
 		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position, 2.0, Color.BLUE_VIOLET, 2.0)
-		var _shd = DebugDraw3D.new_scope_config().set_hd_sphere(true)
+		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
 		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		timer_1 = 2
 	
@@ -225,17 +226,17 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_point_path(points_below2, DebugDraw3D.POINT_TYPE_SQUARE, 0.25, Color.BLUE, Color.TOMATO)
 	DebugDraw3D.draw_arrow_path(points_below3, Color.GOLD, 0.5)
 	if true:
-		var _sl = DebugDraw3D.new_scope_config().set_thickness(0.05)
+		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
 		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 	
 	# Misc
 	if true:
 		#for i in 1000:
-		var _a11 = DebugDraw3D.new_scope_config().set_thickness(0)
+		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
 		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
 	
 	if true:
-		var _s123 = DebugDraw3D.new_scope_config().set_center_brightness(0.1)
+		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.1)
 		DebugDraw3D.draw_arrowhead($Misc/Arrow.global_transform, Color.YELLOW_GREEN)
 	
 	DebugDraw3D.draw_square($Misc/Billboard.global_position, 0.5, Color.GREEN)
@@ -245,7 +246,7 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_gizmo($Misc/GizmoTransform.global_transform, DebugDraw3D.empty_color, true)
 	DebugDraw3D.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.BROWN, true)
 	if true:
-		var _s123 = DebugDraw3D.new_scope_config().set_center_brightness(0.5)
+		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5)
 		DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
 	
 	var tg : Transform3D = $Grids/Grid.global_transform
@@ -375,12 +376,12 @@ func _draw_rays_casts():
 func _more_tests():
 	# Delayed line render
 	if true:
-		var _a12 = DebugDraw3D.new_scope_config().set_thickness(0.035)
+		var _a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
 		DebugDraw3D.draw_line($LagTest.global_position + Vector3.UP, $LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
 	
 	# Draw plane
 	if true:
-		var _s11 = DebugDraw3D.new_scope_config().set_thickness(0.02).set_plane_size(10)
+		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(0.02).set_plane_size(10)
 		
 		var pl_node: Node3D = $PlaneOrigin
 		var xf: Transform3D = pl_node.global_transform

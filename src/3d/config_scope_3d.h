@@ -12,20 +12,20 @@ using namespace godot;
 /**
  * @brief
  * This class is used to override scope parameters for DebugDraw3D.
- * 
- * `Scope` means that these overridden parameters will affect the displayed geometry until it exits the current scope.
  *
- * To create it, use DebugDraw3D.new_scope_config. Immediately after creation, you can change the values and save the reference to a variable.
+ * `Scope` means that these overridden parameters will affect the drawn geometry until it exits the current scope.
+ *
+ * To create it, use DebugDraw3D.new_scoped_config. Immediately after creation, you can change the values and save the reference to a variable.
  *
  * But the main thing is not to save it outside the method or in other objects. After leaving the scope, this object should be deleted.
  *
  * ```python
- * var _s = DebugDraw3D.new_scope_config().set_thickness(0.025).set_center_brightness(0.7)
+ * var _s = DebugDraw3D.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)
  * DebugDraw3D.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
  * ```
  *
  * ```cs
- * using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0))
+ * using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
  *     DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
  * ```
  */

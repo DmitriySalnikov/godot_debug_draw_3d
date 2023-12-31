@@ -19,6 +19,7 @@ config/no_csharp_support=true
 [audio]
 
 buses/default_bus_layout="res://examples_dd3d/VisualizerAudioBus.tres"
+driver/output_latency=50
 
 [dotnet]
 

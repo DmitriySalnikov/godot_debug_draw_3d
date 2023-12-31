@@ -597,7 +597,7 @@ colors = SubResource("Gradient_tup4c")
 [node name="OpenFile" type="Button" parent="MusicVisualizer"]
 layout_mode = 2
 size_flags_horizontal = 0
-text = "OPEN FILE"
+text = "Open music"
 
 [node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
 root_node = NodePath("../OpenFile")
@@ -608,7 +608,7 @@ libraries = {
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="MusicVisualizer"]
 unique_name_in_owner = true
 autoplay = true
-bus = &"MusicVisualizer"
+bus = &"MusicAnalyzer"
 
 [node name="VBox" type="VBoxContainer" parent="MusicVisualizer"]
 layout_mode = 2
@@ -820,7 +820,6 @@ text = "Switch to C#"
 
 [connection signal="pressed" from="MusicVisualizer/OpenFile" to="MusicVisualizer" method="_pressed"]
 [connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
-[connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer/OpenFile" method="_on_volume_slider_value_changed"]
 [connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_master_toggled"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]

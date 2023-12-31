@@ -62,7 +62,7 @@ Precompiled for:
 
 Thanks to Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) ([#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24))
 
-> **Warning**
+> [!WARNING]
 >
 > * Firefox most likely can't run this demo
 

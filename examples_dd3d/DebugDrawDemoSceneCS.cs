@@ -55,6 +55,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
     double timer_3 = 0.0;
     double timer_text = 0.0;
 
+    // TODO remove after moving to 4.2
+    bool is_4_2_and_higher = ((int)Engine.GetVersionInfo()["major"]) >= 4 && ((int)Engine.GetVersionInfo()["minor"]) >= 2;
+
     Node3D dHitTest;
     CsgBox3D dLagTest;
     PanelContainer dPanel;
@@ -243,8 +246,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
 #pragma warning disable CS0162 // Unreachable code detected
         if (false) // #test
         {
-            using var s11 = DebugDraw3D.NewScopeConfig().SetThickness(1);
-            using var s13 = DebugDraw3D.NewScopeConfig();
+            using var s11 = DebugDraw3D.NewScopedConfig().SetThickness(1);
+            using var s13 = DebugDraw3D.NewScopedConfig();
             s13.SetThickness(3);
         }
 #pragma warning restore CS0162 // Unreachable code detected
@@ -327,14 +330,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Spheres
         DebugDraw3D.DrawSphereXf(dSphereTransform.GlobalTransform, Colors.Crimson);
-        using (var _s1 = DebugDraw3D.NewScopeConfig().SetHdSphere(true))
+        using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
             DebugDraw3D.DrawSphereXf(dSphereHDTransform.GlobalTransform, Colors.OrangeRed);
 
         // Delayed spheres
         if (timer_1 <= 0)
         {
             DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition, 2.0f, Colors.BlueViolet, 2.0f);
-            using (var _s1 = DebugDraw3D.NewScopeConfig().SetHdSphere(true))
+            using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
                 DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
             timer_1 = 2;
         }
@@ -420,16 +423,16 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawPoints(points_below.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.DarkGreen);
         DebugDraw3D.DrawPointPath(points_below2.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.25f, Colors.Blue, Colors.Tomato);
         DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
-        using (var _sl = DebugDraw3D.NewScopeConfig().SetThickness(0.05f))
+        using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
             DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
 
         // Misc
-        using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0))
+        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
         {
             DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
         }
 
-        using (var s = DebugDraw3D.NewScopeConfig().SetCenterBrightness(0.1f))
+        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.1f))
         {
             DebugDraw3D.DrawArrowhead(dMisc_Arrow.GlobalTransform, Colors.YellowGreen);
         }
@@ -440,7 +443,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         DebugDraw3D.DrawGizmo(dMisc_GizmoTransform.GlobalTransform, null, true);
         DebugDraw3D.DrawGizmo(dMisc_GizmoOneColor.GlobalTransform, Colors.Brown, true);
-        using (var s = DebugDraw3D.NewScopeConfig().SetCenterBrightness(0.5f))
+        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.5f))
         {
             DebugDraw3D.DrawGizmo(dMisc_GizmoNormal.GlobalTransform.Orthonormalized(), null, false);
         }
@@ -619,13 +622,13 @@ public partial class DebugDrawDemoSceneCS : Node3D
     void _more_tests()
     {
         // Delayed line render
-        using (var s = DebugDraw3D.NewScopeConfig().SetThickness(0.035f))
+        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.035f))
         {
             DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
         }
 
         // Draw plane
-        using (var _s11 = DebugDraw3D.NewScopeConfig().SetThickness(0.02f).SetPlaneSize(10))
+        using (var _s11 = DebugDraw3D.NewScopedConfig().SetThickness(0.02f).SetPlaneSize(10))
         {
             var pl_node = GetNode<Node3D>("PlaneOrigin");
             var xf = pl_node.GlobalTransform;
@@ -633,9 +636,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
             var plane = new Plane(normal, xf.Origin.Dot(normal));
 
             var vp = GetViewport();
-            if (Engine.IsEditorHint() && EditorInterface.Singleton.GetEditorViewport3D(0) != null)
+            if (is_4_2_and_higher)
             {
-                vp = EditorInterface.Singleton.GetEditorViewport3D(0);
+                if (Engine.IsEditorHint() && (Viewport)Engine.GetSingleton("EditorInterface").Call("get_editor_viewport_3d", 0) != null)
+                {
+                    vp = (Viewport)Engine.GetSingleton("EditorInterface").Call("get_editor_viewport_3d", 0);
+                }
             }
 
             var cam = vp.GetCamera3D();
@@ -645,11 +651,14 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 Vector3? intersect = plane.IntersectsRay(cam.GlobalPosition, dir);
 
                 DebugDraw3D.DrawPlane(plane, Colors.Coral * new Color(1, 1, 1, 0.4f), pl_node.GlobalPosition);
-                if (intersect.HasValue && intersect.Value.DistanceTo(pl_node.GlobalPosition) < _s11.GetPlaneSize() * 0.5f)
+                if (is_4_2_and_higher)
                 {
-                    // Need to test different colors on both sides of the plane
-                    var col = plane.IsPointOver(cam.GlobalPosition) ? Colors.Firebrick : Colors.Aquamarine;
-                    DebugDraw3D.DrawSphere(intersect.Value, 0.3f, col);
+                    if (intersect.HasValue && intersect.Value.DistanceTo(pl_node.GlobalPosition) < _s11.GetPlaneSize() * 0.5f)
+                    {
+                        // Need to test different colors on both sides of the plane
+                        var col = plane.IsPointOver(cam.GlobalPosition) ? Colors.Firebrick : Colors.Aquamarine;
+                        DebugDraw3D.DrawSphere(intersect.Value, 0.3f, col);
+                    }
                 }
             }
         }

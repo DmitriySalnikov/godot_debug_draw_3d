@@ -89,7 +89,7 @@ void DebugDraw3D::_bind_methods() {
 #pragma endregion // Draw Functions
 
 	REG_METHOD(get_render_stats);
-	REG_METHOD(new_scope_config);
+	REG_METHOD(new_scoped_config);
 	REG_METHOD(scoped_config);
 
 #undef REG_CLASS_NAME
@@ -319,7 +319,7 @@ Node *DebugDraw3D::get_root_node() {
 }
 #endif
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3D::new_scope_config() {
+Ref<DebugDraw3DScopeConfig> DebugDraw3D::new_scoped_config() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);

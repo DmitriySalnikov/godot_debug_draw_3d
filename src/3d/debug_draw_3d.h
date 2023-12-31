@@ -215,9 +215,9 @@ public:
 	 *
 	 * Store this instance in a local variable inside the method.
 	 */
-	Ref<DebugDraw3DScopeConfig> new_scope_config();
+	Ref<DebugDraw3DScopeConfig> new_scoped_config();
 	/**
-	 * Returns the default scoped settings that will be applied at the start of each new frame.
+	 * Returns the default scope settings that will be applied at the start of each new frame.
 	 *
 	 * Default values can be overridden in the project settings `debug_draw_3d/settings/3d/volumetric_defaults`.
 	 */
@@ -272,6 +272,11 @@ public:
 	{}
 #endif
 
+	/**
+	 * Regenerate meshes.
+	 *
+	 * Can be useful if you want to change some project settings and not restart the project.
+	 */
 	void regenerate_geometry_meshes();
 
 	/**
