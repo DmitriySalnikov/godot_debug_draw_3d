@@ -12,6 +12,7 @@ var classDebugDraw3D =
     [ "set_debug_enabled", "classDebugDraw3D.html#a519eff4a114627cec82af36be86f4620", null ],
     [ "set_custom_viewport", "classDebugDraw3D.html#a47375d847b6259183f5921068005a832", null ],
     [ "get_render_stats", "classDebugDraw3D.html#a7b1dbc003795e1c6f7debbb122cfb61d", null ],
+    [ "regenerate_geometry_meshes", "classDebugDraw3D.html#a4a875bfcaa50cce0e9d8256b7427b5fa", null ],
     [ "clear_all", "classDebugDraw3D.html#a2f79cdc62534a59f355db58a59823b45", null ],
     [ "draw_sphere", "classDebugDraw3D.html#a4f5c5e4f2e51d193e07a21d621c52652", null ],
     [ "draw_sphere_xf", "classDebugDraw3D.html#ab3d534d2d10d5c164e94a2534677dbfa", null ],
