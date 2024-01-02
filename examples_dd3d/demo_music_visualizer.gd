@@ -74,6 +74,7 @@ func _pressed():
 		fd.title = "Select audio file"
 		fd.access = FileDialog.ACCESS_FILESYSTEM
 		fd.file_mode = FileDialog.FILE_MODE_OPEN_FILE
+		fd.current_dir = OS.get_system_dir(OS.SYSTEM_DIR_DOWNLOADS)
 		fd.add_filter("*.mp3")
 		fd.popup_centered_ratio(0.8)
 		
