@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.3.0</span>
+                      id="projectnumber">&#160;1.3.1</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -141,50 +141,56 @@ $(function(){initNavTree('config__scope__3d_8h_source.html',''); initResizable()
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>GODOT_WARNING_RESTORE()</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>using namespace godot;</div>
 <div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="foldopen" id="foldopen00032" data-start="{" data-end="};">
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html">   32</a></span>class <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a> : public RefCounted {</div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    GDCLASS(<a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>, RefCounted)</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    uint64_t thread_id;</div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    uint64_t guard_id;</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keyword">typedef</span> std::function&lt;void(uint64_t, uint64_t)&gt; unregister_func;</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    unregister_func unregister_action;</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span> </div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    <span class="comment">// Update constructor!</span></div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    real_t thickness;</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    real_t center_brightness;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <span class="keywordtype">bool</span> hd_sphere;</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    real_t plane_size;</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="comment">// It can be used for example in C#</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">void</span> _manual_unregister();</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#aa45d042d2530b9ab277064b38e55be5e">   62</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#aa45d042d2530b9ab277064b38e55be5e">set_thickness</a>(real_t value);</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    real_t get_thickness();</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a72834ab84a59fd0f4e9bc96f8b730847">   70</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a72834ab84a59fd0f4e9bc96f8b730847">set_center_brightness</a>(real_t value);</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    real_t get_center_brightness();</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a635e9157dd69fffec169488ba5ffbb13">   78</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a635e9157dd69fffec169488ba5ffbb13">set_hd_sphere</a>(<span class="keywordtype">bool</span> value);</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="keywordtype">bool</span> is_hd_sphere();</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a825f18b94a4601ea756bfbda93e1aef1">   86</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a825f18b94a4601ea756bfbda93e1aef1">set_plane_size</a>(real_t value);</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    real_t get_plane_size();</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>();</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="comment">// `DDScopedConfig3D` is passed as Ref to avoid a random unreference</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>(<span class="keyword">const</span> uint64_t &amp;p_thread_id, <span class="keyword">const</span> uint64_t &amp;p_guard_id, <span class="keyword">const</span> <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a> *parent, <span class="keyword">const</span> unregister_func p_unreg);</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">~DebugDraw3DScopeConfig</a>();</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>};</div>
+<div class="foldopen" id="foldopen00055" data-start="{" data-end="};">
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html">   55</a></span>class <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a> : public RefCounted {</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    GDCLASS(<a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>, RefCounted)</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span> </div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    uint64_t thread_id;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    uint64_t guard_id;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keyword">typedef</span> std::function&lt;void(<span class="keyword">const</span> uint64_t &amp;, <span class="keyword">const</span> uint64_t &amp;)&gt; unregister_func;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    unregister_func unregister_action;</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">struct </span>Data {</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>        <span class="comment">// Update constructor!</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>        real_t thickness;</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>        real_t center_brightness;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>        <span class="keywordtype">bool</span> hd_sphere;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        real_t plane_size;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        Data();</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        Data(<span class="keyword">const</span> std::shared_ptr&lt;Data&gt; &amp;parent);</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    };</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    std::shared_ptr&lt;Data&gt; data = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="comment">// It can be used for example in C#</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">void</span> _manual_unregister();</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#aa45d042d2530b9ab277064b38e55be5e">   93</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#aa45d042d2530b9ab277064b38e55be5e">set_thickness</a>(real_t value);</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    real_t get_thickness();</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a72834ab84a59fd0f4e9bc96f8b730847">  101</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a72834ab84a59fd0f4e9bc96f8b730847">set_center_brightness</a>(real_t value);</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    real_t get_center_brightness();</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a635e9157dd69fffec169488ba5ffbb13">  109</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a635e9157dd69fffec169488ba5ffbb13">set_hd_sphere</a>(<span class="keywordtype">bool</span> value);</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keywordtype">bool</span> is_hd_sphere();</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno"><a class="line" href="classDebugDraw3DScopeConfig.html#a825f18b94a4601ea756bfbda93e1aef1">  117</a></span>    Ref&lt;DebugDraw3DScopeConfig&gt; <a class="code hl_function" href="classDebugDraw3DScopeConfig.html#a825f18b94a4601ea756bfbda93e1aef1">set_plane_size</a>(real_t value);</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    real_t get_plane_size();</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span> </div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>();</div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    <span class="comment">// `DDScopedConfig3D` is passed as Ref to avoid a random unreference</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a>(<span class="keyword">const</span> uint64_t &amp;p_thread_id, <span class="keyword">const</span> uint64_t &amp;p_guard_id, <span class="keyword">const</span> std::shared_ptr&lt;DebugDraw3DScopeConfig::Data&gt; &amp;parent, <span class="keyword">const</span> unregister_func p_unreg);</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    <a class="code hl_class" href="classDebugDraw3DScopeConfig.html">~DebugDraw3DScopeConfig</a>();</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>};</div>
 </div>
-<div class="ttc" id="aclassDebugDraw3DScopeConfig_html"><div class="ttname"><a href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a></div><div class="ttdoc">This class is used to override scope parameters for DebugDraw3D.</div><div class="ttdef"><b>Definition</b> config_scope_3d.h:32</div></div>
+<div class="ttc" id="aclassDebugDraw3DScopeConfig_html"><div class="ttname"><a href="classDebugDraw3DScopeConfig.html">DebugDraw3DScopeConfig</a></div><div class="ttdoc">This class is used to override scope parameters for DebugDraw3D.</div><div class="ttdef"><b>Definition</b> config_scope_3d.h:55</div></div>
 <div class="ttc" id="aclassDebugDraw3DScopeConfig_html_a635e9157dd69fffec169488ba5ffbb13"><div class="ttname"><a href="classDebugDraw3DScopeConfig.html#a635e9157dd69fffec169488ba5ffbb13">DebugDraw3DScopeConfig::set_hd_sphere</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; set_hd_sphere(bool value)</div></div>
 <div class="ttc" id="aclassDebugDraw3DScopeConfig_html_a72834ab84a59fd0f4e9bc96f8b730847"><div class="ttname"><a href="classDebugDraw3DScopeConfig.html#a72834ab84a59fd0f4e9bc96f8b730847">DebugDraw3DScopeConfig::set_center_brightness</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; set_center_brightness(real_t value)</div></div>
 <div class="ttc" id="aclassDebugDraw3DScopeConfig_html_a825f18b94a4601ea756bfbda93e1aef1"><div class="ttname"><a href="classDebugDraw3DScopeConfig.html#a825f18b94a4601ea756bfbda93e1aef1">DebugDraw3DScopeConfig::set_plane_size</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; set_plane_size(real_t value)</div></div>
