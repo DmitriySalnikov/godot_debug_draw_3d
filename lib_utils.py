@@ -2,8 +2,10 @@
 
 import os
 import json
+import re
 from patches import unity_tools
 
+lib_readable_name = "Debug Draw 3D"
 lib_name = "dd3d"
 output_dir = os.path.join("addons", "debug_draw_3d", "libs")
 src_folder = "src"
@@ -54,64 +56,10 @@ def setup_defines_and_flags(env, src_out):
     print()
 
 
-# A utility function for getting the name of an unblocked file
-def _get_unblocked_file_name(original_file_path, new_file_ext, max_files=256, keep_newest_one=True):
-    lib_dir = os.path.normpath(os.path.dirname(original_file_path))
-    lib_name = os.path.splitext(os.path.basename(original_file_path))[0]
-
-    # Collect all matching files
-    found_files = [
-        f
-        for f in os.listdir(lib_dir)
-        if os.path.isfile(os.path.join(lib_dir, f)) and f.startswith(lib_name) and f.endswith("." + new_file_ext)
-    ]
-    found_files = sorted(found_files, key=lambda x: os.path.getmtime(os.path.join(lib_dir, x)))
-
-    # Clean up the old files if possible, except for the newest one
-    if found_files:
-        if keep_newest_one:
-            found_files.pop()
-        for f in found_files:
-            try:
-                os.remove(os.path.join(lib_dir, f))
-            except:
-                pass
-
-    # Search for a unblocked file name
-    file_name = ""
-    for s in range(max_files):
-        file_name = "{}_{}.{}".format(os.path.join(lib_dir, lib_name), s, new_file_ext)
-        if not os.path.exists(file_name):
-            break
-        try:
-            with open(file_name, "a") as f:
-                pass
-        except IOError:
-            continue
-        break
-
-    return file_name
-
-
-# This is necessary to support debugging and Hot-Reload at the same time when building using MSVC
-def msvc_pdb_rename(env, full_lib_path):
-    pdb_name = _get_unblocked_file_name(full_lib_path, "pdb")
-    print("New path to the PDB: " + pdb_name)
-    # explicit assignment of the PDB name
-    env.Append(LINKFLAGS=["/PDB:" + pdb_name])
-
-
 def get_sources(src):
     res = [src_folder + "/" + file for file in src]
     res = unity_tools.generate_unity_build(res, "dd3d_")
-
     return res
-
-
-def replace_flag(arr, flag, new_flag):
-    if flag in arr:
-        arr.remove(flag)
-    arr.append(new_flag)
 
 
 def get_library_object(env, arguments=None, gen_help=None):
@@ -125,8 +73,10 @@ def get_library_object(env, arguments=None, gen_help=None):
     with open(src_folder + "/default_sources.json") as f:
         src = json.load(f)
 
-    # store all obj's in a dedicated folder
-    env["SHOBJPREFIX"] = "#obj/"
+    scons_cache_path = os.environ.get("SCONS_CACHE")
+    if scons_cache_path is None:
+        # store all obj's in a dedicated folder
+        env["SHOBJPREFIX"] = "#obj/"
 
     generate_sources_for_resources(env, src)
 
@@ -136,20 +86,30 @@ def get_library_object(env, arguments=None, gen_help=None):
         additional_tags += ".enabled"
 
     library_name = "lib{}.{}.{}.{}{}".format(lib_name, env["platform"], env["target"], env["arch"], additional_tags)
-    library_full_path = os.path.join(env["addon_output_dir"], (library_name + env["SHLIBSUFFIX"]))
+    library_full_path = os.path.join(env["addon_output_dir"], library_name + env["SHLIBSUFFIX"])
 
     # using the library with `reloadable = true` and with the debugger block the PDB file,
     # so it needs to be renamed to something not blocked
     if env.get("is_msvc", False) and env["target"] != "template_release":
         msvc_pdb_rename(env, library_full_path)
 
-    env.Default(
-        env.SharedLibrary(
-            target=env.File(library_full_path),
-            source=additional_src + get_sources(src),
-            SHLIBSUFFIX=env["SHLIBSUFFIX"],
+    if env["platform"] != "macos":
+        env.Default(
+            env.SharedLibrary(
+                target=env.File(library_full_path),
+                source=additional_src + get_sources(src),
+                SHLIBSUFFIX=env["SHLIBSUFFIX"],
+            )
         )
-    )
+    else:
+        generate_framework_folder(env, library_name)
+        env.Default(
+            env.SharedLibrary(
+                target=env.File(os.path.join(env["addon_output_dir"], library_name + ".framework", library_name)),
+                source=additional_src + get_sources(src),
+                SHLIBSUFFIX="",
+            )
+        )
 
     # Needed for easy reuse of this library in other build scripts
     # TODO: not tested at the moment. Probably need some changes in the C++ code
@@ -161,6 +121,32 @@ def get_library_object(env, arguments=None, gen_help=None):
         env.Append(LIBS=[library_full_path])
 
     return env
+
+
+def get_library_version():
+    with open("src/version.h", "r") as f:
+        header_content = f.read()
+
+    major_match = re.search(r"#define .*_MAJOR (\d+)", header_content)
+    minor_match = re.search(r"#define .*_MINOR (\d+)", header_content)
+    patch_match = re.search(r"#define .*_PATCH (\d+)", header_content)
+
+    if major_match:
+        major_value = int(major_match.group(1))
+    else:
+        major_value = 0
+
+    if minor_match:
+        minor_value = int(minor_match.group(1))
+    else:
+        minor_value = 0
+
+    if patch_match:
+        patch_value = int(patch_match.group(1))
+    else:
+        patch_value = 0
+
+    return f"{major_value}.{minor_value}.{patch_value}"
 
 
 def generate_sources_for_resources(env, src_out):
@@ -255,3 +241,101 @@ def generate_resources_cpp_h_files(input_files, namespace, output_no_ext, src_ou
 
         h_file.write("}\n")
         cpp_file.write("}\n")
+
+
+def generate_framework_folder(env, library_name):
+    min_version = env.get("macos_deployment_target", "10.14")
+    lib_version = get_library_version()
+
+    info_plist = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>{library_name}</string>
+	<key>CFBundleName</key>
+	<string>{lib_readable_name}</string>
+	<key>CFBundleDisplayName</key>
+	<string>{lib_readable_name}</string>
+	<key>CFBundleIdentifier</key>
+	<string>ru.dmitriysalnikov.{lib_name}</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright (c) Dmitriy Salnikov.</string>
+	<key>CFBundleVersion</key>
+	<string>{lib_version}</string>
+	<key>CFBundleShortVersionString</key>
+	<string>{lib_version}</string>
+	<key>CFBundlePackageType</key>
+	<string>FMWK</string>
+	<key>CSResourcesFileMapped</key>
+	<true/>
+	<key>DTPlatformName</key>
+	<string>macosx</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>{min_version}</string>
+</dict>
+</plist>
+    """
+
+    res_folder = os.path.join(env["addon_output_dir"], library_name + ".framework", "Resources")
+    os.makedirs(res_folder, exist_ok=True)
+
+    with open(os.path.join(res_folder, "Info.plist"), "w") as info_plist_file:
+        info_plist_file.write(info_plist)
+
+
+def replace_flag(arr, flag, new_flag):
+    if flag in arr:
+        arr.remove(flag)
+    arr.append(new_flag)
+
+
+# A utility function for getting the name of an unblocked file
+def get_unblocked_file_name(original_file_path, new_file_ext, max_files=256, keep_newest_one=True):
+    lib_dir = os.path.normpath(os.path.dirname(original_file_path))
+    lib_name = os.path.splitext(os.path.basename(original_file_path))[0]
+
+    # Collect all matching files
+    found_files = [
+        f
+        for f in os.listdir(lib_dir)
+        if os.path.isfile(os.path.join(lib_dir, f)) and f.startswith(lib_name) and f.endswith("." + new_file_ext)
+    ]
+    found_files = sorted(found_files, key=lambda x: os.path.getmtime(os.path.join(lib_dir, x)))
+
+    # Clean up the old files if possible, except for the newest one
+    if found_files:
+        if keep_newest_one:
+            found_files.pop()
+        for f in found_files:
+            try:
+                os.remove(os.path.join(lib_dir, f))
+            except:
+                pass
+
+    # Search for a unblocked file name
+    file_name = ""
+    for s in range(max_files):
+        file_name = "{}_{}.{}".format(os.path.join(lib_dir, lib_name), s, new_file_ext)
+        if not os.path.exists(file_name):
+            break
+        try:
+            with open(file_name, "a") as f:
+                pass
+        except IOError:
+            continue
+        break
+
+    return file_name
+
+
+# This is necessary to support debugging and Hot-Reload at the same time when building using MSVC
+def msvc_pdb_rename(env, full_lib_path):
+    pdb_name = get_unblocked_file_name(full_lib_path, "pdb")
+    print("New path to the PDB: " + pdb_name)
+    # explicit assignment of the PDB name
+    env.Append(LINKFLAGS=["/PDB:" + pdb_name])

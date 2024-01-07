@@ -9,8 +9,8 @@ on:
   workflow_call:
   workflow_dispatch:
     inputs:
-      dev_deploy:
-        description: Dev deploy
+      production_build:
+        description: Production build
         default: true
         type: boolean
 
@@ -33,7 +33,7 @@ concurrency:
 
 env:
   PAGES_BRANCH: gh-pages
-  DEV_DEPLOY: ${{!format('{0}', inputs.dev_deploy) && 'true' || format('{0}', inputs.dev_deploy)}} # Default true
+  DEV_DEPLOY: ${{!format('{0}', inputs.production_build) && 'true' || format('{0}', !inputs.production_build)}} # Default true
   GH_TOKEN: ${{github.token}}
 
 jobs:
@@ -43,6 +43,7 @@ jobs:
     outputs:
       head_sha: ${{steps.get_sha.outputs.head_sha}}
       lib_version: ${{steps.get_lib_version.outputs.version}}
+      deploy_version: ${{steps.get_lib_version.outputs.deploy_version}}
       domain: ${{steps.get_domain.outputs.domain}}
 
     steps:
@@ -77,6 +78,8 @@ jobs:
       - name: Get library version
         id: get_lib_version
         shell: bash
+        env:
+          REF: ${{github.ref_name}}
         run: |
           # Get DD3D version
           source_file="current/src/version.h"
@@ -88,7 +91,18 @@ jobs:
           version_string="$major.$minor.$patch"
 
           echo "version=$version_string" >> $GITHUB_OUTPUT
-          echo "Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+          echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+
+          fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
+          deploy_version=""
+          if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
+            deploy_version=$fixed_ref_name
+            echo "deploy_version=$deploy_version" >> $GITHUB_OUTPUT
+          else
+            deploy_version=$version_string
+            echo "deploy_version=$deploy_version" >> $GITHUB_OUTPUT
+          fi
+          echo "Deploy version: \`$deploy_version\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Checkout CNAME
         uses: actions/checkout@v4
@@ -204,17 +218,15 @@ jobs:
         id: get_ref
         shell: bash
         env:
-          REF: ${{github.ref_name}}
           content_dir: docs
         # dev folder name must be synced with :fix_ref_names
         run: |
-          fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
           new_ref_name=""
           if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
-            new_ref_name="dev/$fixed_ref_name/$content_dir"
+            new_ref_name="dev/${{needs.data_preparation.outputs.deploy_version}}/$content_dir"
             echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
           else
-            new_ref_name="$content_dir/${{needs.data_preparation.outputs.lib_version}}"
+            new_ref_name="$content_dir/${{needs.data_preparation.outputs.deploy_version}}"
             echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
           fi
           echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
@@ -237,24 +249,26 @@ jobs:
     name: 🌐📦 Export Demo Project
     runs-on: ubuntu-20.04
     needs: [data_preparation, generate_docs, web-gdextension]
-    container:
-      image: barichello/godot-ci:4.2.1
 
     env:
-      # Sync with container: image:
-      GODOT_VERSION: 4.2.1
+      GODOT_VERSION: 4.2.1-stable
       PROJECT_PATH: dd3d_web_build
+      BUILD_FOLDER: demo_build
 
     steps:
-      - name: Check out code
+      - name: Checkout code
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Setup
-        run: |
-          mkdir -v -p ~/.local/share/godot/export_templates
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+      - name: Setup Godot
+        uses: ./.github/actions/setup_godot
+        id: setup_godot
+        with:
+          tag: ${{env.GODOT_VERSION}}
+          file_suffix: "stable_linux.x86_64.zip"
+          download_export_templates: true
+          is_mono: false
 
       - name: Download Binaries
         uses: actions/download-artifact@v4
@@ -264,23 +278,22 @@ jobs:
 
       - name: Prepare Web Build
         run: |
-          ls addons/debug_draw_3d/libs
-          ls ${GITHUB_WORKSPACE}/addons/debug_draw_3d/libs
-          cp -r addons ${PROJECT_PATH}/addons
-          cp -r examples_dd3d ${PROJECT_PATH}/examples_dd3d
+          find addons/debug_draw_3d/libs -mindepth 1
+          cp -r addons ${{env.PROJECT_PATH}}/addons
+          cp -r examples_dd3d ${{env.PROJECT_PATH}}/examples_dd3d
 
       - name: Import Assets
-        run: godot -v -e --headless --path ${PROJECT_PATH} --quit || true
+        run: ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
 
       - name: Web Build
         run: |
-          mkdir ${GITHUB_WORKSPACE}/demo
-          cp ${PROJECT_PATH}/coi-serviceworker.min.js ${GITHUB_WORKSPACE}/demo/coi-serviceworker.min.js
-          godot -v --headless --path ${PROJECT_PATH} --export-release web ${GITHUB_WORKSPACE}/demo/index.html
+          mkdir ${{env.BUILD_FOLDER}}
+          cp ${{env.PROJECT_PATH}}/coi-serviceworker.min.js ${{env.BUILD_FOLDER}}/coi-serviceworker.min.js
+          ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} --export-release web $(pwd)/${{env.BUILD_FOLDER}}/index.html
 
       - name: Fix Permissions
         run: |
-          chmod -c -R +rX "demo/" | while read line; do
+          chmod -c -R +rX "${{env.BUILD_FOLDER}}" | while read line; do
             echo "::warning title=Invalid file permissions automatically fixed::$line"
           done
 
@@ -288,17 +301,15 @@ jobs:
         id: get_ref
         shell: bash
         env:
-          REF: ${{github.ref_name}}
           content_dir: demo
         # dev folder name must be synced with :fix_ref_names
         run: |
-          fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
           new_ref_name=""
           if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
-            new_ref_name="dev/$fixed_ref_name/$content_dir"
+            new_ref_name="dev/${{needs.data_preparation.outputs.deploy_version}}/$content_dir"
             echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
           else
-            new_ref_name="$content_dir/${{needs.data_preparation.outputs.lib_version}}"
+            new_ref_name="$content_dir/${{needs.data_preparation.outputs.deploy_version}}"
             echo "new_ref_name=$new_ref_name" >> $GITHUB_OUTPUT
           fi
           echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
@@ -307,7 +318,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
-          publish_dir: demo
+          publish_dir: ${{env.BUILD_FOLDER}}
           destination_dir: ${{steps.get_ref.outputs.new_ref_name}}
           publish_branch: ${{env.PAGES_BRANCH}}
           allow_empty_commit: true
@@ -561,8 +572,8 @@ jobs:
         shell: bash
         run: |
           git reset --soft ${{needs.data_preparation.outputs.head_sha}}
-          msg=$'Pages have been updated: ${{github.sha}}\n'
-          git commit -am "${msg}$(git log --format=%B --reverse HEAD..HEAD@{1})"
+          msg=$'Pages have been updated (${{env.DEV_DEPLOY == 'true' && 'Dev' || 'Release'}}, deploy version: ${{needs.data_preparation.outputs.deploy_version}}): ${{github.sha}}\n'
+          git commit --allow-empty -am "${msg}$(git log --format=%B --reverse HEAD..HEAD@{1})"
           git push -f
 
           echo "## Changed files:" >> $GITHUB_STEP_SUMMARY
@@ -580,19 +591,11 @@ jobs:
       url: ${{steps.deployment.outputs.page_url}}
 
     steps:
-      - name: Checkout Action
-        uses: actions/checkout@v4
-        with:
-          path: temp_repo
-          sparse-checkout: .github/actions/delete_artifact
-
       - name: Remove `github-pages` if the action was restarted
-        uses: ./temp_repo/.github/actions/delete_artifact
+        uses: geekyeggo/delete-artifact@v4
         with:
-          artifact: github-pages
-
-      - name: Remove Action
-        run: rm -rf temp_repo/
+          token: ${{secrets.GITHUB_TOKEN}}
+          name: github-pages
 
       - name: Checkout
         uses: actions/checkout@v4

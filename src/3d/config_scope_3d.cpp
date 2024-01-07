@@ -28,39 +28,39 @@ void DebugDraw3DScopeConfig::_manual_unregister() {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t value) {
-	thickness = Math::clamp(value, (real_t)0, (real_t)100);
+	data->thickness = Math::clamp(value, (real_t)0, (real_t)100);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 real_t DebugDraw3DScopeConfig::get_thickness() {
-	return thickness;
+	return data->thickness;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t value) {
-	center_brightness = Math::clamp(value, (real_t)0, (real_t)1);
+	data->center_brightness = Math::clamp(value, (real_t)0, (real_t)1);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 real_t DebugDraw3DScopeConfig::get_center_brightness() {
-	return center_brightness;
+	return data->center_brightness;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool value) {
-	hd_sphere = value;
+	data->hd_sphere = value;
 	return this;
 }
 
 bool DebugDraw3DScopeConfig::is_hd_sphere() {
-	return hd_sphere;
+	return data->hd_sphere;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t value) {
-	plane_size = value;
+	data->plane_size = value;
 	return this;
 }
 
 real_t DebugDraw3DScopeConfig::get_plane_size() {
-	return plane_size;
+	return data->plane_size;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
@@ -68,18 +68,26 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
 	thread_id = 0;
 	guard_id = 0;
 
+	data = std::make_shared<Data>();
+}
+
+DebugDraw3DScopeConfig::Data::Data() {
 	thickness = 0;
 	center_brightness = 0;
 	hd_sphere = false;
 	plane_size = INFINITY;
 }
 
-DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopeConfig *parent, const unregister_func p_unreg) {
+DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &parent, const unregister_func p_unreg) {
 	unregister_action = p_unreg;
 
 	thread_id = p_thread_id;
 	guard_id = p_guard_id;
 
+	data = std::make_shared<Data>(parent);
+}
+
+DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &parent) {
 	thickness = parent->thickness;
 	center_brightness = parent->center_brightness;
 	hd_sphere = parent->hd_sphere;

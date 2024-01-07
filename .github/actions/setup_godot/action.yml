@@ -1,0 +1,135 @@
+name: Download Godot Engine
+description: Download Godot Engine executable and 
+inputs:
+  tag:
+    description: Release tag in the official repository (4.2.1-stable, 4.1.3-stable, 4.1-stable)
+    required: true
+  file_suffix:
+    description: The name of the file to download.
+    required: true
+  download_export_templates:
+    description: Whether export templates need to be downloaded (true|false).
+    default: "false"
+    required: false
+  is_mono:
+    description: Whether Godot and export templates support dotnet (true|false).
+    default: "false"
+    required: false
+outputs:
+  godot_folder:
+    description: Path to the Godot executable file
+    value: ${{steps.store_folder.outputs.path}}
+  godot:
+    description: Path to the Godot executable file
+    value: ${{steps.store_folder.outputs.exe}}
+runs:
+  using: composite
+  steps:
+    - name: Store Godot folder
+      id: store_folder
+      env:
+        temp: ${{runner.temp}}
+      shell: bash
+      run: |
+        tmp_path="${{env.temp}}"
+        tmp_path_unix="${{env.temp}}"
+        if [ "${{runner.os}}" == "Windows" ]; then
+          tmp_path_unix=$(cygpath -u "${{env.temp}}")
+          echo "Fixed path: $tmp_path_unix"
+        fi
+
+        echo "path=$tmp_path/godot_installation" >> $GITHUB_OUTPUT
+        echo "path_unix=$tmp_path_unix/godot_installation" >> $GITHUB_OUTPUT
+
+        if [[ "${{inputs.file_suffix}}" == *"macos"* ]]; then
+          echo "exe=$tmp_path_unix/godot_installation/Godot.app/Contents/MacOS/Godot" >> $GITHUB_OUTPUT
+        else
+          echo "exe=$tmp_path_unix/godot_installation/godot" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Restore cache directory
+      id: restore_scons_cache
+      uses: actions/cache/restore@v3
+      with:
+        path: ${{steps.store_folder.outputs.path}}
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}
+
+    - name: Download Godot Engine
+      uses: robinraju/release-downloader@v1.8
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
+      with: 
+        repository: "godotengine/godot"
+        tag: "${{inputs.tag}}"
+        fileName: "*${{inputs.file_suffix}}"
+        out-file-path: "temp_download"
+        extract: true
+
+    - name: Download templates
+      uses: robinraju/release-downloader@v1.8
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.download_export_templates == 'true'}}
+      with: 
+        repository: "godotengine/godot"
+        tag: "${{inputs.tag}}"
+        fileName: "*${{inputs.tag}}${{inputs.is_mono == 'true' && '_mono' || ''}}_export_templates.tpz"
+        out-file-path: "temp_download"
+
+    - name: Finish preparation
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
+      shell: bash
+      run: |
+        if [ "${{inputs.is_mono}}" == "true" ]; then
+          echo "Move the Mono files to the root of the temporary folder"
+          mv -f Godot*/* temp_download/ || true
+          mv -f godot*/* temp_download/ || true
+        fi
+
+        echo "Unzip templates"
+        if [ "${{inputs.download_export_templates}}" == "true" ]; then
+          templates_dir="temp_download/editor_data/export_templates"
+          mkdir -p $templates_dir
+          unzip temp_download/*_export_templates.tpz -d $templates_dir
+          version=$(cat $templates_dir/templates/version.txt)
+          mv $templates_dir/templates $templates_dir/$version
+        fi
+
+        echo "Remove archives"
+        rm -rf temp_download/*.zip
+        rm -rf temp_download/*.tpz
+
+        # Get files
+        files=$(find temp_download/ -mindepth 1 -maxdepth 1 -type f)
+        echo "Found files:"
+        echo ${files[@]}
+
+        # Rename everything to godot..
+        for file in $files; do
+          folder_basename=$(basename "$file")
+          if [[ "$folder_basename" == *"_console.exe" ]]; then
+            mv -f $file temp_download/godot_console.exe
+          elif [[ "$folder_basename" == *".exe" ]]; then
+            mv -f $file temp_download/godot.exe
+          elif [[ "$folder_basename" == "Godot"* || "$folder_basename" == "godot"* ]]; then
+            mv -f $file temp_download/godot
+            # Fix permissions on Unix
+            chmod +x temp_download/godot
+          fi
+        done
+
+        echo "Move files to installation folder"
+        mv -f temp_download/ ${{steps.store_folder.outputs.path_unix}}/
+        touch ${{steps.store_folder.outputs.path_unix}}/._sc_
+
+        echo "Final folder structure:"
+        find ${{steps.store_folder.outputs.path_unix}} -mindepth 1
+
+        if [[ "${{steps.store_folder.outputs.exe}}" == *"Godot.app"* ]]; then
+          echo "Fix permissions on macOS"
+          chmod 755 "${{steps.store_folder.outputs.exe}}"
+        fi
+
+    - name: Save cache directory
+      if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
+      uses: actions/cache/save@v3
+      with:
+        path: ${{steps.store_folder.outputs.path}}
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}

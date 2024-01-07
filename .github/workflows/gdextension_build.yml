@@ -229,6 +229,8 @@ jobs:
       ]
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-latest
+    outputs:
+      artifact_name: ${{steps.output_info.outputs.artifact_name}}
 
     steps:
       - name: Checkout
@@ -242,19 +244,102 @@ jobs:
 
       - name: Store all libraries in one directory
         run: |
-          ls -R extracted_files/
+          arch_dirs=$(find extracted_files/ -mindepth 1 -maxdepth 1 -type d)
+          echo "Original structure:"
+          find extracted_files -mindepth 1
           mv -f extracted_files/**/* extracted_files
-          rm -rf extracted_files/**/
+          rm -rf $arch_dirs
+          echo "Final structure:"
+          find extracted_files -mindepth 1
           touch extracted_files/.gdignore
 
       - name: Output file information
+        id: output_info
         run: |
           cd extracted_files
           echo "Total size: $(du -ch -b | grep total | cut -f1 | awk '{printf "%.2f", $1/1048576}') MB, Total number of files: $(find . -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
 
+          echo "artifact_name=${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}" >> $GITHUB_OUTPUT
+
       - name: Upload GDExtension
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}
+          name: ${{steps.output_info.outputs.artifact_name}}
           retention-days: 7
           path: extracted_files/*
+
+  # ============================================
+
+  test_api_integration:
+    name: "🧪 Testing API: ${{matrix.runner-os}}, Godot-${{matrix.file_suffix}}"
+    runs-on: ${{matrix.runner-os}}
+    needs: collect-gdextension
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # sync with other jobs
+        runner-os: [ubuntu-20.04, macos-latest, windows-latest]
+        include:
+          - runner-os: ubuntu-20.04
+            file_suffix: "stable_linux.x86_64.zip"
+          - runner-os: macos-latest
+            file_suffix: "stable_macos.universal.zip"
+          - runner-os: windows-latest
+            file_suffix: "stable_win64.exe.zip"
+
+    env:
+      # Sync with container: image:
+      GODOT_VERSION: 4.2.1-stable
+      PROJECT_PATH: dd3d_web_build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Delete old libs folder
+        shell: bash
+        run: |
+          rm -rf addons/debug_draw_3d/libs
+
+      - name: Download Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: addons/debug_draw_3d/libs
+          name: ${{needs.collect-gdextension.outputs.artifact_name}}
+
+      - name: Prepare Test Project
+        shell: bash
+        run: |
+          cp -r addons ${{env.PROJECT_PATH}}/addons
+          cp -r examples_dd3d ${{env.PROJECT_PATH}}/examples_dd3d
+          find ${{env.PROJECT_PATH}} -mindepth 1
+
+      - name: Setup Godot
+        uses: ./.github/actions/setup_godot
+        id: setup_godot
+        with:
+          tag: ${{env.GODOT_VERSION}}
+          file_suffix: ${{matrix.file_suffix}}
+          download_export_templates: false
+          is_mono: false
+
+      - name: Import Assets
+        shell: bash
+        run: ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
+
+      - name: Test Run
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} res://headless_test.tscn || true
+
+      - name: Check Results
+        shell: bash
+        run: |
+          if [ ! -f "${{env.PROJECT_PATH}}/SUCCESS" ]; then
+            echo "The file reporting success has not been created! Failed."
+            exit 1
+          fi

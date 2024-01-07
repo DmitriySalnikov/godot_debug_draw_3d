@@ -36,12 +36,15 @@ used_classes.json
 
 *.scor
 *.scor.*
+.scons-cache/
 .import/
 .mono/
 obj/
 bin/
 src/gen/*
+src/editor/my_telemetry_modules
 addons/debug_draw_3d/libs/~*
 addons/debug_draw_3d/gen/*
 clang_rt.asan_*
 docs/images/classes/temp/
+SUCCESS

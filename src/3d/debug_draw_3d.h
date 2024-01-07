@@ -71,7 +71,7 @@ enum class ConvertableInstanceType : char;
  * 		# some DD3D logic
  * ```
  */
-class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig> {
+class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
@@ -117,14 +117,15 @@ private:
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
 
 	typedef std::pair<uint64_t, DebugDraw3DScopeConfig *> ScopedPairIdConfig;
+	typedef std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3DScopeConfig_Data;
 	// stores thread id and array of id's with ptrs
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
-	std::unordered_map<uint64_t, DebugDraw3DScopeConfig *> cached_scoped_configs;
+	std::unordered_map<uint64_t, DebugDraw3DScopeConfig_Data> cached_scoped_configs;
 	uint64_t create_scoped_configs = 0;
 
 	// Inherited via IScopeStorage
-	DebugDraw3DScopeConfig *scoped_config_for_current_thread() override;
+	const DebugDraw3DScopeConfig_Data scoped_config_for_current_thread() override;
 
 	// Meshes
 	std::unique_ptr<DebugGeometryContainer> dgc;
@@ -151,9 +152,9 @@ private:
 	void _clear_scoped_configs() override;
 
 	// Internal use of raw pointer to avoid ref/unref
-	Color _scoped_config_to_custom(DebugDraw3DScopeConfig *cfg);
-	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, DebugDraw3DScopeConfig *cfg);
-	GeometryType _scoped_config_get_geometry_type(DebugDraw3DScopeConfig *cfg);
+	Color _scoped_config_to_custom(const DebugDraw3DScopeConfig_Data &cfg);
+	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, const DebugDraw3DScopeConfig_Data &cfg);
+	GeometryType _scoped_config_get_geometry_type(const DebugDraw3DScopeConfig_Data &cfg);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
 	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);

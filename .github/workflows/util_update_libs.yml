@@ -31,7 +31,7 @@ jobs:
       - name: Replace with new files
         shell: bash
         run: |
-          ls -R extracted_files
+          find extracted_files -mindepth 1
           rm -rf ${{env.ADDON_LIBS_PATH}}/
           mv -f extracted_files ${{env.ADDON_LIBS_PATH}}
 

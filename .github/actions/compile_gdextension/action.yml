@@ -33,7 +33,7 @@ inputs:
     description: Secrets token
   telemetry_version:
     description: Telemetry version
-    default: 2ed8ace3201d466c0bac4f0d40f05d2ec85a6bd3
+    default: 999c64d0e0fc4c51f64130728eec33805721f4aa
 runs:
   using: composite
   steps:
@@ -116,9 +116,13 @@ runs:
       shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
-          strip -u $(find -L ${{inputs.output_libs_path}} -type f)
+          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep "Mach-O universal" | cut -d: -f1)
+          echo "Found files: $found_files"
+          strip -u $found_files
         else
-          strip $(find -L ${{inputs.output_libs_path}} -type f)
+          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep "ELF" | cut -d: -f1)
+          echo "Found files: $found_files"
+          strip $found_files
         fi
 
     - name: Prepare artifact Windows
@@ -135,7 +139,7 @@ runs:
         path: ${{inputs.output_libs_path}}/*
 
     - name: Save .scons_cache directory
-      if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.use_cache != 'false'}}
+      if: inputs.use_cache != 'false'
       uses: actions/cache/save@v3
       with:
         path: ${{env.SCONS_CACHE}}

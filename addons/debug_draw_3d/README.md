@@ -34,6 +34,7 @@ Your support adds motivation to develop my public projects.
 * Line
 * Line Path
 * Line with Arrow
+* Plane
 * Points
 * Position 3D (3 crossing axes)
 * Sphere
@@ -51,10 +52,10 @@ Overlay:
 Precompiled for:
 
 * Windows
-* Linux
-* macOS
-* Android
-* Web (WebAssembly)
+* Linux (built on Ubuntu 20.04)
+* macOS (10.14+)
+* Android (5.0+)
+* Web (Firefox not supported)
 
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 

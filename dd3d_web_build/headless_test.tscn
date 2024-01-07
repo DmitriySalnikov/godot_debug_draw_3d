@@ -1,0 +1,68 @@
+[gd_scene load_steps=3 format=3 uid="uid://cnv87ogp7t43e"]
+
+[sub_resource type="GDScript" id="GDScript_wbn2v"]
+script/source = "extends Node3D
+
+
+func _ready():
+	if FileAccess.file_exists(\"SUCCESS\"):
+		DirAccess.remove_absolute(\"SUCCESS\")
+	
+	print(\"DD3D Version: \", ProjectSettings.get_setting(\"debug_draw_3d/settings/updates/addon_version\"))
+	print(\"Engine Version: \", Engine.get_version_info())
+	print(\"Distribution: \", OS.get_distribution_name())
+	print(\"OS Name: \", OS.get_name())
+	print(\"OS Version: \", OS.get_version())
+	print(\"CPU: \", OS.get_processor_name())
+	print(\"CPU Count: \", OS.get_processor_count())
+	print(\"CPU Architecture: \", Engine.get_architecture_name())
+	
+	var res = await $Runner.call(&\"start\") if $Runner.has_method(&\"start\") else false
+	print(\"Headless runner returns: \", res)
+	
+	if res:
+		var f = FileAccess.open(\"SUCCESS\", FileAccess.WRITE)
+		f.store_8(1)
+	
+	print()
+	get_tree().quit(0 if res == true else 1)
+"
+
+[sub_resource type="GDScript" id="GDScript_7yy7l"]
+script/source = "extends Node3D
+
+
+# Some API calls to test library integration
+func start() -> bool:
+	print()
+	print(\"Start of testing.\")
+	
+	if true:
+		var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
+		DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
+	DebugDraw3D.draw_sphere(Vector3.ZERO)
+	DebugDraw2D.set_text(\"FPS\", \"0\")
+	DebugDraw2D.begin_text_group(\"Info\")
+	
+	await get_tree().process_frame
+	
+	DebugDraw3D.draw_sphere(Vector3.ZERO)
+	DebugDraw3D.config.culling_distance = 50
+	print(\"culling_distance: \", DebugDraw3D.config.culling_distance)
+	
+	await get_tree().process_frame
+	
+	DebugDrawManager.clear_all()
+	
+	await get_tree().process_frame
+	
+	print(\"End of testing.\")
+	
+	return true
+"
+
+[node name="HeadlessTest" type="Node3D"]
+script = SubResource("GDScript_wbn2v")
+
+[node name="Runner" type="Node3D" parent="."]
+script = SubResource("GDScript_7yy7l")

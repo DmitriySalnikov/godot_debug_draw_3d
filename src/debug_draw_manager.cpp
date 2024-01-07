@@ -4,6 +4,7 @@
 #include "2d/grouped_text.h"
 #include "3d/debug_draw_3d.h"
 #include "utils/utils.h"
+#include "version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/generate_csharp_bindings.h"
@@ -250,7 +251,6 @@ void DebugDrawManager::_integrate_into_engine() {
 
 	if (is_headless) {
 		set_debug_enabled(false);
-		return;
 	}
 
 	// Draw everything after calls from scripts to avoid lagging
@@ -352,7 +352,9 @@ void DebugDrawManager::_integrate_into_engine() {
 		_try_to_update_cs_bindings();
 
 #ifdef TELEMETRY_ENABLED
-		time_usage_reporter = std::make_unique<UsageTimeReporter>([&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
+		if (!is_headless) {
+			time_usage_reporter = std::make_unique<UsageTimeReporter>(DD3D_VERSION_STR, [&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
+		}
 #endif
 	}
 #endif
@@ -423,7 +425,9 @@ void DebugDrawManager::_try_to_update_cs_bindings() {
 
 #ifdef TELEMETRY_ENABLED
 void DebugDrawManager::_on_telemetry_sending_completed() {
-	time_usage_reporter->stop_thread();
+	if (time_usage_reporter) {
+		time_usage_reporter->stop_thread();
+	}
 }
 #endif
 #endif
