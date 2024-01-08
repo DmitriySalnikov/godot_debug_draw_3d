@@ -37,11 +37,11 @@ func _ready():
 	%VolumeSlider.value = db_to_linear(AudioServer.get_bus_volume_db(AudioServer.get_bus_index(MasterBus)))
 	
 	if OS.has_feature('web'):
-		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
+		motion_smoothing = motion_smoothing * 1.5
 		
+		_on_data_loaded_callback = JavaScriptBridge.create_callback(_on_data_loaded)
 		# Retrieve the 'gd_callbacks' object
 		var gdcallbacks: JavaScriptObject = JavaScriptBridge.get_interface("gd_callbacks")
-		
 		# Assign the callbacks
 		gdcallbacks.dataLoaded = _on_data_loaded_callback
 
