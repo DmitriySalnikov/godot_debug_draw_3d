@@ -131,10 +131,23 @@ jobs:
   web-gdextension:
     name: 🕸 Build a Web library
     needs: data_preparation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     strategy:
       fail-fast: false
+      matrix:
+        include:
+        - platform: web
+          target: template_release
+          arch: wasm32
+          artifact: web.demo_build
+          additional: lto=yes force_enabled_dd3d=yes
+
+        - platform: linux
+          target: editor
+          arch: x86_64
+          artifact: linux.demo_build
+          additional: lto=yes
 
     env:
       EM_VERSION: 3.1.39
@@ -150,6 +163,7 @@ jobs:
           submodules: recursive
 
       - name: Download Emscripten
+        if: ${{matrix.platform == 'web'}}
         uses: mymindstorm/setup-emsdk@v12
         # Continue if failed to cache
         # https://github.com/mymindstorm/setup-emsdk/issues/20
@@ -161,11 +175,11 @@ jobs:
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
-          platform: web
-          target: template_release
-          arch: wasm32
-          artifact: web.demo_build
-          additional: lto=yes force_enabled_dd3d=yes
+          platform: ${{matrix.platform}}
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          artifact: ${{matrix.artifact}}
+          additional: ${{matrix.additional}}
           additional_enabled_dd3d: false
           output_libs_path: bin
           use_cache: true
@@ -174,7 +188,7 @@ jobs:
   generate_docs:
     name: 📚 Generate Docs
     needs: data_preparation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     env:
       DOXYGEN_VERSION: 1.10.0
@@ -270,11 +284,17 @@ jobs:
           download_export_templates: true
           is_mono: false
 
+      - name: Delete old libs folder
+        shell: bash
+        run: |
+          rm -rf addons/debug_draw_3d/libs
+
       - name: Download Binaries
         uses: actions/download-artifact@v4
         with:
           path: addons/debug_draw_3d/libs
-          name: web.demo_build
+          pattern: "*.demo_build"
+          merge-multiple: true
 
       - name: Prepare Web Build
         run: |
@@ -286,10 +306,30 @@ jobs:
         run: ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
 
       - name: Web Build
+        shell: bash --noprofile --norc -o pipefail {0}
         run: |
-          mkdir ${{env.BUILD_FOLDER}}
-          cp ${{env.PROJECT_PATH}}/coi-serviceworker.min.js ${{env.BUILD_FOLDER}}/coi-serviceworker.min.js
-          ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} --export-release web $(pwd)/${{env.BUILD_FOLDER}}/index.html
+          max_attempts=3
+          current_attempt=1
+          last_exit_code=0
+
+          until [ $current_attempt -gt $max_attempts ]; do
+            rm -rf ${{env.BUILD_FOLDER}}
+            mkdir ${{env.BUILD_FOLDER}}
+            cp ${{env.PROJECT_PATH}}/coi-serviceworker.min.js ${{env.BUILD_FOLDER}}/coi-serviceworker.min.js
+            ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} --export-release web $(pwd)/${{env.BUILD_FOLDER}}/index.html
+            
+            last_exit_code=$?
+            if [ $last_exit_code -eq 0 ]; then
+              echo "Successful export! Attempt: $current_attempt"
+              exit 0
+            else
+              echo "Failed to export. Attempt: $current_attempt. Exit code: $last_exit_code"
+              current_attempt=$((current_attempt + 1))
+            fi
+          done
+
+          echo "The maximum number of attempts has been reached. Last error code: $?"
+          exit $last_exit_code
 
       - name: Fix Permissions
         run: |
@@ -383,13 +423,13 @@ jobs:
           echo ${folders[@]}
 
           for folder in $folders; do
-              folder_name=$(basename "$folder")
+            folder_name=$(basename "$folder")
 
-              # Check if the branch exists
-              if ! echo "$git_branches" | grep -q "^$folder_name$"; then
-                  echo "Removing the folder: $folder_name"
-                  rm -r "$folder_name"
-              fi
+            # Check if the branch exists
+            if ! echo "$git_branches" | grep -q "^$folder_name$"; then
+              echo "Removing the folder: $folder_name"
+              rm -r "$folder_name"
+            fi
           done
 
       - name: Add a dev index.html
@@ -398,58 +438,58 @@ jobs:
           html_template='
           <!DOCTYPE html>
           <head>
-              <meta charset="utf-8">
-              <title>Development versions</title>
-              <style>
-                  html {
-                      background: #21232b;
-                      color: #ebf0f1;
-                  }
-                  a {
-                      color: #f59031;
-                      text-decoration-line: none;
-                      font-weight: 600;
-                  }
-                  a:hover,
-                  a:focus {
-                      text-decoration-line: underline;
-                  }
-              </style>
-              <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-              <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-              <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-              <link rel="manifest" href="/site.webmanifest">
+            <meta charset="utf-8">
+            <title>Development versions</title>
+            <style>
+              html {
+                background: #21232b;
+                color: #ebf0f1;
+              }
+              a {
+                color: #f59031;
+                text-decoration-line: none;
+                font-weight: 600;
+              }
+              a:hover,
+              a:focus {
+                text-decoration-line: underline;
+              }
+            </style>
+            <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+            <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+            <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+            <link rel="manifest" href="/site.webmanifest">
           </head>
           <body>
-              <h1>Links to versions in development</h1>
-              <ul id="links-list"></ul>
-              <script>
-                  document.addEventListener("DOMContentLoaded", function () {
-                      fetch("/dev_versions.json")
-                          .then(response => response.json())
-                          .then(data => {
-                              var linksList = document.getElementById("links-list");
-                              data.forEach(function (url) {
-                                  ["demo", "docs"].forEach(function (suffix) {
-                                      var listItem = document.createElement("li");
-                                      var link = document.createElement("a");
-                                      link.href = url + "/" + suffix;
-                                      link.textContent = url + "/" + suffix;
-                                      listItem.appendChild(link);
-                                      linksList.appendChild(listItem);
-                                  })
-                                  linksList.appendChild(document.createElement("br"));
-                              });
-                          })
-                          .catch(error => {
-                              console.error("Error loading JSON file:", error);
-                              var linksList = document.getElementById("links-list");
-                              var listItem = document.createElement("li");
-                              listItem.textContent = "Error loading a file with available versions";
-                              linksList.appendChild(listItem);
-                          });
+            <h1>Links to versions in development</h1>
+            <ul id="links-list"></ul>
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                fetch("/dev_versions.json")
+                  .then(response => response.json())
+                  .then(data => {
+                    var linksList = document.getElementById("links-list");
+                    data.forEach(function (url) {
+                      ["demo", "docs"].forEach(function (suffix) {
+                        var listItem = document.createElement("li");
+                        var link = document.createElement("a");
+                        link.href = url + "/" + suffix;
+                        link.textContent = url + "/" + suffix;
+                        listItem.appendChild(link);
+                        linksList.appendChild(listItem);
+                      })
+                      linksList.appendChild(document.createElement("br"));
+                    });
+                  })
+                  .catch(error => {
+                    console.error("Error loading JSON file:", error);
+                    var linksList = document.getElementById("links-list");
+                    var listItem = document.createElement("li");
+                    listItem.textContent = "Error loading a file with available versions";
+                    linksList.appendChild(listItem);
                   });
-              </script>
+              });
+            </script>
           </body>
           </html>
           '
@@ -514,14 +554,14 @@ jobs:
               window.location.replace("REDIRECT_TO_FOLDER/" + window.location.hash);
             </script>
             <style>
-                html {
-                    background: #21232b;
-                    color: #ebf0f1;
-                }
-                a {
-                    color: #f59031;
-                    font-weight: 600;
-                }
+              html {
+                background: #21232b;
+                color: #ebf0f1;
+              }
+              a {
+                color: #f59031;
+                font-weight: 600;
+              }
             </style>
           </head>
           <body>
