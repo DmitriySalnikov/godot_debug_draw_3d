@@ -1,58 +1,58 @@
 
 <!DOCTYPE html>
 <head>
-    <meta charset="utf-8">
-    <title>Development versions</title>
-    <style>
-        html {
-            background: #21232b;
-            color: #ebf0f1;
-        }
-        a {
-            color: #f59031;
-            text-decoration-line: none;
-            font-weight: 600;
-        }
-        a:hover,
-        a:focus {
-            text-decoration-line: underline;
-        }
-    </style>
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+  <meta charset="utf-8">
+  <title>Development versions</title>
+  <style>
+    html {
+      background: #21232b;
+      color: #ebf0f1;
+    }
+    a {
+      color: #f59031;
+      text-decoration-line: none;
+      font-weight: 600;
+    }
+    a:hover,
+    a:focus {
+      text-decoration-line: underline;
+    }
+  </style>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
-    <h1>Links to versions in development</h1>
-    <ul id="links-list"></ul>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            fetch("/dev_versions.json")
-                .then(response => response.json())
-                .then(data => {
-                    var linksList = document.getElementById("links-list");
-                    data.forEach(function (url) {
-                        ["demo", "docs"].forEach(function (suffix) {
-                            var listItem = document.createElement("li");
-                            var link = document.createElement("a");
-                            link.href = url + "/" + suffix;
-                            link.textContent = url + "/" + suffix;
-                            listItem.appendChild(link);
-                            linksList.appendChild(listItem);
-                        })
-                        linksList.appendChild(document.createElement("br"));
-                    });
-                })
-                .catch(error => {
-                    console.error("Error loading JSON file:", error);
-                    var linksList = document.getElementById("links-list");
-                    var listItem = document.createElement("li");
-                    listItem.textContent = "Error loading a file with available versions";
-                    linksList.appendChild(listItem);
-                });
+  <h1>Links to versions in development</h1>
+  <ul id="links-list"></ul>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      fetch("/dev_versions.json")
+        .then(response => response.json())
+        .then(data => {
+          var linksList = document.getElementById("links-list");
+          data.forEach(function (url) {
+            ["demo", "docs"].forEach(function (suffix) {
+              var listItem = document.createElement("li");
+              var link = document.createElement("a");
+              link.href = url + "/" + suffix;
+              link.textContent = url + "/" + suffix;
+              listItem.appendChild(link);
+              linksList.appendChild(listItem);
+            })
+            linksList.appendChild(document.createElement("br"));
+          });
+        })
+        .catch(error => {
+          console.error("Error loading JSON file:", error);
+          var linksList = document.getElementById("links-list");
+          var listItem = document.createElement("li");
+          listItem.textContent = "Error loading a file with available versions";
+          linksList.appendChild(listItem);
         });
-    </script>
+    });
+  </script>
 </body>
 </html>
 
