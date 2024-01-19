@@ -46,7 +46,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Compile GDExtension
@@ -77,7 +76,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Compile GDExtension
@@ -108,7 +106,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Compile GDExtension
@@ -139,7 +136,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Install Android NDK r23c
@@ -193,7 +189,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Download Emscripten
@@ -236,7 +231,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # https://github.com/actions/download-artifact/issues/249
       - name: Download Binaries
         uses: actions/download-artifact@v4
         with:
@@ -296,8 +290,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: Delete old libs folder
         shell: bash

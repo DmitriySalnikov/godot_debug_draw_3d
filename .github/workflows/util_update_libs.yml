@@ -16,9 +16,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          lfs: true
-      
+
       - name: Download GDExtension Binaries
         uses: dawidd6/action-download-artifact@v3
         with:

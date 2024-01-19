@@ -159,7 +159,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Download Emscripten
@@ -197,7 +196,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          lfs: true
           submodules: recursive
 
       - name: Restore doxygen directory
@@ -272,8 +270,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          lfs: true
 
       - name: Setup Godot
         uses: ./.github/actions/setup_godot
@@ -380,7 +376,6 @@ jobs:
           ref: ${{env.PAGES_BRANCH}}
           # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT
           fetch-depth: 4
-          lfs: true
 
       - name: Clean unused folders
         if: env.DEV_DEPLOY == 'false'
@@ -641,7 +636,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{env.PAGES_BRANCH}}
-          lfs: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -665,7 +659,6 @@ jobs:
           ref: ${{env.PAGES_BRANCH}}
           # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT
           fetch-depth: 4
-          lfs: true
 
       - name: Reset and push
         shell: bash
