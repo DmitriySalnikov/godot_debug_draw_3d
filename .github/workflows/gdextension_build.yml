@@ -120,6 +120,36 @@ jobs:
           use_cache: ${{env.USE_CACHE}}
           token: ${{secrets.TELEMETRY_TOKEN}}
 
+  # ============================================ 
+
+  ios-gdextension:
+    name: 🍏 Ios
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [universal]
+        target: [template_debug, template_release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: ios
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          artifact: ios.${{matrix.target}}.${{matrix.arch}}
+          additional: lto=yes
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
+          token: ${{secrets.TELEMETRY_TOKEN}}
+
   # ============================================
 
   android-gdextension:
@@ -221,6 +251,7 @@ jobs:
         macos-gdextension,
         android-gdextension,
         web-gdextension,
+        ios-gdextension,
       ]
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-latest
