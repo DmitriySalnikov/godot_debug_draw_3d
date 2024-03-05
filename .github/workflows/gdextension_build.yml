@@ -222,7 +222,7 @@ jobs:
           submodules: recursive
 
       - name: Download Emscripten
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         # Continue if failed to cache
         # https://github.com/mymindstorm/setup-emsdk/issues/20
         continue-on-error: true

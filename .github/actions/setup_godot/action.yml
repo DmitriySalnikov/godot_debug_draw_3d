@@ -1,5 +1,5 @@
 name: Download Godot Engine
-description: Download Godot Engine executable and 
+description: Download Godot Engine executable and export templates
 inputs:
   tag:
     description: Release tag in the official repository (4.2.1-stable, 4.1.3-stable, 4.1-stable)
@@ -49,15 +49,16 @@ runs:
 
     - name: Restore cache directory
       id: restore_scons_cache
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ${{steps.store_folder.outputs.path}}
-        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
 
     - name: Download Godot Engine
+      # TODO https://github.com/robinraju/release-downloader/issues/688
       uses: robinraju/release-downloader@v1.8
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
-      with: 
+      with:
         repository: "godotengine/godot"
         tag: "${{inputs.tag}}"
         fileName: "*${{inputs.file_suffix}}"
@@ -65,9 +66,10 @@ runs:
         extract: true
 
     - name: Download templates
+      # TODO https://github.com/robinraju/release-downloader/issues/688
       uses: robinraju/release-downloader@v1.8
       if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.download_export_templates == 'true'}}
-      with: 
+      with:
         repository: "godotengine/godot"
         tag: "${{inputs.tag}}"
         fileName: "*${{inputs.tag}}${{inputs.is_mono == 'true' && '_mono' || ''}}_export_templates.tpz"
@@ -129,7 +131,7 @@ runs:
 
     - name: Save cache directory
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v4
       with:
         path: ${{steps.store_folder.outputs.path}}
-        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation

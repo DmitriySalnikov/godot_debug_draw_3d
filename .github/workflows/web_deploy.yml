@@ -163,7 +163,7 @@ jobs:
 
       - name: Download Emscripten
         if: ${{matrix.platform == 'web'}}
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         # Continue if failed to cache
         # https://github.com/mymindstorm/setup-emsdk/issues/20
         continue-on-error: true
@@ -199,7 +199,7 @@ jobs:
           submodules: recursive
 
       - name: Restore doxygen directory
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: restore_doxygen
         with:
           path: obj/doxygen-${{env.DOXYGEN_VERSION}}
@@ -216,7 +216,7 @@ jobs:
 
       - name: Save doxygen directory
         if: ${{!steps.restore_doxygen.outputs.cache-hit}}
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: obj/doxygen-${{env.DOXYGEN_VERSION}}
           key: doxygen-${{env.DOXYGEN_VERSION}}
