@@ -402,7 +402,7 @@ transform = Transform3D(2.90583, -0.000527017, -5.34615, 0.00469241, 3.92788, 0.
 rotation_edit_mode = 2
 
 [node name="Box2" type="Node3D" parent="Boxes"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.104528, -0.809874, 2.10804)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.531922, -1.34723, 1.44924)
 
 [node name="Box3" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)

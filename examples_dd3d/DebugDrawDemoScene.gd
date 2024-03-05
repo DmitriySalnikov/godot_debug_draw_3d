@@ -164,7 +164,7 @@ func main_update(delta: float) -> void:
 	
 	# Boxes
 	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
-	DebugDraw3D.draw_box($Boxes/Box2.global_position, Quaternion.IDENTITY, Vector3.ONE, Color.REBECCA_PURPLE)
+	DebugDraw3D.draw_box($Boxes/Box2.global_position, Quaternion.from_euler(Vector3(0, deg_to_rad(45), deg_to_rad(45))), Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_position), Color.ROSY_BROWN)
 	
 	DebugDraw3D.draw_aabb(AABB($Boxes/AABB_fixed.global_position, Vector3(2, 1, 2)), Color.AQUA)

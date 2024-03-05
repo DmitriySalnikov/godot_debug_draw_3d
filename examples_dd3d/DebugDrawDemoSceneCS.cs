@@ -351,7 +351,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Boxes
         DebugDraw3D.DrawBoxXf(dBox1.GlobalTransform, Colors.MediumPurple);
-        DebugDraw3D.DrawBox(dBox2.GlobalPosition, Quaternion.Identity, Vector3.One, Colors.RebeccaPurple);
+        DebugDraw3D.DrawBox(dBox2.GlobalPosition, Quaternion.FromEuler(new Vector3(0, Mathf.DegToRad(45), Mathf.DegToRad(45))), Vector3.One, Colors.RebeccaPurple);
         DebugDraw3D.DrawBoxXf(new Transform3D(new Basis(Vector3.Up, Mathf.Pi * 0.25f).Scaled(Vector3.One * 2), dBox3.GlobalPosition), Colors.RosyBrown);
 
         DebugDraw3D.DrawAabb(new Aabb(dAABB_fixed.GlobalPosition, new Vector3(2, 1, 2)), Colors.Aqua);

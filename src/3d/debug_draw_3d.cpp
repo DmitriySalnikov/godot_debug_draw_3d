@@ -634,7 +634,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 void DebugDraw3D::draw_box(const Vector3 &position, const Quaternion &rotation, const Vector3 &size, const Color &color, const bool &is_box_centered, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_box_xf(Transform3D(Basis(rotation).scaled(size), position), color, is_box_centered, duration);
+	draw_box_xf(Transform3D(Basis(rotation, size), position), color, is_box_centered, duration);
 }
 
 void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 &up, const Color &color, const bool &is_ab_diagonal, const real_t &duration) {
