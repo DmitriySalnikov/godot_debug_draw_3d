@@ -610,10 +610,9 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	// TODO maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
-	real_t diameter = radius * 2;
 	Vector3 half_center = diff.normalized() * len * .5f;
 	Vector3 up = get_up_vector(half_center);
-	Transform3D t = Transform3D(Basis().looking_at(half_center, up).scaled_local(Vector3(diameter, diameter, len)), a + half_center);
+	Transform3D t = Transform3D(Basis().looking_at(half_center, up).scaled_local(Vector3(radius, radius, len)), a + half_center);
 
 	LOCK_GUARD(datalock);
 	auto scfg = scoped_config_for_current_thread();

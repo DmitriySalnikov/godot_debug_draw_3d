@@ -160,7 +160,7 @@ func main_update(delta: float) -> void:
 	# Cylinders
 	DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
 	DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY.scaled(Vector3(1,2,1)), $Cylinders/Cylinder2.global_position), Color.RED)
-	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.35)
+	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.7)
 	
 	# Boxes
 	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
