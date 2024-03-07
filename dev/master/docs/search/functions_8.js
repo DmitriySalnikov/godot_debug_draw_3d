@@ -50,5 +50,6 @@ var searchData=
   ['set_5ftitle_5fsize_47',['set_title_size',['../classDebugDraw2DGraph.html#a44e21dac24218e77e57c9fa35e191fde',1,'DebugDraw2DGraph']]],
   ['set_5fupside_5fdown_48',['set_upside_down',['../classDebugDraw2DGraph.html#a90e04305c0c99180b8c7803a7357578c',1,'DebugDraw2DGraph']]],
   ['set_5fuse_5ffrustum_5fculling_49',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#ae23fa4d7dae08914f3b7a65d0d026bb0',1,'DebugDraw3DConfig']]],
-  ['set_5fvisible_5finstance_5fbounds_50',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]]
+  ['set_5fvisible_5finstance_5fbounds_50',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]],
+  ['set_5fworld_5f3d_5ffrom_5fviewport_51',['set_world_3d_from_viewport',['../classDebugDraw3D.html#a068ecce550b77da1bba54bbbed64b118',1,'DebugDraw3D']]]
 ];
