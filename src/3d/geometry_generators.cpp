@@ -386,7 +386,6 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	ZoneScoped;
 	bool debug_size = false;
 	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5f : Vector3();
-	real_t len = (b - a).length();
 	real_t half_len = .5f;
 	// real_t half_len = Math::clamp(len * .5f, .0f, 0.5f);
 	Vector3 dir = (b - a).normalized();
@@ -491,12 +490,6 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const real_t &radius
 	PackedVector2Array uv;
 	PackedVector3Array custom0;
 	PackedInt32Array indexes;
-
-	auto rotate = [](PackedVector3Array &arr, int start, int end, real_t scale) {
-		for (int i = start; i <= end; i++) {
-			arr[i] = arr[i].rotated(Vector3_FORWARD, Math::deg_to_rad(45.f)) / scale;
-		}
-	};
 
 	real_t front_offset = add_bevel ? .5f : 0;
 	real_t square_diag_mult = MathUtils::Sqrt2;

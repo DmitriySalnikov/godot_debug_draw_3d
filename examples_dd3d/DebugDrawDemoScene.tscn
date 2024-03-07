@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=34 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -127,6 +127,40 @@ _data = {
 "New Anim": SubResource("9"),
 "RESET": SubResource("10")
 }
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r5qn7"]
+resource_local_to_scene = true
+shading_mode = 0
+disable_ambient_light = true
+disable_fog = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_c6mie"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_r5qn7")
+size = Vector2(4, 4)
+
+[sub_resource type="Animation" id="Animation_ucqh5"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:mesh:material:albedo_texture")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [null]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cq37i"]
+_data = {
+"RESET": SubResource("Animation_ucqh5")
+}
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_tigpa"]
 
 [sub_resource type="SphereShape3D" id="4"]
 radius = 1.0
@@ -298,6 +332,7 @@ render_target_update_mode = 0
 [node name="CameraLayer2_5" type="Camera3D" parent="Panel/ViewportContainer/Viewport"]
 transform = Transform3D(1, 0, 0, 0, 0.34202, 0.939693, 0, -0.939693, 0.34202, -3.988, 39.474, 14.053)
 cull_mask = 2
+current = true
 fov = 38.8
 near = 2.63
 far = 52.5
@@ -371,7 +406,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.5266, 4.76837e-07, -5.822
 transform = Transform3D(1.20775, 0.591481, -3.4521e-07, 0.554162, -1.12986, 0.858242, 0.208031, -0.424147, -2.28622, -3.03832, 0, -0.377882)
 
 [node name="Cylinder2" type="Node3D" parent="Cylinders"]
-transform = Transform3D(0.667622, 0.306331, 0.114996, 0.327448, -0.625499, -0.23481, -5.73853e-08, 0.143919, -0.383377, 0.234978, -0.4237, 0.332998)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.234978, -0.4237, 0.332998)
 
 [node name="Cylinder3" type="Node3D" parent="Cylinders"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.35527, -0.655492, -0.352802)
@@ -450,6 +485,31 @@ metadata/_edit_group_ = true
 
 [node name="up" type="Node3D" parent="Boxes/BoxABEdge/o"]
 transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
+
+[node name="OtherWorld" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.53219, 0, 5.30229)
+mesh = SubResource("PlaneMesh_c6mie")
+skeleton = NodePath("")
+
+[node name="RESET" type="AnimationPlayer" parent="OtherWorld"]
+libraries = {
+"": SubResource("AnimationLibrary_cq37i")
+}
+
+[node name="SubViewport" type="SubViewport" parent="OtherWorld"]
+own_world_3d = true
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport"]
+current = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.88588)
+mesh = SubResource("CapsuleMesh_tigpa")
+
+[node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
 
 [node name="Misc" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)
@@ -698,7 +758,6 @@ layout_mode = 2
 size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 13
 item_count = 1
-selected = 0
 popup/item_0/text = "1.0.0"
 popup/item_0/id = 0
 

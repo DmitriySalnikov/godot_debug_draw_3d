@@ -343,7 +343,7 @@ void DebugDrawManager::_integrate_into_engine() {
 	}
 
 	debug_draw_2d_singleton->set_custom_canvas(debug_draw_2d_singleton->custom_canvas);
-	debug_draw_3d_singleton->_set_base_world_node(SCENE_ROOT());
+	debug_draw_3d_singleton->set_world_3d_from_viewport(SCENE_ROOT());
 	_connect_scene_changed();
 #endif
 

@@ -113,6 +113,12 @@ func main_update(delta: float) -> void:
 	$Panel.visible = Input.is_key_pressed(KEY_ALT)
 	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_ALT) else null
 	
+	
+	if Input.is_key_pressed(KEY_ALT):
+		DebugDraw3D.set_world_3d_from_viewport($OtherWorld/SubViewport)
+	else:
+		DebugDraw3D.set_world_3d_from_viewport(get_viewport())
+	
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
@@ -228,6 +234,10 @@ func main_update(delta: float) -> void:
 	if true:
 		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
 		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
+	
+	# Other world
+	
+	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform, Color.SANDY_BROWN)
 	
 	# Misc
 	if true:
@@ -539,7 +549,8 @@ func _ready() -> void:
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
-
+	
+	$OtherWorld.mesh.material.albedo_texture = $OtherWorld/SubViewport.get_texture()
 
 func _is_key_just_pressed(key):
 	if (button_presses[key] == 1):

@@ -8,6 +8,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/multi_mesh.hpp>
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
+#include <godot_cpp/classes/world3d.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -49,7 +50,7 @@ class DebugGeometryContainer {
 	ImmediateMeshStorage immediate_mesh_storage;
 
 	GeometryPool geometry_pool;
-	Node *scene_world_node = nullptr;
+	Ref<World3D> base_world_viewport;
 	int32_t render_layers = 1;
 	bool is_frame_rendered = false;
 
@@ -59,8 +60,8 @@ public:
 	DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel, const bool &use_icosphere, const bool &use_icosphere_hd);
 	~DebugGeometryContainer();
 
-	void set_world(Node *new_world);
-	Node *get_world();
+	void set_world(Ref<World3D> new_world);
+	Ref<World3D> get_world();
 
 	void update_geometry(double delta);
 	void update_geometry_physics_start(double delta);

@@ -11,6 +11,7 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/world3d.hpp>
 GODOT_WARNING_RESTORE()
 
 #define NEED_LEAVE (!_is_enabled_override())
@@ -40,6 +41,8 @@ void DebugDraw3D::_bind_methods() {
 #pragma endregion
 
 #pragma region Draw Functions
+	ClassDB::bind_method(D_METHOD(NAMEOF(set_world_3d_from_viewport), "viewport"), &DebugDraw3D::set_world_3d_from_viewport);
+
 	ClassDB::bind_method(D_METHOD(NAMEOF(regenerate_geometry_meshes)), &DebugDraw3D::regenerate_geometry_meshes);
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDraw3D::clear_all);
 
@@ -364,15 +367,6 @@ void DebugDraw3D::_load_materials() {
 #endif
 }
 
-void DebugDraw3D::_set_base_world_node(Node *_world_base) {
-	ZoneScoped;
-#ifndef DISABLE_DEBUG_RENDERING
-	dgc->set_world(_world_base);
-#else
-	return;
-#endif
-}
-
 bool DebugDraw3D::_is_enabled_override() const {
 	return debug_enabled && DebugDrawManager::get_singleton()->is_debug_enabled();
 }
@@ -456,6 +450,17 @@ Viewport *DebugDraw3D::get_custom_viewport() const {
 	return custom_viewport;
 }
 
+void DebugDraw3D::set_world_3d_from_viewport(Viewport *_world_base) {
+	ZoneScoped;
+	ERR_FAIL_NULL(_world_base);
+
+#ifndef DISABLE_DEBUG_RENDERING
+	dgc->set_world(_world_base->find_world_3d());
+#else
+	return;
+#endif
+}
+
 #pragma endregion
 
 #pragma region Draw Functions
@@ -472,7 +477,7 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 void DebugDraw3D::regenerate_geometry_meshes() {
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
-	Node *old_world = dgc ? dgc->get_world() : nullptr;
+	Ref<World3D> old_world = dgc ? dgc->get_world() : Ref<World3D>();
 	dgc.reset();
 
 	dgc = std::make_unique<DebugGeometryContainer>(

@@ -175,7 +175,6 @@ private:
 	Ref<ShaderMaterial> get_extendable_material();
 
 	void _load_materials();
-	void _set_base_world_node(Node *world_base);
 	inline bool _is_enabled_override() const;
 
 	void process(double delta);
@@ -272,6 +271,11 @@ public:
 #define FAKE_FUNC_IMPL \
 	{}
 #endif
+
+	/**
+	 * Set the Viewport whose world will be used as the base for debugging shapes.
+	 */
+	void set_world_3d_from_viewport(Viewport *world_base);
 
 	/**
 	 * Regenerate meshes.

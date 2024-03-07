@@ -157,21 +157,19 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 	multi_mesh_storage[(int)type].mesh = new_mm;
 }
 
-void DebugGeometryContainer::set_world(Node *new_world) {
+void DebugGeometryContainer::set_world(Ref<World3D> new_world) {
 	ZoneScoped;
-	if (!new_world) {
+	if (new_world.is_null()) {
 		return;
 	}
 
-	scene_world_node = new_world;
-	RenderingServer *rs = RenderingServer::get_singleton();
-	RID scenario;
-	Viewport *viewport = Object::cast_to<Viewport>(new_world);
-	if (viewport) {
-		scenario = viewport->get_world_3d()->get_scenario();
-	} else {
-		scenario = new_world->get_viewport()->get_world_3d()->get_scenario();
+	if (new_world == base_world_viewport) {
+		return;
 	}
+
+	base_world_viewport = new_world;
+	RenderingServer *rs = RenderingServer::get_singleton();
+	RID scenario = base_world_viewport->get_scenario();
 
 	for (auto &s : multi_mesh_storage) {
 		rs->instance_set_scenario(s.instance, scenario);
@@ -179,8 +177,8 @@ void DebugGeometryContainer::set_world(Node *new_world) {
 	rs->instance_set_scenario(immediate_mesh_storage.instance, scenario);
 }
 
-Node *DebugGeometryContainer::get_world() {
-	return scene_world_node;
+Ref<World3D> DebugGeometryContainer::get_world() {
+	return base_world_viewport;
 }
 
 // TODO add mark_dirty for 3d to reduce editor updates if only delayed shapes are displayed.
