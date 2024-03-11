@@ -7,6 +7,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/viewport.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -75,6 +76,7 @@ public:
 		real_t center_brightness;
 		bool hd_sphere;
 		real_t plane_size;
+		Viewport *viewport;
 
 		Data();
 		Data(const std::shared_ptr<Data> &parent);
@@ -92,7 +94,7 @@ public:
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
 	Ref<DebugDraw3DScopeConfig> set_thickness(real_t value);
-	real_t get_thickness();
+	real_t get_thickness() const;
 
 	/**
 	 * Set the brightness of the central part of the volumetric lines.
@@ -100,7 +102,7 @@ public:
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
 	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t value);
-	real_t get_center_brightness();
+	real_t get_center_brightness() const;
 
 	/**
 	 * Set the mesh density of the sphere
@@ -108,7 +110,7 @@ public:
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
 	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool value);
-	bool is_hd_sphere();
+	bool is_hd_sphere() const;
 
 	/**
 	 * Set the size of the `Plane` in DebugDraw3D.draw_plane. If set to `INF`, the `Far` parameter of the current camera will be used.
@@ -116,7 +118,17 @@ public:
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
 	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t value);
-	real_t get_plane_size();
+	real_t get_plane_size() const;
+
+	/**
+	 * Set which Viewport will be used to get World3D.
+	 *
+	 * If the World3D of this Viewport has not been used before,
+	 * then the owner of this World3D will be found in the current branch of the tree,
+	 * and special observer nodes will be added to it.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *value);
+	Viewport *get_viewport() const;
 
 	/// @private
 	DebugDraw3DScopeConfig();

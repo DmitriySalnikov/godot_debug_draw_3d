@@ -10,12 +10,14 @@
 #include <mutex>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
+class DebugDraw3D;
 class DataGraphManager;
 class DebugDrawManager;
 class DebugDraw3DConfig;
@@ -27,6 +29,23 @@ class DelayedRendererLine;
 
 enum class InstanceType : char;
 enum class ConvertableInstanceType : char;
+#endif
+
+#ifndef DISABLE_DEBUG_RENDERING
+/// @private
+class _DD3D_WorldWatcher : public Node3D {
+	GDCLASS(_DD3D_WorldWatcher, Node3D)
+protected:
+	DebugDraw3D *m_owner = nullptr;
+	uint64_t m_world_id;
+	static void _bind_methods(){};
+
+public:
+	void init(DebugDraw3D *p_root, uint64_t p_world_id);
+
+	virtual void _notification(int p_what);
+};
+
 #endif
 
 /**
@@ -78,6 +97,7 @@ class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, 
 
 #ifndef DISABLE_DEBUG_RENDERING
 	friend DebugGeometryContainer;
+	friend _DD3D_WorldWatcher;
 
 	enum GeometryType{
 		Wireframe,
@@ -110,7 +130,6 @@ private:
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
-	Ref<DebugDraw3DStats> stats_3d;
 	Ref<DebugDraw3DScopeConfig> default_scoped_config;
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -122,13 +141,19 @@ private:
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
 	std::unordered_map<uint64_t, DebugDraw3DScopeConfig_Data> cached_scoped_configs;
-	uint64_t create_scoped_configs = 0;
+	uint64_t created_scoped_configs = 0;
+	struct {
+		uint64_t created;
+		uint64_t orphans;
+	} scoped_stats_3d = {};
 
 	// Inherited via IScopeStorage
 	const DebugDraw3DScopeConfig_Data scoped_config_for_current_thread() override;
 
 	// Meshes
-	std::unique_ptr<DebugGeometryContainer> dgc;
+	/// Store World3D id and debug container
+	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
+	std::unordered_map<const Viewport *, uint64_t> viewport_to_world_cache;
 
 	Vector3 previous_camera_position;
 	double previous_camera_far_plane = 0;
@@ -155,6 +180,12 @@ private:
 	Color _scoped_config_to_custom(const DebugDraw3DScopeConfig_Data &cfg);
 	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, const DebugDraw3DScopeConfig_Data &cfg);
 	GeometryType _scoped_config_get_geometry_type(const DebugDraw3DScopeConfig_Data &cfg);
+
+	std::shared_ptr<DebugGeometryContainer> create_debug_container();
+	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *vp);
+	void _register_viewport_world_deferred(Viewport *vp, const uint64_t p_world_id);
+	Viewport *_get_root_world_viewport(Viewport *vp);
+	void _remove_debug_container(const uint64_t &p_world_id);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
 	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
@@ -259,11 +290,18 @@ public:
 #pragma region Exposed Draw Methods
 
 	/**
-	 * Returns the DebugDraw3DStats instance with the current statistics.
+	 * Returns an instance of DebugDraw3DStats with the current statistics.
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
 	Ref<DebugDraw3DStats> get_render_stats();
+
+	/**
+	 * Returns an instance of DebugDraw3DStats with the current statistics for the World3D of the Viewport.
+	 *
+	 * Some data can be delayed by 1 frame.
+	 */
+	Ref<DebugDraw3DStats> get_render_stats_for_viewport(Viewport *viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL
@@ -271,11 +309,6 @@ public:
 #define FAKE_FUNC_IMPL \
 	{}
 #endif
-
-	/**
-	 * Set the Viewport whose world will be used as the base for debugging shapes.
-	 */
-	void set_world_3d_from_viewport(Viewport *world_base);
 
 	/**
 	 * Regenerate meshes.

@@ -17,6 +17,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_plane_size, "value");
 	REG_METHOD(get_plane_size);
+
+	REG_METHOD(set_viewport, "value");
+	REG_METHOD(get_viewport);
 #undef REG_CLASS_NAME
 }
 
@@ -32,7 +35,7 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t value) 
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-real_t DebugDraw3DScopeConfig::get_thickness() {
+real_t DebugDraw3DScopeConfig::get_thickness() const {
 	return data->thickness;
 }
 
@@ -41,7 +44,7 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-real_t DebugDraw3DScopeConfig::get_center_brightness() {
+real_t DebugDraw3DScopeConfig::get_center_brightness() const {
 	return data->center_brightness;
 }
 
@@ -50,7 +53,7 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool value) {
 	return this;
 }
 
-bool DebugDraw3DScopeConfig::is_hd_sphere() {
+bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 	return data->hd_sphere;
 }
 
@@ -59,8 +62,17 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t value)
 	return this;
 }
 
-real_t DebugDraw3DScopeConfig::get_plane_size() {
+real_t DebugDraw3DScopeConfig::get_plane_size() const {
 	return data->plane_size;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *value) {
+	data->viewport = value;
+	return this;
+}
+
+Viewport *DebugDraw3DScopeConfig::get_viewport() const {
+	return data->viewport;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
@@ -69,13 +81,6 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
 	guard_id = 0;
 
 	data = std::make_shared<Data>();
-}
-
-DebugDraw3DScopeConfig::Data::Data() {
-	thickness = 0;
-	center_brightness = 0;
-	hd_sphere = false;
-	plane_size = INFINITY;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &parent, const unregister_func p_unreg) {
@@ -87,13 +92,22 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, cons
 	data = std::make_shared<Data>(parent);
 }
 
+DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
+	_manual_unregister();
+}
+
+DebugDraw3DScopeConfig::Data::Data() {
+	thickness = 0;
+	center_brightness = 0;
+	hd_sphere = false;
+	plane_size = INFINITY;
+	viewport = nullptr;
+}
+
 DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &parent) {
 	thickness = parent->thickness;
 	center_brightness = parent->center_brightness;
 	hd_sphere = parent->hd_sphere;
 	plane_size = parent->plane_size;
-}
-
-DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
-	_manual_unregister();
+	viewport = parent->viewport;
 }

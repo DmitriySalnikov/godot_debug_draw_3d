@@ -10,7 +10,7 @@ using namespace godot;
 /**
  * @brief
  * You can get statistics about 3D rendering from this class.
- * 
+ *
  * All names try to reflect what they mean.
  *
  * To get an instance of this class with current statistics, use DebugDraw3D.get_render_stats.
@@ -90,4 +90,7 @@ public:                                      \
 			const int64_t &t_time_filling_buffers_lines_usec,
 			const int64_t &t_time_culling_instant_usec,
 			const int64_t &t_time_culling_delayed_usec);
+
+	///  @private
+	void combine_with(const Ref<DebugDraw3DStats> other);
 };

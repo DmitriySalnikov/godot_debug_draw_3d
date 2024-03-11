@@ -487,7 +487,7 @@ metadata/_edit_group_ = true
 transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
 
 [node name="OtherWorld" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.53219, 0, 5.30229)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.53219, -2.5, 5.30229)
 mesh = SubResource("PlaneMesh_c6mie")
 skeleton = NodePath("")
 
@@ -501,15 +501,16 @@ own_world_3d = true
 render_target_update_mode = 4
 
 [node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 7.25557)
 current = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.88588)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 4.85623)
 mesh = SubResource("CapsuleMesh_tigpa")
 
 [node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 5.72253)
 
 [node name="Misc" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)

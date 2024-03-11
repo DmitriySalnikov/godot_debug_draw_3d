@@ -34,6 +34,12 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		tracy::StartupProfiler();
 #endif
 
+#ifndef DISABLE_DEBUG_RENDERING
+		// TODO register as unexposed
+		ClassDB::register_class<_DD3D_PhysicsWatcher>();
+		ClassDB::register_class<_DD3D_WorldWatcher>();
+#endif
+
 		ClassDB::register_class<DebugDraw2D>();
 		ClassDB::register_class<DebugDraw2DStats>();
 		ClassDB::register_class<DebugDraw2DConfig>();
@@ -46,10 +52,6 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDraw3DScopeConfig>();
 
 		ClassDB::register_class<DebugDrawManager>();
-#ifndef DISABLE_DEBUG_RENDERING
-		// TODO register as unexposed
-		ClassDB::register_class<DD3D_PhysicsWatcher>();
-#endif
 
 		// Since this manager is a node in the scene tree,
 		// it will already be destroyed at the time of cleaning this library.

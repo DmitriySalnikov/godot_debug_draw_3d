@@ -91,3 +91,27 @@ void DebugDraw3DStats::set_render_stats(
 
 	total_time_spent_usec = total_time_filling_buffers_usec + total_time_culling_usec;
 }
+
+void DebugDraw3DStats::combine_with(const Ref<DebugDraw3DStats> other) {
+	instances += other->instances;
+	lines += other->lines;
+	instances_physics += other->instances_physics;
+	lines_physics += other->lines_physics;
+	total_geometry += other->total_geometry;
+
+	visible_instances += other->visible_instances;
+	visible_lines += other->visible_lines;
+	visible_instances_physics += other->visible_instances_physics;
+	visible_lines_physics += other->visible_lines_physics;
+	total_visible += other->total_visible;
+
+	time_filling_buffers_instances_usec += other->time_filling_buffers_instances_usec;
+	time_filling_buffers_lines_usec += other->time_filling_buffers_lines_usec;
+	total_time_filling_buffers_usec += other->total_time_filling_buffers_usec;
+
+	time_culling_instant_usec += other->time_culling_instant_usec;
+	time_culling_delayed_usec += other->time_culling_delayed_usec;
+	total_time_culling_usec += other->total_time_culling_usec;
+
+	total_time_spent_usec += other->total_time_spent_usec;
+}

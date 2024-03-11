@@ -19,8 +19,8 @@ class DebugDrawManager;
 
 #ifndef DISABLE_DEBUG_RENDERING
 /// @private
-class DD3D_PhysicsWatcher : public Node {
-	GDCLASS(DD3D_PhysicsWatcher, Node)
+class _DD3D_PhysicsWatcher : public Node {
+	GDCLASS(_DD3D_PhysicsWatcher, Node)
 protected:
 	DebugDrawManager *root_node;
 	static void _bind_methods(){};
@@ -64,7 +64,7 @@ protected:
 
 private:
 #ifndef DISABLE_DEBUG_RENDERING
-	friend DD3D_PhysicsWatcher;
+	friend _DD3D_PhysicsWatcher;
 #endif
 
 	static DebugDrawManager *singleton;

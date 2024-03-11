@@ -93,6 +93,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dCylinder3a;
     Node3D dCylinder3b;
 
+    MeshInstance3D dOtherWorld;
+    SubViewport dOtherWorldViewport;
+    Node3D dOtherWorldBox;
+
     Control dCustomCanvas;
     Node3D dMisc_Arrow;
     Camera3D dCamera;
@@ -148,6 +152,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dCylinder3a = GetNode<Node3D>("Cylinders/Cylinder3/1");
         dCylinder3b = GetNode<Node3D>("Cylinders/Cylinder3/2");
 
+        dOtherWorld = GetNode<MeshInstance3D>("OtherWorld");
+        dOtherWorldViewport = GetNode<SubViewport>("OtherWorld/SubViewport");
+        dOtherWorldBox = GetNode<Node3D>("OtherWorld/SubViewport/OtherWorldBox");
+
         dCustomCanvas = GetNode<Control>("CustomCanvas");
         dMisc_Arrow = GetNode<Node3D>("Misc/Arrow");
         dCamera = GetNode<Camera3D>("Camera");
@@ -166,6 +174,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dHitTest_RayEmitter = GetNode<Node3D>("HitTest/RayEmitter");
 
         _update_keys_just_press();
+
+        ((StandardMaterial3D)((PrimitiveMesh)dOtherWorld.Mesh).Material).AlbedoTexture = dOtherWorldViewport.GetTexture();
 
         await new SignalAwaiter(GetTree(), "process_frame", this);
 
@@ -425,6 +435,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
         using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
             DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
+        // Other world
+
+        using (var s = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()))
+            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(Vector3.Up, Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau)), Colors.SandyBrown);
 
         // Misc
         using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))

@@ -113,12 +113,6 @@ func main_update(delta: float) -> void:
 	$Panel.visible = Input.is_key_pressed(KEY_ALT)
 	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_ALT) else null
 	
-	
-	if Input.is_key_pressed(KEY_ALT):
-		DebugDraw3D.set_world_3d_from_viewport($OtherWorld/SubViewport)
-	else:
-		DebugDraw3D.set_world_3d_from_viewport(get_viewport())
-	
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
@@ -237,7 +231,9 @@ func main_update(delta: float) -> void:
 	
 	# Other world
 	
-	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform, Color.SANDY_BROWN)
+	if true:
+		var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
+		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3.UP, wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
 	
 	# Misc
 	if true:

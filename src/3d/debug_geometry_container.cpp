@@ -159,17 +159,13 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 
 void DebugGeometryContainer::set_world(Ref<World3D> new_world) {
 	ZoneScoped;
-	if (new_world.is_null()) {
-		return;
-	}
-
 	if (new_world == base_world_viewport) {
 		return;
 	}
 
 	base_world_viewport = new_world;
 	RenderingServer *rs = RenderingServer::get_singleton();
-	RID scenario = base_world_viewport->get_scenario();
+	RID scenario = base_world_viewport.is_valid() ? base_world_viewport->get_scenario() : RID();
 
 	for (auto &s : multi_mesh_storage) {
 		rs->instance_set_scenario(s.instance, scenario);
@@ -355,7 +351,7 @@ void DebugGeometryContainer::update_geometry_physics_end(double delta) {
 void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &stats) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
-	return geometry_pool.update_stats(stats);
+	return geometry_pool.set_stats(stats);
 }
 
 void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {

@@ -21,12 +21,12 @@ Object *DebugDrawManager::default_arg_obj = nullptr;
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
-void DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
+void _DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
 	root_node = p_root;
 	set_physics_process_priority(INT32_MIN);
 }
 
-void DD3D_PhysicsWatcher::_physics_process(double delta) {
+void _DD3D_PhysicsWatcher::_physics_process(double delta) {
 	root_node->_physics_process_start(delta);
 }
 #endif
@@ -260,13 +260,10 @@ void DebugDrawManager::_integrate_into_engine() {
 	SCENE_ROOT()->add_child(this);
 	SCENE_ROOT()->move_child(this, 0);
 
-	// debug_draw_2d_singleton->init(this);
-	debug_draw_3d_singleton->regenerate_geometry_meshes();
-
 #ifndef DISABLE_DEBUG_RENDERING
 	{
 		// will be auto deleted as child
-		DD3D_PhysicsWatcher *physics_watcher = memnew(DD3D_PhysicsWatcher);
+		_DD3D_PhysicsWatcher *physics_watcher = memnew(_DD3D_PhysicsWatcher);
 		add_child(physics_watcher);
 		physics_watcher->init(this);
 	}
@@ -343,7 +340,7 @@ void DebugDrawManager::_integrate_into_engine() {
 	}
 
 	debug_draw_2d_singleton->set_custom_canvas(debug_draw_2d_singleton->custom_canvas);
-	debug_draw_3d_singleton->set_world_3d_from_viewport(SCENE_ROOT());
+	debug_draw_3d_singleton->scoped_config()->set_viewport(SCENE_ROOT());
 	_connect_scene_changed();
 #endif
 
@@ -373,7 +370,6 @@ void DebugDrawManager::_process(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
 		DebugDraw3D::get_singleton()->process(delta);
-
 		DebugDraw2D::get_singleton()->process(delta);
 
 		if (!DebugDraw2D::get_singleton()->is_drawing_frame()) {
@@ -398,7 +394,6 @@ void DebugDrawManager::_process(double delta) {
 void DebugDrawManager::_physics_process_start(double delta) {
 	if (debug_enabled) {
 		DebugDraw3D::get_singleton()->physics_process_start(delta);
-
 		DebugDraw2D::get_singleton()->physics_process_start(delta);
 	}
 }
@@ -407,7 +402,6 @@ void DebugDrawManager::_physics_process(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
 		DebugDraw3D::get_singleton()->physics_process_end(delta);
-
 		DebugDraw2D::get_singleton()->physics_process_end(delta);
 	}
 #endif

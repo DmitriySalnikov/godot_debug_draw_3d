@@ -376,7 +376,7 @@ public:
 	void fill_lines_data(Ref<ArrayMesh> _ig, const double &delta);
 	void reset_counter(const double &_delta, const ProcessType &p_proc = ProcessType::MAX);
 	void reset_visible_objects();
-	void update_stats(Ref<DebugDraw3DStats> &stats) const;
+	void set_stats(Ref<DebugDraw3DStats> &stats) const;
 	void clear_pool();
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
