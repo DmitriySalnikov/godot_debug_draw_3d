@@ -10,7 +10,6 @@ var classDebugDraw3D =
     [ "get_config", "classDebugDraw3D.html#a4b2ef750a2bb59079045ff48d719ed0b", null ],
     [ "get_empty_color", "classDebugDraw3D.html#a775381a728422f1ffda1382d3f4f8166", null ],
     [ "set_debug_enabled", "classDebugDraw3D.html#a519eff4a114627cec82af36be86f4620", null ],
-    [ "set_custom_viewport", "classDebugDraw3D.html#a47375d847b6259183f5921068005a832", null ],
     [ "get_render_stats", "classDebugDraw3D.html#a7b1dbc003795e1c6f7debbb122cfb61d", null ],
     [ "get_render_stats_for_viewport", "classDebugDraw3D.html#a33bb1f3b8f1d0b331d01f64d350a5de0", null ],
     [ "regenerate_geometry_meshes", "classDebugDraw3D.html#a4a875bfcaa50cce0e9d8256b7427b5fa", null ],
