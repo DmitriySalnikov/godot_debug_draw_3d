@@ -155,7 +155,7 @@ public:
 	 * @param title_size Title font size
 	 * @param text_size Text font size
 	 */
-	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::empty_color, bool show_title = true, int title_size = 14, int text_size = 12);
+	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
 	/**
 	 * Ends the text group. Should be called after DebugDraw2D.begin_text_group.
 	 *
