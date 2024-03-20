@@ -2,7 +2,7 @@
 
 #include "compiler.h"
 
-#include <vector>
+#include <array>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/variant/builtin_types.hpp>
@@ -19,8 +19,8 @@ public:
 	static const float ArrowRadiusForSphere;
 
 	static void get_diagonal_vectors(const Vector3 &a, const Vector3 &b, Vector3 &bottom, Vector3 &top, Vector3 &diag);
-	static bool is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::vector<Plane> &planes);
-	static bool is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::vector<Plane> &planes);
+	static bool is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::array<Plane, 6> &planes);
+	static bool is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::array<Plane, 6> &planes);
 	static real_t get_max_value(const Vector3 &value);
 	static real_t get_max_vector_length(const Vector3 &a, const Vector3 &b, const Vector3 &c);
 	static real_t get_max_basis_length(const Basis &b);

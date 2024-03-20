@@ -2,6 +2,7 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
+#include "3d/config_scope_3d.h"
 #include "utils/math_utils.h"
 #include "utils/utils.h"
 
@@ -19,13 +20,20 @@ class MultiMesh;
 class DebugDraw3DStats;
 class GeometryPool;
 
+// TODO RENAME ALL AGAIN!!!!
+
+enum class GeometryType : char {
+	Wireframe,
+	Volumetric,
+	Solid,
+};
+
 enum class ConvertableInstanceType : char {
 	CUBE,
 	CUBE_CENTERED,
 	ARROWHEAD,
 	POSITION,
 	SPHERE,
-	SPHERE_HD,
 	CYLINDER,
 	CYLINDER_AB,
 };
@@ -65,13 +73,15 @@ enum class ProcessType : char {
 	MAX,
 };
 
-class GeometryPoolDistanceCullingData {
+class GeometryPoolCullingData {
 public:
+	std::vector<std::array<Plane, 6> > m_frustums;
 	real_t m_max_distance;
 	std::vector<Vector3> m_camera_positions;
-	GeometryPoolDistanceCullingData(const real_t &t_max_distance, const std::vector<Vector3> &t_camera_positions) {
-		m_max_distance = t_max_distance;
-		m_camera_positions = t_camera_positions;
+	GeometryPoolCullingData(const std::vector<std::array<Plane, 6> > &p_frustums, const real_t &p_max_distance, const std::vector<Vector3> &p_camera_positions) {
+		m_frustums = p_frustums;
+		m_max_distance = p_max_distance;
+		m_camera_positions = p_camera_positions;
 	}
 };
 
@@ -101,14 +111,14 @@ public:
 		return expiration_time < 0 ? is_used_one_time : false;
 	}
 
-	bool update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data, bool _skip_expiration_check) {
-		ZoneScoped;
+	bool update_visibility(std::shared_ptr<GeometryPoolCullingData> t_distance_data, bool _skip_expiration_check) {
+		// ZoneScoped;
 		if (_skip_expiration_check || !is_expired()) {
 			is_visible = false;
 
-			if (t_distance_data.m_max_distance > 0 && t_distance_data.m_camera_positions.size()) {
-				for (const auto &pos : t_distance_data.m_camera_positions) {
-					if (pos.distance_to(bounds.position) > t_distance_data.m_max_distance) {
+			if (t_distance_data->m_max_distance > 0 && t_distance_data->m_camera_positions.size()) {
+				for (const auto &pos : t_distance_data->m_camera_positions) {
+					if (pos.distance_to(bounds.position) > t_distance_data->m_max_distance) {
 						is_visible = false;
 						return is_visible;
 					}
@@ -116,8 +126,8 @@ public:
 			}
 
 			// TODO mb move to draw_* for instant draws
-			if (t_frustums.size()) {
-				for (const auto &frustum : t_frustums) {
+			if (t_distance_data->m_frustums.size()) {
+				for (const auto &frustum : t_distance_data->m_frustums) {
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
 						is_visible = true;
 						return is_visible;
@@ -353,10 +363,13 @@ private:
 		}
 	};
 
-	struct {
+	struct processTypePools {
 		ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::MAX];
 		ObjectsPool<DelayedRendererLine> lines;
-	} pools[(int)ProcessType::MAX];
+	};
+
+	std::unordered_map<Viewport *, processTypePools[(int)ProcessType::MAX]> pools;
+	std::unordered_map<Viewport *, uint64_t> viewport_ids;
 
 	uint64_t time_spent_to_fill_buffers_of_instances = 0;
 	uint64_t time_spent_to_fill_buffers_of_lines = 0;
@@ -366,11 +379,19 @@ private:
 	typedef TempBigBuffer<float, PackedFloat32Array, 128 * 1020> temp_raw_buffer;
 	PackedFloat32Array get_raw_data(InstanceType _type, temp_raw_buffer &buffer, size_t &out_buffer_size);
 
+	// Internal use of raw pointer to avoid ref/unref
+	Color _scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg);
+	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg);
+	GeometryType _scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg);
+	bool _is_viewport_empty(Viewport *vp);
+
 public:
 	GeometryPool() {}
 
 	~GeometryPool() {
 	}
+
+	std::vector<Viewport *> get_and_validate_viewports();
 
 	void fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes, const double &delta);
 	void fill_lines_data(Ref<ArrayMesh> _ig, const double &delta);
@@ -378,13 +399,14 @@ public:
 	void reset_visible_objects();
 	void set_stats(Ref<DebugDraw3DStats> &stats) const;
 	void clear_pool();
-	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func);
-	void for_each_line(const std::function<void(DelayedRendererLine *)> &_func);
-	void update_visibility(const std::vector<std::vector<Plane> > &t_frustums, const GeometryPoolDistanceCullingData &t_distance_data);
+	void for_each_instance(const std::function<void(Viewport *, DelayedRendererInstance *)> &_func);
+	void for_each_line(const std::function<void(Viewport *, DelayedRendererLine *)> &_func);
+	void update_visibility(std::unordered_map<const Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data);
 	void update_expiration(const double &_delta, const ProcessType &p_proc);
 	void scan_visible_instances();
-	void add_or_update_instance(InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const Color &_custom_col, const SphereBounds &_bounds, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
-	void add_or_update_line(const real_t &_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, ConvertableInstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const Color *p_custom_col = nullptr, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
+	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const Color *p_custom_col = nullptr, const std::function<void(DelayedRendererInstance *)> &_custom_upd = nullptr);
+	void add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, const real_t &_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
 };
 
 #endif

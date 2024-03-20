@@ -71,7 +71,7 @@ private:
 public:
 	/// @private
 	struct Data {
-		// Update constructor!
+		// Update the constructor if changes are made!
 		real_t thickness;
 		real_t center_brightness;
 		bool hd_sphere;

@@ -2,6 +2,7 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 #include "config_3d.h"
+#include "config_scope_3d.h"
 #include "debug_draw_3d.h"
 #include "geometry_generators.h"
 #include "stats_3d.h"
@@ -182,7 +183,10 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 
-	// Don't clear geometry if frozen
+	// cleanup and get available viewports
+	std::vector<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
+
+	// Do not update geometry if frozen
 	if (owner->get_config()->is_freeze_3d_render())
 		return;
 
@@ -205,116 +209,105 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		set_render_layer_mask(owner->get_config()->get_geometry_render_layers());
 	}
 
-	// TODO: try to get all active cameras inside scene to properly calculate visibilty for SubViewports
-
-	// Get camera
-	Camera3D *vp_cam = owner->get_root_node()->get_viewport()->get_camera_3d();
-	if (IS_EDITOR_HINT()) {
-		auto s_root = SCENE_TREE()->get_edited_scene_root();
-		if (s_root) {
-			vp_cam = s_root->get_viewport()->get_camera_3d();
-		}
-	}
-
-	// Collect frustums and camera positions
-	std::vector<std::vector<Plane> > frustum_planes;
-	std::vector<Vector3> cameras_positions;
-
-	// Reset camera far plane
-	owner->previous_camera_far_plane = 1000;
-	{
-		std::vector<SubViewport *> editor_viewports = owner->get_custom_editor_viewports();
-		std::vector<Array> frustum_arrays;
-
-		frustum_arrays.reserve(1);
+	std::unordered_map<const Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
+	for (const auto &vp_p : available_viewports) {
+		// Collect frustums and camera positions
+		std::vector<std::array<Plane, 6> > frustum_planes;
+		std::vector<Vector3> cameras_positions;
 		cameras_positions.reserve(1);
-		if ((owner->get_config()->is_force_use_camera_from_scene() || (!editor_viewports.size() && !owner->get_custom_viewport())) && vp_cam) {
+
+		std::vector<Array> frustum_arrays;
+		frustum_arrays.reserve(1);
+
+		auto custom_editor_viewports = owner->get_custom_editor_viewports();
+		Camera3D *vp_cam = vp_p->get_camera_3d();
+
+		if ((owner->get_config()->is_force_use_camera_from_scene() || !custom_editor_viewports.size()) && vp_cam) {
 			frustum_arrays.push_back(vp_cam->get_frustum());
 			cameras_positions.push_back(vp_cam->get_position());
-
-			owner->previous_camera_far_plane = vp_cam->get_far();
-		} else if (owner->get_custom_viewport() && owner->get_custom_viewport()->get_camera_3d()) {
-			auto c = owner->get_custom_viewport()->get_camera_3d();
-			frustum_arrays.push_back(c->get_frustum());
-			cameras_positions.push_back(c->get_position());
-
-			owner->previous_camera_far_plane = c->get_far();
-		} else if (editor_viewports.size() > 0) {
-			for (auto vp : editor_viewports) {
+		} else if (custom_editor_viewports.size() > 0) {
+			for (auto vp : custom_editor_viewports) {
 				if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
 					auto c = vp->get_camera_3d();
 					frustum_arrays.push_back(c->get_frustum());
 					cameras_positions.push_back(c->get_position());
 				}
 			}
-
-			owner->previous_camera_far_plane = editor_viewports[0]->get_camera_3d()->get_far();
 		}
 
-		// Convert frustum to vector
+		// Convert Array to vector
 		if (owner->get_config()->is_use_frustum_culling() && frustum_arrays.size()) {
 			frustum_planes.reserve(frustum_arrays.size());
 
 			for (auto &arr : frustum_arrays) {
 				if (arr.size() == 6) {
-					std::vector<Plane> a(6);
+					std::array<Plane, 6> a;
 					for (int i = 0; i < arr.size(); i++)
 						a[i] = (Plane)arr[i];
 					frustum_planes.push_back(a);
 				}
 			}
 		}
+
+		culling_data[vp_p] = std::make_shared<GeometryPoolCullingData>(frustum_planes, /*TODO replace by scoped somehow*/ owner->get_config()->get_culling_distance(), cameras_positions);
 	}
 
-	// Store the camera position for `draw`ing around the camera
-	// Vector3::ZERO is used when no camera is found
-	owner->previous_camera_position = cameras_positions.size() ? cameras_positions[0] : Vector3();
-
 	// Update visibility
-	geometry_pool.update_visibility(
-			frustum_planes,
-			GeometryPoolDistanceCullingData(owner->get_config()->get_culling_distance(), cameras_positions));
+	geometry_pool.update_visibility(culling_data);
 
 	// Debug bounds of instances and lines
 	if (owner->get_config()->is_visible_instance_bounds()) {
-		std::vector<std::pair<Vector3, real_t> > new_instances;
+		ZoneScopedN("Debug bounds");
+		struct sphereDebug {
+			Vector3 pos;
+			real_t radius;
+			Viewport *vp;
+		};
+		std::vector<sphereDebug> new_instances;
 
-		auto draw_instance_spheres = [&new_instances](DelayedRendererInstance *o) {
+		auto draw_instance_spheres = [&new_instances](Viewport *vp, DelayedRendererInstance *o) {
 			if (!o->is_visible || o->is_expired())
 				return;
-			new_instances.push_back({ o->bounds.position, o->bounds.Radius });
+			new_instances.push_back({ o->bounds.position, o->bounds.Radius, vp });
 		};
 
 		geometry_pool.for_each_instance(draw_instance_spheres);
 
+		auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
+
 		// Draw custom sphere for 1 frame
 		for (auto &i : new_instances) {
+			cfg->viewport = i.vp;
+
 			geometry_pool.add_or_update_instance(
+					cfg,
 					InstanceType::SPHERE,
 					0,
 					ProcessType::PROCESS,
-					Transform3D(Basis().scaled(Vector3_ONE * i.second * 2), i.first),
+					Transform3D(Basis().scaled(Vector3_ONE * i.radius * 2), i.pos),
 					Colors::debug_bounds,
-					Color(),
-					SphereBounds(i.first, i.second),
+					SphereBounds(i.pos, i.radius),
+					&Colors::empty_color,
 					[](auto d) { d->is_used_one_time = true; });
 		}
 
-		geometry_pool.for_each_line([this](DelayedRendererLine *o) {
+		geometry_pool.for_each_line([this, &cfg](Viewport *vp, DelayedRendererLine *o) {
 			if (!o->is_visible || o->is_expired())
 				return;
 
 			Vector3 bottom, top, diag;
 			MathUtils::get_diagonal_vectors(o->bounds.position, o->bounds.position + o->bounds.size, bottom, top, diag);
+			cfg->viewport = vp;
 
 			geometry_pool.add_or_update_instance(
+					cfg,
 					InstanceType::CUBE,
 					0,
 					ProcessType::PROCESS,
 					Transform3D(Basis().scaled(diag), bottom),
 					Colors::debug_bounds,
-					Color(),
 					SphereBounds(bottom + diag * 0.5f, abs(diag.length() * 0.5f)),
+					&Colors::empty_color,
 					[](auto d) { d->is_used_one_time = true; });
 		});
 	}

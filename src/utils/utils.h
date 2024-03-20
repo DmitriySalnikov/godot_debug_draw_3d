@@ -20,6 +20,7 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/node.hpp>
 #include <godot_cpp/classes/project_settings.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/classes/window.hpp>
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/core/class_db.hpp>
@@ -316,4 +317,29 @@ public:
 		return appendable;
 	}
 #pragma endregion
+};
+
+#define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
+#define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
+#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __COUNTER__)(time_val, false)
+#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __COUNTER__)(time_val, true)
+
+class GodotScopedStopwatch {
+	uint64_t start_time;
+	uint64_t *m_time_val;
+	bool m_add;
+
+public:
+	GodotScopedStopwatch(uint64_t *p_time_val, bool p_add) {
+		start_time = godot::Time::get_singleton()->get_ticks_usec();
+		m_time_val = p_time_val;
+		m_add = p_add;
+	}
+
+	~GodotScopedStopwatch() {
+		if (m_add)
+			*m_time_val += godot::Time::get_singleton()->get_ticks_usec() - start_time;
+		else
+			*m_time_val = godot::Time::get_singleton()->get_ticks_usec() - start_time;
+	}
 };

@@ -237,20 +237,16 @@ void DebugDrawManager::_unregister_singleton_aliases(const TypedArray<StringName
 void DebugDrawManager::_integrate_into_engine() {
 	ZoneScoped;
 
-	bool is_headless = false;
+	// disable by default for headless
 	{
 		if (Engine::get_singleton()->has_singleton("DisplayServer")) {
 			Object *display_server = Engine::get_singleton()->get_singleton("DisplayServer");
 			if (display_server) {
-				is_headless = !display_server->call("window_can_draw", 0);
+				set_debug_enabled(display_server->call("window_can_draw", 0));
 			}
 		} else {
-			is_headless = true;
+			set_debug_enabled(false);
 		}
-	}
-
-	if (is_headless) {
-		set_debug_enabled(false);
 	}
 
 	// Draw everything after calls from scripts to avoid lagging

@@ -37,24 +37,28 @@ void MathUtils::get_diagonal_vectors(const Vector3 &a, const Vector3 &b, Vector3
 	diag = top - bottom;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::vector<Plane> &planes) {
+bool MathUtils::is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::array<Plane, 6> &planes) {
 	Vector3 extent = bounds.size * 0.5f;
 	Vector3 center = bounds.position + extent;
 
-	for (Plane p : planes)
+	for (int i = 0; i < planes.size(); i++) {
+		const Plane &p = planes[i];
 		if (Vector3(center.x - extent.x * Math::sign(p.normal.x),
 					center.y - extent.y * Math::sign(p.normal.y),
 					center.z - extent.z * Math::sign(p.normal.z))
 						.dot(p.normal) > p.d)
 			return false;
+	}
 
 	return true;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::vector<Plane> &planes) {
-	for (Plane p : planes)
+bool MathUtils::is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::array<Plane, 6> &planes) {
+	for (int i = 0; i < planes.size(); i++) {
+		const Plane &p = planes[i];
 		if (p.distance_to(sphere.position) >= sphere.Radius)
 			return false;
+	}
 
 	return true;
 }

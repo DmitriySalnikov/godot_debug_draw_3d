@@ -34,15 +34,23 @@ script/source = "extends Node3D
 
 # Some API calls to test library integration
 func start() -> bool:
+	## wait for call_deferred in DebugDraw init code
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	DebugDrawManager.debug_enabled = true
 	print()
 	print(\"Start of testing.\")
 	
 	if true:
-		var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
-		DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
-	DebugDraw3D.draw_sphere(Vector3.ZERO)
+		var _s = DebugDraw3D.new_scoped_config().set_thickness(0.1)
+		DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, DebugDraw3D.empty_color, true, 1.2)
+	DebugDraw3D.draw_sphere(Vector3.ZERO, 0.5, DebugDraw3D.empty_color, 1.5)
+	DebugDraw3D.draw_gizmo(Transform3D().scaled_local(Vector3.ONE*0.4), Color.BROWN, true, 2.5)
 	DebugDraw2D.set_text(\"FPS\", \"0\")
 	DebugDraw2D.begin_text_group(\"Info\")
+	DebugDraw2D.set_text(\"INFO\", \"hello\", 1, DebugDraw2D.empty_color, 1)
+	DebugDraw2D.end_text_group()
 	
 	await get_tree().process_frame
 	
@@ -50,11 +58,9 @@ func start() -> bool:
 	DebugDraw3D.config.culling_distance = 50
 	print(\"culling_distance: \", DebugDraw3D.config.culling_distance)
 	
-	await get_tree().process_frame
+	await get_tree().create_timer(2).timeout
 	
 	DebugDrawManager.clear_all()
-	
-	await get_tree().process_frame
 	
 	print(\"End of testing.\")
 	
@@ -66,3 +72,10 @@ script = SubResource("GDScript_wbn2v")
 
 [node name="Runner" type="Node3D" parent="."]
 script = SubResource("GDScript_7yy7l")
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(0.866025, -0.12941, 0.482963, -3.8567e-09, 0.965926, 0.258819, -0.5, -0.224144, 0.836516, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.5)
+current = true

@@ -98,12 +98,6 @@ class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, 
 #ifndef DISABLE_DEBUG_RENDERING
 	friend DebugGeometryContainer;
 	friend _DD3D_WorldWatcher;
-
-	enum GeometryType{
-		Wireframe,
-		Volumetric,
-		Solid,
-	};
 #endif
 
 public:
@@ -136,11 +130,10 @@ private:
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
 
 	typedef std::pair<uint64_t, DebugDraw3DScopeConfig *> ScopedPairIdConfig;
-	typedef std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3DScopeConfig_Data;
 	// stores thread id and array of id's with ptrs
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
-	std::unordered_map<uint64_t, DebugDraw3DScopeConfig_Data> cached_scoped_configs;
+	std::unordered_map<uint64_t, std::shared_ptr<DebugDraw3DScopeConfig::Data> > cached_scoped_configs;
 	uint64_t created_scoped_configs = 0;
 	struct {
 		uint64_t created;
@@ -148,15 +141,12 @@ private:
 	} scoped_stats_3d = {};
 
 	// Inherited via IScopeStorage
-	const DebugDraw3DScopeConfig_Data scoped_config_for_current_thread() override;
+	const std::shared_ptr<DebugDraw3DScopeConfig::Data> scoped_config_for_current_thread() override;
 
 	// Meshes
 	/// Store World3D id and debug container
 	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
 	std::unordered_map<const Viewport *, uint64_t> viewport_to_world_cache;
-
-	Vector3 previous_camera_position;
-	double previous_camera_far_plane = 0;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> shader_wireframe_mat;
@@ -175,11 +165,6 @@ private:
 	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopeConfig *cfg) override;
 	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
 	void _clear_scoped_configs() override;
-
-	// Internal use of raw pointer to avoid ref/unref
-	Color _scoped_config_to_custom(const DebugDraw3DScopeConfig_Data &cfg);
-	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, const DebugDraw3DScopeConfig_Data &cfg);
-	GeometryType _scoped_config_get_geometry_type(const DebugDraw3DScopeConfig_Data &cfg);
 
 	std::shared_ptr<DebugGeometryContainer> create_debug_container();
 	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *vp);
@@ -216,8 +201,6 @@ private:
 
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
-	/// Custom 'Viewport' to use for frustum culling.
-	Viewport *custom_viewport = nullptr;
 
 	Ref<DebugDraw3DConfig> config;
 
@@ -278,12 +261,6 @@ public:
 	 */
 	void set_debug_enabled(const bool &_state);
 	bool is_debug_enabled() const;
-
-	/**
-	 * Set the custom viewport from which Camera3D will be used to get frustum.
-	 */
-	void set_custom_viewport(Viewport *_viewport);
-	Viewport *get_custom_viewport() const;
 
 #pragma endregion // Exposed Parametes
 

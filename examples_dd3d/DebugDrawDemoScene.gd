@@ -48,6 +48,8 @@ var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_ve
 
 
 func _process(delta) -> void:
+	$OtherWorld.mesh.material.albedo_texture = $OtherWorld/SubViewport.get_texture()
+	
 	physics_tick_processed = false
 	if !update_in_physics:
 		main_update(delta)
@@ -135,10 +137,7 @@ func main_update(delta: float) -> void:
 			DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
 	
 	
-	if Engine.is_editor_hint():
-		DebugDraw3D.config.culling_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
-	else:
-		DebugDraw3D.config.culling_distance = start_culling_distance
+	DebugDraw3D.config.culling_distance = start_culling_distance
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -233,7 +232,8 @@ func main_update(delta: float) -> void:
 	
 	if true:
 		var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
-		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3.UP, wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
+		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
+		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(-1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / -1000.0, 0, TAU) - PI/4), Color.SANDY_BROWN)
 	
 	# Misc
 	if true:
@@ -545,8 +545,7 @@ func _ready() -> void:
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
-	
-	$OtherWorld.mesh.material.albedo_texture = $OtherWorld/SubViewport.get_texture()
+
 
 func _is_key_just_pressed(key):
 	if (button_presses[key] == 1):

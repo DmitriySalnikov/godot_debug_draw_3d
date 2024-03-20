@@ -501,16 +501,16 @@ own_world_3d = true
 render_target_update_mode = 4
 
 [node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 7.25557)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.5, 7.25557)
 current = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 4.85623)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.5, 4.85623)
 mesh = SubResource("CapsuleMesh_tigpa")
 
 [node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, -2.5, 5.72253)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.5, 5.72253)
 
 [node name="Misc" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)
