@@ -114,33 +114,34 @@ public:
 	bool update_visibility(std::shared_ptr<GeometryPoolCullingData> t_distance_data, bool _skip_expiration_check) {
 		// ZoneScoped;
 		if (_skip_expiration_check || !is_expired()) {
-			is_visible = false;
+			is_visible = true;
 
 			if (t_distance_data->m_max_distance > 0 && t_distance_data->m_camera_positions.size()) {
+				bool in_radius = false;
 				for (const auto &pos : t_distance_data->m_camera_positions) {
-					if (pos.distance_to(bounds.position) > t_distance_data->m_max_distance) {
-						is_visible = false;
-						return is_visible;
+					if (pos.distance_to(bounds.position) < t_distance_data->m_max_distance) {
+						is_visible = true;
+						in_radius = true;
+						break;
 					}
 				}
+				if (!in_radius)
+					return is_visible = false;
 			}
 
 			// TODO mb move to draw_* for instant draws
 			if (t_distance_data->m_frustums.size()) {
 				for (const auto &frustum : t_distance_data->m_frustums) {
 					if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
-						is_visible = true;
-						return is_visible;
+						return is_visible = true;
 					}
 				}
-				return false;
+				return is_visible = false;
 			} else {
-				is_visible = true;
-				return is_visible;
+				return is_visible = true;
 			}
 		}
-		is_visible = false;
-		return is_visible;
+		return is_visible = false;
 	}
 
 	void update_expiration(const double &_delta) {
