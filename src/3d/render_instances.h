@@ -111,7 +111,7 @@ public:
 		return expiration_time < 0 ? is_used_one_time : false;
 	}
 
-	bool update_visibility(std::shared_ptr<GeometryPoolCullingData> t_distance_data, bool _skip_expiration_check) {
+	bool update_visibility(const std::shared_ptr<GeometryPoolCullingData> &t_distance_data, bool _skip_expiration_check) {
 		// ZoneScoped;
 		if (_skip_expiration_check || !is_expired()) {
 			is_visible = true;
@@ -305,65 +305,6 @@ private:
 		}
 	};
 
-	template <class T, class TSlice, size_t _TStepSize>
-	struct TempBigBuffer {
-	private:
-		std::unique_ptr<T[]> m_buffer;
-		size_t current_size;
-		double m_shrink_timer;
-
-		void resize(size_t new_size) {
-			m_buffer.reset(new T[new_size]);
-			current_size = new_size;
-		}
-
-	public:
-		TempBigBuffer() {
-			resize(_TStepSize);
-			m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
-		}
-
-		void prepare_buffer(size_t t_expected_size) {
-			ZoneScoped;
-			if (current_size < t_expected_size) {
-				size_t new_size = (size_t)Math::ceil(t_expected_size / (double)_TStepSize) * _TStepSize;
-				DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": extending from %d to %d\n", current_size, new_size);
-				resize(new_size);
-				m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
-			}
-		}
-
-		void update(size_t max_expected_size, const double &delta) {
-			size_t new_size = (size_t)Math::ceil(((double)current_size / 2) / _TStepSize) * _TStepSize;
-			if (max_expected_size <= new_size) {
-				m_shrink_timer -= delta;
-				if (m_shrink_timer < 0) {
-					if (new_size != current_size) {
-						DEV_PRINT_STD(NAMEOF(TempBigBuffer) ": shrinking from %d to %d\n", current_size, new_size);
-						resize(new_size);
-						m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
-					}
-				}
-			} else {
-				m_shrink_timer = TIME_USED_TO_SHRINK_TEMP_BUFFER;
-			}
-		}
-
-		inline auto ptrw() {
-			return m_buffer.get();
-		}
-
-		// TODO stupid and slow
-		inline auto slice(int64_t begin, int64_t end = 2147483647) {
-			ZoneScoped;
-			TSlice res;
-			end = Math::min(end, (int64_t)current_size);
-			res.resize(end - begin);
-			memcpy(res.ptrw(), m_buffer.get(), (end - begin) * sizeof(T));
-			return res;
-		}
-	};
-
 	struct processTypePools {
 		ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::MAX];
 		ObjectsPool<DelayedRendererLine> lines;
@@ -372,13 +313,14 @@ private:
 	std::unordered_map<Viewport *, processTypePools[(int)ProcessType::MAX]> pools;
 	std::unordered_map<Viewport *, uint64_t> viewport_ids;
 
+	PackedFloat32Array temp_instances_buffers[(int)InstanceType::MAX];
+
 	uint64_t time_spent_to_fill_buffers_of_instances = 0;
 	uint64_t time_spent_to_fill_buffers_of_lines = 0;
 	uint64_t time_spent_to_cull_instant = 0;
 	uint64_t time_spent_to_cull_delayed = 0;
 
-	typedef TempBigBuffer<float, PackedFloat32Array, 128 * 1020> temp_raw_buffer;
-	PackedFloat32Array get_raw_data(InstanceType _type, temp_raw_buffer &buffer, size_t &out_buffer_size);
+	PackedFloat32Array get_raw_data(InstanceType _type, int32_t *r_actual_instance_count);
 
 	// Internal use of raw pointer to avoid ref/unref
 	Color _scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg);

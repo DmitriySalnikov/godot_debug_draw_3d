@@ -86,7 +86,7 @@ static String get_file_name_in_repository(const String &name) {
 
 #pragma endregion !BINDING REGISTRATION
 
-#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color) /*Instance Color*/ + sizeof(Color) /*Custom Data*/) / sizeof(real_t))
+constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + sizeof(godot::Color) /*Instance Color*/ + sizeof(godot::Color) /*Custom Data*/) / sizeof(real_t));
 
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())

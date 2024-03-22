@@ -246,7 +246,7 @@ void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_i
 
 		// Update cached value
 		if (!cfgs.empty()) {
-			cached_scoped_configs[thread_id] = (std::shared_ptr<DebugDraw3DScopeConfig::Data>)(cfgs.back().second->data);
+			cached_scoped_configs[thread_id] = cfgs.back().second->data;
 		} else {
 			cached_scoped_configs[thread_id] = default_scoped_config.ptr()->data;
 		}

@@ -84,26 +84,28 @@ AABB DelayedRendererLine::calculate_bounds_based_on_lines() {
 
 void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> &t_meshes, const double &delta) {
 	ZoneScoped;
-	thread_local static auto temp_buffer = temp_raw_buffer();
-	size_t max_buffer_size = 0;
 
 	GODOT_STOPWATCH(&time_spent_to_fill_buffers_of_instances);
 
 	for (size_t i = 0; i < t_meshes.size(); i++) {
-		ZoneScopedN("Fill iteration");
+		ZoneScopedNC("Fill iteration", tracy::Color::DarkCyan);
+		ZoneValue(i);
+
 		auto &mesh = *t_meshes[i];
+		int32_t actual_instance_count = 0;
 
-		size_t buf_size = 0;
-		PackedFloat32Array a = get_raw_data((InstanceType)i, temp_buffer, buf_size);
-
-		if (buf_size > max_buffer_size) {
-			max_buffer_size = buf_size;
-		}
+		PackedFloat32Array a = get_raw_data((InstanceType)i, &actual_instance_count);
 
 		int new_size = (int)(a.size() / INSTANCE_DATA_FLOAT_COUNT);
-		if (mesh->get_instance_count() != new_size) {
+		if (new_size != mesh->get_instance_count()) {
+			ZoneScopedN("Changing amount of instances");
+			ZoneValue(new_size);
 			mesh->set_instance_count(new_size);
-			mesh->set_visible_instance_count(new_size);
+		}
+
+		{
+			ZoneScopedN("Set visible instances");
+			mesh->set_visible_instance_count(actual_instance_count);
 		}
 
 		if (a.size()) {
@@ -112,29 +114,33 @@ void GeometryPool::fill_instance_data(const std::array<Ref<MultiMesh> *, (int)In
 			mesh->set_buffer(a);
 		}
 	}
-
-	temp_buffer.update(max_buffer_size, delta);
 }
 
-PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffer &buffer, size_t &out_buffer_size) {
+PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, int32_t *r_actual_instance_count) {
 	ZoneScoped;
 	size_t last_added = 0;
-	size_t buffer_size = 0;
+	size_t desired_buffer_size = 0;
+	PackedFloat32Array &buffer = temp_instances_buffers[(int)_type];
 
 	{
 		ZoneScopedN("Prepare buffer");
+		ZoneValue(buffer.size());
+
 		for (auto &vp_pool : pools) {
 			for (auto &proc : vp_pool.second) {
 				auto &inst = proc.instances[(int)_type];
-				buffer_size += (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
+				desired_buffer_size += (inst.used_instant + inst.delayed.size()) * INSTANCE_DATA_FLOAT_COUNT;
 			}
 		}
-		buffer.prepare_buffer(buffer_size);
 
-		out_buffer_size = buffer_size;
+		if ((int64_t)desired_buffer_size > buffer.size()) {
+			ZoneScopedN("Resize buffer (grew)");
+			ZoneValue(desired_buffer_size);
+			buffer.resize(desired_buffer_size);
+		}
 	}
 
-	if (buffer_size > 0) {
+	if (desired_buffer_size > 0) {
 		ZoneScopedN("Fill buffer");
 		auto w = buffer.ptrw();
 
@@ -142,19 +148,17 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffe
 			for (auto &proc : vp_pool.second) {
 				auto &inst = proc.instances[(int)_type];
 
-				auto write_instance_data = [&last_added, &w](DelayedRendererInstance &o) {
-					size_t id = last_added * INSTANCE_DATA_FLOAT_COUNT;
-					last_added++;
-
-					// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
-					memcpy(w + id, reinterpret_cast<real_t *>(&o.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
-				};
+				// 7500 instances. 1.2-1.3ms with the old approach and 0.8-0.9ms with the current approach
+#define WRITE_DATA(_inst)                               \
+	size_t id = last_added * INSTANCE_DATA_FLOAT_COUNT; \
+	last_added++;                                       \
+	memcpy(w + id, reinterpret_cast<real_t *>(&_inst.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
 
 				for (size_t i = 0; i < inst.used_instant; i++) {
 					auto &o = inst.instant[i];
 					o.is_used_one_time = true;
 					if (o.is_visible) {
-						write_instance_data(o);
+						WRITE_DATA(o);
 					}
 				}
 				inst._prev_used_instant = inst.used_instant;
@@ -166,12 +170,14 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffe
 						inst.used_delayed++;
 						o.is_used_one_time = true;
 						if (o.is_visible) {
-							write_instance_data(o);
+							WRITE_DATA(o);
 						}
 					}
 				}
+#undef WRITE_DATA
 			}
 		}
+
 	} else {
 		// Force reset stats
 		for (auto &vp_pool : pools) {
@@ -183,7 +189,16 @@ PackedFloat32Array GeometryPool::get_raw_data(InstanceType _type, temp_raw_buffe
 		}
 	}
 
-	return buffer.slice(0, last_added * INSTANCE_DATA_FLOAT_COUNT);
+	*r_actual_instance_count = (int32_t)last_added;
+
+	int64_t new_size = (int64_t)(last_added * INSTANCE_DATA_FLOAT_COUNT);
+	if (new_size < (int64_t)ceil(buffer.size() * 0.5)) {
+		ZoneScopedN("Resize buffer (shrink)");
+		ZoneValue(new_size);
+		buffer.resize(new_size);
+	}
+
+	return buffer;
 }
 
 void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
@@ -205,50 +220,51 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 	// Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
 	size_t used_vertexes = 0;
 
-	// pre calculate buffer size
-	for (auto &vp_pool : pools) {
-		for (auto &proc : vp_pool.second) {
-			for (size_t i = 0; i < proc.lines.used_instant; i++) {
-				auto &o = proc.lines.instant[i];
-				if (o.is_visible) {
-					used_vertexes += o.get_lines_count();
+	PackedVector3Array vertexes;
+	PackedColorArray colors;
+
+	{
+		ZoneScopedN("Prepare buffers");
+
+		// pre calculate buffer size
+		for (auto &vp_pool : pools) {
+			for (auto &proc : vp_pool.second) {
+				for (size_t i = 0; i < proc.lines.used_instant; i++) {
+					auto &o = proc.lines.instant[i];
+					if (o.is_visible) {
+						used_vertexes += o.get_lines_count();
+					}
 				}
-			}
-			for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-				auto &o = proc.lines.delayed[i];
-				if (o.is_visible && !o.is_expired()) {
-					used_vertexes += o.get_lines_count();
+				for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+					auto &o = proc.lines.delayed[i];
+					if (o.is_visible && !o.is_expired()) {
+						used_vertexes += o.get_lines_count();
+					}
 				}
 			}
 		}
+		ZoneValue(used_vertexes);
+
+		vertexes.resize(used_vertexes);
+		colors.resize(used_vertexes);
 	}
 
-	thread_local static auto verices_buffer = TempBigBuffer<Vector3, PackedVector3Array, 64 * 1024>();
-	thread_local static auto colors_buffer = TempBigBuffer<Color, PackedColorArray, 64 * 1024>();
-	verices_buffer.prepare_buffer(used_vertexes);
-	colors_buffer.prepare_buffer(used_vertexes);
-	verices_buffer.update(used_vertexes, delta);
-	colors_buffer.update(used_vertexes, delta);
-
 	size_t prev_pos = 0;
-	auto vertexes_write = verices_buffer.ptrw();
-	auto colors_write = colors_buffer.ptrw();
+	auto vertexes_write = vertexes.ptrw();
+	auto colors_write = colors.ptrw();
 
-	auto append_lines = [&vertexes_write, &colors_write, &prev_pos](const DelayedRendererLine &o) {
-		size_t lines_size = o.get_lines_count();
-
-		memcpy(vertexes_write + prev_pos, o.get_lines(), o.get_lines_count() * sizeof(Vector3));
-		std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, o.color);
-
-		prev_pos += lines_size;
-	};
+#define WRITE_DATA(_inst)                                                                            \
+	size_t lines_size = _inst.get_lines_count();                                                     \
+	memcpy(vertexes_write + prev_pos, _inst.get_lines(), _inst.get_lines_count() * sizeof(Vector3)); \
+	std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, _inst.color);           \
+	prev_pos += lines_size;
 
 	for (auto &vp_pool : pools) {
 		for (auto &proc : vp_pool.second) {
 			for (size_t i = 0; i < proc.lines.used_instant; i++) {
 				auto &o = proc.lines.instant[i];
 				if (o.is_visible) {
-					append_lines(o);
+					WRITE_DATA(o);
 				}
 				o.is_used_one_time = true;
 			}
@@ -260,19 +276,22 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const double &delta) {
 				if (!o.is_expired()) {
 					proc.lines.used_delayed++;
 					if (o.is_visible) {
-						append_lines(o);
+						WRITE_DATA(o);
 					}
 				}
 				o.is_used_one_time = true;
 			}
 		}
 	}
+#undef WRITE_DATA
 
 	if (used_vertexes > 1) {
+		ZoneScopedN("Set mesh arrays");
+
 		Array mesh = Array();
 		mesh.resize(ArrayMesh::ArrayType::ARRAY_MAX);
-		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = verices_buffer.slice(0, used_vertexes);
-		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors_buffer.slice(0, used_vertexes);
+		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = vertexes;
+		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
 
 		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
