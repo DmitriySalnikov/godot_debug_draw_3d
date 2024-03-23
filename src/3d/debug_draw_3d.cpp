@@ -601,7 +601,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::uniqu
 				_col);
 	} else {
 		for (int i = 0; i < _line_count; i += 2) {
-			ZoneScoped;
+			ZoneScopedN("Convert AB to xf");
 			Vector3 a = _lines.get()[i];
 			Vector3 diff = _lines.get()[i + 1] - a;
 			real_t len = diff.length();
@@ -773,9 +773,8 @@ void DebugDraw3D::draw_aabb(const AABB &aabb, const Color &color, const real_t &
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	Vector3 bottom, top, diag;
-	MathUtils::get_diagonal_vectors(aabb.position, aabb.position + aabb.size, bottom, top, diag);
-	draw_box_xf(Transform3D(Basis().scaled(diag), bottom), color, false, duration);
+	AABB a(aabb.abs());
+	draw_box_xf(Transform3D(Basis().scaled(a.size), a.position), color, false, duration);
 }
 
 void DebugDraw3D::draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &duration) {

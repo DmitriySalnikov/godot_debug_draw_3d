@@ -15,8 +15,6 @@ void DebugDraw3DStats::_bind_methods() {
 
 	REG_PROPERTY_NO_SET(visible_instances, Variant::INT);
 	REG_PROPERTY_NO_SET(visible_lines, Variant::INT);
-	REG_PROPERTY_NO_SET(visible_instances_physics, Variant::INT);
-	REG_PROPERTY_NO_SET(visible_lines_physics, Variant::INT);
 	REG_PROPERTY_NO_SET(total_visible, Variant::INT);
 
 	REG_PROPERTY_NO_SET(time_filling_buffers_instances_usec, Variant::INT);
@@ -25,10 +23,8 @@ void DebugDraw3DStats::_bind_methods() {
 	REG_PROPERTY_NO_SET(time_filling_buffers_lines_physics_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(total_time_filling_buffers_usec, Variant::INT);
 
-	REG_PROPERTY_NO_SET(time_culling_instant_usec, Variant::INT);
-	REG_PROPERTY_NO_SET(time_culling_delayed_usec, Variant::INT);
-	REG_PROPERTY_NO_SET(time_culling_instant_physics_usec, Variant::INT);
-	REG_PROPERTY_NO_SET(time_culling_delayed_physics_usec, Variant::INT);
+	REG_PROPERTY_NO_SET(time_culling_instances_usec, Variant::INT);
+	REG_PROPERTY_NO_SET(time_culling_lines_usec, Variant::INT);
 	REG_PROPERTY_NO_SET(total_time_culling_usec, Variant::INT);
 
 	REG_PROPERTY_NO_SET(total_time_spent_usec, Variant::INT);
@@ -53,13 +49,11 @@ void DebugDraw3DStats::set_render_stats(
 
 		const int64_t &t_instances_phys,
 		const int64_t &t_lines_phys,
-		const int64_t &t_visible_instances_phys,
-		const int64_t &t_visible_lines_phys,
 
 		const int64_t &t_time_filling_buffers_instances_usec,
 		const int64_t &t_time_filling_buffers_lines_usec,
-		const int64_t &t_time_culling_instant_usec,
-		const int64_t &t_time_culling_delayed_usec) {
+		const int64_t &t_time_culling_instances_usec,
+		const int64_t &t_time_culling_lines_usec) {
 
 	instances = t_instances;
 	lines = t_lines;
@@ -72,22 +66,18 @@ void DebugDraw3DStats::set_render_stats(
 
 	visible_instances = t_visible_instances;
 	visible_lines = t_visible_lines;
-	visible_instances_physics = t_visible_instances_phys;
-	visible_lines_physics = t_visible_lines_phys;
 	total_visible = visible_instances +
-					visible_lines +
-					visible_instances_physics +
-					visible_lines_physics;
+					visible_lines;
 
 	time_filling_buffers_instances_usec = t_time_filling_buffers_instances_usec;
 	time_filling_buffers_lines_usec = t_time_filling_buffers_lines_usec;
 	total_time_filling_buffers_usec = time_filling_buffers_instances_usec +
 									  time_filling_buffers_lines_usec;
 
-	time_culling_instant_usec = t_time_culling_instant_usec;
-	time_culling_delayed_usec = t_time_culling_delayed_usec;
-	total_time_culling_usec = time_culling_instant_usec +
-							  time_culling_delayed_usec;
+	time_culling_instances_usec = t_time_culling_instances_usec;
+	time_culling_lines_usec = t_time_culling_lines_usec;
+	total_time_culling_usec = time_culling_instances_usec +
+							  time_culling_lines_usec;
 
 	total_time_spent_usec = total_time_filling_buffers_usec + total_time_culling_usec;
 }
@@ -101,16 +91,14 @@ void DebugDraw3DStats::combine_with(const Ref<DebugDraw3DStats> other) {
 
 	visible_instances += other->visible_instances;
 	visible_lines += other->visible_lines;
-	visible_instances_physics += other->visible_instances_physics;
-	visible_lines_physics += other->visible_lines_physics;
 	total_visible += other->total_visible;
 
 	time_filling_buffers_instances_usec += other->time_filling_buffers_instances_usec;
 	time_filling_buffers_lines_usec += other->time_filling_buffers_lines_usec;
 	total_time_filling_buffers_usec += other->total_time_filling_buffers_usec;
 
-	time_culling_instant_usec += other->time_culling_instant_usec;
-	time_culling_delayed_usec += other->time_culling_delayed_usec;
+	time_culling_instances_usec += other->time_culling_instances_usec;
+	time_culling_lines_usec += other->time_culling_lines_usec;
 	total_time_culling_usec += other->total_time_culling_usec;
 
 	total_time_spent_usec += other->total_time_spent_usec;

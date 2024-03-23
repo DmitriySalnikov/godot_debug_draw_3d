@@ -63,13 +63,24 @@ func _physics_process(delta: float) -> void:
 		if !physics_tick_processed:
 			physics_tick_processed = true
 			main_update(delta)
+			
 		_update_timers(delta)
+	
 	
 	# Physics specific:
 	if not zylann_example:
 		DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
 		
 		_draw_rays_casts()
+
+		## Additional drawing in the Viewport
+		if false:
+			var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
+			DebugDraw3D.draw_box_xf(Transform3D(Basis()
+			.scaled(Vector3.ONE*0.3)
+			.rotated(Vector3(0,0,1), PI/4)
+			.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
+			Color.BROWN, true, 0.4)
 
 
 func main_update(delta: float) -> void:
@@ -328,8 +339,8 @@ func _text_tests():
 			DebugDraw2D.set_text("Instances", render_stats.instances + render_stats.instances_physics, 1)
 			DebugDraw2D.set_text("Lines", render_stats.lines + render_stats.lines_physics, 2)
 			DebugDraw2D.set_text("Total Visible", render_stats.total_visible, 3)
-			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances + render_stats.visible_instances_physics, 4)
-			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines + render_stats.visible_lines_physics, 5)
+			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances, 4)
+			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines, 5)
 			
 			DebugDraw2D.set_text("---", null, 6)
 			
@@ -417,12 +428,21 @@ func _draw_array_of_boxes():
 	var x_size := 50
 	var y_size := 50
 	var z_size := 3
+	var mul := 1
+
+	if !Engine.is_editor_hint() and false:
+		x_size = 100
+		y_size = 100
+		z_size = 100
+		mul = 4
 	
 	if timer_2 < 0:
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
-					DebugDraw3D.draw_box(Vector3(x, -4-z, y), Quaternion.IDENTITY, Vector3.ONE, DebugDraw3D.empty_color, false, 1.25)
+					var size = Vector3.ONE
+					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
+					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, 1.25)
 		timer_2 = 1.25
 
 

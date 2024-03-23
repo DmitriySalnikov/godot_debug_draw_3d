@@ -603,26 +603,7 @@ void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane
 void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes) {
 	ZoneScoped;
 
-	std::function<Vector3(const Plane &, const Plane &, const Plane &)> intersect_planes = [&](const Plane &a, const Plane &b, const Plane &c) {
-		Vector3 intersec_result;
-		a.intersect_3(b, c, &intersec_result);
-		return intersec_result;
-	};
-
-	//  near, far, left, top, right, bottom
-	//  0,    1,   2,    3,   4,     5
-	Vector3 cube[]{
-		intersect_planes(frustum[0], frustum[3], frustum[2]),
-		intersect_planes(frustum[0], frustum[3], frustum[4]),
-		intersect_planes(frustum[0], frustum[5], frustum[4]),
-		intersect_planes(frustum[0], frustum[5], frustum[2]),
-
-		intersect_planes(frustum[1], frustum[3], frustum[2]),
-		intersect_planes(frustum[1], frustum[3], frustum[4]),
-		intersect_planes(frustum[1], frustum[5], frustum[4]),
-		intersect_planes(frustum[1], frustum[5], frustum[2]),
-	};
-
+	auto cube = MathUtils::get_frustum_cube(frustum);
 	for (int i = 0; i < CubeIndexes.size(); i++)
 		vertexes[i] = cube[CubeIndexes[i]];
 }

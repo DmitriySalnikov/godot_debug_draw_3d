@@ -25,7 +25,7 @@ class DebugDraw3DStats;
 
 #ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
-class DelayedRendererLine;
+struct DelayedRendererLine;
 
 enum class InstanceType : char;
 enum class ConvertableInstanceType : char;

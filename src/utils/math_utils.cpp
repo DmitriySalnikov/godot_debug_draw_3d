@@ -1,5 +1,7 @@
 #include "math_utils.h"
 
+#include <functional>
+
 const float MathUtils::Sqrt2 = Math::sqrt(2.f);
 const float MathUtils::CubeRadiusForSphere = 0.8660253882f; // "%.10f" % (Vector3.ONE * 0.5).length()
 const float MathUtils::CylinderRadiusForSphere = 0.7071067691f; // "%.10f" % (Vector3(1,1,0) * 0.5).length()
@@ -37,26 +39,9 @@ void MathUtils::get_diagonal_vectors(const Vector3 &a, const Vector3 &b, Vector3
 	diag = top - bottom;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::array<Plane, 6> &planes) {
-	Vector3 extent = bounds.size * 0.5f;
-	Vector3 center = bounds.position + extent;
-
+bool MathUtils::is_bounds_partially_inside_convex_shape(const AABBMinMax &sphere, const std::array<Plane, 6> &planes) {
 	for (int i = 0; i < planes.size(); i++) {
-		const Plane &p = planes[i];
-		if (Vector3(center.x - extent.x * Math::sign(p.normal.x),
-					center.y - extent.y * Math::sign(p.normal.y),
-					center.z - extent.z * Math::sign(p.normal.z))
-						.dot(p.normal) > p.d)
-			return false;
-	}
-
-	return true;
-}
-
-bool MathUtils::is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::array<Plane, 6> &planes) {
-	for (int i = 0; i < planes.size(); i++) {
-		const Plane &p = planes[i];
-		if (p.distance_to(sphere.position) >= sphere.Radius)
+		if (sphere.radius < planes[i].distance_to(sphere.center))
 			return false;
 	}
 
@@ -79,4 +64,61 @@ real_t MathUtils::get_max_basis_length(const Basis &b) {
 	real_t b_l = b.get_column(1).length();
 	real_t c_l = b.get_column(2).length();
 	return Math::max(a_l, Math::max(b_l, c_l));
+}
+
+AABB MathUtils::calculate_vertex_bounds(const Vector3 *lines, size_t count) {
+	if (count > 0) {
+		// Using the original Godot expand_to code to avoid creating new AABB instances
+		Vector3 min = lines[0];
+		Vector3 max = lines[0];
+
+		for (size_t i = 0; i < count; i++) {
+			auto &v = lines[i];
+			if (v.x < min.x) {
+				min.x = v.x;
+			}
+			if (v.y < min.y) {
+				min.y = v.y;
+			}
+			if (v.z < min.z) {
+				min.z = v.z;
+			}
+
+			if (v.x > max.x) {
+				max.x = v.x;
+			}
+			if (v.y > max.y) {
+				max.y = v.y;
+			}
+			if (v.z > max.z) {
+				max.z = v.z;
+			}
+		}
+
+		return AABB(min, max - min);
+	} else {
+		return AABB();
+	}
+}
+
+std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::array<Plane, 6> frustum) {
+	std::function<Vector3(const Plane &, const Plane &, const Plane &)> intersect_planes = [&](const Plane &a, const Plane &b, const Plane &c) {
+		Vector3 intersec_result;
+		a.intersect_3(b, c, &intersec_result);
+		return intersec_result;
+	};
+
+	//  near, far, left, top, right, bottom
+	//  0,    1,   2,    3,   4,     5
+	return std::array<Vector3, 8>({
+			intersect_planes(frustum[0], frustum[3], frustum[2]),
+			intersect_planes(frustum[0], frustum[3], frustum[4]),
+			intersect_planes(frustum[0], frustum[5], frustum[4]),
+			intersect_planes(frustum[0], frustum[5], frustum[2]),
+
+			intersect_planes(frustum[1], frustum[3], frustum[2]),
+			intersect_planes(frustum[1], frustum[3], frustum[4]),
+			intersect_planes(frustum[1], frustum[5], frustum[4]),
+			intersect_planes(frustum[1], frustum[5], frustum[2]),
+	});
 }

@@ -184,17 +184,20 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	LOCK_GUARD(owner->datalock);
 
 	// cleanup and get available viewports
-	std::vector<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
+	std::unordered_set<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
 
 	// Do not update geometry if frozen
 	if (owner->get_config()->is_freeze_3d_render())
 		return;
 
-	if (immediate_mesh_storage.mesh->get_surface_count())
+	if (immediate_mesh_storage.mesh->get_surface_count()) {
+		ZoneScopedN("Clear lines");
 		immediate_mesh_storage.mesh->clear_surfaces();
+	}
 
 	// Return if nothing to do
 	if (!owner->is_debug_enabled()) {
+		ZoneScopedN("Reset instances");
 		for (auto &item : multi_mesh_storage) {
 			if (item.mesh->get_visible_instance_count())
 				item.mesh->set_visible_instance_count(0);
@@ -209,51 +212,64 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		set_render_layer_mask(owner->get_config()->get_geometry_render_layers());
 	}
 
-	std::unordered_map<const Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
-	for (const auto &vp_p : available_viewports) {
-		// Collect frustums and camera positions
+	std::shared_ptr<GeometryPoolCullingData> culling_data;
+	{
+		// TODO fix in editor!
+		ZoneScopedN("Get frustums");
 		std::vector<std::array<Plane, 6> > frustum_planes;
-		std::vector<Vector3> cameras_positions;
-		cameras_positions.reserve(1);
+		std::vector<AABBMinMax> frustum_boxes;
 
-		std::vector<Array> frustum_arrays;
-		frustum_arrays.reserve(1);
+		for (const auto &vp_p : available_viewports) {
+			// Collect frustums and camera positions
 
-		auto custom_editor_viewports = owner->get_custom_editor_viewports();
-		Camera3D *vp_cam = vp_p->get_camera_3d();
+			std::vector<Array> frustum_arrays;
+			frustum_arrays.reserve(1);
 
-		if ((owner->get_config()->is_force_use_camera_from_scene() || !custom_editor_viewports.size()) && vp_cam) {
-			frustum_arrays.push_back(vp_cam->get_frustum());
-			cameras_positions.push_back(vp_cam->get_position());
-		} else if (custom_editor_viewports.size() > 0) {
-			for (auto vp : custom_editor_viewports) {
-				if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
-					auto c = vp->get_camera_3d();
-					frustum_arrays.push_back(c->get_frustum());
-					cameras_positions.push_back(c->get_position());
+			auto custom_editor_viewports = owner->get_custom_editor_viewports();
+			Camera3D *vp_cam = vp_p->get_camera_3d();
+
+			if ((owner->get_config()->is_force_use_camera_from_scene() || !custom_editor_viewports.size()) && vp_cam) {
+				frustum_arrays.push_back(vp_cam->get_frustum());
+			} else if (custom_editor_viewports.size() > 0) {
+				for (auto vp : custom_editor_viewports) {
+					if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
+						auto c = vp->get_camera_3d();
+						frustum_arrays.push_back(c->get_frustum());
+					}
+				}
+			}
+
+			// Convert Array to vector
+			if (frustum_arrays.size()) {
+				for (auto &arr : frustum_arrays) {
+					if (arr.size() == 6) {
+						std::array<Plane, 6> a;
+						for (int i = 0; i < arr.size(); i++)
+							a[i] = (Plane)arr[i];
+
+						if (owner->get_config()->is_use_frustum_culling())
+							frustum_planes.push_back(a);
+
+						auto cube = MathUtils::get_frustum_cube(a);
+						AABB aabb = MathUtils::calculate_vertex_bounds(cube.data(), cube.size());
+						SphereBounds sb = aabb;
+						frustum_boxes.push_back(aabb);
+
+#if true
+						// Debug camera bounds
+						{
+							// auto cfg = owner->new_scoped_config()->set_viewport(vp_p);
+							owner->draw_sphere(sb.position, sb.radius, Colors::crimson);
+							owner->draw_aabb(aabb, Colors::yellow);
+						}
+#endif
+					}
 				}
 			}
 		}
 
-		// Convert Array to vector
-		if (owner->get_config()->is_use_frustum_culling() && frustum_arrays.size()) {
-			frustum_planes.reserve(frustum_arrays.size());
-
-			for (auto &arr : frustum_arrays) {
-				if (arr.size() == 6) {
-					std::array<Plane, 6> a;
-					for (int i = 0; i < arr.size(); i++)
-						a[i] = (Plane)arr[i];
-					frustum_planes.push_back(a);
-				}
-			}
-		}
-
-		culling_data[vp_p] = std::make_shared<GeometryPoolCullingData>(frustum_planes, /*TODO replace by scoped somehow*/ owner->get_config()->get_culling_distance(), cameras_positions);
+		culling_data = std::make_shared<GeometryPoolCullingData>(frustum_planes, frustum_boxes);
 	}
-
-	// Update visibility
-	geometry_pool.update_visibility(culling_data);
 
 	// Debug bounds of instances and lines
 	if (owner->get_config()->is_visible_instance_bounds()) {
@@ -261,69 +277,63 @@ void DebugGeometryContainer::update_geometry(double delta) {
 		struct sphereDebug {
 			Vector3 pos;
 			real_t radius;
-			Viewport *vp;
-		};
-		std::vector<sphereDebug> new_instances;
-
-		auto draw_instance_spheres = [&new_instances](Viewport *vp, DelayedRendererInstance *o) {
-			if (!o->is_visible || o->is_expired())
-				return;
-			new_instances.push_back({ o->bounds.position, o->bounds.Radius, vp });
 		};
 
-		geometry_pool.for_each_instance(draw_instance_spheres);
+		Viewport *vp;
+		if (available_viewports.size()) {
+			vp = *available_viewports.begin();
 
-		auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
+			std::vector<AABBMinMax> new_instances;
+			geometry_pool.for_each_instance([&new_instances](DelayedRendererInstance *o) {
+				if (!o->is_visible || o->is_expired())
+					return;
+				new_instances.push_back(o->bounds);
+			});
 
-		// Draw custom sphere for 1 frame
-		for (auto &i : new_instances) {
-			cfg->viewport = i.vp;
+			auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
 
-			geometry_pool.add_or_update_instance(
-					cfg,
-					InstanceType::SPHERE,
-					0,
-					ProcessType::PROCESS,
-					Transform3D(Basis().scaled(Vector3_ONE * i.radius * 2), i.pos),
-					Colors::debug_bounds,
-					SphereBounds(i.pos, i.radius),
-					&Colors::empty_color,
-					[](auto d) { d->is_used_one_time = true; });
+			// Draw custom sphere for 1 frame
+			for (auto &i : new_instances) {
+				cfg->viewport = vp;
+
+				geometry_pool.add_or_update_instance(
+						cfg,
+						InstanceType::SPHERE,
+						0,
+						ProcessType::PROCESS,
+						Transform3D(Basis().scaled(Vector3_ONE * i.extent * 2), i.center),
+						Colors::debug_bounds,
+						SphereBounds(i.center, i.extent.length_squared()),
+						&Colors::empty_color);
+			}
+
+			geometry_pool.for_each_line([this, &cfg, &vp](DelayedRendererLine *o) {
+				if (!o->is_visible || o->is_expired())
+					return;
+
+				cfg->viewport = vp;
+				geometry_pool.add_or_update_instance(
+						cfg,
+						InstanceType::CUBE_CENTERED,
+						0,
+						ProcessType::PROCESS,
+						Transform3D(Basis().scaled(o->bounds.extent * 2), o->bounds.center),
+						Colors::debug_bounds,
+						SphereBounds(o->bounds.center, abs(o->bounds.extent.length())),
+						&Colors::empty_color);
+			});
 		}
-
-		geometry_pool.for_each_line([this, &cfg](Viewport *vp, DelayedRendererLine *o) {
-			if (!o->is_visible || o->is_expired())
-				return;
-
-			Vector3 bottom, top, diag;
-			MathUtils::get_diagonal_vectors(o->bounds.position, o->bounds.position + o->bounds.size, bottom, top, diag);
-			cfg->viewport = vp;
-
-			geometry_pool.add_or_update_instance(
-					cfg,
-					InstanceType::CUBE,
-					0,
-					ProcessType::PROCESS,
-					Transform3D(Basis().scaled(diag), bottom),
-					Colors::debug_bounds,
-					SphereBounds(bottom + diag * 0.5f, abs(diag.length() * 0.5f)),
-					&Colors::empty_color,
-					[](auto d) { d->is_used_one_time = true; });
-		});
 	}
 
-	// Draw immediate lines
-	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, delta);
-
-	// Update MultiMeshInstances
-	static std::array<Ref<MultiMesh> *, (int)InstanceType::MAX> meshes;
+	std::vector<Ref<MultiMesh> *> meshes((int)InstanceType::MAX);
 	for (int i = 0; i < (int)InstanceType::MAX; i++) {
 		meshes[i] = &multi_mesh_storage[i].mesh;
 	}
 
-	geometry_pool.fill_instance_data(meshes, delta);
+	geometry_pool.reset_visible_objects();
+	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, culling_data, delta);
+	geometry_pool.fill_instance_data(meshes, culling_data, delta);
 
-	geometry_pool.scan_visible_instances();
 	geometry_pool.update_expiration(delta, ProcessType::PROCESS);
 	geometry_pool.reset_counter(delta, ProcessType::PROCESS);
 
