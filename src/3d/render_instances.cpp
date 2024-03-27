@@ -7,8 +7,28 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/mesh.hpp>
 #include <godot_cpp/classes/multi_mesh.hpp>
-#include <godot_cpp/classes/time.hpp>
 GODOT_WARNING_RESTORE()
+
+bool DelayedRenderer::update_visibility(const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+	is_visible = false;
+	for (auto &box : p_culling_data->m_frustum_boxes) {
+		if (box.intersects(bounds)) {
+			goto frustum;
+		}
+	}
+	return is_visible;
+frustum:
+	if (p_culling_data->m_frustums.size()) {
+		for (auto &frustum : p_culling_data->m_frustums) {
+			if (MathUtils::is_bounds_partially_inside_convex_shape(bounds, frustum)) {
+				return is_visible = true;
+			}
+		}
+		return is_visible = false;
+	} else {
+		return is_visible = true;
+	}
+}
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
@@ -21,7 +41,7 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
-void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &delta) {
+void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &p_delta) {
 	ZoneScoped;
 
 	// reset timers
@@ -147,7 +167,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 	time_spent_to_fill_buffers_of_instances -= time_spent_to_cull_instances;
 }
 
-void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &delta) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &p_delta) {
 	ZoneScoped;
 
 	uint64_t used_lines = 0;
@@ -234,25 +254,25 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> _ig, const std::shared_ptr<Geo
 		mesh[ArrayMesh::ArrayType::ARRAY_VERTEX] = vertexes;
 		mesh[ArrayMesh::ArrayType::ARRAY_COLOR] = colors;
 
-		_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
+		p_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
 }
 
-void GeometryPool::reset_counter(const double &_delta, const ProcessType &p_proc) {
+void GeometryPool::reset_counter(const double &p_delta, const ProcessType &p_proc) {
 	ZoneScoped;
 	if (p_proc == ProcessType::MAX) {
 		for (auto &proc : pools) {
 			for (int i = 0; i < (int)InstanceType::MAX; i++) {
-				proc.instances[i].reset_counter(_delta, i);
+				proc.instances[i].reset_counter(p_delta, i);
 			}
-			proc.lines.reset_counter(_delta);
+			proc.lines.reset_counter(p_delta);
 		}
 	} else {
 		auto &proc = pools[(int)p_proc];
 		for (int i = 0; i < (int)InstanceType::MAX; i++) {
-			proc.instances[i].reset_counter(_delta, i);
+			proc.instances[i].reset_counter(p_delta, i);
 		}
-		proc.lines.reset_counter(_delta);
+		proc.lines.reset_counter(p_delta);
 	}
 }
 
@@ -262,7 +282,7 @@ void GeometryPool::reset_visible_objects() {
 	stat_visible_lines = 0;
 }
 
-void GeometryPool::set_stats(Ref<DebugDraw3DStats> &stats) const {
+void GeometryPool::set_stats(Ref<DebugDraw3DStats> &p_stats) const {
 	ZoneScoped;
 
 	struct {
@@ -283,7 +303,7 @@ void GeometryPool::set_stats(Ref<DebugDraw3DStats> &stats) const {
 	const int p = (int)ProcessType::PROCESS;
 	const int py = (int)ProcessType::PHYSICS_PROCESS;
 
-	stats->set_render_stats(
+	p_stats->set_render_stats(
 			/* t_instances */ counts[p].used_instances,
 			/* t_lines */ counts[p].used_lines,
 			/* t_visible_instances */ stat_visible_instances,
@@ -309,35 +329,35 @@ void GeometryPool::clear_pool() {
 	}
 }
 
-void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &_func) {
+void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &p_func) {
 	ZoneScoped;
 	for (auto &proc : pools) {
 		for (auto &inst : proc.instances) {
 			for (size_t i = 0; i < inst.used_instant; i++) {
-				_func(&inst.instant[i]);
+				p_func(&inst.instant[i]);
 			}
 			for (size_t i = 0; i < inst.delayed.size(); i++) {
 				if (!inst.delayed[i].is_expired())
-					_func(&inst.delayed[i]);
+					p_func(&inst.delayed[i]);
 			}
 		}
 	}
 }
 
-void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &_func) {
+void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &p_func) {
 	ZoneScoped;
 	for (auto &proc : pools) {
 		for (size_t i = 0; i < proc.lines.used_instant; i++) {
-			_func(&proc.lines.instant[i]);
+			p_func(&proc.lines.instant[i]);
 		}
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
 			if (!proc.lines.delayed[i].is_expired())
-				_func(&proc.lines.delayed[i]);
+				p_func(&proc.lines.delayed[i]);
 		}
 	}
 }
 
-void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_proc) {
+void GeometryPool::update_expiration(const double &p_delta, const ProcessType &p_proc) {
 	ZoneScoped;
 
 	auto &proc = pools[(int)p_proc];
@@ -346,7 +366,7 @@ void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_
 			for (size_t i = 0; i < t.delayed.size(); i++) {
 				auto &o = t.delayed[i];
 				if (o.is_used_one_time) {
-					o.update_expiration(_delta);
+					o.update_expiration(p_delta);
 				}
 			}
 		}
@@ -354,28 +374,28 @@ void GeometryPool::update_expiration(const double &_delta, const ProcessType &p_
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
 			auto &o = proc.lines.delayed[i];
 			if (o.is_used_one_time) {
-				o.update_expiration(_delta);
+				o.update_expiration(p_delta);
 			}
 		}
 
 		for (auto &vp : proc.viewports) {
 			if (vp.second.is_phys_used) {
-				vp.second.exp_time -= _delta;
+				vp.second.exp_time -= p_delta;
 			}
 		}
 	} else {
 		for (auto &t : proc.instances) {
 			for (size_t i = 0; i < t.delayed.size(); i++) {
-				t.delayed[i].update_expiration(_delta);
+				t.delayed[i].update_expiration(p_delta);
 			}
 		}
 
 		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-			proc.lines.delayed[i].update_expiration(_delta);
+			proc.lines.delayed[i].update_expiration(p_delta);
 		}
 
 		for (auto &vp : proc.viewports) {
-			vp.second.exp_time -= _delta;
+			vp.second.exp_time -= p_delta;
 		}
 	}
 }
@@ -409,73 +429,73 @@ std::unordered_set<Viewport *> GeometryPool::get_and_validate_viewports() {
 	return res;
 }
 
-void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, ConvertableInstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const Color *p_custom_col) {
+void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	ZoneScoped;
-	add_or_update_instance(cfg, _scoped_config_type_convert(_type, cfg), _exp_time, p_proc, _transform, _col, _bounds, p_custom_col);
+	add_or_update_instance(p_cfg, _scoped_config_type_convert(p_type, p_cfg), p_exp_time, p_proc, p_transform, p_col, p_bounds, p_custom_col);
 }
 
-void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, InstanceType _type, const real_t &_exp_time, const ProcessType &p_proc, const Transform3D &_transform, const Color &_col, const SphereBounds &_bounds, const Color *p_custom_col) {
+void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	ZoneScoped;
 	auto &proc = pools[(int)p_proc];
-	DelayedRendererInstance *inst = proc.instances[(int)_type].get(_exp_time > 0);
+	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
 
-	inst->data = GeometryPoolData3DInstance(_transform, _col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(cfg));
-	inst->bounds = _bounds;
-	inst->expiration_time = _exp_time;
+	inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
+	inst->bounds = p_bounds;
+	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
 
-	auto &vp_data = proc.viewports[cfg->viewport];
-	vp_data.vp_id = cfg->viewport->get_instance_id();
-	if (vp_data.exp_time < _exp_time + 1) {
-		vp_data.exp_time = _exp_time + 1;
+	auto &vp_data = proc.viewports[p_cfg->viewport];
+	vp_data.vp_id = p_cfg->viewport->get_instance_id();
+	if (vp_data.exp_time < p_exp_time + 1) {
+		vp_data.exp_time = p_exp_time + 1;
 		vp_data.is_phys_used = false;
 	}
 }
 
-void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg, const real_t &_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col) {
+void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col) {
 	ZoneScoped;
 	auto &proc = pools[(int)p_proc];
-	DelayedRendererLine *inst = proc.lines.get(_exp_time > 0);
+	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
 
-	inst->lines = std::move(_lines);
-	inst->lines_count = _line_count;
-	inst->color = _col;
-	inst->bounds = MathUtils::calculate_vertex_bounds(inst->lines.get(), _line_count);
-	inst->expiration_time = _exp_time;
+	inst->lines = std::move(p_lines);
+	inst->lines_count = p_line_count;
+	inst->color = p_col;
+	inst->bounds = MathUtils::calculate_vertex_bounds(inst->lines.get(), p_line_count);
+	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
 
-	auto &vp_data = proc.viewports[cfg->viewport];
-	vp_data.vp_id = cfg->viewport->get_instance_id();
-	if (vp_data.exp_time < _exp_time + 1) {
-		vp_data.exp_time = _exp_time + 1;
+	auto &vp_data = proc.viewports[p_cfg->viewport];
+	vp_data.vp_id = p_cfg->viewport->get_instance_id();
+	if (vp_data.exp_time < p_exp_time + 1) {
+		vp_data.exp_time = p_exp_time + 1;
 		vp_data.is_phys_used = false;
 	}
 }
 
-GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg) {
+GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	ZoneScoped;
-	if (cfg->thickness != 0) {
+	if (p_cfg->thickness != 0) {
 		return GeometryType::Volumetric;
 	}
 	// TODO solid
 	return GeometryType::Wireframe;
 }
 
-Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg) {
+Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	ZoneScoped;
-	if (_scoped_config_get_geometry_type(cfg) == GeometryType::Volumetric)
-		return Color(cfg->thickness, cfg->center_brightness, 0, 0);
+	if (_scoped_config_get_geometry_type(p_cfg) == GeometryType::Volumetric)
+		return Color(p_cfg->thickness, p_cfg->center_brightness, 0, 0);
 
 	return Color();
 }
 
-InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &cfg) {
+InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p_type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	ZoneScoped;
-	switch (_scoped_config_get_geometry_type(cfg)) {
+	switch (_scoped_config_get_geometry_type(p_cfg)) {
 		case GeometryType::Wireframe: {
-			switch (type) {
+			switch (p_type) {
 				case ConvertableInstanceType::CUBE:
 					return InstanceType::CUBE;
 				case ConvertableInstanceType::CUBE_CENTERED:
@@ -485,7 +505,7 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType t
 				case ConvertableInstanceType::POSITION:
 					return InstanceType::POSITION;
 				case ConvertableInstanceType::SPHERE:
-					if (cfg->hd_sphere) {
+					if (p_cfg->hd_sphere) {
 						return InstanceType::SPHERE_HD;
 					} else {
 						return InstanceType::SPHERE;
@@ -500,7 +520,7 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType t
 			break;
 		}
 		case GeometryType::Volumetric: {
-			switch (type) {
+			switch (p_type) {
 				case ConvertableInstanceType::CUBE:
 					return InstanceType::CUBE_VOLUMETRIC;
 				case ConvertableInstanceType::CUBE_CENTERED:
@@ -510,7 +530,7 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType t
 				case ConvertableInstanceType::POSITION:
 					return InstanceType::POSITION_VOLUMETRIC;
 				case ConvertableInstanceType::SPHERE:
-					if (cfg->hd_sphere) {
+					if (p_cfg->hd_sphere) {
 						return InstanceType::SPHERE_HD_VOLUMETRIC;
 					} else {
 						return InstanceType::SPHERE_VOLUMETRIC;

@@ -29,7 +29,7 @@ public:
 	void _enter_tree() override;
 	void _exit_tree() override;
 
-	void _on_id_pressed(MenuItemId id);
+	void _on_id_pressed(MenuItemId p_id);
 
 	DebugDrawMenuExtensionPlugin();
 	~DebugDrawMenuExtensionPlugin();

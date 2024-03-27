@@ -26,6 +26,7 @@ func _ready():
 	
 	%ShowStats.button_pressed = get_parent().text_groups_show_stats
 	%DrawBoxes.button_pressed = get_parent().draw_array_of_boxes
+	%Draw1MBoxes.button_pressed = get_parent().draw_1m_boxes
 	
 	if get_tree():
 		await get_tree().create_timer(0.2).timeout
@@ -82,3 +83,14 @@ func _on_show_stats_toggled(toggled_on):
 
 func _on_draw_boxes_toggled(toggled_on):
 	get_parent().draw_array_of_boxes = toggled_on
+	
+	DebugDraw3D.clear_all()
+	get_parent().timer_cubes = 0
+
+
+func _on_draw_1m_boxes_toggled(toggled_on):
+	get_parent().draw_1m_boxes = toggled_on
+	
+	if get_parent().draw_array_of_boxes:
+		DebugDraw3D.clear_all()
+		get_parent().timer_cubes = 0

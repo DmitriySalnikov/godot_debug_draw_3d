@@ -26,8 +26,8 @@ void _DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
 	set_physics_process_priority(INT32_MIN);
 }
 
-void _DD3D_PhysicsWatcher::_physics_process(double delta) {
-	root_node->_physics_process_start(delta);
+void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
+	root_node->_physics_process_start(p_delta);
 }
 #endif
 
@@ -110,10 +110,10 @@ void DebugDrawManager::_connect_scene_changed() {
 #endif
 }
 
-void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
+void DebugDrawManager::_on_scene_changed(bool p_is_scene_null) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!is_current_scene_is_null || is_current_scene_is_null != _is_scene_null) {
+	if (!is_current_scene_is_null || is_current_scene_is_null != p_is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
 		debug_draw_3d_singleton->clear_all();
 
@@ -121,7 +121,7 @@ void DebugDrawManager::_on_scene_changed(bool _is_scene_null) {
 		debug_draw_2d_singleton->_clear_all_internal(true);
 	}
 
-	is_current_scene_is_null = _is_scene_null;
+	is_current_scene_is_null = p_is_scene_null;
 	_connect_scene_changed();
 #endif
 }
@@ -220,17 +220,17 @@ void DebugDrawManager::deinit() {
 	emit_signal(s_extension_unloading);
 }
 
-void DebugDrawManager::_register_singleton_aliases(const TypedArray<StringName> &names, Object *instance) {
-	for (int i = 0; i < names.size(); i++) {
-		if (!names[i].operator godot::StringName().is_empty())
-			Engine::get_singleton()->register_singleton(names[i], instance);
+void DebugDrawManager::_register_singleton_aliases(const TypedArray<StringName> &p_names, Object *p_instance) {
+	for (int i = 0; i < p_names.size(); i++) {
+		if (!p_names[i].operator godot::StringName().is_empty())
+			Engine::get_singleton()->register_singleton(p_names[i], p_instance);
 	}
 }
 
-void DebugDrawManager::_unregister_singleton_aliases(const TypedArray<StringName> &names) {
-	for (int i = 0; i < names.size(); i++) {
-		if (!names[i].operator godot::StringName().is_empty())
-			Engine::get_singleton()->unregister_singleton(names[i]);
+void DebugDrawManager::_unregister_singleton_aliases(const TypedArray<StringName> &p_names) {
+	for (int i = 0; i < p_names.size(); i++) {
+		if (!p_names[i].operator godot::StringName().is_empty())
+			Engine::get_singleton()->unregister_singleton(p_names[i]);
 	}
 }
 
@@ -353,7 +353,7 @@ void DebugDrawManager::_integrate_into_engine() {
 #endif
 }
 
-void DebugDrawManager::_process(double delta) {
+void DebugDrawManager::_process(double p_delta) {
 	// To discover what causes the constant look here:
 	// https://github.com/godotengine/godot/blob/baf6b4634d08bc3e193a38b86e96945052002f64/servers/rendering/rendering_server_default.h#L104
 	// Replace _changes_changed's body with:
@@ -365,8 +365,8 @@ void DebugDrawManager::_process(double delta) {
 	//	}
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->process(delta);
-		DebugDraw2D::get_singleton()->process(delta);
+		DebugDraw3D::get_singleton()->process(p_delta);
+		DebugDraw2D::get_singleton()->process(p_delta);
 
 		if (!DebugDraw2D::get_singleton()->is_drawing_frame()) {
 			FrameMark;
@@ -374,7 +374,7 @@ void DebugDrawManager::_process(double delta) {
 	}
 #endif
 
-	log_flush_time += delta;
+	log_flush_time += p_delta;
 	if (log_flush_time > 0.25f) {
 		log_flush_time -= 0.25f;
 		Utils::print_logs();
@@ -387,18 +387,18 @@ void DebugDrawManager::_process(double delta) {
 #endif
 }
 
-void DebugDrawManager::_physics_process_start(double delta) {
+void DebugDrawManager::_physics_process_start(double p_delta) {
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->physics_process_start(delta);
-		DebugDraw2D::get_singleton()->physics_process_start(delta);
+		DebugDraw3D::get_singleton()->physics_process_start(p_delta);
+		DebugDraw2D::get_singleton()->physics_process_start(p_delta);
 	}
 }
 
-void DebugDrawManager::_physics_process(double delta) {
+void DebugDrawManager::_physics_process(double p_delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->physics_process_end(delta);
-		DebugDraw2D::get_singleton()->physics_process_end(delta);
+		DebugDraw3D::get_singleton()->physics_process_end(p_delta);
+		DebugDraw2D::get_singleton()->physics_process_end(p_delta);
 	}
 #endif
 }

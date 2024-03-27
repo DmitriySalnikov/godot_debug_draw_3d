@@ -20,9 +20,9 @@ public:
 			_is_filled(false) {
 	}
 
-	CircularBuffer(size_t _buffer_size) :
-			buffer(new TValue[_buffer_size]),
-			buf_size(_buffer_size),
+	CircularBuffer(size_t p_buffer_size) :
+			buffer(new TValue[p_buffer_size]),
+			buf_size(p_buffer_size),
 			start(0),
 			end(0),
 			_is_filled(false) {
@@ -45,9 +45,9 @@ public:
 		_is_filled = 0;
 	}
 
-	void resize(size_t size) {
+	void resize(size_t p_size) {
 		reset();
-		buf_size = size;
+		buf_size = p_size;
 		buffer.reset(new TValue[buf_size]);
 	}
 
@@ -63,8 +63,8 @@ public:
 		return _is_filled;
 	}
 
-	void add(TValue v) {
-		buffer[end++] = v;
+	void add(TValue p_v) {
+		buffer[end++] = p_v;
 
 		if (end == buf_size) {
 			_is_filled = true;
@@ -77,31 +77,31 @@ public:
 		}
 	}
 
-	TValue get(const size_t &idx) const {
-		const size_t pos = start + idx;
+	TValue get(const size_t &p_idx) const {
+		const size_t pos = start + p_idx;
 		return buffer[pos >= buf_size ? pos - buf_size : pos];
 	}
 
-	void get_min_max_avg(TValue *min, TValue *max, TValue *avg) {
+	void get_min_max_avg(TValue *p_min, TValue *p_max, TValue *p_avg) {
 		if (size()) {
 			TValue sum = get(0);
-			*min = get(0);
-			*max = get(0);
+			*p_min = get(0);
+			*p_max = get(0);
 
 			for (size_t i = 1; i < size(); i++) {
 				TValue v = get(i);
-				if (v < *min) {
-					*min = v;
-				} else if (v > *max) {
-					*max = v;
+				if (v < *p_min) {
+					*p_min = v;
+				} else if (v > *p_max) {
+					*p_max = v;
 				}
 				sum += v;
 			}
-			*avg = sum / size();
+			*p_avg = sum / size();
 			return;
 		}
 
-		*min = *max = *avg = 0;
+		*p_min = *p_max = *p_avg = 0;
 		return;
 	}
 };

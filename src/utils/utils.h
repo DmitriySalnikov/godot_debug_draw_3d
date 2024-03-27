@@ -281,17 +281,6 @@ public:
 		return p;
 	}
 
-	template <class TVal, class TFun>
-	static int sum(const std::unordered_set<TVal> &set, const TFun &getter_int_val) {
-		ZoneScoped;
-
-		int res = 0;
-		for (const TVal &t : set) {
-			res += getter_int_val(t);
-		}
-		return res;
-	}
-
 	// TODO: need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
@@ -321,8 +310,8 @@ public:
 
 #define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
 #define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
-#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __COUNTER__)(time_val, false)
-#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __COUNTER__)(time_val, true)
+#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, false)
+#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, true)
 
 class GodotScopedStopwatch {
 	std::chrono::high_resolution_clock::time_point start_time;

@@ -16,9 +16,9 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel, const bool &use_icosphere, const bool &use_icosphere_hd) {
+DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, const bool &p_add_bevel, const bool &p_use_icosphere, const bool &p_use_icosphere_hd) {
 	ZoneScoped;
-	owner = root;
+	owner = p_root;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
 	// Create wireframe mesh drawer
@@ -54,10 +54,10 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 		auto array_mesh_pos = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes);
 		CreateMMI(InstanceType::POSITION, UsingShaderType::Wireframe, NAMEOF(mmi_positions), array_mesh_pos);
 
-		auto array_mesh_sphere = use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
+		auto array_mesh_sphere = p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
 		CreateMMI(InstanceType::SPHERE, UsingShaderType::Wireframe, NAMEOF(mmi_spheres), array_mesh_sphere);
 
-		auto array_mesh_sphere_hd = use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2);
+		auto array_mesh_sphere_hd = p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2);
 		CreateMMI(InstanceType::SPHERE_HD, UsingShaderType::Wireframe, NAMEOF(mmi_spheres_hd), array_mesh_sphere_hd);
 
 		auto array_mesh_cylinder = GeometryGenerator::CreateCylinderLines(16, 1, 1, 2);
@@ -68,19 +68,19 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *root, const bo
 
 		// VOLUMETRIC
 
-		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), add_bevel);
+		auto array_mesh_line_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel);
 		CreateMMI(InstanceType::LINE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_line_volumetric);
 
-		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube, add_bevel);
+		auto array_mesh_cube_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube, p_add_bevel);
 		CreateMMI(InstanceType::CUBE_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_volumetric), array_mesh_cube_volumetric);
 
-		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center, add_bevel);
+		auto array_mesh_cube_centered_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_cube_center, p_add_bevel);
 		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_cubes_centered_volumetric), array_mesh_cube_centered_volumetric);
 
-		auto array_mesh_arrow_head_volumetric = GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, add_bevel);
+		auto array_mesh_arrow_head_volumetric = GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, p_add_bevel);
 		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_arrowheads_volumetric), array_mesh_arrow_head_volumetric);
 
-		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos, add_bevel);
+		auto array_mesh_pos_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_pos, p_add_bevel);
 		CreateMMI(InstanceType::POSITION_VOLUMETRIC, UsingShaderType::Expandable, NAMEOF(mmi_positions_volumetric), array_mesh_pos_volumetric);
 
 		auto array_mesh_sphere_volumetric = GeometryGenerator::ConvertWireframeToVolumetric(array_mesh_sphere, false);
@@ -114,7 +114,7 @@ DebugGeometryContainer::~DebugGeometryContainer() {
 	geometry_pool.clear_pool();
 }
 
-void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh) {
+void DebugGeometryContainer::CreateMMI(InstanceType p_type, UsingShaderType p_shader, const String &p_name, Ref<ArrayMesh> p_mesh) {
 	ZoneScoped;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
@@ -122,18 +122,18 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 
 	Ref<MultiMesh> new_mm;
 	new_mm.instantiate();
-	new_mm->set_name(String::num_int64((int)type));
+	new_mm->set_name(String::num_int64((int)p_type));
 
 	new_mm->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
 	new_mm->set_use_colors(true);
 	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	new_mm->set_use_custom_data(true);
-	new_mm->set_mesh(mesh);
+	new_mm->set_mesh(p_mesh);
 
 	rs->instance_set_base(mmi, new_mm->get_rid());
 
 	Ref<ShaderMaterial> mat;
-	switch (shader) {
+	switch (p_shader) {
 		case UsingShaderType::Wireframe:
 			mat = owner->get_wireframe_material();
 			break;
@@ -148,23 +148,23 @@ void DebugGeometryContainer::CreateMMI(InstanceType type, UsingShaderType shader
 			break;
 	}
 
-	mesh->surface_set_material(0, mat);
+	p_mesh->surface_set_material(0, mat);
 
 	rs->instance_geometry_set_cast_shadows_setting(mmi, RenderingServer::SHADOW_CASTING_SETTING_OFF);
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
 	rs->instance_geometry_set_flag(mmi, RenderingServer::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	multi_mesh_storage[(int)type].instance = mmi;
-	multi_mesh_storage[(int)type].mesh = new_mm;
+	multi_mesh_storage[(int)p_type].instance = mmi;
+	multi_mesh_storage[(int)p_type].mesh = new_mm;
 }
 
-void DebugGeometryContainer::set_world(Ref<World3D> new_world) {
+void DebugGeometryContainer::set_world(Ref<World3D> p_new_world) {
 	ZoneScoped;
-	if (new_world == base_world_viewport) {
+	if (p_new_world == base_world_viewport) {
 		return;
 	}
 
-	base_world_viewport = new_world;
+	base_world_viewport = p_new_world;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	RID scenario = base_world_viewport.is_valid() ? base_world_viewport->get_scenario() : RID();
 
@@ -179,7 +179,7 @@ Ref<World3D> DebugGeometryContainer::get_world() {
 }
 
 // TODO add mark_dirty for 3d to reduce editor updates if only delayed shapes are displayed.
-void DebugGeometryContainer::update_geometry(double delta) {
+void DebugGeometryContainer::update_geometry(double p_delta) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
 
@@ -202,7 +202,7 @@ void DebugGeometryContainer::update_geometry(double delta) {
 			if (item.mesh->get_visible_instance_count())
 				item.mesh->set_visible_instance_count(0);
 		}
-		geometry_pool.reset_counter(delta);
+		geometry_pool.reset_counter(p_delta);
 		geometry_pool.reset_visible_objects();
 		return;
 	}
@@ -255,10 +255,10 @@ void DebugGeometryContainer::update_geometry(double delta) {
 						SphereBounds sb = aabb;
 						frustum_boxes.push_back(aabb);
 
-#if true
+#if false
 						// Debug camera bounds
 						{
-							// auto cfg = owner->new_scoped_config()->set_viewport(vp_p);
+							auto cfg = owner->new_scoped_config()->set_thickness(0.1f)->set_hd_sphere(true); //->set_viewport(vp_p);
 							owner->draw_sphere(sb.position, sb.radius, Colors::crimson);
 							owner->draw_aabb(aabb, Colors::yellow);
 						}
@@ -331,42 +331,42 @@ void DebugGeometryContainer::update_geometry(double delta) {
 	}
 
 	geometry_pool.reset_visible_objects();
-	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, culling_data, delta);
-	geometry_pool.fill_instance_data(meshes, culling_data, delta);
+	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, culling_data, p_delta);
+	geometry_pool.fill_instance_data(meshes, culling_data, p_delta);
 
-	geometry_pool.update_expiration(delta, ProcessType::PROCESS);
-	geometry_pool.reset_counter(delta, ProcessType::PROCESS);
+	geometry_pool.update_expiration(p_delta, ProcessType::PROCESS);
+	geometry_pool.reset_counter(p_delta, ProcessType::PROCESS);
 
 	is_frame_rendered = true;
 }
 
-void DebugGeometryContainer::update_geometry_physics_start(double delta) {
+void DebugGeometryContainer::update_geometry_physics_start(double p_delta) {
 	if (is_frame_rendered) {
-		geometry_pool.reset_counter(delta, ProcessType::PHYSICS_PROCESS);
+		geometry_pool.reset_counter(p_delta, ProcessType::PHYSICS_PROCESS);
 		is_frame_rendered = false;
 	}
 }
 
-void DebugGeometryContainer::update_geometry_physics_end(double delta) {
-	geometry_pool.update_expiration(delta, ProcessType::PHYSICS_PROCESS);
+void DebugGeometryContainer::update_geometry_physics_end(double p_delta) {
+	geometry_pool.update_expiration(p_delta, ProcessType::PHYSICS_PROCESS);
 }
 
-void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &stats) {
+void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &p_stats) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
-	return geometry_pool.set_stats(stats);
+	return geometry_pool.set_stats(p_stats);
 }
 
-void DebugGeometryContainer::set_render_layer_mask(int32_t layers) {
+void DebugGeometryContainer::set_render_layer_mask(int32_t p_layers) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
-	if (render_layers != layers) {
+	if (render_layers != p_layers) {
 		RenderingServer *rs = RenderingServer::get_singleton();
 		for (auto &mmi : multi_mesh_storage)
-			rs->instance_set_layer_mask(mmi.instance, layers);
+			rs->instance_set_layer_mask(mmi.instance, p_layers);
 
-		rs->instance_set_layer_mask(immediate_mesh_storage.instance, layers);
-		render_layers = layers;
+		rs->instance_set_layer_mask(immediate_mesh_storage.instance, p_layers);
+		render_layers = p_layers;
 	}
 }
 

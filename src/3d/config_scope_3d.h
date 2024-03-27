@@ -93,7 +93,7 @@ public:
 	 *
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_thickness(real_t value);
+	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value);
 	real_t get_thickness() const;
 
 	/**
@@ -101,7 +101,7 @@ public:
 	 *
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t value);
+	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value);
 	real_t get_center_brightness() const;
 
 	/**
@@ -109,7 +109,7 @@ public:
 	 *
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool value);
+	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value);
 	bool is_hd_sphere() const;
 
 	/**
@@ -117,7 +117,7 @@ public:
 	 *
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t value);
+	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value);
 	real_t get_plane_size() const;
 
 	/**
@@ -127,7 +127,7 @@ public:
 	 * then the owner of this World3D will be found in the current branch of the tree,
 	 * and special observer nodes will be added to it.
 	 */
-	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *value);
+	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value);
 	Viewport *get_viewport() const;
 
 	/// @private
@@ -135,6 +135,6 @@ public:
 
 	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
 	/// @private
-	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &parent, const unregister_func p_unreg);
+	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_parent, const unregister_func p_unreg);
 	~DebugDraw3DScopeConfig();
 };

@@ -869,10 +869,19 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Show debug stats"
 
-[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox4" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
+layout_mode = 2
+
+[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox/HBox4"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Draw an array of boxes"
+
+[node name="Draw1MBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox/HBox4"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Draw 1 Million boxes, otherwise 7500pcs."
+text = "1M"
 
 [node name="SwitchLang" type="Button" parent="Settings/HBox/PanelContainer/VBox"]
 unique_name_in_owner = true
@@ -889,5 +898,6 @@ text = "Switch to C#"
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
 [connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/HBox4/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
+[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/HBox4/Draw1MBoxes" to="Settings" method="_on_draw_1m_boxes_toggled"]
 [connection signal="pressed" from="Settings/HBox/PanelContainer/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]

@@ -67,24 +67,24 @@ public:                                      \
 
 	/// @private
 	void set_scoped_config_stats(
-			const int64_t &t_created_scoped_configs,
-			const int64_t &t_orphan_scoped_configs);
+			const int64_t &p_created_scoped_configs,
+			const int64_t &p_orphan_scoped_configs);
 
 	/// @private
 	void set_render_stats(
-			const int64_t &t_instances,
-			const int64_t &t_lines,
-			const int64_t &t_visible_instances,
-			const int64_t &t_visible_lines,
+			const int64_t &p_instances,
+			const int64_t &p_lines,
+			const int64_t &p_visible_instances,
+			const int64_t &p_visible_lines,
 
-			const int64_t &t_instances_phys,
-			const int64_t &t_lines_phys,
+			const int64_t &p_instances_phys,
+			const int64_t &p_lines_phys,
 
-			const int64_t &t_time_filling_buffers_instances_usec,
-			const int64_t &t_time_filling_buffers_lines_usec,
-			const int64_t &t_time_culling_instances_usec,
-			const int64_t &t_time_culling_lines_usec);
+			const int64_t &p_time_filling_buffers_instances_usec,
+			const int64_t &p_time_filling_buffers_lines_usec,
+			const int64_t &p_time_culling_instances_usec,
+			const int64_t &p_time_culling_lines_usec);
 
 	///  @private
-	void combine_with(const Ref<DebugDraw3DStats> other);
+	void combine_with(const Ref<DebugDraw3DStats> p_other);
 };

@@ -53,9 +53,9 @@ void DebugDrawMenuExtensionPlugin::_exit_tree() {
 	remove_tool_menu_item(menu_item_name);
 }
 
-void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId id) {
+void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId p_id) {
 	ZoneScoped;
-	switch (id) {
+	switch (p_id) {
 		case DebugDrawMenuExtensionPlugin::OPEN_LIBRARY_SITE: {
 			OS::get_singleton()->shell_open("https://github.com/DmitriySalnikov/godot_debug_draw_3d");
 			break;
@@ -69,7 +69,7 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId id) {
 			break;
 		}
 		default:
-			PRINT_ERROR("Menu item " + String::num_int64(id) + " not implemented.");
+			PRINT_ERROR("Menu item " + String::num_int64(p_id) + " not implemented.");
 			break;
 	}
 }

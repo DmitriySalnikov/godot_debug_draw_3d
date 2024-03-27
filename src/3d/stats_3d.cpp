@@ -36,70 +36,70 @@ void DebugDraw3DStats::_bind_methods() {
 #pragma endregion
 }
 
-void DebugDraw3DStats::set_scoped_config_stats(const int64_t &t_created_scoped_configs, const int64_t &t_orphan_scoped_configs) {
-	created_scoped_configs = t_created_scoped_configs;
-	orphan_scoped_configs = t_orphan_scoped_configs;
+void DebugDraw3DStats::set_scoped_config_stats(const int64_t &p_created_scoped_configs, const int64_t &p_orphan_scoped_configs) {
+	created_scoped_configs = p_created_scoped_configs;
+	orphan_scoped_configs = p_orphan_scoped_configs;
 }
 
 void DebugDraw3DStats::set_render_stats(
-		const int64_t &t_instances,
-		const int64_t &t_lines,
-		const int64_t &t_visible_instances,
-		const int64_t &t_visible_lines,
+		const int64_t &p_instances,
+		const int64_t &p_lines,
+		const int64_t &p_visible_instances,
+		const int64_t &p_visible_lines,
 
-		const int64_t &t_instances_phys,
-		const int64_t &t_lines_phys,
+		const int64_t &p_instances_phys,
+		const int64_t &p_lines_phys,
 
-		const int64_t &t_time_filling_buffers_instances_usec,
-		const int64_t &t_time_filling_buffers_lines_usec,
-		const int64_t &t_time_culling_instances_usec,
-		const int64_t &t_time_culling_lines_usec) {
+		const int64_t &p_time_filling_buffers_instances_usec,
+		const int64_t &p_time_filling_buffers_lines_usec,
+		const int64_t &p_time_culling_instances_usec,
+		const int64_t &p_time_culling_lines_usec) {
 
-	instances = t_instances;
-	lines = t_lines;
-	instances_physics = t_instances_phys;
-	lines_physics = t_lines_phys;
+	instances = p_instances;
+	lines = p_lines;
+	instances_physics = p_instances_phys;
+	lines_physics = p_lines_phys;
 	total_geometry = instances +
 					 lines +
 					 instances_physics +
 					 lines_physics;
 
-	visible_instances = t_visible_instances;
-	visible_lines = t_visible_lines;
+	visible_instances = p_visible_instances;
+	visible_lines = p_visible_lines;
 	total_visible = visible_instances +
 					visible_lines;
 
-	time_filling_buffers_instances_usec = t_time_filling_buffers_instances_usec;
-	time_filling_buffers_lines_usec = t_time_filling_buffers_lines_usec;
+	time_filling_buffers_instances_usec = p_time_filling_buffers_instances_usec;
+	time_filling_buffers_lines_usec = p_time_filling_buffers_lines_usec;
 	total_time_filling_buffers_usec = time_filling_buffers_instances_usec +
 									  time_filling_buffers_lines_usec;
 
-	time_culling_instances_usec = t_time_culling_instances_usec;
-	time_culling_lines_usec = t_time_culling_lines_usec;
+	time_culling_instances_usec = p_time_culling_instances_usec;
+	time_culling_lines_usec = p_time_culling_lines_usec;
 	total_time_culling_usec = time_culling_instances_usec +
 							  time_culling_lines_usec;
 
 	total_time_spent_usec = total_time_filling_buffers_usec + total_time_culling_usec;
 }
 
-void DebugDraw3DStats::combine_with(const Ref<DebugDraw3DStats> other) {
-	instances += other->instances;
-	lines += other->lines;
-	instances_physics += other->instances_physics;
-	lines_physics += other->lines_physics;
-	total_geometry += other->total_geometry;
+void DebugDraw3DStats::combine_with(const Ref<DebugDraw3DStats> p_other) {
+	instances += p_other->instances;
+	lines += p_other->lines;
+	instances_physics += p_other->instances_physics;
+	lines_physics += p_other->lines_physics;
+	total_geometry += p_other->total_geometry;
 
-	visible_instances += other->visible_instances;
-	visible_lines += other->visible_lines;
-	total_visible += other->total_visible;
+	visible_instances += p_other->visible_instances;
+	visible_lines += p_other->visible_lines;
+	total_visible += p_other->total_visible;
 
-	time_filling_buffers_instances_usec += other->time_filling_buffers_instances_usec;
-	time_filling_buffers_lines_usec += other->time_filling_buffers_lines_usec;
-	total_time_filling_buffers_usec += other->total_time_filling_buffers_usec;
+	time_filling_buffers_instances_usec += p_other->time_filling_buffers_instances_usec;
+	time_filling_buffers_lines_usec += p_other->time_filling_buffers_lines_usec;
+	total_time_filling_buffers_usec += p_other->total_time_filling_buffers_usec;
 
-	time_culling_instances_usec += other->time_culling_instances_usec;
-	time_culling_lines_usec += other->time_culling_lines_usec;
-	total_time_culling_usec += other->total_time_culling_usec;
+	time_culling_instances_usec += p_other->time_culling_instances_usec;
+	time_culling_lines_usec += p_other->time_culling_lines_usec;
+	total_time_culling_usec += p_other->total_time_culling_usec;
 
-	total_time_spent_usec += other->total_time_spent_usec;
+	total_time_spent_usec += p_other->total_time_spent_usec;
 }

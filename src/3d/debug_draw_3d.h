@@ -162,27 +162,27 @@ private:
 	Ref<Shader> shader_extendable_code;
 
 	// Inherited via IScopeStorage
-	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopeConfig *cfg) override;
-	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
+	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
+	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
 	std::shared_ptr<DebugGeometryContainer> create_debug_container();
-	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *vp);
-	void _register_viewport_world_deferred(Viewport *vp, const uint64_t p_world_id);
-	Viewport *_get_root_world_viewport(Viewport *vp);
+	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *p_vp);
+	void _register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id);
+	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 
-	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
-	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
+	void add_or_update_line_with_thickness(real_t p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd = nullptr);
 	Node *get_root_node();
 
-	void create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration = 0);
+	void create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration = 0);
 
 #endif
 
-	void init(DebugDrawManager *root);
+	void init(DebugDrawManager *p_root);
 
-	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
+	void set_custom_editor_viewport(std::vector<SubViewport *> p_viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
 
 	Ref<ShaderMaterial> get_wireframe_material();
@@ -193,9 +193,9 @@ private:
 	void _load_materials();
 	inline bool _is_enabled_override() const;
 
-	void process(double delta);
-	void physics_process_start(double delta);
-	void physics_process_end(double delta);
+	void process(double p_delta);
+	void physics_process_start(double p_delta);
+	void physics_process_end(double p_delta);
 
 #pragma region Exposed Parameter Values
 
@@ -240,7 +240,7 @@ public:
 	/**
 	 * Set the configuration global for everything in DebugDraw3D.
 	 */
-	void set_config(Ref<DebugDraw3DConfig> _cfg);
+	void set_config(Ref<DebugDraw3DConfig> cfg);
 	/**
 	 * Get the DebugDraw3DConfig.
 	 */
@@ -250,7 +250,7 @@ public:
 
 #pragma region Exposed Parameters
 	/// @private
-	void set_empty_color(const Color &_col){};
+	void set_empty_color(const Color &col){};
 	/**
 	 * Get the color that is used as the default parameter for `draw_*` calls.
 	 */
@@ -259,7 +259,7 @@ public:
 	/**
 	 * Set whether debug drawing works or not.
 	 */
-	void set_debug_enabled(const bool &_state);
+	void set_debug_enabled(const bool &state);
 	bool is_debug_enabled() const;
 
 #pragma endregion // Exposed Parametes
@@ -278,7 +278,7 @@ public:
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw3DStats> get_render_stats_for_viewport(Viewport *viewport);
+	Ref<DebugDraw3DStats> get_render_stats_for_world(Viewport *viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL

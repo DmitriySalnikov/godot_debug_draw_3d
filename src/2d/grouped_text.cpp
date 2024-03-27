@@ -6,25 +6,25 @@
 using namespace godot;
 
 #ifndef DISABLE_DEBUG_RENDERING
-TextGroupItem::TextGroupItem(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
-	DEV_PRINT_STD("New " NAMEOF(TextGroupItem) " created: %s : %s\n", _key.utf8().get_data(), _text.utf8().get_data());
+TextGroupItem::TextGroupItem(const double &p_expiration_time, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color) {
+	DEV_PRINT_STD("New " NAMEOF(TextGroupItem) " created: %s : %s\n", p_key.utf8().get_data(), p_text.utf8().get_data());
 
-	expiration_time = _expiration_time;
-	key = _key;
-	text = _text;
-	priority = _priority;
-	value_color = _color;
+	expiration_time = p_expiration_time;
+	key = p_key;
+	text = p_text;
+	priority = p_priority;
+	value_color = p_color;
 	second_chance = true;
 }
 
-bool TextGroupItem::update(const double &_expiration_time, const String &_key, const String &_text, const int &_priority, const Color &_color) {
-	bool dirty = expiration_time != _expiration_time || key != _key || text != _text || priority != _priority || value_color != _color;
+bool TextGroupItem::update(const double &p_expiration_time, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color) {
+	bool dirty = expiration_time != p_expiration_time || key != p_key || text != p_text || priority != p_priority || value_color != p_color;
 
-	expiration_time = _expiration_time;
-	key = _key;
-	text = _text;
-	priority = _priority;
-	value_color = _color;
+	expiration_time = p_expiration_time;
+	key = p_key;
+	text = p_text;
+	priority = p_priority;
+	value_color = p_color;
 	second_chance = true;
 
 	return dirty;
@@ -34,75 +34,75 @@ bool TextGroupItem::is_expired() {
 	return expiration_time > 0 ? false : !second_chance;
 }
 
-void TextGroup::set_group_priority(int _val) {
-	if (group_priority != _val)
+void TextGroup::set_group_priority(int p_val) {
+	if (group_priority != p_val)
 		owner->mark_canvas_dirty();
-	group_priority = _val;
+	group_priority = p_val;
 }
 
 int TextGroup::get_group_priority() {
 	return group_priority;
 }
 
-void TextGroup::set_show_title(bool _val) {
-	if (show_title != _val)
+void TextGroup::set_show_title(bool p_val) {
+	if (show_title != p_val)
 		owner->mark_canvas_dirty();
-	show_title = _val;
+	show_title = p_val;
 }
 
 bool TextGroup::is_show_title() {
 	return show_title;
 }
 
-void TextGroup::set_group_color(Color _val) {
-	if (group_color != _val)
+void TextGroup::set_group_color(Color p_val) {
+	if (group_color != p_val)
 		owner->mark_canvas_dirty();
-	group_color = _val;
+	group_color = p_val;
 }
 
 Color TextGroup::get_group_color() {
 	return group_color;
 }
 
-void TextGroup::set_title_size(int _val) {
-	if (title_size != _val)
+void TextGroup::set_title_size(int p_val) {
+	if (title_size != p_val)
 		owner->mark_canvas_dirty();
-	title_size = _val;
+	title_size = p_val;
 }
 
 int TextGroup::get_title_size() {
 	return title_size;
 }
 
-void TextGroup::set_text_size(int _val) {
-	if (text_size != _val)
+void TextGroup::set_text_size(int p_val) {
+	if (text_size != p_val)
 		owner->mark_canvas_dirty();
-	text_size = _val;
+	text_size = p_val;
 }
 
 int TextGroup::get_text_size() {
 	return text_size;
 }
 
-TextGroup::TextGroup(DebugDraw2D *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size) {
-	DEV_PRINT_STD("New " NAMEOF(TextGroup) " created: %s\n", _title.utf8().get_data());
+TextGroup::TextGroup(DebugDraw2D *p_owner, const String &p_title, const int &p_priority, const bool &p_show_title, const Color &p_group_color, const int &p_title_size, const int &p_text_size) {
+	DEV_PRINT_STD("New " NAMEOF(TextGroup) " created: %s\n", p_title.utf8().get_data());
 
-	owner = _owner;
-	title = _title;
-	group_priority = _priority;
-	show_title = _show_title;
-	group_color = _group_color;
-	title_size = _title_size;
-	text_size = _text_size;
+	owner = p_owner;
+	title = p_title;
+	group_priority = p_priority;
+	show_title = p_show_title;
+	group_color = p_group_color;
+	title_size = p_title_size;
+	text_size = p_text_size;
 }
 
-void TextGroup::cleanup_texts(const std::function<void()> &_update, const double &_delta) {
+void TextGroup::cleanup_texts(const std::function<void()> &p_update, const double &p_delta) {
 	ZoneScoped;
 	size_t old_size = Texts.size();
 
 	Texts.erase(std::remove_if(Texts.begin(), Texts.end(),
-						[&_delta](auto &t) {
-							t->expiration_time -= _delta;
+						[&p_delta](auto &t) {
+							t->expiration_time -= p_delta;
 							if (t->is_expired()) {
 								return true;
 							} else {
@@ -112,8 +112,8 @@ void TextGroup::cleanup_texts(const std::function<void()> &_update, const double
 						}),
 			Texts.end());
 
-	if (old_size != Texts.size() && _update)
-		_update();
+	if (old_size != Texts.size() && p_update)
+		p_update();
 }
 
 void GroupedText::_create_new_default_group_if_needed() {
@@ -137,7 +137,7 @@ void GroupedText::clear_groups() {
 	_text_groups.clear();
 }
 
-void GroupedText::cleanup_text(const double &delta) {
+void GroupedText::cleanup_text(const double &p_delta) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
@@ -156,34 +156,34 @@ void GroupedText::cleanup_text(const double &delta) {
 
 	for (const TextGroup_ptr &g : _text_groups) {
 		std::function<void()> upd_txt([this] { owner->mark_canvas_dirty(); });
-		g->cleanup_texts(upd_txt, delta);
+		g->cleanup_texts(upd_txt, p_delta);
 	}
 }
 
-void GroupedText::begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size) {
+void GroupedText::begin_text_group(const String &p_group_title, const int &p_group_priority, const Color &p_group_color, const bool &p_show_title, const int &p_title_size, const int &p_text_size) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
 	TextGroup_ptr newGroup = nullptr;
 	for (const TextGroup_ptr &g : _text_groups) {
-		if (g->title == _group_title) {
+		if (g->title == p_group_title) {
 			newGroup = g;
 			break;
 		}
 	}
 
-	int new_title_size = _title_size > 0 ? _title_size : owner->get_config()->get_text_default_size();
-	int new_text_size = _text_size > 0 ? _text_size : owner->get_config()->get_text_default_size();
+	int new_title_size = p_title_size > 0 ? p_title_size : owner->get_config()->get_text_default_size();
+	int new_text_size = p_text_size > 0 ? p_text_size : owner->get_config()->get_text_default_size();
 
 	if (newGroup) {
-		newGroup->set_show_title(_show_title);
-		newGroup->set_group_priority(_group_priority);
-		newGroup->set_group_color(_group_color);
+		newGroup->set_show_title(p_show_title);
+		newGroup->set_group_priority(p_group_priority);
+		newGroup->set_group_color(p_group_color);
 		newGroup->set_title_size(new_title_size);
 		newGroup->set_text_size(new_text_size);
 		newGroup->is_used_one_time = false;
 	} else {
-		newGroup = std::make_shared<TextGroup>(owner, _group_title, _group_priority, _show_title, _group_color, new_title_size, new_text_size);
+		newGroup = std::make_shared<TextGroup>(owner, p_group_title, p_group_priority, p_show_title, p_group_color, new_title_size, new_text_size);
 		_text_groups.push_back(newGroup);
 		owner->mark_canvas_dirty();
 	}
@@ -209,21 +209,19 @@ void GroupedText::end_text_group() {
 	}
 }
 
-void GroupedText::set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration) {
+void GroupedText::set_text(const String &p_key, const Variant &p_value, const int &p_priority, const Color &p_color_of_value, const double &p_duration) {
 	ZoneScoped;
-	double new_duration = _duration;
+	double new_duration = p_duration;
 	if (new_duration < 0) {
 		new_duration = owner->get_config()->get_text_default_duration();
 	}
 
 	String _strVal;
 	{
-		ZoneScoped;
-		if (_value.get_type() != Variant::NIL)
-			_strVal = _value.stringify();
+		ZoneScopedN("stringify");
+		if (p_value.get_type() != Variant::NIL)
+			_strVal = p_value.stringify();
 	}
-
-	bool need_update_canvas = false;
 
 	{
 		LOCK_GUARD(datalock);
@@ -233,23 +231,23 @@ void GroupedText::set_text(const String &_key, const Variant &_value, const int 
 		TextGroupItem_ptr item;
 
 		for (const auto &d : _current_text_group->Texts) {
-			if (d->key == _key) {
+			if (d->key == p_key) {
 				item = d;
 				break;
 			}
 		}
 
 		if (item.get()) {
-			if (item->update(new_duration, _key, _strVal, _priority, _color_of_value))
+			if (item->update(new_duration, p_key, _strVal, p_priority, p_color_of_value))
 				owner->mark_canvas_dirty();
 		} else {
-			_current_text_group->Texts.push_back(std::make_shared<TextGroupItem>(new_duration, _key, _strVal, _priority, _color_of_value));
+			_current_text_group->Texts.push_back(std::make_shared<TextGroupItem>(new_duration, p_key, _strVal, p_priority, p_color_of_value));
 			owner->mark_canvas_dirty();
 		}
 	}
 }
 
-void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size) {
+void GroupedText::draw(CanvasItem *p_ci, const Ref<Font> &p_font, const Vector2 &p_vp_size) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 	static const String separator = " : ";
@@ -259,7 +257,7 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 
 	real_t groups_height = 0;
 	{
-		Ref<Font> draw_font = owner->get_config()->get_text_custom_font().is_null() ? _font : owner->get_config()->get_text_custom_font();
+		Ref<Font> draw_font = owner->get_config()->get_text_custom_font().is_null() ? p_font : owner->get_config()->get_text_custom_font();
 		Vector2 pos;
 		real_t right_side_multiplier = 0;
 
@@ -337,29 +335,29 @@ void GroupedText::draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_
 			break;
 		case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_TOP:
 			pos = Vector2(
-					_vp_size.x - text_block_offset.x,
+					p_vp_size.x - text_block_offset.x,
 					text_block_offset.y);
 			break;
 		case DebugDraw2DConfig::BlockPosition::POSITION_LEFT_BOTTOM:
 			pos = Vector2(
 					text_block_offset.x,
-					_vp_size.y - text_block_offset.y - groups_height);
+					p_vp_size.y - text_block_offset.y - groups_height);
 			break;
 		case DebugDraw2DConfig::BlockPosition::POSITION_RIGHT_BOTTOM:
 			pos = Vector2(
-					_vp_size.x - text_block_offset.x,
-					_vp_size.y - text_block_offset.y - groups_height);
+					p_vp_size.x - text_block_offset.x,
+					p_vp_size.y - text_block_offset.y - groups_height);
 			break;
 	}
 
 	for (auto &bg : backgrounds) {
 		bg.rect.position += pos;
-		_ci->draw_rect(bg.rect, bg.color);
+		p_ci->draw_rect(bg.rect, bg.color);
 	}
 
 	for (auto &tp : text_parts) {
 		tp.position += pos;
-		_ci->draw_string(tp.font, tp.position, tp.text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, tp.font_size, tp.color);
+		p_ci->draw_string(tp.font, tp.position, tp.text, godot::HORIZONTAL_ALIGNMENT_LEFT, -1, tp.font_size, tp.color);
 	}
 }
 

@@ -8,6 +8,7 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
+@export var draw_1m_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
 @export_range(0, 1024) var start_culling_distance := 75.0
@@ -39,7 +40,7 @@ var frame_rendered := false
 var physics_tick_processed := false
 
 var timer_1 := 0.0
-var timer_2 := 0.0
+var timer_cubes := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
@@ -429,21 +430,23 @@ func _draw_array_of_boxes():
 	var y_size := 50
 	var z_size := 3
 	var mul := 1
-
-	if !Engine.is_editor_hint() and false:
+	var cubes_max_time := 1.25
+	
+	if draw_1m_boxes:
 		x_size = 100
 		y_size = 100
 		z_size = 100
 		mul = 4
+		cubes_max_time = 60
 	
-	if timer_2 < 0:
+	if timer_cubes < 0:
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
 					var size = Vector3.ONE
 					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
-					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, 1.25)
-		timer_2 = 1.25
+					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+		timer_cubes = cubes_max_time
 
 
 func _graph_test():
@@ -594,7 +597,7 @@ func _update_keys_just_press():
 
 func _update_timers(delta : float):
 	timer_1 -= delta
-	timer_2 -= delta
+	timer_cubes -= delta
 	timer_3 -= delta
 	timer_text -= delta
 

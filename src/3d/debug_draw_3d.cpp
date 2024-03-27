@@ -108,7 +108,7 @@ void DebugDraw3D::_bind_methods() {
 #pragma endregion // Draw Functions
 
 	REG_METHOD(get_render_stats);
-	REG_METHOD(get_render_stats_for_viewport, "viewport");
+	REG_METHOD(get_render_stats_for_world, "viewport");
 	REG_METHOD(new_scoped_config);
 	REG_METHOD(scoped_config);
 
@@ -126,9 +126,9 @@ DebugDraw3D::DebugDraw3D() {
 	ASSIGN_SINGLETON(DebugDraw3D);
 }
 
-void DebugDraw3D::init(DebugDrawManager *root) {
+void DebugDraw3D::init(DebugDrawManager *p_root) {
 	ZoneScoped;
-	root_node = root;
+	root_node = p_root;
 	set_config(nullptr);
 
 	root_settings_section = String(Utils::root_settings_section) + "3d/";
@@ -159,14 +159,14 @@ DebugDraw3D::~DebugDraw3D() {
 	root_node = nullptr;
 }
 
-void DebugDraw3D::process(double delta) {
+void DebugDraw3D::process(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	FrameMarkStart("3D Update");
 
 	// Update 3D debug
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry(delta);
+		p.second->update_geometry(p_delta);
 	}
 
 	_clear_scoped_configs();
@@ -176,22 +176,22 @@ void DebugDraw3D::process(double delta) {
 #endif
 }
 
-void DebugDraw3D::physics_process_start(double delta) {
+void DebugDraw3D::physics_process_start(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	FrameMarkStart("3D Physics Step");
 
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry_physics_start(delta);
+		p.second->update_geometry_physics_start(p_delta);
 	}
 #endif
 }
 
-void DebugDraw3D::physics_process_end(double delta) {
+void DebugDraw3D::physics_process_end(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry_physics_end(delta);
+		p.second->update_geometry_physics_end(p_delta);
 	}
 
 	FrameMarkEnd("3D Physics Step");
@@ -223,15 +223,15 @@ const std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3D::scoped_config_f
 	return default_scoped_config.ptr()->data;
 }
 
-void DebugDraw3D::_register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopeConfig *cfg) {
+void DebugDraw3D::_register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
-	scoped_configs[thread_id].push_back(ScopedPairIdConfig(guard_id, cfg));
+	scoped_configs[p_thread_id].push_back(ScopedPairIdConfig(p_guard_id, p_cfg));
 
 	// Update cached value
-	cached_scoped_configs[thread] = cfg->data;
+	cached_scoped_configs[thread] = p_cfg->data;
 }
 
 void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) {
@@ -286,64 +286,64 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::create_debug_container() {
 			PS()->get_setting(root_settings_section + s_use_icosphere_hd));
 }
 
-std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewport *vp) {
+std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewport *p_vp) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	if (!vp) {
+	if (!p_vp) {
 		return nullptr;
 	}
 
-	if (const auto &cached_world = viewport_to_world_cache.find(vp);
+	if (const auto &cached_world = viewport_to_world_cache.find(p_vp);
 			cached_world != viewport_to_world_cache.end()) {
 		return debug_containers[cached_world->second];
 	}
 
-	Ref<World3D> vp_world = vp->find_world_3d();
+	Ref<World3D> vp_world = p_vp->find_world_3d();
 	uint64_t vp_world_id = vp_world->get_instance_id();
 
 	if (const auto &dgc = debug_containers.find(vp_world_id);
 			dgc != debug_containers.end()) {
 
-		viewport_to_world_cache[vp] = dgc->first;
+		viewport_to_world_cache[p_vp] = dgc->first;
 		return dgc->second;
 	}
 
 	auto dgc = create_debug_container();
 	dgc->set_world(vp_world);
 	debug_containers[vp_world_id] = dgc;
-	viewport_to_world_cache[vp] = vp_world_id;
+	viewport_to_world_cache[p_vp] = vp_world_id;
 
-	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(vp), vp_world_id);
+	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_vp), vp_world_id);
 
 	return dgc;
 }
 
-void DebugDraw3D::_register_viewport_world_deferred(Viewport *vp, const uint64_t p_world_id) {
+void DebugDraw3D::_register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id) {
 	ZoneScoped;
 
 	// something failed. need to remove container
-	if (!UtilityFunctions::is_instance_valid(vp) || vp->is_queued_for_deletion()) {
+	if (!UtilityFunctions::is_instance_valid(p_vp) || p_vp->is_queued_for_deletion()) {
 		_remove_debug_container(p_world_id);
 		return;
 	}
 
 	auto watcher = memnew(_DD3D_WorldWatcher);
-	vp->add_child(watcher);
-	vp->move_child(watcher, 0);
+	p_vp->add_child(watcher);
+	p_vp->move_child(watcher, 0);
 	watcher->init(this, p_world_id);
 }
 
-Viewport *DebugDraw3D::_get_root_world_viewport(Viewport *vp) {
-	Viewport *parent_vp = vp->get_viewport();
-	if (!parent_vp || parent_vp == vp)
-		return vp;
+Viewport *DebugDraw3D::_get_root_world_viewport(Viewport *p_vp) {
+	Viewport *parent_vp = p_vp->get_viewport();
+	if (!parent_vp || parent_vp == p_vp)
+		return p_vp;
 
-	if (vp->find_world_3d() == parent_vp->find_world_3d()) {
+	if (p_vp->find_world_3d() == parent_vp->find_world_3d()) {
 		return _get_root_world_viewport(parent_vp);
 	}
 
-	return vp;
+	return p_vp;
 }
 
 void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
@@ -420,8 +420,8 @@ bool DebugDraw3D::_is_enabled_override() const {
 	return debug_enabled && DebugDrawManager::get_singleton()->is_debug_enabled();
 }
 
-void DebugDraw3D::set_custom_editor_viewport(std::vector<SubViewport *> _viewports) {
-	custom_editor_viewports = _viewports;
+void DebugDraw3D::set_custom_editor_viewport(std::vector<SubViewport *> viewports) {
+	custom_editor_viewports = viewports;
 }
 
 std::vector<SubViewport *> DebugDraw3D::get_custom_editor_viewports() {
@@ -466,10 +466,10 @@ Color DebugDraw3D::get_empty_color() const {
 
 #pragma region Exposed Parameters
 
-void DebugDraw3D::set_debug_enabled(const bool &_state) {
-	debug_enabled = _state;
+void DebugDraw3D::set_debug_enabled(const bool &state) {
+	debug_enabled = state;
 
-	if (!_state) {
+	if (!state) {
 		clear_all();
 	}
 }
@@ -478,9 +478,9 @@ bool DebugDraw3D::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDraw3D::set_config(Ref<DebugDraw3DConfig> _cfg) {
-	if (_cfg.is_valid()) {
-		config = _cfg;
+void DebugDraw3D::set_config(Ref<DebugDraw3DConfig> cfg) {
+	if (cfg.is_valid()) {
+		config = cfg;
 	} else {
 		config = Ref<DebugDraw3DConfig>();
 		config.instantiate();
@@ -515,7 +515,7 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 	return res;
 }
 
-Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_viewport(Viewport *viewport) {
+Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport) {
 	Ref<DebugDraw3DStats> stats_3d;
 	stats_3d.instantiate();
 #ifndef DISABLE_DEBUG_RENDERING
@@ -564,10 +564,10 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 
-Vector3 DebugDraw3D::get_up_vector(const Vector3 &dir) {
-	bool ex = Math::is_equal_approx(dir.x, 0);
-	bool ey = Math::is_equal_approx(dir.y, 0);
-	bool ez = Math::is_equal_approx(dir.z, 0);
+Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
+	bool ex = Math::is_equal_approx(p_dir.x, 0);
+	bool ey = Math::is_equal_approx(p_dir.y, 0);
+	bool ez = Math::is_equal_approx(p_dir.z, 0);
 
 	if (ex) {
 		if (ey) {
@@ -577,7 +577,7 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &dir) {
 		}
 		return Vector3_UP;
 	} else if (ey) {
-		return dir.normalized().cross(Vector3_UP);
+		return p_dir.normalized().cross(Vector3_UP);
 	} else if (ez) {
 		return Vector3_UP;
 	}
@@ -585,7 +585,7 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &dir) {
 	return Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
@@ -594,25 +594,25 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t _exp_time, std::uniqu
 	if (!scfg->thickness) {
 		dgc->geometry_pool.add_or_update_line(
 				scfg,
-				_exp_time,
+				p_exp_time,
 				GET_PROC_TYPE(),
-				std::move(_lines),
-				_line_count,
-				_col);
+				std::move(p_lines),
+				p_line_count,
+				p_col);
 	} else {
-		for (int i = 0; i < _line_count; i += 2) {
+		for (int i = 0; i < p_line_count; i += 2) {
 			ZoneScopedN("Convert AB to xf");
-			Vector3 a = _lines.get()[i];
-			Vector3 diff = _lines.get()[i + 1] - a;
+			Vector3 a = p_lines.get()[i];
+			Vector3 diff = p_lines.get()[i + 1] - a;
 			real_t len = diff.length();
 			Vector3 center = diff.normalized() * len * .5f;
 			dgc->geometry_pool.add_or_update_instance(
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
-					_exp_time,
+					p_exp_time,
 					GET_PROC_TYPE(),
 					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(Vector3(len, len, len)), a), // slow
-					_col,
+					p_col,
 					SphereBounds(a + center, len * .5f));
 		}
 	}
@@ -894,15 +894,15 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 #pragma endregion // Normal
 #pragma region Arrows
 
-void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	Vector3 dir = (b - a);
-	real_t size = (is_absolute_size ? arrow_size : dir.length() * arrow_size) * 2;
+	Vector3 dir = (p_b - p_a);
+	real_t size = (p_is_absolute_size ? p_arrow_size : dir.length() * p_arrow_size) * 2;
 
 	Vector3 up = get_up_vector(dir);
-	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(Vector3(size, size, size)), b);
+	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(Vector3(size, size, size)), p_b);
 
 	GET_SCOPED_CFG_AND_DGC();
 
@@ -910,10 +910,10 @@ void DebugDraw3D::create_arrow(const Vector3 &a, const Vector3 &b, const Color &
 	dgc->geometry_pool.add_or_update_instance(
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
-			duration,
+			p_duration,
 			GET_PROC_TYPE(),
 			t,
-			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
+			IS_DEFAULT_COLOR(p_color) ? Colors::light_green : p_color,
 			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
 

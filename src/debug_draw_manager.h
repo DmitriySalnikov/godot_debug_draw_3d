@@ -28,7 +28,7 @@ protected:
 public:
 	void init(DebugDrawManager *p_root);
 
-	virtual void _physics_process(double delta) override;
+	virtual void _physics_process(double p_delta) override;
 };
 #endif
 
@@ -89,12 +89,12 @@ private:
 
 	Node *_get_current_scene();
 	void _connect_scene_changed();
-	void _on_scene_changed(bool _is_scene_null);
+	void _on_scene_changed(bool p_is_scene_null);
 
 	void _integrate_into_engine();
 
-	void _register_singleton_aliases(const TypedArray<StringName> &names, Object *instance);
-	void _unregister_singleton_aliases(const TypedArray<StringName> &names);
+	void _register_singleton_aliases(const TypedArray<StringName> &p_names, Object *p_instance);
+	void _unregister_singleton_aliases(const TypedArray<StringName> &p_names);
 
 #ifdef TOOLS_ENABLED
 	void _try_to_update_cs_bindings();
@@ -167,11 +167,11 @@ public:
 	void deinit();
 
 	/// @private
-	virtual void _process(double delta) override;
+	virtual void _process(double p_delta) override;
 	/// @private
-	void _physics_process_start(double delta);
+	void _physics_process_start(double p_delta);
 	/// @private
-	virtual void _physics_process(double delta) override;
+	virtual void _physics_process(double p_delta) override;
 };
 
 #ifdef DEV_ENABLED
