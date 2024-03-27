@@ -159,7 +159,7 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">void</span> init(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *p_root);</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>};</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
@@ -196,12 +196,12 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    Node *_get_current_scene();</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">void</span> _connect_scene_changed();</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> _is_scene_null);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> p_is_scene_null);</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">void</span> _integrate_into_engine();</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;names, Object *instance);</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;names);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names, Object *p_instance);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names);</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#ifdef TOOLS_ENABLED</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keywordtype">void</span> _try_to_update_cs_bindings();</div>
@@ -260,9 +260,9 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <span class="keywordtype">void</span> init();</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    <span class="keywordtype">void</span> deinit();</div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordtype">void</span> _physics_process_start(<span class="keywordtype">double</span> delta);</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordtype">void</span> _physics_process_start(<span class="keywordtype">double</span> p_delta);</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>};</div>
 </div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
