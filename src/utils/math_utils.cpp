@@ -25,7 +25,7 @@ AABBMinMax::AABBMinMax() :
 		max() {}
 
 AABBMinMax::AABBMinMax(const AABB &p_from) :
-		radius(p_from.size.length() * 0.5f),
+		radius(p_from.size.length() * .5f),
 		min(p_from.position),
 		max(p_from.position + p_from.size) {
 	center = p_from.position + p_from.size * 0.5f;

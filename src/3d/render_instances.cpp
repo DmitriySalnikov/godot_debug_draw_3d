@@ -458,8 +458,11 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 	auto &proc = pools[(int)p_proc];
 	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
 
+	SphereBounds thick_sphere = p_bounds;
+	thick_sphere.radius += p_cfg->thickness * 0.5f;
+
 	inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
-	inst->bounds = p_bounds;
+	inst->bounds = thick_sphere;
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;

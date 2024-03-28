@@ -178,7 +178,6 @@ Ref<World3D> DebugGeometryContainer::get_world() {
 	return base_world_viewport;
 }
 
-// TODO add mark_dirty for 3d to reduce editor updates if only delayed shapes are displayed.
 void DebugGeometryContainer::update_geometry(double p_delta) {
 	ZoneScoped;
 	LOCK_GUARD(owner->datalock);
@@ -298,21 +297,36 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			// Draw custom sphere for 1 frame
 			for (auto &i : new_instances) {
 				cfg->viewport = vp;
+				Vector3 diag = i.max - i.min;
+				Vector3 center = i.center;
+				real_t radius = i.radius;
 
 				geometry_pool.add_or_update_instance(
 						cfg,
 						InstanceType::SPHERE,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(Vector3(i.radius, i.radius, i.radius) * 2), i.center),
-						Colors::debug_bounds,
-						SphereBounds(i.center, i.radius),
-						&Colors::empty_color);
+						Transform3D(Basis().scaled(Vector3(radius, radius, radius) * 2), center),
+						Colors::debug_sphere_bounds,
+						SphereBounds(center, radius));
+
+				geometry_pool.add_or_update_instance(
+						cfg,
+						InstanceType::CUBE_CENTERED,
+						0,
+						ProcessType::PROCESS,
+						Transform3D(Basis().scaled(diag), center),
+						Colors::debug_rough_box_bounds,
+						SphereBounds(center, radius));
 			}
 
 			geometry_pool.for_each_line([this, &cfg, &vp](DelayedRendererLine *o) {
 				if (!o->is_visible || o->is_expired())
 					return;
+
+				Vector3 diag = o->bounds.max - o->bounds.min;
+				Vector3 center = o->bounds.center;
+				real_t radius = o->bounds.radius;
 
 				cfg->viewport = vp;
 				geometry_pool.add_or_update_instance(
@@ -320,10 +334,20 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						InstanceType::CUBE_CENTERED,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(Vector3(o->bounds.radius, o->bounds.radius, o->bounds.radius) * 2), o->bounds.center),
-						Colors::debug_bounds,
-						SphereBounds(o->bounds.center, o->bounds.radius),
+						Transform3D(Basis().scaled(diag), center),
+						Colors::debug_box_bounds,
+						SphereBounds(center, radius),
 						&Colors::empty_color);
+
+				// TODO test bounds
+				geometry_pool.add_or_update_instance(
+						cfg,
+						InstanceType::SPHERE,
+						0,
+						ProcessType::PROCESS,
+						Transform3D(Basis().scaled(Vector3(radius, radius, radius) * 2), center),
+						Colors::debug_sphere_bounds,
+						SphereBounds(center, radius));
 			});
 		}
 	}

@@ -21,8 +21,8 @@ private:
 	int32_t geometry_render_layers = 1;
 	bool freeze_3d_render = false;
 	bool visible_instance_bounds = false;
-	bool use_frustum_culling = false;
-	real_t cull_by_distance = -1;
+	bool use_frustum_culling = true;
+	real_t cull_by_distance = 0;
 	bool force_use_camera_from_scene = false;
 	Color line_hit_color = Colors::red;
 	Color line_after_hit_color = Colors::green;
@@ -48,8 +48,6 @@ public:
 
 	/**
 	 * Set whether frustum culling is used.
-	 * @warning
-	 * At this point, activating this parameter is likely to decrease performance.
 	 */
 	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling() const;

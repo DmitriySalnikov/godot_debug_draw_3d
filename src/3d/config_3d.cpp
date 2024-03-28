@@ -46,7 +46,7 @@ bool DebugDraw3DConfig::is_use_frustum_culling() const {
 }
 
 void DebugDraw3DConfig::set_culling_distance(const real_t &_distance) {
-	cull_by_distance = Math::clamp(_distance, -1.0f, (real_t)INT_MAX);
+	cull_by_distance = Math::clamp(_distance, 0.0f, 1.0f);
 }
 
 real_t DebugDraw3DConfig::get_culling_distance() const {

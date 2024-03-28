@@ -53,6 +53,12 @@ struct AABBMinMax {
 	AABBMinMax(const SphereBounds &p_from);
 
 	_FORCE_INLINE_ bool intersects(const AABBMinMax &p_aabb) const;
+	_FORCE_INLINE_ void merge_with(const AABBMinMax &p_aabb);
+	_FORCE_INLINE_ void reset();
+
+	_FORCE_INLINE_ operator AABB() {
+		return AABB(min, max - min);
+	}
 };
 
 void MathUtils::get_diagonal_vectors(const Vector3 &p_a, const Vector3 &p_b, Vector3 &r_bottom, Vector3 &r_top, Vector3 &r_diag) {
@@ -177,4 +183,22 @@ bool AABBMinMax::intersects(const AABBMinMax &p_aabb) const {
 		   max.y > p_aabb.min.y &&
 		   min.z < p_aabb.max.z &&
 		   max.z > p_aabb.min.z;
+}
+
+_FORCE_INLINE_ void AABBMinMax::merge_with(const AABBMinMax &p_aabb) {
+	if (radius) {
+		max = max.max(p_aabb.max);
+		min = min.min(p_aabb.min);
+	} else {
+		radius = 1;
+		max = p_aabb.max;
+		min = p_aabb.min;
+	}
+}
+
+_FORCE_INLINE_ void AABBMinMax::reset() {
+	center = Vector3();
+	radius = 0;
+	max = Vector3();
+	min = Vector3();
 }

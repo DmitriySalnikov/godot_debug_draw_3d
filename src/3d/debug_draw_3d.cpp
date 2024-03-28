@@ -634,15 +634,14 @@ void DebugDraw3D::draw_sphere_base(const Transform3D &transform, const Color &co
 			GET_PROC_TYPE(),
 			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
-
-			// TODO add line thickness to the radius
-			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.51f));
+			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
 }
 
 void DebugDraw3D::draw_sphere(const Vector3 &position, const real_t &radius, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	draw_sphere_base(Transform3D(Basis().scaled(Vector3_ONE * (radius * 2)), position), color, duration);
+	real_t scale = radius * 2;
+	draw_sphere_base(Transform3D(Basis().scaled(Vector3(scale, scale, scale)), position), color, duration);
 }
 
 void DebugDraw3D::draw_sphere_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
@@ -884,7 +883,7 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 		return;
 	}
 
-	size_t s = path.size() * 2;
+	size_t s = (path.size() - 1) * 2;
 	std::unique_ptr<Vector3[]> l(new Vector3[s]);
 	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
 
@@ -953,7 +952,7 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	size_t s = path.size() * 2;
+	size_t s = (path.size() - 1) * 2;
 	std::unique_ptr<Vector3[]> l(new Vector3[s]);
 	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
 

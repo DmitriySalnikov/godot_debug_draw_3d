@@ -60,28 +60,27 @@ func _process(delta) -> void:
 ## Since physics frames may not be called every frame or may be called multiple times in one frame,
 ## there is an additional check to ensure that a new frame has been drawn before updating the data.
 func _physics_process(delta: float) -> void:
-	if update_in_physics:
-		if !physics_tick_processed:
-			physics_tick_processed = true
+	if !physics_tick_processed:
+		physics_tick_processed = true
+		if update_in_physics:
 			main_update(delta)
-			
-			# Physics specific:
-			if not zylann_example:
-				DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
-				
-				if more_test_cases:
-					_draw_rays_casts()
-
-				## Additional drawing in the Viewport
-				if true:
-					var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
-					DebugDraw3D.draw_box_xf(Transform3D(Basis()
-					.scaled(Vector3.ONE*0.3)
-					.rotated(Vector3(0,0,1), PI/4)
-					.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
-					Color.BROWN, true, 0.4)
+			_update_timers(delta)
 		
-		_update_timers(delta)
+		# Physics specific:
+		if not zylann_example:
+			DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
+			
+			if more_test_cases:
+				_draw_rays_casts()
+
+			## Additional drawing in the Viewport
+			if true:
+				var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
+				DebugDraw3D.draw_box_xf(Transform3D(Basis()
+				.scaled(Vector3.ONE*0.3)
+				.rotated(Vector3(0,0,1), PI/4)
+				.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
+				Color.BROWN, true, 0.4)
 
 
 func main_update(delta: float) -> void:
@@ -226,6 +225,7 @@ func main_update(delta: float) -> void:
 		points_below2.append(c.global_position + Vector3.DOWN * 2)
 		points_below3.append(c.global_position + Vector3.DOWN * 3)
 		points_below4.append(c.global_position + Vector3.DOWN * 4)
+	
 	for x in points.size()-1:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
@@ -431,6 +431,7 @@ func _draw_array_of_boxes():
 	var z_size := 3
 	var mul := 1
 	var cubes_max_time := 1.25
+	var cfg = DebugDraw3D.new_scoped_config()
 	
 	if draw_1m_boxes:
 		x_size = 100
@@ -444,6 +445,7 @@ func _draw_array_of_boxes():
 			for y in y_size:
 				for z in z_size:
 					var size = Vector3.ONE
+					cfg.set_thickness(randf_range(0, 0.1))
 					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
 					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
 		timer_cubes = cubes_max_time
