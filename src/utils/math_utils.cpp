@@ -20,23 +20,21 @@ SphereBounds::SphereBounds(const AABB &p_from) :
 
 AABBMinMax::AABBMinMax() :
 		center(),
-		extent(),
+		radius(),
 		min(),
-		max(),
-		radius() {}
+		max() {}
 
 AABBMinMax::AABBMinMax(const AABB &p_from) :
-		extent(p_from.size * 0.5f),
+		radius(p_from.size.length() * 0.5f),
 		min(p_from.position),
-		max(p_from.position + p_from.size),
-		radius(p_from.size.length() * 0.5f) {
-	center = p_from.position + extent;
+		max(p_from.position + p_from.size) {
+	center = p_from.position + p_from.size * 0.5f;
 }
 
 AABBMinMax::AABBMinMax(const SphereBounds &p_from) :
 		center(p_from.position),
-		extent(Vector3(p_from.radius, p_from.radius, p_from.radius)),
 		radius(p_from.radius) {
-	min = p_from.position - extent;
-	max = p_from.position + extent;
+	Vector3 half = Vector3(p_from.radius, p_from.radius, p_from.radius);
+	min = p_from.position - half;
+	max = p_from.position + half;
 }

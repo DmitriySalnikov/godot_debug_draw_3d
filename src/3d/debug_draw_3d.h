@@ -146,7 +146,11 @@ private:
 	// Meshes
 	/// Store World3D id and debug container
 	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
-	std::unordered_map<const Viewport *, uint64_t> viewport_to_world_cache;
+	struct viewportToWorldCache {
+		uint64_t world_id = 0;
+		std::shared_ptr<DebugGeometryContainer> dgc;
+	};
+	std::unordered_map<const Viewport *, viewportToWorldCache> viewport_to_world_cache;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> shader_wireframe_mat;

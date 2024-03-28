@@ -40,14 +40,13 @@ struct SphereBounds {
 };
 
 struct AABBMinMax {
-	// AABB extent and Sphere/AABB center
+	// Sphere/AABB center
 	Vector3 center;
-	Vector3 extent;
+	// Sphere radius
+	real_t radius;
 	// AABB min max
 	Vector3 min;
 	Vector3 max;
-	// Sphere radius
-	real_t radius;
 
 	AABBMinMax();
 	AABBMinMax(const AABB &p_from);

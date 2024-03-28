@@ -296,7 +296,7 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewpor
 
 	if (const auto &cached_world = viewport_to_world_cache.find(p_vp);
 			cached_world != viewport_to_world_cache.end()) {
-		return debug_containers[cached_world->second];
+		return cached_world->second.dgc;
 	}
 
 	Ref<World3D> vp_world = p_vp->find_world_3d();
@@ -305,14 +305,14 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewpor
 	if (const auto &dgc = debug_containers.find(vp_world_id);
 			dgc != debug_containers.end()) {
 
-		viewport_to_world_cache[p_vp] = dgc->first;
+		viewport_to_world_cache[p_vp] = { dgc->first, dgc->second };
 		return dgc->second;
 	}
 
 	auto dgc = create_debug_container();
 	dgc->set_world(vp_world);
 	debug_containers[vp_world_id] = dgc;
-	viewport_to_world_cache[p_vp] = vp_world_id;
+	viewport_to_world_cache[p_vp] = { vp_world_id, dgc };
 
 	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_vp), vp_world_id);
 
@@ -358,7 +358,7 @@ void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
 		std::vector<const Viewport *> viewport_to_remove;
 
 		for (const auto &p : viewport_to_world_cache) {
-			if (p.second == p_world_id) {
+			if (p.second.world_id == p_world_id) {
 				viewport_to_remove.push_back(p.first);
 			}
 		}

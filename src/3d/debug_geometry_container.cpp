@@ -186,6 +186,9 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 	// cleanup and get available viewports
 	std::unordered_set<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
 
+	// accumulate a time delta to delete objects in any case after their timers expire.
+	geometry_pool.update_expiration_delta(p_delta, ProcessType::PROCESS);
+
 	// Do not update geometry if frozen
 	if (owner->get_config()->is_freeze_3d_render())
 		return;
@@ -301,9 +304,9 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						InstanceType::SPHERE,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(Vector3_ONE * i.extent * 2), i.center),
+						Transform3D(Basis().scaled(Vector3(i.radius, i.radius, i.radius) * 2), i.center),
 						Colors::debug_bounds,
-						SphereBounds(i.center, i.extent.length_squared()),
+						SphereBounds(i.center, i.radius),
 						&Colors::empty_color);
 			}
 
@@ -317,9 +320,9 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						InstanceType::CUBE_CENTERED,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(o->bounds.extent * 2), o->bounds.center),
+						Transform3D(Basis().scaled(Vector3(o->bounds.radius, o->bounds.radius, o->bounds.radius) * 2), o->bounds.center),
 						Colors::debug_bounds,
-						SphereBounds(o->bounds.center, abs(o->bounds.extent.length())),
+						SphereBounds(o->bounds.center, o->bounds.radius),
 						&Colors::empty_color);
 			});
 		}
@@ -331,10 +334,9 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 	}
 
 	geometry_pool.reset_visible_objects();
-	geometry_pool.fill_lines_data(immediate_mesh_storage.mesh, culling_data, p_delta);
-	geometry_pool.fill_instance_data(meshes, culling_data, p_delta);
+	geometry_pool.fill_mesh_data(meshes, immediate_mesh_storage.mesh, culling_data);
 
-	geometry_pool.update_expiration(p_delta, ProcessType::PROCESS);
+	geometry_pool.update_viewport_expiration(p_delta, ProcessType::PROCESS);
 	geometry_pool.reset_counter(p_delta, ProcessType::PROCESS);
 
 	is_frame_rendered = true;
@@ -348,7 +350,8 @@ void DebugGeometryContainer::update_geometry_physics_start(double p_delta) {
 }
 
 void DebugGeometryContainer::update_geometry_physics_end(double p_delta) {
-	geometry_pool.update_expiration(p_delta, ProcessType::PHYSICS_PROCESS);
+	geometry_pool.update_expiration_delta(p_delta, ProcessType::PHYSICS_PROCESS);
+	geometry_pool.update_viewport_expiration(p_delta, ProcessType::PHYSICS_PROCESS);
 }
 
 void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &p_stats) {

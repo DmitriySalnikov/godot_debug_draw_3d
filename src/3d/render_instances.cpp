@@ -41,7 +41,16 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
-void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &p_delta) {
+void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+	ZoneScoped;
+	fill_instance_data(p_meshes, p_culling_data);
+	fill_lines_data(p_ig, p_culling_data);
+
+	process_delta_sum = 0;
+	physics_delta_sum = 0;
+}
+
+void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
 	ZoneScoped;
 
 	// reset timers
@@ -57,41 +66,63 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 
 	for (int type = 0; type < (int)InstanceType::MAX; type++) {
 		ZoneScopedN("Fill iteration");
+		ZoneValue(type);
 		GODOT_STOPWATCH_ADD(&time_spent_to_fill_buffers_of_instances);
 
-		size_t max_instances = 0;
+		std::vector<DelayedRendererInstance *> visible_buffer;
+		visible_buffer.reserve(prev_buffer_visible_instance_count[type]);
+
 		{
-			ZoneScopedN("Update visibility");
+			ZoneScopedN("Update visibility and expiration");
 			GODOT_STOPWATCH_ADD(&time_spent_to_cull_instances);
 
-			for (auto &proc : pools) {
-				auto &itype = proc.instances[type];
+			for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+				auto &itype = pools[proc_i].instances[type];
 
 				auto &inst_arr = itype.instant;
 				for (int i = 0; i < itype.used_instant; i++) {
-					if (inst_arr[i].update_visibility(p_culling_data)) {
-						max_instances++;
+					auto &inst = inst_arr[i];
+					if (inst.update_visibility(p_culling_data)) {
+						visible_buffer.push_back(&inst);
 					}
 				}
 
 				itype.used_delayed = 0;
-				for (auto &inst : itype.delayed) {
-					if (!inst.is_expired()) {
-						inst.is_used_one_time = true;
-						itype.used_delayed++;
+				if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
+					for (auto &inst : itype.delayed) {
+						if (!inst.is_expired()) {
+							if (inst.is_used_one_time) {
+								inst.expiration_time -= physics_delta_sum;
+							}
+							inst.is_used_one_time = true;
+							itype.used_delayed++;
 
-						if (inst.update_visibility(p_culling_data)) {
-							max_instances++;
+							if (inst.update_visibility(p_culling_data)) {
+								visible_buffer.push_back(&inst);
+							}
+						}
+					}
+				} else {
+					for (auto &inst : itype.delayed) {
+						if (!inst.is_expired()) {
+							inst.expiration_time -= process_delta_sum;
+							inst.is_used_one_time = true;
+							itype.used_delayed++;
+
+							if (inst.update_visibility(p_culling_data)) {
+								visible_buffer.push_back(&inst);
+							}
 						}
 					}
 				}
 			}
 
-			stat_visible_instances += max_instances;
+			stat_visible_instances += visible_buffer.size();
+			prev_buffer_visible_instance_count[type] = visible_buffer.size();
 		}
 
 		PackedFloat32Array &buffer = temp_instances_buffers[type];
-		size_t used_buffer_size = max_instances * INSTANCE_DATA_FLOAT_COUNT;
+		size_t used_buffer_size = visible_buffer.size() * INSTANCE_DATA_FLOAT_COUNT;
 
 		{
 			ZoneScopedN("Prepare buffer");
@@ -114,29 +145,11 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 		size_t last_added = 0;
 		{
 			ZoneScopedN("Fill buffer");
+			ZoneValue(visible_buffer.size());
 			auto w = buffer.ptrw();
 
-			for (auto &proc : pools) {
-				auto &itype = proc.instances[type];
-
-				auto &inst_arr = itype.instant;
-				for (int i = 0; i < itype.used_instant; i++) {
-					auto &inst = inst_arr[i];
-
-					if (inst.is_visible) {
-						memcpy(w + last_added * INSTANCE_DATA_FLOAT_COUNT, reinterpret_cast<const real_t *>(&inst.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
-						last_added++;
-					}
-				}
-
-				for (auto &inst : itype.delayed) {
-					if (!inst.is_expired()) {
-						if (inst.is_visible) {
-							memcpy(w + last_added * INSTANCE_DATA_FLOAT_COUNT, reinterpret_cast<const real_t *>(&inst.data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
-							last_added++;
-						}
-					}
-				}
+			for (auto &inst : visible_buffer) {
+				memcpy(w + last_added++ * INSTANCE_DATA_FLOAT_COUNT, reinterpret_cast<const real_t *>(&inst->data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
 			}
 		}
 
@@ -158,7 +171,6 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 		}
 
 		if (buffer.size()) {
-			// TODO PR for native pointer!
 			ZoneScopedN("Set buffer");
 			mesh->set_buffer(buffer);
 		}
@@ -167,7 +179,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 	time_spent_to_fill_buffers_of_instances -= time_spent_to_cull_instances;
 }
 
-void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data, const double &p_delta) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
 	ZoneScoped;
 
 	uint64_t used_lines = 0;
@@ -187,26 +199,66 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<Ge
 	PackedVector3Array vertexes;
 	PackedColorArray colors;
 
+	std::vector<DelayedRendererLine *> visible_buffer;
+
 	{
 		ZoneScopedN("Prepare buffers");
+		visible_buffer.reserve(prev_buffer_visible_lines_count);
 
-		// pre calculate buffer size
-		for (auto &proc : pools) {
-			for (size_t i = 0; i < proc.lines.used_instant; i++) {
-				auto &o = proc.lines.instant[i];
-				if (o.update_visibility(p_culling_data)) {
-					used_vertexes += o.lines_count;
+		{
+			ZoneScopedN("Update visibility and expiration");
+			GODOT_STOPWATCH(&time_spent_to_cull_lines);
+
+			// pre calculate buffer size
+			for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+				auto &proc = pools[proc_i];
+
+				for (size_t i = 0; i < proc.lines.used_instant; i++) {
+					auto &o = proc.lines.instant[i];
+					if (o.update_visibility(p_culling_data)) {
+						o.is_used_one_time = true;
+						used_vertexes += o.lines_count;
+						visible_buffer.push_back(&o);
+					}
 				}
-			}
-			for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-				auto &o = proc.lines.delayed[i];
-				if (o.update_visibility(p_culling_data) && !o.is_expired()) {
-					used_vertexes += o.lines_count;
+
+				proc.lines.used_delayed = 0;
+				if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
+					for (auto &o : proc.lines.delayed) {
+						if (!o.is_expired()) {
+							if (o.is_used_one_time) {
+								o.expiration_time -= physics_delta_sum;
+							}
+							o.is_used_one_time = true;
+							proc.lines.used_delayed++;
+
+							if (o.update_visibility(p_culling_data)) {
+								used_vertexes += o.lines_count;
+								visible_buffer.push_back(&o);
+							}
+						}
+					}
+				} else {
+					for (auto &o : proc.lines.delayed) {
+						if (!o.is_expired()) {
+							o.expiration_time -= process_delta_sum;
+							o.is_used_one_time = true;
+							proc.lines.used_delayed++;
+
+							if (o.update_visibility(p_culling_data)) {
+								used_vertexes += o.lines_count;
+								visible_buffer.push_back(&o);
+							}
+						}
+					}
 				}
 			}
 		}
-		ZoneValue(used_vertexes);
 
+		stat_visible_lines = visible_buffer.size();
+		prev_buffer_visible_lines_count = visible_buffer.size();
+
+		ZoneValue(used_vertexes);
 		vertexes.resize(used_vertexes);
 		colors.resize(used_vertexes);
 	}
@@ -215,36 +267,17 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<Ge
 	auto vertexes_write = vertexes.ptrw();
 	auto colors_write = colors.ptrw();
 
-#define WRITE_DATA(_inst)                                                                      \
-	size_t lines_size = _inst.lines_count;                                                     \
-	memcpy(vertexes_write + prev_pos, _inst.lines.get(), _inst.lines_count * sizeof(Vector3)); \
-	std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, _inst.color);     \
-	prev_pos += lines_size;
+	{
+		ZoneScopedN("Fill buffers");
+		ZoneValue(visible_buffer.size());
 
-	for (auto &proc : pools) {
-		for (size_t i = 0; i < proc.lines.used_instant; i++) {
-			auto &o = proc.lines.instant[i];
-			if (o.is_visible) {
-				WRITE_DATA(o);
-				stat_visible_lines++;
-			}
-			o.is_used_one_time = true;
-		}
-
-		proc.lines.used_delayed = 0;
-		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-			auto &o = proc.lines.delayed[i];
-			if (!o.is_expired()) {
-				proc.lines.used_delayed++;
-				if (o.is_visible) {
-					WRITE_DATA(o);
-					stat_visible_lines++;
-				}
-			}
-			o.is_used_one_time = true;
+		for (const auto &o : visible_buffer) {
+			size_t lines_size = o->lines_count;
+			memcpy(vertexes_write + prev_pos, o->lines.get(), o->lines_count * sizeof(Vector3));
+			std::fill(colors_write + prev_pos, colors_write + prev_pos + lines_size, o->color);
+			prev_pos += lines_size;
 		}
 	}
-#undef WRITE_DATA
 
 	if (used_vertexes > 1) {
 		ZoneScopedN("Set mesh arrays");
@@ -256,6 +289,8 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<Ge
 
 		p_ig->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_LINES, mesh);
 	}
+
+	time_spent_to_fill_buffers_of_lines -= time_spent_to_cull_lines;
 }
 
 void GeometryPool::reset_counter(const double &p_delta, const ProcessType &p_proc) {
@@ -357,43 +392,27 @@ void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)
 	}
 }
 
-void GeometryPool::update_expiration(const double &p_delta, const ProcessType &p_proc) {
+void GeometryPool::update_expiration_delta(const double &p_delta, const ProcessType &p_proc) {
+	ZoneScoped;
+
+	if (p_proc == ProcessType::PHYSICS_PROCESS) {
+		physics_delta_sum += p_delta;
+	} else {
+		process_delta_sum += p_delta;
+	}
+}
+
+void GeometryPool::update_viewport_expiration(const double &p_delta, const ProcessType &p_proc) {
 	ZoneScoped;
 
 	auto &proc = pools[(int)p_proc];
 	if (p_proc == ProcessType::PHYSICS_PROCESS) {
-		for (auto &t : proc.instances) {
-			for (size_t i = 0; i < t.delayed.size(); i++) {
-				auto &o = t.delayed[i];
-				if (o.is_used_one_time) {
-					o.update_expiration(p_delta);
-				}
-			}
-		}
-
-		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-			auto &o = proc.lines.delayed[i];
-			if (o.is_used_one_time) {
-				o.update_expiration(p_delta);
-			}
-		}
-
 		for (auto &vp : proc.viewports) {
 			if (vp.second.is_phys_used) {
 				vp.second.exp_time -= p_delta;
 			}
 		}
 	} else {
-		for (auto &t : proc.instances) {
-			for (size_t i = 0; i < t.delayed.size(); i++) {
-				t.delayed[i].update_expiration(p_delta);
-			}
-		}
-
-		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-			proc.lines.delayed[i].update_expiration(p_delta);
-		}
-
 		for (auto &vp : proc.viewports) {
 			vp.second.exp_time -= p_delta;
 		}
@@ -475,7 +494,7 @@ void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConf
 }
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
-	ZoneScoped;
+	// ZoneScoped;
 	if (p_cfg->thickness != 0) {
 		return GeometryType::Volumetric;
 	}
@@ -484,7 +503,7 @@ GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_pt
 }
 
 Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
-	ZoneScoped;
+	// ZoneScoped;
 	if (_scoped_config_get_geometry_type(p_cfg) == GeometryType::Volumetric)
 		return Color(p_cfg->thickness, p_cfg->center_brightness, 0, 0);
 
@@ -492,7 +511,7 @@ Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DSc
 }
 
 InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p_type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
-	ZoneScoped;
+	// ZoneScoped;
 	switch (_scoped_config_get_geometry_type(p_cfg)) {
 		case GeometryType::Wireframe: {
 			switch (p_type) {

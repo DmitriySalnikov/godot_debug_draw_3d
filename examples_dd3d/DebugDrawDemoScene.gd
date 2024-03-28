@@ -65,23 +65,23 @@ func _physics_process(delta: float) -> void:
 			physics_tick_processed = true
 			main_update(delta)
 			
-		_update_timers(delta)
-	
-	
-	# Physics specific:
-	if not zylann_example:
-		DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
-		
-		_draw_rays_casts()
+			# Physics specific:
+			if not zylann_example:
+				DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
+				
+				if more_test_cases:
+					_draw_rays_casts()
 
-		## Additional drawing in the Viewport
-		if false:
-			var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
-			DebugDraw3D.draw_box_xf(Transform3D(Basis()
-			.scaled(Vector3.ONE*0.3)
-			.rotated(Vector3(0,0,1), PI/4)
-			.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
-			Color.BROWN, true, 0.4)
+				## Additional drawing in the Viewport
+				if true:
+					var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
+					DebugDraw3D.draw_box_xf(Transform3D(Basis()
+					.scaled(Vector3.ONE*0.3)
+					.rotated(Vector3(0,0,1), PI/4)
+					.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
+					Color.BROWN, true, 0.4)
+		
+		_update_timers(delta)
 
 
 func main_update(delta: float) -> void:
@@ -248,7 +248,7 @@ func main_update(delta: float) -> void:
 		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(-1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / -1000.0, 0, TAU) - PI/4), Color.SANDY_BROWN)
 	
 	# Misc
-	if true:
+	if Engine.is_editor_hint():
 		#for i in 1000:
 		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
 		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
