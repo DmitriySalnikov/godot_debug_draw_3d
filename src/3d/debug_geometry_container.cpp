@@ -224,42 +224,45 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		for (const auto &vp_p : available_viewports) {
 			// Collect frustums and camera positions
 
-			std::vector<Array> frustum_arrays;
+			std::vector<std::pair<Array, Camera3D *> > frustum_arrays;
 			frustum_arrays.reserve(1);
 
 			auto custom_editor_viewports = owner->get_custom_editor_viewports();
 			Camera3D *vp_cam = vp_p->get_camera_3d();
 
 			if ((owner->get_config()->is_force_use_camera_from_scene() || !custom_editor_viewports.size()) && vp_cam) {
-				frustum_arrays.push_back(vp_cam->get_frustum());
+				frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
 			} else if (custom_editor_viewports.size() > 0) {
 				for (auto vp : custom_editor_viewports) {
 					if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
 						auto c = vp->get_camera_3d();
-						frustum_arrays.push_back(c->get_frustum());
+						frustum_arrays.push_back({ c->get_frustum(), c });
 					}
 				}
 			}
 
 			// Convert Array to vector
 			if (frustum_arrays.size()) {
-				for (auto &arr : frustum_arrays) {
+				for (auto &pair : frustum_arrays) {
+					Array &arr = pair.first;
 					if (arr.size() == 6) {
 						std::array<Plane, 6> a;
 						for (int i = 0; i < arr.size(); i++)
 							a[i] = (Plane)arr[i];
+
+						MathUtils::scale_frustum_far_plane_distance(a, pair.second->get_global_transform(), owner->get_config()->get_frustum_length_scale());
 
 						if (owner->get_config()->is_use_frustum_culling())
 							frustum_planes.push_back(a);
 
 						auto cube = MathUtils::get_frustum_cube(a);
 						AABB aabb = MathUtils::calculate_vertex_bounds(cube.data(), cube.size());
-						SphereBounds sb = aabb;
 						frustum_boxes.push_back(aabb);
 
 #if false
 						// Debug camera bounds
 						{
+							SphereBounds sb = aabb;
 							auto cfg = owner->new_scoped_config()->set_thickness(0.1f)->set_hd_sphere(true); //->set_viewport(vp_p);
 							owner->draw_sphere(sb.position, sb.radius, Colors::crimson);
 							owner->draw_aabb(aabb, Colors::yellow);
@@ -284,6 +287,8 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		Viewport *vp;
 		if (available_viewports.size()) {
 			vp = *available_viewports.begin();
+			auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
+			cfg->thickness = 0;
 
 			std::vector<AABBMinMax> new_instances;
 			geometry_pool.for_each_instance([&new_instances](DelayedRendererInstance *o) {
@@ -291,8 +296,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					return;
 				new_instances.push_back(o->bounds);
 			});
-
-			auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
 
 			// Draw custom sphere for 1 frame
 			for (auto &i : new_instances) {
@@ -349,6 +352,20 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						Colors::debug_sphere_bounds,
 						SphereBounds(center, radius));
 			});
+
+			for (const auto &frustum : culling_data->m_frustums) {
+				size_t s = GeometryGenerator::CubeIndexes.size();
+				std::unique_ptr<Vector3[]> l(new Vector3[s]);
+				GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
+
+				geometry_pool.add_or_update_line(
+						cfg,
+						0,
+						ProcessType::PROCESS,
+						std::move(l),
+						s,
+						Colors::orange_red);
+			}
 		}
 	}
 

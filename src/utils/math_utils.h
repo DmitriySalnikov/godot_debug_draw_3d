@@ -27,7 +27,9 @@ public:
 	_FORCE_INLINE_ static real_t get_max_vector_length(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c);
 	_FORCE_INLINE_ static real_t get_max_basis_length(const Basis &p_b);
 	_FORCE_INLINE_ static AABB calculate_vertex_bounds(const Vector3 *p_lines, size_t p_count);
+
 	_FORCE_INLINE_ static std::array<Vector3, 8> get_frustum_cube(const std::array<Plane, 6> p_frustum);
+	_FORCE_INLINE_ static void scale_frustum_far_plane_distance(std::array<Plane, 6> &p_frustum, const Transform3D &p_camera_xf, const real_t &p_scale);
 };
 
 struct SphereBounds {
@@ -174,6 +176,20 @@ std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::array<Plane, 6> p_
 			intersect_planes(p_frustum[1], p_frustum[5], p_frustum[4]),
 			intersect_planes(p_frustum[1], p_frustum[5], p_frustum[2]),
 	});
+}
+
+_FORCE_INLINE_ void MathUtils::scale_frustum_far_plane_distance(std::array<Plane, 6> &p_frustum, const Transform3D &p_camera_xf, const real_t &p_scale) {
+	//  near, far, left, top, right, bottom
+	//  0,    1,   2,    3,   4,     5
+	real_t near_len = p_frustum[0].distance_to(p_camera_xf.origin);
+	real_t far_len = p_frustum[1].distance_to(p_camera_xf.origin);
+
+	if (abs(near_len) > abs(far_len)) {
+		std::swap(near_len, far_len);
+		p_frustum[1] = Plane(p_frustum[1].normal, p_camera_xf.origin + p_camera_xf.basis.get_column(2) * ((1.f - p_scale) * (far_len + near_len) - near_len));
+	} else {
+		p_frustum[1] = Plane(p_frustum[1].normal, p_camera_xf.origin + p_camera_xf.basis.get_column(2) * (p_scale * (far_len + near_len) - near_len));
+	}
 }
 
 bool AABBMinMax::intersects(const AABBMinMax &p_aabb) const {

@@ -40,6 +40,8 @@ DebugDraw3D *DebugDraw3D::singleton = nullptr;
 const char *DebugDraw3D::s_use_icosphere = "use_icosphere";
 const char *DebugDraw3D::s_use_icosphere_hd = "use_icosphere_for_hd";
 const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
+const char *DebugDraw3D::s_default_frustum_scale = "defaults/frustum_length_scale";
+
 const char *DebugDraw3D::s_default_thickness = "volumetric_defaults/thickness";
 const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/center_brightness";
 const char *DebugDraw3D::s_default_hd_spheres = "volumetric_defaults/hd_spheres";
@@ -135,12 +137,16 @@ void DebugDraw3D::init(DebugDrawManager *p_root) {
 	DEFINE_SETTING(root_settings_section + s_add_bevel_to_volumetric, true, Variant::BOOL);
 	DEFINE_SETTING(root_settings_section + s_use_icosphere, false, Variant::BOOL);
 	DEFINE_SETTING(root_settings_section + s_use_icosphere_hd, true, Variant::BOOL);
+	DEFINE_SETTING_AND_GET_HINT(real_t def_frustum_scale, root_settings_section + s_default_frustum_scale, 0.5f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
+
 	DEFINE_SETTING_AND_GET_HINT(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,100,0.0001");
 	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.8f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
 	DEFINE_SETTING_AND_GET(real_t def_hd_sphere, root_settings_section + s_default_hd_spheres, false, Variant::BOOL);
 	DEFINE_SETTING_AND_GET_HINT(real_t def_plane_size, root_settings_section + s_default_plane_size, 0, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,10000,0.001");
 
 	default_scoped_config.instantiate();
+
+	config->set_frustum_length_scale(def_frustum_scale);
 
 	default_scoped_config->set_thickness(def_thickness);
 	default_scoped_config->set_center_brightness(def_brightness);

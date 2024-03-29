@@ -116,6 +116,8 @@ private:
 	const static char *s_use_icosphere;
 	const static char *s_use_icosphere_hd;
 	const static char *s_add_bevel_to_volumetric;
+	const static char *s_default_frustum_scale;
+
 	const static char *s_default_thickness;
 	const static char *s_default_center_brightness;
 	const static char *s_default_hd_spheres;

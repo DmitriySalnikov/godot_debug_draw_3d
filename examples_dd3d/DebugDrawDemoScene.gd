@@ -11,7 +11,7 @@ extends Node3D
 @export var draw_1m_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
-@export_range(0, 1024) var start_culling_distance := 75.0
+@export_range(0, 1) var camera_frustum_scale := 0.9
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
@@ -148,7 +148,7 @@ func main_update(delta: float) -> void:
 			DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
 	
 	
-	DebugDraw3D.config.culling_distance = start_culling_distance
+	DebugDraw3D.config.frustum_length_scale = camera_frustum_scale
 	
 	# Zones with black borders
 	for z in $Zones.get_children():

@@ -21,6 +21,7 @@ func _ready():
 		%BufferSlider.value = test.buffer_size
 	
 	%ThicknessSlider.value = get_parent().debug_thickness
+	%FrustumScaleSlider.value = get_parent().camera_frustum_scale
 	%UpdateInPhysics.text = "Update in physics (%d Ticks) *" % ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
 	%UpdateInPhysics.button_pressed = get_parent().update_in_physics
 	
@@ -73,6 +74,12 @@ func _on_thickness_slider_value_changed(value):
 	get_parent().debug_thickness = value
 
 
+func _on_frustum_scale_slider_value_changed(value):
+	if not is_ready: return
+	
+	get_parent().camera_frustum_scale = value
+
+
 func _on_update_in_physics_toggled(toggled_on):
 	get_parent().update_in_physics = toggled_on
 
@@ -94,3 +101,4 @@ func _on_draw_1m_boxes_toggled(toggled_on):
 	if get_parent().draw_array_of_boxes:
 		DebugDraw3D.clear_all()
 		get_parent().timer_cubes = 0
+

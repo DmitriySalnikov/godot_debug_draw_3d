@@ -22,7 +22,7 @@ private:
 	bool freeze_3d_render = false;
 	bool visible_instance_bounds = false;
 	bool use_frustum_culling = true;
-	real_t cull_by_distance = 0;
+	real_t frustum_length_scale = 0;
 	bool force_use_camera_from_scene = false;
 	Color line_hit_color = Colors::red;
 	Color line_after_hit_color = Colors::green;
@@ -57,8 +57,8 @@ public:
 	 *
 	 * If set to 0, this parameter will be ignored and instances will be drawn at any distance.
 	 */
-	void set_culling_distance(const real_t &_distance);
-	real_t get_culling_distance() const;
+	void set_frustum_length_scale(const real_t &_distance);
+	real_t get_frustum_length_scale() const;
 
 	/**
 	 * Set to force the use of the scene's default camera.
