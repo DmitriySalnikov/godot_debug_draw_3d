@@ -183,7 +183,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 	LOCK_GUARD(owner->datalock);
 
 	// cleanup and get available viewports
-	std::unordered_set<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
+	std::vector<Viewport *> available_viewports = geometry_pool.get_and_validate_viewports();
 
 	// accumulate a time delta to delete objects in any case after their timers expire.
 	geometry_pool.update_expiration_delta(p_delta, ProcessType::PROCESS);
@@ -214,15 +214,13 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		set_render_layer_mask(owner->get_config()->get_geometry_render_layers());
 	}
 
-	std::shared_ptr<GeometryPoolCullingData> culling_data;
+	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
 	{
-		// TODO fix in editor!
 		ZoneScopedN("Get frustums");
-		std::vector<std::array<Plane, 6> > frustum_planes;
-		std::vector<AABBMinMax> frustum_boxes;
 
 		for (const auto &vp_p : available_viewports) {
-			// Collect frustums and camera positions
+			std::vector<std::array<Plane, 6> > frustum_planes;
+			std::vector<AABBMinMax> frustum_boxes;
 
 			std::vector<std::pair<Array, Camera3D *> > frustum_arrays;
 			frustum_arrays.reserve(1);
@@ -230,7 +228,10 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			auto custom_editor_viewports = owner->get_custom_editor_viewports();
 			Camera3D *vp_cam = vp_p->get_camera_3d();
 
-			if ((owner->get_config()->is_force_use_camera_from_scene() || !custom_editor_viewports.size()) && vp_cam) {
+			const auto editor_vp = std::find(custom_editor_viewports.cbegin(), custom_editor_viewports.cend(), vp_p);
+
+			// TODO vp_cam is NULL. is_force_use_camera_from_scene is not working
+			if ((owner->get_config()->is_force_use_camera_from_scene() || editor_vp == custom_editor_viewports.cend()) && vp_cam) {
 				frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
 			} else if (custom_editor_viewports.size() > 0) {
 				for (auto vp : custom_editor_viewports) {
@@ -271,9 +272,9 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					}
 				}
 			}
-		}
 
-		culling_data = std::make_shared<GeometryPoolCullingData>(frustum_planes, frustum_boxes);
+			culling_data[vp_p] = std::make_shared<GeometryPoolCullingData>(frustum_planes, frustum_boxes);
+		}
 	}
 
 	// Debug bounds of instances and lines
@@ -353,18 +354,20 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						SphereBounds(center, radius));
 			});
 
-			for (const auto &frustum : culling_data->m_frustums) {
-				size_t s = GeometryGenerator::CubeIndexes.size();
-				std::unique_ptr<Vector3[]> l(new Vector3[s]);
-				GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
+			for (const auto &culling_data : culling_data) {
+				for (const auto &frustum : culling_data.second->m_frustums) {
+					size_t s = GeometryGenerator::CubeIndexes.size();
+					std::unique_ptr<Vector3[]> l(new Vector3[s]);
+					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
 
-				geometry_pool.add_or_update_line(
-						cfg,
-						0,
-						ProcessType::PROCESS,
-						std::move(l),
-						s,
-						Colors::orange_red);
+					geometry_pool.add_or_update_line(
+							cfg,
+							0,
+							ProcessType::PROCESS,
+							std::move(l),
+							s,
+							Colors::orange_red);
+				}
 			}
 		}
 	}
@@ -377,7 +380,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 	geometry_pool.reset_visible_objects();
 	geometry_pool.fill_mesh_data(meshes, immediate_mesh_storage.mesh, culling_data);
 
-	geometry_pool.update_viewport_expiration(p_delta, ProcessType::PROCESS);
 	geometry_pool.reset_counter(p_delta, ProcessType::PROCESS);
 
 	is_frame_rendered = true;
@@ -392,7 +394,6 @@ void DebugGeometryContainer::update_geometry_physics_start(double p_delta) {
 
 void DebugGeometryContainer::update_geometry_physics_end(double p_delta) {
 	geometry_pool.update_expiration_delta(p_delta, ProcessType::PHYSICS_PROCESS);
-	geometry_pool.update_viewport_expiration(p_delta, ProcessType::PHYSICS_PROCESS);
 }
 
 void DebugGeometryContainer::get_render_stats(Ref<DebugDraw3DStats> &p_stats) {

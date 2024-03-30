@@ -243,19 +243,14 @@ private:
 		}
 	};
 
-	struct vpCacheData {
-		double exp_time = 0;
-		uint64_t vp_id = 0;
-		bool is_phys_used = false;
-	};
-
 	struct processTypePools {
 		ObjectsPool<DelayedRendererInstance> instances[(int)InstanceType::MAX];
 		ObjectsPool<DelayedRendererLine> lines;
-		std::unordered_map<Viewport *, vpCacheData> viewports;
 	};
 
-	processTypePools pools[(int)ProcessType::MAX];
+	std::unordered_map<Viewport *, processTypePools[(int)ProcessType::MAX]> pools;
+	std::unordered_map<Viewport *, uint64_t> viewport_ids;
+
 	double process_delta_sum = 0;
 	double physics_delta_sum = 0;
 
@@ -275,8 +270,10 @@ private:
 	InstanceType _scoped_config_type_convert(ConvertableInstanceType p_type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg);
 	GeometryType _scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg);
 
-	void fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data);
-	void fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data);
+	bool _is_viewport_empty(Viewport *vp);
+
+	void fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data);
+	void fill_lines_data(Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data);
 
 public:
 	GeometryPool() {}
@@ -284,9 +281,9 @@ public:
 	~GeometryPool() {
 	}
 
-	std::unordered_set<Viewport *> get_and_validate_viewports();
+	std::vector<Viewport *> get_and_validate_viewports();
 
-	void fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data);
+	void fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data);
 	void reset_counter(const double &p_delta, const ProcessType &p_proc = ProcessType::MAX);
 	void reset_visible_objects();
 	void set_stats(Ref<DebugDraw3DStats> &p_stats) const;
@@ -294,7 +291,6 @@ public:
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &p_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &p_func);
 	void update_expiration_delta(const double &p_delta, const ProcessType &p_proc);
-	void update_viewport_expiration(const double &p_delta, const ProcessType &p_proc);
 	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
 	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
 	void add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col);

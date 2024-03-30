@@ -41,7 +41,7 @@ DelayedRendererLine::DelayedRendererLine() :
 	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
 }
 
-void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
 	ZoneScoped;
 	fill_instance_data(p_meshes, p_culling_data);
 	fill_lines_data(p_ig, p_culling_data);
@@ -50,19 +50,12 @@ void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes,
 	physics_delta_sum = 0;
 }
 
-void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
 	ZoneScoped;
 
 	// reset timers
 	time_spent_to_cull_instances = 0;
 	time_spent_to_fill_buffers_of_instances = 0;
-
-	for (auto &proc : pools) {
-		// Update viewport timers
-		for (auto &vp : proc.viewports) {
-			vp.second.is_phys_used = true;
-		}
-	}
 
 	for (int type = 0; type < (int)InstanceType::MAX; type++) {
 		ZoneScopedN("Fill iteration");
@@ -74,51 +67,55 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 
 		{
 			ZoneScopedN("Update visibility and expiration");
-			GODOT_STOPWATCH_ADD(&time_spent_to_cull_instances);
 
-			for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
-				auto &itype = pools[proc_i].instances[type];
+			for (auto &vp_pool : pools) {
+				GODOT_STOPWATCH_ADD(&time_spent_to_cull_instances);
+				auto &culling_data = p_culling_data[vp_pool.first];
 
-				auto &inst_arr = itype.instant;
-				for (int i = 0; i < itype.used_instant; i++) {
-					auto &inst = inst_arr[i];
-					if (inst.update_visibility(p_culling_data)) {
-						visible_buffer.push_back(&inst);
+				for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+					auto &itype = vp_pool.second[proc_i].instances[type];
+
+					auto &inst_arr = itype.instant;
+					for (int i = 0; i < itype.used_instant; i++) {
+						auto &inst = inst_arr[i];
+						if (inst.update_visibility(culling_data)) {
+							visible_buffer.push_back(&inst);
+						}
 					}
-				}
 
-				itype.used_delayed = 0;
-				if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
-					for (auto &inst : itype.delayed) {
-						if (!inst.is_expired()) {
-							if (inst.is_used_one_time) {
-								inst.expiration_time -= physics_delta_sum;
+					itype.used_delayed = 0;
+					if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
+						for (auto &inst : itype.delayed) {
+							if (!inst.is_expired()) {
+								if (inst.is_used_one_time) {
+									inst.expiration_time -= physics_delta_sum;
+								}
+								inst.is_used_one_time = true;
+								itype.used_delayed++;
+
+								if (inst.update_visibility(culling_data)) {
+									visible_buffer.push_back(&inst);
+								}
 							}
-							inst.is_used_one_time = true;
-							itype.used_delayed++;
+						}
+					} else {
+						for (auto &inst : itype.delayed) {
+							if (!inst.is_expired()) {
+								inst.expiration_time -= process_delta_sum;
+								inst.is_used_one_time = true;
+								itype.used_delayed++;
 
-							if (inst.update_visibility(p_culling_data)) {
-								visible_buffer.push_back(&inst);
+								if (inst.update_visibility(culling_data)) {
+									visible_buffer.push_back(&inst);
+								}
 							}
 						}
 					}
-				} else {
-					for (auto &inst : itype.delayed) {
-						if (!inst.is_expired()) {
-							inst.expiration_time -= process_delta_sum;
-							inst.is_used_one_time = true;
-							itype.used_delayed++;
-
-							if (inst.update_visibility(p_culling_data)) {
-								visible_buffer.push_back(&inst);
-							}
-						}
-					}
 				}
+
+				stat_visible_instances += visible_buffer.size();
+				prev_buffer_visible_instance_count[type] = visible_buffer.size();
 			}
-
-			stat_visible_instances += visible_buffer.size();
-			prev_buffer_visible_instance_count[type] = visible_buffer.size();
 		}
 
 		PackedFloat32Array &buffer = temp_instances_buffers[type];
@@ -179,14 +176,17 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 	time_spent_to_fill_buffers_of_instances -= time_spent_to_cull_instances;
 }
 
-void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
 	ZoneScoped;
 
 	uint64_t used_lines = 0;
-	for (auto &proc : pools) {
-		used_lines += proc.lines.used_instant;
-		used_lines += proc.lines.delayed.size();
+	for (auto &vp_pool : pools) {
+		for (auto &proc : vp_pool.second) {
+			used_lines += proc.lines.used_instant;
+			used_lines += proc.lines.delayed.size();
+		}
 	}
+
 	if (used_lines == 0) {
 		return;
 	}
@@ -210,44 +210,49 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<Ge
 			GODOT_STOPWATCH(&time_spent_to_cull_lines);
 
 			// pre calculate buffer size
-			for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
-				auto &proc = pools[proc_i];
 
-				for (size_t i = 0; i < proc.lines.used_instant; i++) {
-					auto &o = proc.lines.instant[i];
-					if (o.update_visibility(p_culling_data)) {
-						o.is_used_one_time = true;
-						used_vertexes += o.lines_count;
-						visible_buffer.push_back(&o);
-					}
-				}
+			for (auto &vp_pool : pools) {
+				auto &culling_data = p_culling_data[vp_pool.first];
 
-				proc.lines.used_delayed = 0;
-				if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
-					for (auto &o : proc.lines.delayed) {
-						if (!o.is_expired()) {
-							if (o.is_used_one_time) {
-								o.expiration_time -= physics_delta_sum;
-							}
+				for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+					auto &proc = vp_pool.second[proc_i];
+
+					for (size_t i = 0; i < proc.lines.used_instant; i++) {
+						auto &o = proc.lines.instant[i];
+						if (o.update_visibility(culling_data)) {
 							o.is_used_one_time = true;
-							proc.lines.used_delayed++;
-
-							if (o.update_visibility(p_culling_data)) {
-								used_vertexes += o.lines_count;
-								visible_buffer.push_back(&o);
-							}
+							used_vertexes += o.lines_count;
+							visible_buffer.push_back(&o);
 						}
 					}
-				} else {
-					for (auto &o : proc.lines.delayed) {
-						if (!o.is_expired()) {
-							o.expiration_time -= process_delta_sum;
-							o.is_used_one_time = true;
-							proc.lines.used_delayed++;
 
-							if (o.update_visibility(p_culling_data)) {
-								used_vertexes += o.lines_count;
-								visible_buffer.push_back(&o);
+					proc.lines.used_delayed = 0;
+					if (proc_i == (int)ProcessType::PHYSICS_PROCESS) {
+						for (auto &o : proc.lines.delayed) {
+							if (!o.is_expired()) {
+								if (o.is_used_one_time) {
+									o.expiration_time -= physics_delta_sum;
+								}
+								o.is_used_one_time = true;
+								proc.lines.used_delayed++;
+
+								if (o.update_visibility(culling_data)) {
+									used_vertexes += o.lines_count;
+									visible_buffer.push_back(&o);
+								}
+							}
+						}
+					} else {
+						for (auto &o : proc.lines.delayed) {
+							if (!o.is_expired()) {
+								o.expiration_time -= process_delta_sum;
+								o.is_used_one_time = true;
+								proc.lines.used_delayed++;
+
+								if (o.update_visibility(culling_data)) {
+									used_vertexes += o.lines_count;
+									visible_buffer.push_back(&o);
+								}
 							}
 						}
 					}
@@ -296,18 +301,22 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, const std::shared_ptr<Ge
 void GeometryPool::reset_counter(const double &p_delta, const ProcessType &p_proc) {
 	ZoneScoped;
 	if (p_proc == ProcessType::MAX) {
-		for (auto &proc : pools) {
+		for (auto &vp_pool : pools) {
+			for (auto &proc : vp_pool.second) {
+				for (int i = 0; i < (int)InstanceType::MAX; i++) {
+					proc.instances[i].reset_counter(p_delta, i);
+				}
+				proc.lines.reset_counter(p_delta);
+			}
+		}
+	} else {
+		for (auto &vp_pool : pools) {
+			auto &proc = vp_pool.second[(int)p_proc];
 			for (int i = 0; i < (int)InstanceType::MAX; i++) {
 				proc.instances[i].reset_counter(p_delta, i);
 			}
 			proc.lines.reset_counter(p_delta);
 		}
-	} else {
-		auto &proc = pools[(int)p_proc];
-		for (int i = 0; i < (int)InstanceType::MAX; i++) {
-			proc.instances[i].reset_counter(p_delta, i);
-		}
-		proc.lines.reset_counter(p_delta);
 	}
 }
 
@@ -325,14 +334,16 @@ void GeometryPool::set_stats(Ref<DebugDraw3DStats> &p_stats) const {
 		size_t used_lines = 0;
 	} counts[(int)ProcessType::MAX];
 
-	for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
-		auto &proc = pools[proc_i];
-		for (auto &i : proc.instances) {
-			counts[proc_i].used_instances += i._prev_used_instant;
-			counts[proc_i].used_instances += i.used_delayed;
-		}
+	for (auto &vp_pool : pools) {
+		for (int proc_i = 0; proc_i < (int)ProcessType::MAX; proc_i++) {
+			auto &proc = vp_pool.second[proc_i];
+			for (auto &i : proc.instances) {
+				counts[proc_i].used_instances += i._prev_used_instant;
+				counts[proc_i].used_instances += i.used_delayed;
+			}
 
-		counts[proc_i].used_lines += proc.lines._prev_used_instant + proc.lines.used_delayed;
+			counts[proc_i].used_lines += proc.lines._prev_used_instant + proc.lines.used_delayed;
+		}
 	}
 
 	const int p = (int)ProcessType::PROCESS;
@@ -356,24 +367,28 @@ void GeometryPool::set_stats(Ref<DebugDraw3DStats> &p_stats) const {
 
 void GeometryPool::clear_pool() {
 	ZoneScoped;
-	for (auto &proc : pools) {
-		for (auto &i : proc.instances) {
-			i.clear_pools();
+	for (auto &vp_pool : pools) {
+		for (auto &proc : vp_pool.second) {
+			for (auto &i : proc.instances) {
+				i.clear_pools();
+			}
+			proc.lines.clear_pools();
 		}
-		proc.lines.clear_pools();
 	}
 }
 
 void GeometryPool::for_each_instance(const std::function<void(DelayedRendererInstance *)> &p_func) {
 	ZoneScoped;
-	for (auto &proc : pools) {
-		for (auto &inst : proc.instances) {
-			for (size_t i = 0; i < inst.used_instant; i++) {
-				p_func(&inst.instant[i]);
-			}
-			for (size_t i = 0; i < inst.delayed.size(); i++) {
-				if (!inst.delayed[i].is_expired())
-					p_func(&inst.delayed[i]);
+	for (auto &vp_pool : pools) {
+		for (auto &proc : vp_pool.second) {
+			for (auto &inst : proc.instances) {
+				for (size_t i = 0; i < inst.used_instant; i++) {
+					p_func(&inst.instant[i]);
+				}
+				for (size_t i = 0; i < inst.delayed.size(); i++) {
+					if (!inst.delayed[i].is_expired())
+						p_func(&inst.delayed[i]);
+				}
 			}
 		}
 	}
@@ -381,13 +396,15 @@ void GeometryPool::for_each_instance(const std::function<void(DelayedRendererIns
 
 void GeometryPool::for_each_line(const std::function<void(DelayedRendererLine *)> &p_func) {
 	ZoneScoped;
-	for (auto &proc : pools) {
-		for (size_t i = 0; i < proc.lines.used_instant; i++) {
-			p_func(&proc.lines.instant[i]);
-		}
-		for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
-			if (!proc.lines.delayed[i].is_expired())
-				p_func(&proc.lines.delayed[i]);
+	for (auto &vp_pool : pools) {
+		for (auto &proc : vp_pool.second) {
+			for (size_t i = 0; i < proc.lines.used_instant; i++) {
+				p_func(&proc.lines.instant[i]);
+			}
+			for (size_t i = 0; i < proc.lines.delayed.size(); i++) {
+				if (!proc.lines.delayed[i].is_expired())
+					p_func(&proc.lines.delayed[i]);
+			}
 		}
 	}
 }
@@ -402,47 +419,41 @@ void GeometryPool::update_expiration_delta(const double &p_delta, const ProcessT
 	}
 }
 
-void GeometryPool::update_viewport_expiration(const double &p_delta, const ProcessType &p_proc) {
-	ZoneScoped;
-
-	auto &proc = pools[(int)p_proc];
-	if (p_proc == ProcessType::PHYSICS_PROCESS) {
-		for (auto &vp : proc.viewports) {
-			if (vp.second.is_phys_used) {
-				vp.second.exp_time -= p_delta;
+bool GeometryPool::_is_viewport_empty(Viewport *vp) {
+	for (auto &proc : pools[vp]) {
+		for (auto &i : proc.instances) {
+			if (i.instant.size() || i.delayed.size()) {
+				return false;
 			}
 		}
-	} else {
-		for (auto &vp : proc.viewports) {
-			vp.second.exp_time -= p_delta;
+		if (proc.lines.instant.size() || proc.lines.delayed.size()) {
+			return false;
 		}
 	}
+	return true;
 }
 
-std::unordered_set<Viewport *> GeometryPool::get_and_validate_viewports() {
+std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	ZoneScoped;
-	std::unordered_set<Viewport *> res;
+	std::vector<Viewport *> res;
+	std::vector<Viewport *> to_delete;
 
-	for (int i = 0; i < (int)ProcessType::MAX; i++) {
-		auto &proc = pools[(int)i];
-		std::vector<Viewport *> to_delete;
-
-		for (const auto &vp : proc.viewports) {
-			if (UtilityFunctions::is_instance_id_valid(vp.second.vp_id)) {
-				if (vp.second.exp_time <= 0) {
-					DEV_PRINT_STD("Viewport (%s) timer has expired, it will be deleted from the World3D's container (%s).\n", vp.first->to_string().utf8().get_data(), i == (int)ProcessType::PHYSICS_PROCESS ? "Physics" : "Normal");
-					to_delete.push_back(vp.first);
-				} else {
-					res.insert(vp.first);
-				}
-			} else {
+	for (const auto &vp : viewport_ids) {
+		if (UtilityFunctions::is_instance_id_valid(vp.second)) {
+			if (_is_viewport_empty(vp.first)) {
+				DEV_PRINT_STD("Viewport (%s) did not contain any debug data, it will be deleted from the World3D's container.\n", vp.first->to_string().utf8().get_data());
 				to_delete.push_back(vp.first);
+			} else {
+				res.push_back(vp.first);
 			}
+		} else {
+			to_delete.push_back(vp.first);
 		}
+	}
 
-		for (const auto &vp : to_delete) {
-			proc.viewports.erase(vp);
-		}
+	for (const auto &vp : to_delete) {
+		viewport_ids.erase(vp);
+		pools.erase(vp);
 	}
 
 	return res;
@@ -455,8 +466,9 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 
 void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	ZoneScoped;
-	auto &proc = pools[(int)p_proc];
+	auto &proc = pools[p_cfg->viewport][(int)p_proc];
 	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
+	viewport_ids[p_cfg->viewport] = p_cfg->viewport->get_instance_id();
 
 	SphereBounds thick_sphere = p_bounds;
 	thick_sphere.radius += p_cfg->thickness * 0.5f;
@@ -466,19 +478,13 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
-
-	auto &vp_data = proc.viewports[p_cfg->viewport];
-	vp_data.vp_id = p_cfg->viewport->get_instance_id();
-	if (vp_data.exp_time < p_exp_time + 1) {
-		vp_data.exp_time = p_exp_time + 1;
-		vp_data.is_phys_used = false;
-	}
 }
 
 void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col) {
 	ZoneScoped;
-	auto &proc = pools[(int)p_proc];
+	auto &proc = pools[p_cfg->viewport][(int)p_proc];
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
+	viewport_ids[p_cfg->viewport] = p_cfg->viewport->get_instance_id();
 
 	inst->lines = std::move(p_lines);
 	inst->lines_count = p_line_count;
@@ -487,13 +493,6 @@ void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConf
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
-
-	auto &vp_data = proc.viewports[p_cfg->viewport];
-	vp_data.vp_id = p_cfg->viewport->get_instance_id();
-	if (vp_data.exp_time < p_exp_time + 1) {
-		vp_data.exp_time = p_exp_time + 1;
-		vp_data.is_phys_used = false;
-	}
 }
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
