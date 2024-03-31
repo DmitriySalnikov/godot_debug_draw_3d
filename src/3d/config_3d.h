@@ -53,15 +53,13 @@ public:
 	bool is_use_frustum_culling() const;
 
 	/**
-	 * Set the culling distance after which instances will stop being displayed to improve performance.
-	 *
-	 * If set to 0, this parameter will be ignored and instances will be drawn at any distance.
+	 * Change the distance between the Far and Near Planes of the Viewport's Camera3D.
 	 */
 	void set_frustum_length_scale(const real_t &_distance);
 	real_t get_frustum_length_scale() const;
 
 	/**
-	 * Set to force the use of the scene's default camera.
+	 * Set the forced use of the scene camera instead of the editor camera.
 	 */
 	void set_force_use_camera_from_scene(const bool &_state);
 	bool is_force_use_camera_from_scene() const;

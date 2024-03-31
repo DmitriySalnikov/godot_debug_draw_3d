@@ -317,6 +317,10 @@ void DebugDrawManager::_integrate_into_engine() {
 		}
 		debug_draw_3d_singleton->set_custom_editor_viewport(editor_viewports);
 
+		if (editor_viewports.size()) {
+			debug_draw_3d_singleton->scoped_config()->set_viewport(editor_viewports[0]);
+		}
+
 		/*
 		// Used to explore the editor tree.
 		auto f = FileAccess::open("user://tree.txt", FileAccess::WRITE);
@@ -333,10 +337,11 @@ void DebugDrawManager::_integrate_into_engine() {
 
 		// will be auto deleted as child
 		add_child(default_canvas);
+
+		debug_draw_3d_singleton->scoped_config()->set_viewport(SCENE_ROOT());
 	}
 
 	debug_draw_2d_singleton->set_custom_canvas(debug_draw_2d_singleton->custom_canvas);
-	debug_draw_3d_singleton->scoped_config()->set_viewport(SCENE_ROOT());
 	_connect_scene_changed();
 #endif
 

@@ -225,22 +225,41 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			std::vector<std::pair<Array, Camera3D *> > frustum_arrays;
 			frustum_arrays.reserve(1);
 
+#ifdef DEBUG_ENABLED
 			auto custom_editor_viewports = owner->get_custom_editor_viewports();
-			Camera3D *vp_cam = vp_p->get_camera_3d();
+			bool is_editor_vp = std::find_if(
+										custom_editor_viewports.cbegin(),
+										custom_editor_viewports.cend(),
+										[&vp_p](const auto &it) { return it == vp_p; }) != custom_editor_viewports.cend();
 
-			const auto editor_vp = std::find(custom_editor_viewports.cbegin(), custom_editor_viewports.cend(), vp_p);
+			if (Engine::get_singleton()->is_editor_hint() && is_editor_vp) {
+				Camera3D *cam = nullptr;
+				Node *root = SCENE_TREE()->get_edited_scene_root();
+				if (root) {
+					cam = root->get_viewport()->get_camera_3d();
+				}
 
-			// TODO vp_cam is NULL. is_force_use_camera_from_scene is not working
-			if ((owner->get_config()->is_force_use_camera_from_scene() || editor_vp == custom_editor_viewports.cend()) && vp_cam) {
-				frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
-			} else if (custom_editor_viewports.size() > 0) {
-				for (auto vp : custom_editor_viewports) {
-					if (vp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
-						auto c = vp->get_camera_3d();
-						frustum_arrays.push_back({ c->get_frustum(), c });
+				if (owner->config->is_force_use_camera_from_scene() && cam) {
+					frustum_arrays.push_back({ cam->get_frustum(), cam });
+				} else if (custom_editor_viewports.size() > 0) {
+					for (const auto &evp : custom_editor_viewports) {
+						if (evp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
+							Camera3D *cam = evp->get_camera_3d();
+							if (cam) {
+								frustum_arrays.push_back({ cam->get_frustum(), cam });
+							}
+						}
 					}
 				}
+			} else {
+#endif
+				Camera3D *vp_cam = vp_p->get_camera_3d();
+				if (vp_cam) {
+					frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
+				}
+#ifdef DEBUG_ENABLED
 			}
+#endif
 
 			// Convert Array to vector
 			if (frustum_arrays.size()) {
@@ -310,7 +329,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						InstanceType::SPHERE,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(Vector3(radius, radius, radius) * 2), center),
+						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
 						Colors::debug_sphere_bounds,
 						SphereBounds(center, radius));
 
@@ -349,7 +368,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						InstanceType::SPHERE,
 						0,
 						ProcessType::PROCESS,
-						Transform3D(Basis().scaled(Vector3(radius, radius, radius) * 2), center),
+						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
 						Colors::debug_sphere_bounds,
 						SphereBounds(center, radius));
 			});

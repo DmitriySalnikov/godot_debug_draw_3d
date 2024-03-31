@@ -617,7 +617,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 					InstanceType::LINE_VOLUMETRIC,
 					p_exp_time,
 					GET_PROC_TYPE(),
-					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(Vector3(len, len, len)), a), // slow
+					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), a), // slow
 					p_col,
 					SphereBounds(a + center, len * .5f));
 		}
@@ -647,7 +647,7 @@ void DebugDraw3D::draw_sphere(const Vector3 &position, const real_t &radius, con
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 	real_t scale = radius * 2;
-	draw_sphere_base(Transform3D(Basis().scaled(Vector3(scale, scale, scale)), position), color, duration);
+	draw_sphere_base(Transform3D(Basis().scaled(VEC3_ONE(scale)), position), color, duration);
 }
 
 void DebugDraw3D::draw_sphere_xf(const Transform3D &transform, const Color &color, const real_t &duration) {
@@ -810,7 +810,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				InstanceType::BILLBOARD_SQUARE,
 				duration,
 				GET_PROC_TYPE(),
-				Transform3D(Basis().scaled(Vector3_ONE * hit_size), hit),
+				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size),
 				&Colors::empty_color);
@@ -907,7 +907,7 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 	real_t size = (p_is_absolute_size ? p_arrow_size : dir.length() * p_arrow_size) * 2;
 
 	Vector3 up = get_up_vector(dir);
-	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(Vector3(size, size, size)), p_b);
+	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(VEC3_ONE(size)), p_b);
 
 	GET_SCOPED_CFG_AND_DGC();
 
@@ -991,7 +991,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	Transform3D t(Basis().scaled(Vector3_ONE * size), position);
+	Transform3D t(Basis().scaled(VEC3_ONE(size)), position);
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
@@ -1021,7 +1021,7 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 	Vector3 center_pos = plane.project(anchor_point == Vector3_INF ? (cam ? cam->get_global_position() : Vector3()) : anchor_point);
 	real_t plane_size = scfg->plane_size != INFINITY ? scfg->plane_size : (cam ? (real_t)cam->get_far() : 1000);
 	Transform3D t(Basis(), center_pos);
-	t = t.looking_at(center_pos + plane.normal, get_up_vector(plane.normal)).scaled_local(Vector3_ONE * plane_size);
+	t = t.looking_at(center_pos + plane.normal, get_up_vector(plane.normal)).scaled_local(VEC3_ONE(plane_size));
 	Color custom_col = Color::from_hsv(front_color.get_h(), Math::clamp(front_color.get_s() - 0.25f, 0.f, 1.f), Math::clamp(front_color.get_v() - 0.25f, 0.f, 1.f), front_color.a);
 
 	dgc->geometry_pool.add_or_update_instance(

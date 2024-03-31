@@ -166,6 +166,7 @@ constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + size
 
 // TODO: temp constants.
 
+#define VEC3_ONE(comp) Vector3(comp, comp, comp)
 const extern godot::Vector3 Vector3_ZERO;
 const extern godot::Vector3 Vector3_INF;
 const extern godot::Vector3 Vector3_ONE;

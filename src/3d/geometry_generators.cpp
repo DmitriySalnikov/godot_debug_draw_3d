@@ -311,7 +311,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
 	ZoneScoped;
 	bool debug_size = false;
-	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5 : Vector3();
+	Vector3 debug_mult = debug_size ? Vector3_ONE * 0.5 : Vector3();
 	Vector3 dir = (b - a).normalized();
 	int64_t base_idx = vertexes.size();
 
@@ -385,7 +385,7 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
 	ZoneScoped;
 	bool debug_size = false;
-	Vector3 debug_mult = debug_size ? Vector3(1, 1, 1) * 0.5f : Vector3();
+	Vector3 debug_mult = debug_size ? Vector3_ONE * 0.5f : Vector3();
 	real_t half_len = .5f;
 	// real_t half_len = Math::clamp(len * .5f, .0f, 0.5f);
 	Vector3 dir = (b - a).normalized();
