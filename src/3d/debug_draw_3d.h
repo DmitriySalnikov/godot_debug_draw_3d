@@ -41,9 +41,12 @@ protected:
 	static void _bind_methods(){};
 
 public:
-	void init(DebugDraw3D *p_root, uint64_t p_world_id);
-
+	virtual void _process(double p_delta);
 	virtual void _notification(int p_what);
+
+	_DD3D_WorldWatcher() :
+			m_world_id() {}
+	_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id);
 };
 
 #endif

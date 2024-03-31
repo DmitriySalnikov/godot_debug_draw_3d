@@ -17,14 +17,17 @@ GODOT_WARNING_RESTORE()
 #define NEED_LEAVE (!_is_enabled_override())
 
 #ifndef DISABLE_DEBUG_RENDERING
-void _DD3D_WorldWatcher::init(DebugDraw3D *p_root, uint64_t p_world_id) {
-	m_owner = p_root;
-	m_world_id = p_world_id;
+void _DD3D_WorldWatcher::_process(double p_delta) {
+	set_process(false);
+	if (!m_owner) {
+		PRINT_WARNING("{0} is an internal DebugDraw3D node. Remove it from your scene to avoid crashes in the future.", get_name());
+	}
 }
 
 void _DD3D_WorldWatcher::_notification(int p_what) {
-	if (p_what == NOTIFICATION_EXIT_WORLD && m_owner) {
+	if ((p_what == NOTIFICATION_EXIT_WORLD || p_what == NOTIFICATION_EXIT_TREE) && m_owner) {
 		m_owner->_remove_debug_container(m_world_id);
+		m_owner = nullptr;
 
 		if (!is_queued_for_deletion()) {
 			if (get_parent()) {
@@ -33,6 +36,11 @@ void _DD3D_WorldWatcher::_notification(int p_what) {
 			queue_free();
 		}
 	}
+}
+
+_DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id) {
+	m_owner = p_root;
+	m_world_id = p_world_id;
 }
 #endif
 
@@ -334,10 +342,9 @@ void DebugDraw3D::_register_viewport_world_deferred(Viewport *p_vp, const uint64
 		return;
 	}
 
-	auto watcher = memnew(_DD3D_WorldWatcher);
+	auto *watcher = memnew(_DD3D_WorldWatcher(this, p_world_id));
 	p_vp->add_child(watcher);
 	p_vp->move_child(watcher, 0);
-	watcher->init(this, p_world_id);
 }
 
 Viewport *DebugDraw3D::_get_root_world_viewport(Viewport *p_vp) {
