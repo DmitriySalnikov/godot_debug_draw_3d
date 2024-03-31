@@ -242,7 +242,14 @@ void DebugDrawManager::_integrate_into_engine() {
 		if (Engine::get_singleton()->has_singleton("DisplayServer")) {
 			Object *display_server = Engine::get_singleton()->get_singleton("DisplayServer");
 			if (display_server) {
-				set_debug_enabled(display_server->call("window_can_draw", 0));
+				bool is_enabled = display_server->call("window_can_draw", 0);
+				set_debug_enabled(is_enabled);
+
+#if defined(TOOLS_ENABLED) && defined(TELEMETRY_ENABLED)
+				if (IS_EDITOR_HINT() && is_enabled) {
+					time_usage_reporter = std::make_unique<UsageTimeReporter>(DD3D_VERSION_STR, Utils::root_settings_section, [&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
+				}
+#endif
 			}
 		} else {
 			set_debug_enabled(false);
@@ -348,12 +355,6 @@ void DebugDrawManager::_integrate_into_engine() {
 #ifdef TOOLS_ENABLED
 	if (IS_EDITOR_HINT()) {
 		_try_to_update_cs_bindings();
-
-#ifdef TELEMETRY_ENABLED
-		if (!is_headless) {
-			time_usage_reporter = std::make_unique<UsageTimeReporter>(DD3D_VERSION_STR, [&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
-		}
-#endif
 	}
 #endif
 }

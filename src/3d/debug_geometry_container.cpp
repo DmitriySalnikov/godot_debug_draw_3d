@@ -232,7 +232,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 										custom_editor_viewports.cend(),
 										[&vp_p](const auto &it) { return it == vp_p; }) != custom_editor_viewports.cend();
 
-			if (Engine::get_singleton()->is_editor_hint() && is_editor_vp) {
+			if (IS_EDITOR_HINT() && is_editor_vp) {
 				Camera3D *cam = nullptr;
 				Node *root = SCENE_TREE()->get_edited_scene_root();
 				if (root) {
