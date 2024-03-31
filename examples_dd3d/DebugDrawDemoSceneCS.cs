@@ -15,8 +15,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool test_graphs = false;
     [Export] bool more_test_cases = true;
     [Export] bool draw_array_of_boxes = false;
+    [Export] bool draw_1m_boxes = false;
     [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.1f;
-    [Export(PropertyHint.Range, "0, 1024")] float start_culling_distance = 55.0f;
+    [Export(PropertyHint.Range, "0, 1")] float camera_frustum_scale = 0.9f;
 
     [ExportGroup("Text groups", "text_groups")]
     [Export] bool text_groups_show_hints = true;
@@ -51,7 +52,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     };
 
     double timer_1 = 0.0;
-    double timer_2 = 0.0;
+    double timer_cubes = 0.0;
     double timer_3 = 0.0;
     double timer_text = 0.0;
 
@@ -175,8 +176,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         _update_keys_just_press();
 
-        ((StandardMaterial3D)((PrimitiveMesh)dOtherWorld.Mesh).Material).AlbedoTexture = dOtherWorldViewport.GetTexture();
-
         await new SignalAwaiter(GetTree(), "process_frame", this);
 
         // this check is required for inherited scenes, because an instance of this 
@@ -199,7 +198,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     void _update_timers(double delta)
     {
         timer_1 -= delta;
-        timer_2 -= delta;
+        timer_cubes -= delta;
         timer_3 -= delta;
         timer_text -= delta;
     }
@@ -219,6 +218,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
     bool phys_frame_called = false;
     public override void _Process(double delta)
     {
+        ((ShaderMaterial)((PrimitiveMesh)dOtherWorld.Mesh).Material).SetShaderParameter("albedo_texture", dOtherWorldViewport.GetTexture());
+
         phys_frame_called = false;
         if (!update_in_physics)
         {
@@ -229,21 +230,34 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     public override void _PhysicsProcess(double delta)
     {
-        if (update_in_physics)
+        if (!phys_frame_called)
         {
-            if (!phys_frame_called)
+            phys_frame_called = true;
+            if (update_in_physics)
             {
-                phys_frame_called = true;
                 MainUpdate(delta);
+                _update_timers(delta);
             }
-            _update_timers(delta);
         }
 
         // Physics specific:
         if (!zylann_example)
         {
             DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
-            _draw_rays_casts();
+            if (more_test_cases)
+            {
+                _draw_rays_casts();
+            }
+
+            // Additional drawing in the Viewport
+            using (var _w1 = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()).SetThickness(0.01f).SetCenterBrightness(1))
+            {
+                DebugDraw3D.DrawBoxXf(new Transform3D(Basis.Identity
+                    .Scaled(Vector3.One * 0.3f)
+                    .Rotated(new Vector3(0, 0, 1), Mathf.Pi / 4)
+                    .Rotated(new Vector3(0, 1, 0), Mathf.Wrap(Time.GetTicksMsec() / -1500.0f, 0, Mathf.Tau) - Mathf.Pi / 4), dOtherWorldBox.GlobalPosition),
+                    Colors.Brown, true, 0.4f);
+            }
         }
     }
 
@@ -320,14 +334,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
 
 
-        if (Engine.IsEditorHint())
-        {
-            DebugDraw3D.Config.CullingDistance = DebugDraw3D.Config.ForceUseCameraFromScene ? start_culling_distance : 0.0f;
-        }
-        else
-        {
-            DebugDraw3D.Config.CullingDistance = start_culling_distance;
-        }
+        DebugDraw3D.Config.FrustumLengthScale = camera_frustum_scale;
 
         // Zones with black borders
         foreach (var node in dZones.GetChildren())
@@ -357,7 +364,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         // Cylinders
         DebugDraw3D.DrawCylinder(dCylinder1.GlobalTransform, Colors.Crimson);
         DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalPosition), Colors.Red);
-        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalPosition, dCylinder3b.GlobalPosition, 0.35f);
+        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalPosition, dCylinder3b.GlobalPosition, 0.7f);
 
         // Boxes
         DebugDraw3D.DrawBoxXf(dBox1.GlobalTransform, Colors.MediumPurple);
@@ -435,14 +442,19 @@ public partial class DebugDrawDemoSceneCS : Node3D
         DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
         using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
             DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
+
         // Other world
 
         using (var s = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()))
-            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(Vector3.Up, Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau)), Colors.SandyBrown);
+        {
+            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau)), Colors.SandyBrown);
+            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(-1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau) - Mathf.Pi / 4), Colors.SandyBrown);
+        }
 
         // Misc
-        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0))
+        if (Engine.IsEditorHint())
         {
+            using var s = DebugDraw3D.NewScopedConfig().SetThickness(0);
             DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
         }
 
@@ -681,23 +693,40 @@ public partial class DebugDrawDemoSceneCS : Node3D
     void _draw_array_of_boxes()
     {
         // Lots of boxes to check performance..
-        if (timer_2 <= 0)
+        var x_size = 50;
+        var y_size = 50;
+        var z_size = 3;
+        var mul = 1.0f;
+        var cubes_max_time = 1.25f;
+        using var cfg = DebugDraw3D.NewScopedConfig();
+
+        if (draw_1m_boxes)
         {
-            for (int x = 0; x < 50; x++)
+            x_size = 100;
+            y_size = 100;
+            z_size = 100;
+            mul = 4.0f;
+            cubes_max_time = 60f;
+        }
+
+        if (timer_cubes <= 0)
+        {
+            for (int x = 0; x < x_size; x++)
             {
-                for (int y = 0; y < 50; y++)
+                for (int y = 0; y < y_size; y++)
                 {
-                    for (int z = 0; z < 3; z++)
+                    for (int z = 0; z < z_size; z++)
                     {
-                        DebugDraw3D.DrawBox(new Vector3(x, -4 - z, y), Quaternion.Identity, Vector3.One, null, false, 1.25f);
+                        var size = Vector3.One;
+                        cfg.SetThickness(Random.Shared.NextSingle() * 0.1f);
+                        //size = new Vector3(Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f);
+                        DebugDraw3D.DrawBox(new Vector3(x * mul, (-4 - z) * mul, y * mul), Quaternion.Identity, size, null, false, cubes_max_time);
                     }
                 }
             }
-            timer_2 = 1.25;
+            timer_cubes = cubes_max_time;
         }
-        timer_2 -= GetProcessDeltaTime();
     }
-
 
     void _graph_test()
     {

@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=36 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -128,15 +128,27 @@ _data = {
 "RESET": SubResource("10")
 }
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r5qn7"]
-resource_local_to_scene = true
-shading_mode = 0
-disable_ambient_light = true
-disable_fog = true
+[sub_resource type="Shader" id="Shader_621vv"]
+code = "shader_type spatial;
+render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,unshaded,ambient_light_disabled,fog_disabled;
+
+uniform sampler2D albedo_texture : source_color,filter_linear_mipmap,repeat_enable;
+
+void fragment() {
+	ALBEDO = texture(albedo_texture,UV).rgb;
+}
+"
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_xp3xe"]
+viewport_path = NodePath("OtherWorld/SubViewport")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ho0aq"]
+render_priority = 0
+shader = SubResource("Shader_621vv")
+shader_parameter/albedo_texture = SubResource("ViewportTexture_xp3xe")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_c6mie"]
-resource_local_to_scene = true
-material = SubResource("StandardMaterial3D_r5qn7")
+material = SubResource("ShaderMaterial_ho0aq")
 size = Vector2(4, 4)
 
 [sub_resource type="Animation" id="Animation_ucqh5"]

@@ -49,7 +49,7 @@ var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_ve
 
 
 func _process(delta) -> void:
-	$OtherWorld.mesh.material.albedo_texture = $OtherWorld/SubViewport.get_texture()
+	$OtherWorld.mesh.material.set_shader_parameter("albedo_texture", $OtherWorld/SubViewport.get_texture())
 	
 	physics_tick_processed = false
 	if !update_in_physics:
