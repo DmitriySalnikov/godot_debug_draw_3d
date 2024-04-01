@@ -263,9 +263,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     void MainUpdate(double delta)
     {
-        if (Input.IsActionJustPressed("ui_end"))
-            DebugDraw3D.RegenerateGeometryMeshes();
-
         DebugDraw3D.ScopedConfig().SetThickness(debug_thickness);
 #pragma warning disable CS0162 // Unreachable code detected
         if (false) // #test
@@ -311,6 +308,10 @@ public partial class DebugDrawDemoSceneCS : Node3D
         // More property toggles
         DebugDraw3D.Config.Freeze3dRender = Input.IsKeyPressed(Key.Down);
         DebugDraw3D.Config.VisibleInstanceBounds = Input.IsKeyPressed(Key.Right);
+
+        // Regenerate meshes
+        if (Input.IsActionJustPressed("ui_end"))
+            DebugDraw3D.RegenerateGeometryMeshes();
 
         // Some property toggles
         if (_is_key_just_pressed(Key.Left))

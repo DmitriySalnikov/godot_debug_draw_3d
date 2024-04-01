@@ -2,7 +2,8 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
-#include "3d/config_scope_3d.h"
+#include "config_scope_3d.h"
+#include "render_instances_enums.h"
 #include "utils/math_utils.h"
 #include "utils/utils.h"
 
@@ -20,57 +21,6 @@ class MultiMesh;
 }
 class DebugDraw3DStats;
 class GeometryPool;
-
-enum class GeometryType : char {
-	Wireframe,
-	Volumetric,
-	Solid,
-};
-
-enum class ConvertableInstanceType : char {
-	CUBE,
-	CUBE_CENTERED,
-	ARROWHEAD,
-	POSITION,
-	SPHERE,
-	CYLINDER,
-	CYLINDER_AB,
-};
-
-enum class InstanceType : char {
-	// Basic wireframe
-	CUBE,
-	CUBE_CENTERED,
-	ARROWHEAD,
-	POSITION,
-	SPHERE,
-	SPHERE_HD,
-	CYLINDER,
-	CYLINDER_AB,
-
-	// Volumetric from wireframes
-	LINE_VOLUMETRIC,
-	CUBE_VOLUMETRIC,
-	CUBE_CENTERED_VOLUMETRIC,
-	ARROWHEAD_VOLUMETRIC,
-	POSITION_VOLUMETRIC,
-	SPHERE_VOLUMETRIC,
-	SPHERE_HD_VOLUMETRIC,
-	CYLINDER_VOLUMETRIC,
-	CYLINDER_AB_VOLUMETRIC,
-
-	// Solid geometry
-	BILLBOARD_SQUARE,
-	PLANE,
-
-	MAX,
-};
-
-enum class ProcessType : char {
-	PROCESS,
-	PHYSICS_PROCESS,
-	MAX,
-};
 
 class GeometryPoolCullingData {
 public:

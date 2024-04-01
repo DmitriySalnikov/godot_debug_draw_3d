@@ -57,7 +57,7 @@ class DebugGeometryContainer {
 	void CreateMMI(InstanceType p_type, UsingShaderType p_shader, const String &p_name, Ref<ArrayMesh> p_mesh);
 
 public:
-	DebugGeometryContainer(class DebugDraw3D *p_root, const bool &p_add_bevel, const bool &p_use_icosphere, const bool &p_use_icosphere_hd);
+	DebugGeometryContainer(class DebugDraw3D *p_root);
 	~DebugGeometryContainer();
 
 	void set_world(Ref<World3D> p_new_world);

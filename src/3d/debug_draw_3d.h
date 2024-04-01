@@ -3,6 +3,7 @@
 #include "common/colors.h"
 #include "common/i_scope_storage.h"
 #include "config_scope_3d.h"
+#include "render_instances_enums.h"
 #include "utils/profiler.h"
 
 #include <map>
@@ -10,6 +11,7 @@
 #include <mutex>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/array_mesh.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
@@ -26,9 +28,6 @@ class DebugDraw3DStats;
 #ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
 struct DelayedRendererLine;
-
-enum class InstanceType : char;
-enum class ConvertableInstanceType : char;
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -154,6 +153,8 @@ private:
 	const std::shared_ptr<DebugDraw3DScopeConfig::Data> scoped_config_for_current_thread() override;
 
 	// Meshes
+	/// Store meshes shared between many debug containers
+	std::vector<Ref<ArrayMesh> > shared_generated_meshes;
 	/// Store World3D id and debug container
 	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
 	struct viewportToWorldCache {
@@ -180,6 +181,7 @@ private:
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
+	Ref<ArrayMesh> *get_shared_meshes();
 	std::shared_ptr<DebugGeometryContainer> create_debug_container();
 	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *p_vp);
 	void _register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id);

@@ -292,12 +292,49 @@ Node *DebugDraw3D::get_root_node() {
 	return root_node;
 }
 
+Ref<ArrayMesh> *DebugDraw3D::get_shared_meshes() {
+	LOCK_GUARD(datalock);
+	if (!shared_generated_meshes.size()) {
+		bool p_add_bevel = PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric);
+		bool p_use_icosphere = PS()->get_setting(root_settings_section + s_use_icosphere);
+		bool p_use_icosphere_hd = PS()->get_setting(root_settings_section + s_use_icosphere_hd);
+
+		shared_generated_meshes.resize((int)InstanceType::MAX);
+
+		// WIREFRAME
+
+		shared_generated_meshes[(int)InstanceType::CUBE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertexes, GeometryGenerator::CubeIndexes);
+		shared_generated_meshes[(int)InstanceType::CUBE_CENTERED] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertexes, GeometryGenerator::CubeIndexes);
+		shared_generated_meshes[(int)InstanceType::ARROWHEAD] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertexes, GeometryGenerator::ArrowheadIndexes);
+		shared_generated_meshes[(int)InstanceType::POSITION] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes);
+		shared_generated_meshes[(int)InstanceType::SPHERE] = p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
+		shared_generated_meshes[(int)InstanceType::SPHERE_HD] = p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2);
+		shared_generated_meshes[(int)InstanceType::CYLINDER] = GeometryGenerator::CreateCylinderLines(16, 1, 1, 2);
+		shared_generated_meshes[(int)InstanceType::CYLINDER_AB] = GeometryGenerator::RotatedMesh(GeometryGenerator::CreateCylinderLines(16, 1, 1, 2), Vector3_RIGHT, Math::deg_to_rad(90.f));
+
+		// VOLUMETRIC
+
+		shared_generated_meshes[(int)InstanceType::LINE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel);
+		shared_generated_meshes[(int)InstanceType::CUBE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE], p_add_bevel);
+		shared_generated_meshes[(int)InstanceType::CUBE_CENTERED_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE_CENTERED], p_add_bevel);
+		shared_generated_meshes[(int)InstanceType::ARROWHEAD_VOLUMETRIC] = GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, p_add_bevel);
+		shared_generated_meshes[(int)InstanceType::POSITION_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::POSITION], p_add_bevel);
+		shared_generated_meshes[(int)InstanceType::SPHERE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE], false);
+		shared_generated_meshes[(int)InstanceType::SPHERE_HD_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD], false);
+		shared_generated_meshes[(int)InstanceType::CYLINDER_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER], false);
+		shared_generated_meshes[(int)InstanceType::CYLINDER_AB_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER_AB], false);
+
+		// SOLID
+
+		shared_generated_meshes[(int)InstanceType::BILLBOARD_SQUARE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareBackwardsIndexes);
+		shared_generated_meshes[(int)InstanceType::PLANE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes);
+	}
+
+	return shared_generated_meshes.data();
+}
+
 std::shared_ptr<DebugGeometryContainer> DebugDraw3D::create_debug_container() {
-	return std::make_shared<DebugGeometryContainer>(
-			this,
-			PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric),
-			PS()->get_setting(root_settings_section + s_use_icosphere),
-			PS()->get_setting(root_settings_section + s_use_icosphere_hd));
+	return std::make_shared<DebugGeometryContainer>(this);
 }
 
 std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewport *p_vp) {
@@ -543,6 +580,10 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 void DebugDraw3D::regenerate_geometry_meshes() {
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
+
+	// Force regenerate meshes
+	shared_generated_meshes.clear();
+
 	for (auto &p : debug_containers) {
 		Ref<World3D> old_world = p.second->get_world();
 

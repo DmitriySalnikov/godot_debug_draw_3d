@@ -84,9 +84,6 @@ func _physics_process(delta: float) -> void:
 
 
 func main_update(delta: float) -> void:
-	if Input.is_action_just_pressed("ui_end"):
-		DebugDraw3D.regenerate_geometry_meshes()
-	
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness).set_center_brightness(debug_center_brightness)
 	if false: #test
 		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
@@ -129,6 +126,10 @@ func main_update(delta: float) -> void:
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	
+	# Regenerate meshes
+	if Input.is_action_just_pressed("ui_end"):
+		DebugDraw3D.regenerate_geometry_meshes()
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_LEFT):

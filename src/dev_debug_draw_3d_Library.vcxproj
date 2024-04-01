@@ -369,6 +369,7 @@
     <ClInclude Include="3d\debug_geometry_container.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="3d\render_instances_enums.h" />
     <ClInclude Include="3d\stats_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
