@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=35 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -128,15 +128,23 @@ _data = {
 "RESET": SubResource("10")
 }
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_r5qn7"]
-resource_local_to_scene = true
-shading_mode = 0
-disable_ambient_light = true
-disable_fog = true
+[sub_resource type="Shader" id="Shader_621vv"]
+code = "shader_type spatial;
+render_mode unshaded;
+
+uniform sampler2D albedo_texture : source_color;
+
+void fragment() {
+	ALBEDO = texture(albedo_texture,UV).rgb;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ho0aq"]
+render_priority = 0
+shader = SubResource("Shader_621vv")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_c6mie"]
-resource_local_to_scene = true
-material = SubResource("StandardMaterial3D_r5qn7")
+material = SubResource("ShaderMaterial_ho0aq")
 size = Vector2(4, 4)
 
 [sub_resource type="Animation" id="Animation_ucqh5"]
@@ -145,7 +153,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:mesh:material:albedo_texture")
+tracks/0/path = NodePath(".:mesh:material:shader_parameter/albedo_texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
@@ -443,7 +451,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.531922, -1.34723, 1.44924)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.34837, -1.08298, 4.36414)
 
 [node name="AABB_fixed" type="Node3D" parent="Boxes"]
-transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.12735, -0.835878, 0.470324)
+transform = Transform3D(0.834492, 0, -0.551019, 0, 1, 0, 0.55102, 0, 0.834493, -3.71325, -1.03995, 0.470324)
 
 [node name="AABB" type="Node3D" parent="Boxes"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.99963, -0.869998, 0.205034)
@@ -487,7 +495,7 @@ metadata/_edit_group_ = true
 transform = Transform3D(1, -7.45058e-09, 0, -7.45058e-09, 1, 0, 2.98023e-08, -1.49012e-08, 1, -9.53674e-07, 0.6, 0)
 
 [node name="OtherWorld" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.53219, 0, 5.30229)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.53219, -2.5, 5.30229)
 mesh = SubResource("PlaneMesh_c6mie")
 skeleton = NodePath("")
 
@@ -501,15 +509,17 @@ own_world_3d = true
 render_target_update_mode = 4
 
 [node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 7.25557)
 current = true
+far = 5.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3.88588)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 4.85623)
 mesh = SubResource("CapsuleMesh_tigpa")
 
 [node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 5.72253)
 
 [node name="Misc" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.68259, 0, 4.46741)
@@ -634,7 +644,7 @@ transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855357, -0.5714, -
 transform = Transform3D(-0.998873, -0.0207882, -0.0355641, 0.0855353, -0.5714, -2.68836, 0.0136016, -0.249864, 0.572533, -1.01372, -3.80486, 1.25019)
 
 [node name="Target" type="Node3D" parent="Lines"]
-transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 3.7807e-06, 1, 0, -3.59182e-07, -1.49012e-08, 1, -0.69134, 0.176476, 1.30597)
+transform = Transform3D(1, -2.7352e-06, 2.60722e-07, 4.10378e-06, 1, 0, -4.28605e-07, -1.49012e-08, 1, -0.69134, 0.176475, 1.30597)
 
 [node name="LagTest" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, -2, 0)
@@ -770,30 +780,42 @@ text = "GDScript example"
 horizontal_alignment = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="PanelContainer" type="PanelContainer" parent="Settings/HBox"]
+[node name="VBox" type="VBoxContainer" parent="Settings/HBox"]
+layout_mode = 2
+alignment = 2
+
+[node name="HideShowPanelButton" type="Button" parent="Settings/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 13
+text = "Hide panel"
+
+[node name="SettingsPanel" type="PanelContainer" parent="Settings/HBox/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 8
 theme_override_styles/panel = SubResource("StyleBoxFlat_boyhr")
 
-[node name="VBox" type="VBoxContainer" parent="Settings/HBox/PanelContainer"]
+[node name="VBox" type="VBoxContainer" parent="Settings/HBox/VBox/SettingsPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 2
 
-[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
 text = "Common:"
 
-[node name="HBox3" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox3" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox3"]
 layout_mode = 2
 text = "Thickness "
 
-[node name="ThicknessSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox3"]
+[node name="ThicknessSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox3"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -802,37 +824,53 @@ max_value = 0.5
 step = 0.001
 value = 0.05
 
-[node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox5" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox5"]
+layout_mode = 2
+text = "Frustum Scale"
+
+[node name="FrustumScaleSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox5"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.001
+value = 0.5
+
+[node name="UpdateInPhysics" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Update in physics (15 Ticks) *"
 
-[node name="Label2" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="Label2" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
 text = "FPS Graph:"
 
-[node name="FPSEnabled" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="FPSEnabled" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 button_pressed = true
 text = "FPS Graph enabled"
 
-[node name="FPSMS" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="FPSMS" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "FPS Graph ms or FPS"
 
-[node name="HBox" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox"]
 layout_mode = 2
 text = "Width       "
 
-[node name="WidthSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox"]
+[node name="WidthSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -841,14 +879,14 @@ min_value = 50.0
 max_value = 1000.0
 value = 200.0
 
-[node name="HBox2" type="HBoxContainer" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox2" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox2"]
 layout_mode = 2
 text = "BufferSize"
 
-[node name="BufferSlider" type="HSlider" parent="Settings/HBox/PanelContainer/VBox/HBox2"]
+[node name="BufferSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox2"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -857,22 +895,31 @@ min_value = 50.0
 max_value = 1000.0
 value = 128.0
 
-[node name="Label3" type="Label" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="Label3" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
 text = "Misc:"
 
-[node name="ShowStats" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="ShowStats" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Show debug stats"
 
-[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="HBox4" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+layout_mode = 2
+
+[node name="DrawBoxes" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox4"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Draw an array of boxes"
 
-[node name="SwitchLang" type="Button" parent="Settings/HBox/PanelContainer/VBox"]
+[node name="Draw1MBoxes" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox4"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Draw 1 Million boxes, otherwise 7500pcs."
+text = "1M"
+
+[node name="SwitchLang" type="Button" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Switch to C#"
@@ -880,12 +927,15 @@ text = "Switch to C#"
 [connection signal="pressed" from="MusicVisualizer/OpenFile" to="MusicVisualizer" method="_pressed"]
 [connection signal="value_changed" from="MusicVisualizer/VBox/HBoxContainer/VolumeSlider" to="MusicVisualizer" method="_on_volume_slider_value_changed"]
 [connection signal="toggled" from="MusicVisualizer/VBox/HBoxContainer/MuteMaster" to="MusicVisualizer" method="_on_mute_master_toggled"]
-[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
-[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
-[connection signal="value_changed" from="Settings/HBox/PanelContainer/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
-[connection signal="toggled" from="Settings/HBox/PanelContainer/VBox/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
-[connection signal="pressed" from="Settings/HBox/PanelContainer/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]
+[connection signal="pressed" from="Settings/HBox/VBox/HideShowPanelButton" to="Settings" method="_on_hide_show_panel_pressed"]
+[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
+[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox5/FrustumScaleSlider" to="Settings" method="_on_frustum_scale_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
+[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
+[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox4/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox4/Draw1MBoxes" to="Settings" method="_on_draw_1m_boxes_toggled"]
+[connection signal="pressed" from="Settings/HBox/VBox/SettingsPanel/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]

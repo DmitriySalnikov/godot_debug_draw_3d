@@ -349,6 +349,7 @@ jobs:
           download_export_templates: false
           is_mono: false
 
+      # TODO: Add few attempts
       - name: Import Assets
         shell: bash
         run: ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true

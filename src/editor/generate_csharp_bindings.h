@@ -60,15 +60,15 @@ class GenerateCSharpBindingsPlugin {
 		DefaultData(const String &_name, const String &_type_name, bool need_remap, const String &_arg_str, bool nullable = false) :
 				name(_name),
 				type_name(_type_name),
-				is_need_remap(need_remap),
 				arg_string(_arg_str),
+				is_need_remap(need_remap),
 				is_nullable(nullable) {}
 
 		DefaultData(const ArgumentData &arg, bool need_remap, const String &_arg_str, bool nullable = false) :
 				name(arg.name),
 				type_name(arg.type_name),
-				is_need_remap(need_remap),
 				arg_string(_arg_str),
+				is_need_remap(need_remap),
 				is_nullable(nullable) {}
 
 		bool is_equal_data(const DefaultData &other) const {
@@ -80,8 +80,6 @@ class GenerateCSharpBindingsPlugin {
 	};
 
 	String output_directory = "res://addons/debug_draw_3d/gen/csharp";
-	// TODO remove in the next minor update
-	String old_output_directory = "res://addons/debug_draw_3d/csharp";
 	String api_file_name = "DebugDrawGeneratedAPI.cs";
 	String log_file_name = "log.txt";
 	String indent_template = "    ";

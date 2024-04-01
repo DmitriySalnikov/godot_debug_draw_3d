@@ -6,11 +6,11 @@
 [node name="DebugDrawDemoSceneCS" instance=ExtResource("2")]
 script = ExtResource("2_ipqea")
 
-[node name="Settings" parent="." index="20"]
+[node name="Settings" parent="." index="21"]
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
 
 [node name="Label" parent="Settings/HBox/VBoxContainer" index="1"]
 text = "C# example"
 
-[node name="SwitchLang" parent="Settings/HBox/PanelContainer/VBox" index="11"]
+[node name="SwitchLang" parent="Settings/HBox/PanelContainer/VBox" index="12"]
 text = "Switch to GDScript"

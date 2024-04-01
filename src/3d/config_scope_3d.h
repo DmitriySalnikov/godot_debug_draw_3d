@@ -7,6 +7,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/viewport.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -70,11 +71,12 @@ private:
 public:
 	/// @private
 	struct Data {
-		// Update constructor!
+		// Update the constructor if changes are made!
 		real_t thickness;
 		real_t center_brightness;
 		bool hd_sphere;
 		real_t plane_size;
+		Viewport *viewport;
 
 		Data();
 		Data(const std::shared_ptr<Data> &parent);
@@ -91,38 +93,51 @@ public:
 	 *
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_thickness(real_t value);
-	real_t get_thickness();
+	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value);
+	real_t get_thickness() const;
 
 	/**
 	 * Set the brightness of the central part of the volumetric lines.
 	 *
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t value);
-	real_t get_center_brightness();
+	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value);
+	real_t get_center_brightness() const;
 
 	/**
 	 * Set the mesh density of the sphere
 	 *
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool value);
-	bool is_hd_sphere();
+	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value);
+	bool is_hd_sphere() const;
 
 	/**
 	 * Set the size of the `Plane` in DebugDraw3D.draw_plane. If set to `INF`, the `Far` parameter of the current camera will be used.
 	 *
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t value);
-	real_t get_plane_size();
+	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value);
+	real_t get_plane_size() const;
+
+	/**
+	 * Set which Viewport will be used to get World3D.
+	 *
+	 * If the World3D of this Viewport has not been used before,
+	 * then the owner of this World3D will be found in the current branch of the tree,
+	 * and special observer nodes will be added to it.
+	 *
+	 * @note
+	 * Objects created for a specific Viewport will use only one camera related to that Viewport for culling.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value);
+	Viewport *get_viewport() const;
 
 	/// @private
 	DebugDraw3DScopeConfig();
 
 	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
 	/// @private
-	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &parent, const unregister_func p_unreg);
+	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_parent, const unregister_func p_unreg);
 	~DebugDraw3DScopeConfig();
 };

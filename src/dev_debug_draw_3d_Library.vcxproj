@@ -145,19 +145,19 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
       </CreateHotpatchableImage>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BasicRuntimeChecks>
+      </BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <SubSystem>NotSet</SubSystem>
@@ -166,6 +166,7 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ProgramDatabaseFile>$(OutDir)$(TargetName)_vs.pdb</ProgramDatabaseFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent />
   </ItemDefinitionGroup>
@@ -174,13 +175,12 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION;TOOLS_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
       </CreateHotpatchableImage>
@@ -206,14 +206,13 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION_LIBRARY;TOOLS_ENABLED;DEV_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;HOT_RELOAD_ENABLED;DEBUG_ENABLED;GDEXTENSION;TOOLS_ENABLED;DEV_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
       <WholeProgramOptimization>
       </WholeProgramOptimization>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CreateHotpatchableImage>
       </CreateHotpatchableImage>
@@ -237,11 +236,10 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION_LIBRARY;DISABLE_DEBUG_RENDERING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION;DISABLE_DEBUG_RENDERING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -265,11 +263,10 @@
       </FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <SDLCheck>false</SDLCheck>
-      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;NOMINMAX;TYPED_METHOD_BIND;TRACY_ENABLE;TRACY_ON_DEMAND;TRACY_DELAYED_INIT;TRACY_MANUAL_LIFETIME;GDEXTENSION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -372,6 +369,7 @@
     <ClInclude Include="3d\debug_geometry_container.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="3d\render_instances_enums.h" />
     <ClInclude Include="3d\stats_3d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

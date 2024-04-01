@@ -8,9 +8,10 @@ extends Node3D
 @export var test_graphs := false
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
+@export var draw_1m_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
-@export_range(0, 1024) var start_culling_distance := 75.0
+@export_range(0, 1) var camera_frustum_scale := 0.9
 
 @export_group("Text groups", "text_groups")
 @export var text_groups_show_hints := true
@@ -39,7 +40,7 @@ var frame_rendered := false
 var physics_tick_processed := false
 
 var timer_1 := 0.0
-var timer_2 := 0.0
+var timer_cubes := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
@@ -48,6 +49,8 @@ var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_ve
 
 
 func _process(delta) -> void:
+	$OtherWorld.mesh.material.set_shader_parameter("albedo_texture", $OtherWorld/SubViewport.get_texture())
+	
 	physics_tick_processed = false
 	if !update_in_physics:
 		main_update(delta)
@@ -57,23 +60,30 @@ func _process(delta) -> void:
 ## Since physics frames may not be called every frame or may be called multiple times in one frame,
 ## there is an additional check to ensure that a new frame has been drawn before updating the data.
 func _physics_process(delta: float) -> void:
-	if update_in_physics:
-		if !physics_tick_processed:
-			physics_tick_processed = true
+	if !physics_tick_processed:
+		physics_tick_processed = true
+		if update_in_physics:
 			main_update(delta)
-		_update_timers(delta)
-	
-	# Physics specific:
-	if not zylann_example:
-		DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
+			_update_timers(delta)
 		
-		_draw_rays_casts()
+		# Physics specific:
+		if not zylann_example:
+			DebugDraw3D.draw_line($"Lines/8".global_position, $Lines/Target.global_position, Color.YELLOW)
+			
+			if more_test_cases:
+				_draw_rays_casts()
+
+			## Additional drawing in the Viewport
+			if true:
+				var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
+				DebugDraw3D.draw_box_xf(Transform3D(Basis()
+				.scaled(Vector3.ONE*0.3)
+				.rotated(Vector3(0,0,1), PI/4)
+				.rotated(Vector3(0,1,0), wrapf(Time.get_ticks_msec() / -1500.0, 0, TAU) - PI/4), %OtherWorldBox.global_transform.origin),
+				Color.BROWN, true, 0.4)
 
 
 func main_update(delta: float) -> void:
-	if Input.is_action_just_pressed("ui_end"):
-		DebugDraw3D.regenerate_geometry_meshes()
-	
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness).set_center_brightness(debug_center_brightness)
 	if false: #test
 		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
@@ -113,15 +123,13 @@ func main_update(delta: float) -> void:
 	$Panel.visible = Input.is_key_pressed(KEY_ALT)
 	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_ALT) else null
 	
-	
-	if Input.is_key_pressed(KEY_ALT):
-		DebugDraw3D.set_world_3d_from_viewport($OtherWorld/SubViewport)
-	else:
-		DebugDraw3D.set_world_3d_from_viewport(get_viewport())
-	
 	# More property toggles
 	DebugDraw3D.config.freeze_3d_render = Input.is_key_pressed(KEY_DOWN)
 	DebugDraw3D.config.visible_instance_bounds = Input.is_key_pressed(KEY_RIGHT)
+	
+	# Regenerate meshes
+	if Input.is_action_just_pressed("ui_end"):
+		DebugDraw3D.regenerate_geometry_meshes()
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_LEFT):
@@ -141,10 +149,7 @@ func main_update(delta: float) -> void:
 			DebugDrawManager.debug_enabled = !DebugDrawManager.debug_enabled
 	
 	
-	if Engine.is_editor_hint():
-		DebugDraw3D.config.culling_distance = start_culling_distance if DebugDraw3D.config.force_use_camera_from_scene else 0.0
-	else:
-		DebugDraw3D.config.culling_distance = start_culling_distance
+	DebugDraw3D.config.frustum_length_scale = camera_frustum_scale
 	
 	# Zones with black borders
 	for z in $Zones.get_children():
@@ -221,6 +226,7 @@ func main_update(delta: float) -> void:
 		points_below2.append(c.global_position + Vector3.DOWN * 2)
 		points_below3.append(c.global_position + Vector3.DOWN * 3)
 		points_below4.append(c.global_position + Vector3.DOWN * 4)
+	
 	for x in points.size()-1:
 		lines_above.append(points[x] + Vector3.UP)
 		lines_above.append(points[x+1] + Vector3.UP)
@@ -237,10 +243,13 @@ func main_update(delta: float) -> void:
 	
 	# Other world
 	
-	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform, Color.SANDY_BROWN)
+	if true:
+		var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
+		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
+		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(-1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / -1000.0, 0, TAU) - PI/4), Color.SANDY_BROWN)
 	
 	# Misc
-	if true:
+	if Engine.is_editor_hint():
 		#for i in 1000:
 		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
 		DebugDraw3D.draw_camera_frustum($Camera, Color.DARK_ORANGE)
@@ -332,8 +341,8 @@ func _text_tests():
 			DebugDraw2D.set_text("Instances", render_stats.instances + render_stats.instances_physics, 1)
 			DebugDraw2D.set_text("Lines", render_stats.lines + render_stats.lines_physics, 2)
 			DebugDraw2D.set_text("Total Visible", render_stats.total_visible, 3)
-			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances + render_stats.visible_instances_physics, 4)
-			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines + render_stats.visible_lines_physics, 5)
+			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances, 4)
+			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines, 5)
 			
 			DebugDraw2D.set_text("---", null, 6)
 			
@@ -421,13 +430,26 @@ func _draw_array_of_boxes():
 	var x_size := 50
 	var y_size := 50
 	var z_size := 3
+	var mul := 1
+	var cubes_max_time := 1.25
+	var cfg = DebugDraw3D.new_scoped_config()
 	
-	if timer_2 < 0:
+	if draw_1m_boxes:
+		x_size = 100
+		y_size = 100
+		z_size = 100
+		mul = 4
+		cubes_max_time = 60
+	
+	if timer_cubes < 0:
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
-					DebugDraw3D.draw_box(Vector3(x, -4-z, y), Quaternion.IDENTITY, Vector3.ONE, DebugDraw3D.empty_color, false, 1.25)
-		timer_2 = 1.25
+					var size = Vector3.ONE
+					cfg.set_thickness(randf_range(0, 0.1))
+					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
+					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+		timer_cubes = cubes_max_time
 
 
 func _graph_test():
@@ -549,8 +571,7 @@ func _ready() -> void:
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
-	
-	$OtherWorld.mesh.material.albedo_texture = $OtherWorld/SubViewport.get_texture()
+
 
 func _is_key_just_pressed(key):
 	if (button_presses[key] == 1):
@@ -579,7 +600,7 @@ func _update_keys_just_press():
 
 func _update_timers(delta : float):
 	timer_1 -= delta
-	timer_2 -= delta
+	timer_cubes -= delta
 	timer_3 -= delta
 	timer_text -= delta
 

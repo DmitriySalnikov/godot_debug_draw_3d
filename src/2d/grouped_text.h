@@ -29,9 +29,9 @@ public:
 	// It is necessary to avoid the endless re - creation of these objects.
 	bool second_chance = true;
 
-	TextGroupItem(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
+	TextGroupItem(const double &p_expirationTime, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color);
 
-	bool update(const double &_expirationTime, const String &_key, const String &_text, const int &_priority, const Color &_color);
+	bool update(const double &p_expirationTime, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color);
 	bool is_expired();
 };
 
@@ -51,27 +51,27 @@ public:
 	std::vector<TextGroupItem_ptr> Texts;
 	class DebugDraw2D *owner;
 
-	void set_group_priority(int _val);
+	void set_group_priority(int p_val);
 	int get_group_priority();
-	void set_show_title(bool _val);
+	void set_show_title(bool p_val);
 	bool is_show_title();
-	void set_group_color(Color _val);
+	void set_group_color(Color p_val);
 	Color get_group_color();
-	void set_title_size(int _val);
+	void set_title_size(int p_val);
 	int get_title_size();
-	void set_text_size(int _val);
+	void set_text_size(int p_val);
 	int get_text_size();
 
 	TextGroup() :
-			title(""),
 			group_priority(0),
 			show_title(true),
 			group_color(Color()),
 			title_size(14),
 			text_size(12),
+			title(""),
 			owner(nullptr){};
-	TextGroup(class DebugDraw2D *_owner, const String &_title, const int &_priority, const bool &_show_title, const Color &_group_color, const int &_title_size, const int &_text_size);
-	void cleanup_texts(const std::function<void()> &_update, const double &_delta);
+	TextGroup(class DebugDraw2D *p_owner, const String &p_title, const int &p_priority, const bool &p_show_title, const Color &p_group_color, const int &p_title_size, const int &p_text_size);
+	void cleanup_texts(const std::function<void()> &p_update, const double &p_delta);
 };
 
 typedef std::shared_ptr<TextGroup> TextGroup_ptr;
@@ -81,10 +81,10 @@ class GroupedText {
 		Rect2 rect;
 		Color color;
 		bool filled;
-		DrawRectInstance(const Rect2 &_rect, const Color &_col, const bool &_filled = true) :
-				rect(_rect),
-				color(_col),
-				filled(_filled){};
+		DrawRectInstance(const Rect2 &p_rect, const Color &p_col, const bool &p_filled = true) :
+				rect(p_rect),
+				color(p_col),
+				filled(p_filled){};
 	};
 
 	struct DrawTextInstance {
@@ -93,12 +93,12 @@ class GroupedText {
 		int font_size;
 		Vector2 position;
 		Color color;
-		DrawTextInstance(const String &_text, const Ref<Font> &_font, const int &_font_size, const Vector2 &_pos, const Color &_col) :
-				text(_text),
-				font(_font),
-				font_size(_font_size),
-				position(_pos),
-				color(_col){};
+		DrawTextInstance(const String &p_text, const Ref<Font> &p_font, const int &p_font_size, const Vector2 &p_pos, const Color &p_col) :
+				text(p_text),
+				font(p_font),
+				font_size(p_font_size),
+				position(p_pos),
+				color(p_col){};
 	};
 
 	TextGroupItem_ptr item_for_title_of_groups;
@@ -113,11 +113,11 @@ class GroupedText {
 public:
 	void init_group(class DebugDraw2D *p_owner);
 	void clear_groups();
-	void cleanup_text(const double &_delta);
-	void begin_text_group(const String &_group_title, const int &_group_priority, const Color &_group_color, const bool &_show_title, const int &_title_size, const int &_text_size);
+	void cleanup_text(const double &p_delta);
+	void begin_text_group(const String &p_group_title, const int &p_group_priority, const Color &p_group_color, const bool &p_show_title, const int &p_title_size, const int &p_text_size);
 	void end_text_group();
-	void set_text(const String &_key, const Variant &_value, const int &_priority, const Color &_color_of_value, const double &_duration);
-	void draw(CanvasItem *_ci, const Ref<Font> &_font, const Vector2 &_vp_size);
+	void set_text(const String &p_key, const Variant &p_value, const int &p_priority, const Color &p_color_of_value, const double &p_duration);
+	void draw(CanvasItem *p_ci, const Ref<Font> &p_font, const Vector2 &p_vp_size);
 
 	size_t get_text_group_count();
 	size_t get_text_line_total_count();

@@ -10,7 +10,7 @@ using namespace godot;
 /**
  * @brief
  * You can get statistics about 3D rendering from this class.
- * 
+ *
  * All names try to reflect what they mean.
  *
  * To get an instance of this class with current statistics, use DebugDraw3D.get_render_stats.
@@ -44,8 +44,6 @@ public:                                      \
 
 	DEFINE_DEFAULT_PROP(visible_instances, int64_t, 0);
 	DEFINE_DEFAULT_PROP(visible_lines, int64_t, 0);
-	DEFINE_DEFAULT_PROP(visible_instances_physics, int64_t, 0);
-	DEFINE_DEFAULT_PROP(visible_lines_physics, int64_t, 0);
 	DEFINE_DEFAULT_PROP(total_visible, int64_t, 0);
 
 	DEFINE_DEFAULT_PROP(time_filling_buffers_instances_usec, int64_t, 0);
@@ -54,10 +52,8 @@ public:                                      \
 	DEFINE_DEFAULT_PROP(time_filling_buffers_lines_physics_usec, int64_t, 0);
 	DEFINE_DEFAULT_PROP(total_time_filling_buffers_usec, int64_t, 0);
 
-	DEFINE_DEFAULT_PROP(time_culling_instant_usec, int64_t, 0);
-	DEFINE_DEFAULT_PROP(time_culling_delayed_usec, int64_t, 0);
-	DEFINE_DEFAULT_PROP(time_culling_instant_physics_usec, int64_t, 0);
-	DEFINE_DEFAULT_PROP(time_culling_delayed_physics_usec, int64_t, 0);
+	DEFINE_DEFAULT_PROP(time_culling_instances_usec, int64_t, 0);
+	DEFINE_DEFAULT_PROP(time_culling_lines_usec, int64_t, 0);
 	DEFINE_DEFAULT_PROP(total_time_culling_usec, int64_t, 0);
 
 	DEFINE_DEFAULT_PROP(total_time_spent_usec, int64_t, 0);
@@ -71,23 +67,24 @@ public:                                      \
 
 	/// @private
 	void set_scoped_config_stats(
-			const int64_t &t_created_scoped_configs,
-			const int64_t &t_orphan_scoped_configs);
+			const int64_t &p_created_scoped_configs,
+			const int64_t &p_orphan_scoped_configs);
 
 	/// @private
 	void set_render_stats(
-			const int64_t &t_instances,
-			const int64_t &t_lines,
-			const int64_t &t_visible_instances,
-			const int64_t &t_visible_lines,
+			const int64_t &p_instances,
+			const int64_t &p_lines,
+			const int64_t &p_visible_instances,
+			const int64_t &p_visible_lines,
 
-			const int64_t &t_instances_phys,
-			const int64_t &t_lines_phys,
-			const int64_t &t_visible_instances_phys,
-			const int64_t &t_visible_lines_phys,
+			const int64_t &p_instances_phys,
+			const int64_t &p_lines_phys,
 
-			const int64_t &t_time_filling_buffers_instances_usec,
-			const int64_t &t_time_filling_buffers_lines_usec,
-			const int64_t &t_time_culling_instant_usec,
-			const int64_t &t_time_culling_delayed_usec);
+			const int64_t &p_time_filling_buffers_instances_usec,
+			const int64_t &p_time_filling_buffers_lines_usec,
+			const int64_t &p_time_culling_instances_usec,
+			const int64_t &p_time_culling_lines_usec);
+
+	///  @private
+	void combine_with(const Ref<DebugDraw3DStats> p_other);
 };

@@ -27,8 +27,6 @@ def setup_options(env, arguments, gen_help):
 
 
 def setup_defines_and_flags(env, src_out):
-    env.Append(CPPDEFINES=["GDEXTENSION_LIBRARY"])
-
     if "release" in env["target"] and not env["force_enabled_dd3d"]:
         env.Append(CPPDEFINES=["DISABLE_DEBUG_RENDERING"])
 

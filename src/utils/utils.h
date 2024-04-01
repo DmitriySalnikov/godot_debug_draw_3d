@@ -4,6 +4,7 @@
 #include "profiler.h"
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
@@ -85,7 +86,7 @@ static String get_file_name_in_repository(const String &name) {
 
 #pragma endregion !BINDING REGISTRATION
 
-#define INSTANCE_DATA_FLOAT_COUNT ((sizeof(Transform3D) + sizeof(Color) /*Instance Color*/ + sizeof(Color) /*Custom Data*/) / sizeof(real_t))
+constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + sizeof(godot::Color) /*Instance Color*/ + sizeof(godot::Color) /*Custom Data*/) / sizeof(real_t));
 
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
@@ -163,8 +164,9 @@ static String get_file_name_in_repository(const String &name) {
 		}                                                                           \
 	}
 
-// TODO: temp constants.
+// HACK temp constants.
 
+#define VEC3_ONE(comp) Vector3(comp, comp, comp)
 const extern godot::Vector3 Vector3_ZERO;
 const extern godot::Vector3 Vector3_INF;
 const extern godot::Vector3 Vector3_ONE;
@@ -280,18 +282,7 @@ public:
 		return p;
 	}
 
-	template <class TVal, class TFun>
-	static int sum(const std::unordered_set<TVal> &set, const TFun &getter_int_val) {
-		ZoneScoped;
-
-		int res = 0;
-		for (const TVal &t : set) {
-			res += getter_int_val(t);
-		}
-		return res;
-	}
-
-	// TODO: need to use make from API when it becomes possible
+	// TODO need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
 	static godot::Dictionary make_dict(Args... args) {
@@ -316,4 +307,29 @@ public:
 		return appendable;
 	}
 #pragma endregion
+};
+
+#define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
+#define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
+#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, false)
+#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, true)
+
+class GodotScopedStopwatch {
+	std::chrono::high_resolution_clock::time_point start_time;
+	int64_t *m_time_val;
+	bool m_add;
+
+public:
+	GodotScopedStopwatch(int64_t *p_time_val, bool p_add) {
+		m_time_val = p_time_val;
+		m_add = p_add;
+		start_time = std::chrono::high_resolution_clock::now();
+	}
+
+	~GodotScopedStopwatch() {
+		if (m_add)
+			*m_time_val += static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count());
+		else
+			*m_time_val = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count());
+	}
 };

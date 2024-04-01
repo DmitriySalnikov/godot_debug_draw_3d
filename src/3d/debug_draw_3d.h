@@ -3,6 +3,7 @@
 #include "common/colors.h"
 #include "common/i_scope_storage.h"
 #include "config_scope_3d.h"
+#include "render_instances_enums.h"
 #include "utils/profiler.h"
 
 #include <map>
@@ -10,12 +11,15 @@
 #include <mutex>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/array_mesh.hpp>
+#include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/shader.hpp>
 #include <godot_cpp/classes/shader_material.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
+class DebugDraw3D;
 class DataGraphManager;
 class DebugDrawManager;
 class DebugDraw3DConfig;
@@ -23,10 +27,27 @@ class DebugDraw3DStats;
 
 #ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
-class DelayedRendererLine;
+struct DelayedRendererLine;
+#endif
 
-enum class InstanceType : char;
-enum class ConvertableInstanceType : char;
+#ifndef DISABLE_DEBUG_RENDERING
+/// @private
+class _DD3D_WorldWatcher : public Node3D {
+	GDCLASS(_DD3D_WorldWatcher, Node3D)
+protected:
+	DebugDraw3D *m_owner = nullptr;
+	uint64_t m_world_id;
+	static void _bind_methods(){};
+
+public:
+	virtual void _process(double p_delta) override;
+	virtual void _notification(int p_what);
+
+	_DD3D_WorldWatcher() :
+			m_world_id() {}
+	_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id);
+};
+
 #endif
 
 /**
@@ -70,6 +91,11 @@ enum class ConvertableInstanceType : char;
  * 		physics_tick_processed = true
  * 		# some DD3D logic
  * ```
+ *
+ * ---
+ * @note
+ * Due to the way Godot registers this addon, it is not possible to use the `draw_` methods
+ * in the first few frames immediately after the project is launched.
  */
 class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
 	GDCLASS(DebugDraw3D, Object)
@@ -78,12 +104,7 @@ class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, 
 
 #ifndef DISABLE_DEBUG_RENDERING
 	friend DebugGeometryContainer;
-
-	enum GeometryType{
-		Wireframe,
-		Volumetric,
-		Solid,
-	};
+	friend _DD3D_WorldWatcher;
 #endif
 
 public:
@@ -102,6 +123,8 @@ private:
 	const static char *s_use_icosphere;
 	const static char *s_use_icosphere_hd;
 	const static char *s_add_bevel_to_volumetric;
+	const static char *s_default_frustum_scale;
+
 	const static char *s_default_thickness;
 	const static char *s_default_center_brightness;
 	const static char *s_default_hd_spheres;
@@ -110,28 +133,35 @@ private:
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 
-	Ref<DebugDraw3DStats> stats_3d;
 	Ref<DebugDraw3DScopeConfig> default_scoped_config;
 
 #ifndef DISABLE_DEBUG_RENDERING
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
 
 	typedef std::pair<uint64_t, DebugDraw3DScopeConfig *> ScopedPairIdConfig;
-	typedef std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3DScopeConfig_Data;
 	// stores thread id and array of id's with ptrs
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
-	std::unordered_map<uint64_t, DebugDraw3DScopeConfig_Data> cached_scoped_configs;
-	uint64_t create_scoped_configs = 0;
+	std::unordered_map<uint64_t, std::shared_ptr<DebugDraw3DScopeConfig::Data> > cached_scoped_configs;
+	uint64_t created_scoped_configs = 0;
+	struct {
+		uint64_t created;
+		uint64_t orphans;
+	} scoped_stats_3d = {};
 
 	// Inherited via IScopeStorage
-	const DebugDraw3DScopeConfig_Data scoped_config_for_current_thread() override;
+	const std::shared_ptr<DebugDraw3DScopeConfig::Data> scoped_config_for_current_thread() override;
 
 	// Meshes
-	std::unique_ptr<DebugGeometryContainer> dgc;
-
-	Vector3 previous_camera_position;
-	double previous_camera_far_plane = 0;
+	/// Store meshes shared between many debug containers
+	std::vector<Ref<ArrayMesh> > shared_generated_meshes;
+	/// Store World3D id and debug container
+	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
+	struct viewportToWorldCache {
+		uint64_t world_id = 0;
+		std::shared_ptr<DebugGeometryContainer> dgc;
+	};
+	std::unordered_map<const Viewport *, viewportToWorldCache> viewport_to_world_cache;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> shader_wireframe_mat;
@@ -147,26 +177,28 @@ private:
 	Ref<Shader> shader_extendable_code;
 
 	// Inherited via IScopeStorage
-	void _register_scoped_config(uint64_t thread_id, uint64_t guard_id, DebugDraw3DScopeConfig *cfg) override;
-	void _unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) override;
+	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
+	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
-	// Internal use of raw pointer to avoid ref/unref
-	Color _scoped_config_to_custom(const DebugDraw3DScopeConfig_Data &cfg);
-	InstanceType _scoped_config_type_convert(ConvertableInstanceType type, const DebugDraw3DScopeConfig_Data &cfg);
-	GeometryType _scoped_config_get_geometry_type(const DebugDraw3DScopeConfig_Data &cfg);
+	Ref<ArrayMesh> *get_shared_meshes();
+	std::shared_ptr<DebugGeometryContainer> create_debug_container();
+	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *p_vp);
+	void _register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id);
+	Viewport *_get_root_world_viewport(Viewport *p_vp);
+	void _remove_debug_container(const uint64_t &p_world_id);
 
-	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &dir);
-	void add_or_update_line_with_thickness(real_t _exp_time, std::unique_ptr<Vector3[]> _lines, const size_t _line_count, const Color &_col, const std::function<void(DelayedRendererLine *)> _custom_upd = nullptr);
+	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
+	void add_or_update_line_with_thickness(real_t p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd = nullptr);
 	Node *get_root_node();
 
-	void create_arrow(const Vector3 &a, const Vector3 &b, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration = 0);
+	void create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration = 0);
 
 #endif
 
-	void init(DebugDrawManager *root);
+	void init(DebugDrawManager *p_root);
 
-	void set_custom_editor_viewport(std::vector<SubViewport *> _viewports);
+	void set_custom_editor_viewport(std::vector<SubViewport *> p_viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
 
 	Ref<ShaderMaterial> get_wireframe_material();
@@ -177,16 +209,14 @@ private:
 	void _load_materials();
 	inline bool _is_enabled_override() const;
 
-	void process(double delta);
-	void physics_process_start(double delta);
-	void physics_process_end(double delta);
+	void process(double p_delta);
+	void physics_process_start(double p_delta);
+	void physics_process_end(double p_delta);
 
 #pragma region Exposed Parameter Values
 
 	/// Enable or disable all debug draw
 	bool debug_enabled = true;
-	/// Custom 'Viewport' to use for frustum culling.
-	Viewport *custom_viewport = nullptr;
 
 	Ref<DebugDraw3DConfig> config;
 
@@ -226,7 +256,7 @@ public:
 	/**
 	 * Set the configuration global for everything in DebugDraw3D.
 	 */
-	void set_config(Ref<DebugDraw3DConfig> _cfg);
+	void set_config(Ref<DebugDraw3DConfig> cfg);
 	/**
 	 * Get the DebugDraw3DConfig.
 	 */
@@ -236,7 +266,7 @@ public:
 
 #pragma region Exposed Parameters
 	/// @private
-	void set_empty_color(const Color &_col){};
+	void set_empty_color(const Color &col){};
 	/**
 	 * Get the color that is used as the default parameter for `draw_*` calls.
 	 */
@@ -245,25 +275,26 @@ public:
 	/**
 	 * Set whether debug drawing works or not.
 	 */
-	void set_debug_enabled(const bool &_state);
+	void set_debug_enabled(const bool &state);
 	bool is_debug_enabled() const;
-
-	/**
-	 * Set the custom viewport from which Camera3D will be used to get frustum.
-	 */
-	void set_custom_viewport(Viewport *_viewport);
-	Viewport *get_custom_viewport() const;
 
 #pragma endregion // Exposed Parametes
 
 #pragma region Exposed Draw Methods
 
 	/**
-	 * Returns the DebugDraw3DStats instance with the current statistics.
+	 * Returns an instance of DebugDraw3DStats with the current statistics.
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
 	Ref<DebugDraw3DStats> get_render_stats();
+
+	/**
+	 * Returns an instance of DebugDraw3DStats with the current statistics for the World3D of the Viewport.
+	 *
+	 * Some data can be delayed by 1 frame.
+	 */
+	Ref<DebugDraw3DStats> get_render_stats_for_world(Viewport *viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL
@@ -271,11 +302,6 @@ public:
 #define FAKE_FUNC_IMPL \
 	{}
 #endif
-
-	/**
-	 * Set the Viewport whose world will be used as the base for debugging shapes.
-	 */
-	void set_world_3d_from_viewport(Viewport *world_base);
 
 	/**
 	 * Regenerate meshes.

@@ -11,13 +11,17 @@ var rot_y := 0.0
 
 
 func _ready():
-	rot_x = rotation.y
-	rot_y = rotation.x
+	reset_input_rotation()
 
 
 func _unhandled_input(event) -> void:
 	if event is InputEventMouseButton:
 		btn_clicked = event.pressed
+
+
+func reset_input_rotation():
+	rot_x = rotation.y
+	rot_y = rotation.x
 
 
 func _input(event) -> void:

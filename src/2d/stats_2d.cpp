@@ -16,3 +16,16 @@ void DebugDraw2DStats::_bind_methods() {
 #undef REG_PROPERTY_NO_SET
 #pragma endregion
 }
+
+void DebugDraw2DStats::setup(
+		const int64_t &p_overlay_text_groups,
+		const int64_t &p_overlay_text_lines,
+		const int64_t &p_overlay_graphs_enabled,
+		const int64_t &p_overlay_graphs_total) {
+
+	overlay_text_groups = p_overlay_text_groups;
+	overlay_text_lines = p_overlay_text_lines;
+
+	overlay_graphs_enabled = p_overlay_graphs_enabled;
+	overlay_graphs_total = p_overlay_graphs_total;
+};

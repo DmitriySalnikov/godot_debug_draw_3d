@@ -21,8 +21,8 @@ private:
 	int32_t geometry_render_layers = 1;
 	bool freeze_3d_render = false;
 	bool visible_instance_bounds = false;
-	bool use_frustum_culling = false;
-	real_t cull_by_distance = -1;
+	bool use_frustum_culling = true;
+	real_t frustum_length_scale = 0;
 	bool force_use_camera_from_scene = false;
 	Color line_hit_color = Colors::red;
 	Color line_after_hit_color = Colors::green;
@@ -48,22 +48,18 @@ public:
 
 	/**
 	 * Set whether frustum culling is used.
-	 * @warning
-	 * At this point, activating this parameter is likely to decrease performance.
 	 */
 	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling() const;
 
 	/**
-	 * Set the culling distance after which instances will stop being displayed to improve performance.
-	 *
-	 * If set to 0, this parameter will be ignored and instances will be drawn at any distance.
+	 * Change the distance between the Far and Near Planes of the Viewport's Camera3D.
 	 */
-	void set_culling_distance(const real_t &_distance);
-	real_t get_culling_distance() const;
+	void set_frustum_length_scale(const real_t &_distance);
+	real_t get_frustum_length_scale() const;
 
 	/**
-	 * Set to force the use of the scene's default camera.
+	 * Set the forced use of the scene camera instead of the editor camera.
 	 */
 	void set_force_use_camera_from_scene(const bool &_state);
 	bool is_force_use_camera_from_scene() const;

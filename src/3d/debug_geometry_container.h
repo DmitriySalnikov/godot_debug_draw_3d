@@ -54,23 +54,23 @@ class DebugGeometryContainer {
 	int32_t render_layers = 1;
 	bool is_frame_rendered = false;
 
-	void CreateMMI(InstanceType type, UsingShaderType shader, const String &name, Ref<ArrayMesh> mesh);
+	void CreateMMI(InstanceType p_type, UsingShaderType p_shader, const String &p_name, Ref<ArrayMesh> p_mesh);
 
 public:
-	DebugGeometryContainer(class DebugDraw3D *root, const bool &add_bevel, const bool &use_icosphere, const bool &use_icosphere_hd);
+	DebugGeometryContainer(class DebugDraw3D *p_root);
 	~DebugGeometryContainer();
 
-	void set_world(Ref<World3D> new_world);
+	void set_world(Ref<World3D> p_new_world);
 	Ref<World3D> get_world();
 
-	void update_geometry(double delta);
-	void update_geometry_physics_start(double delta);
-	void update_geometry_physics_end(double delta);
+	void update_geometry(double p_delta);
+	void update_geometry_physics_start(double p_delta);
+	void update_geometry_physics_end(double p_delta);
 
-	void set_render_layer_mask(int32_t layers);
+	void set_render_layer_mask(int32_t p_layers);
 	int32_t get_render_layer_mask() const;
 
-	void get_render_stats(Ref<DebugDraw3DStats> &stats);
+	void get_render_stats(Ref<DebugDraw3DStats> &p_stats);
 	void clear_3d_objects();
 };
 

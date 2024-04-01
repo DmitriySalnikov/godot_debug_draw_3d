@@ -61,16 +61,6 @@ void GenerateCSharpBindingsPlugin::generate() {
 		}
 	}
 
-	// TODO remove in the next minor update
-	if (DirAccess::dir_exists_absolute(old_output_directory)) {
-		PRINT_WARNING(FMT_STR("Found an old folder for C# bindings \"{0}\".\nThis folder will be deleted as it will no longer be used.", old_output_directory));
-		auto files = DirAccess::get_files_at(old_output_directory);
-		for (String f : files) {
-			DirAccess::remove_absolute(old_output_directory.path_join(f));
-		}
-		DirAccess::remove_absolute(old_output_directory);
-	}
-
 	// First, delete the old file to check for locks
 	if (FileAccess::file_exists(out_path)) {
 		PRINT("Attempt to delete an old file: " + out_path);

@@ -10,7 +10,7 @@ using namespace godot;
 /**
  * @brief
  * You can get basic statistics about 2D rendering from this class.
- * 
+ *
  * All names try to reflect what they mean.
  *
  * To get an instance of this class with current statistics, use DebugDraw2D.get_render_stats.
@@ -42,15 +42,8 @@ public:                                      \
 
 	/// @private
 	void setup(
-			const int64_t &t_overlay_text_groups,
-			const int64_t &t_overlay_text_lines,
-			const int64_t &t_overlay_graphs_enabled,
-			const int64_t &t_overlay_graphs_total) {
-
-		overlay_text_groups = t_overlay_text_groups;
-		overlay_text_lines = t_overlay_text_lines;
-
-		overlay_graphs_enabled = t_overlay_graphs_enabled;
-		overlay_graphs_total = t_overlay_graphs_total;
-	};
+			const int64_t &p_overlay_text_groups,
+			const int64_t &p_overlay_text_lines,
+			const int64_t &p_overlay_graphs_enabled,
+			const int64_t &p_overlay_graphs_total);
 };

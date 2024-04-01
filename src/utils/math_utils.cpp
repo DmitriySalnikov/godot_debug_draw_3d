@@ -6,73 +6,35 @@ const float MathUtils::CylinderRadiusForSphere = 0.7071067691f; // "%.10f" % (Ve
 const float MathUtils::AxisRadiusForSphere = 0.5000000000f; // "%.10f" % (Vector3(1,0,0) * 0.5).length()
 const float MathUtils::ArrowRadiusForSphere = 0.5153881907f; // "%.10f" % (Vector3(1,0.25,0) * 0.5).length()
 
-void MathUtils::get_diagonal_vectors(const Vector3 &a, const Vector3 &b, Vector3 &bottom, Vector3 &top, Vector3 &diag) {
-	bottom = Vector3();
-	top = Vector3();
+SphereBounds::SphereBounds() :
+		position(),
+		radius() {}
 
-	if (a.x > b.x) {
-		top.x = a.x;
-		bottom.x = b.x;
-	} else {
-		top.x = b.x;
-		bottom.x = a.x;
-	}
+SphereBounds::SphereBounds(const Vector3 &p_pos, const real_t &p_radius) :
+		position(p_pos),
+		radius(p_radius) {}
 
-	if (a.y > b.y) {
-		top.y = a.y;
-		bottom.y = b.y;
-	} else {
-		top.y = b.y;
-		bottom.y = a.y;
-	}
+SphereBounds::SphereBounds(const AABB &p_from) :
+		position(p_from.get_center()),
+		radius(p_from.size.length() * 0.5f) {}
 
-	if (a.z > b.z) {
-		top.z = a.z;
-		bottom.z = b.z;
-	} else {
-		top.z = b.z;
-		bottom.z = a.z;
-	}
+AABBMinMax::AABBMinMax() :
+		center(),
+		radius(),
+		min(),
+		max() {}
 
-	diag = top - bottom;
+AABBMinMax::AABBMinMax(const AABB &p_from) :
+		radius(p_from.size.length() * .5f),
+		min(p_from.position),
+		max(p_from.position + p_from.size) {
+	center = p_from.position + p_from.size * 0.5f;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(const AABB &bounds, const std::vector<Plane> &planes) {
-	Vector3 extent = bounds.size * 0.5f;
-	Vector3 center = bounds.position + extent;
-
-	for (Plane p : planes)
-		if (Vector3(center.x - extent.x * Math::sign(p.normal.x),
-					center.y - extent.y * Math::sign(p.normal.y),
-					center.z - extent.z * Math::sign(p.normal.z))
-						.dot(p.normal) > p.d)
-			return false;
-
-	return true;
-}
-
-bool MathUtils::is_bounds_partially_inside_convex_shape(const class SphereBounds &sphere, const std::vector<Plane> &planes) {
-	for (Plane p : planes)
-		if (p.distance_to(sphere.position) >= sphere.Radius)
-			return false;
-
-	return true;
-}
-
-real_t MathUtils::get_max_value(const Vector3 &value) {
-	return Math::max(abs(value.x), Math::max(abs(value.y), abs(value.z)));
-}
-
-real_t MathUtils::get_max_vector_length(const Vector3 &a, const Vector3 &b, const Vector3 &c) {
-	real_t a_l = a.length();
-	real_t b_l = b.length();
-	real_t c_l = c.length();
-	return Math::max(a_l, Math::max(b_l, c_l));
-}
-
-real_t MathUtils::get_max_basis_length(const Basis &b) {
-	real_t a_l = b.get_column(0).length();
-	real_t b_l = b.get_column(1).length();
-	real_t c_l = b.get_column(2).length();
-	return Math::max(a_l, Math::max(b_l, c_l));
+AABBMinMax::AABBMinMax(const SphereBounds &p_from) :
+		center(p_from.position),
+		radius(p_from.radius) {
+	Vector3 half = Vector3(p_from.radius, p_from.radius, p_from.radius);
+	min = p_from.position - half;
+	max = p_from.position + half;
 }

@@ -145,6 +145,9 @@
     <ClInclude Include="common\i_scope_storage.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="3d\render_instances_enums.h">
+      <Filter>3d</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debug_strings.natvis" />
