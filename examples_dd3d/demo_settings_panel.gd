@@ -56,6 +56,15 @@ func _on_Button_pressed() -> void:
 	get_tree().call_deferred("change_scene_to_file", switch_to_scene)
 
 
+func _on_hide_show_panel_pressed():
+	if %SettingsPanel.visible:
+		%SettingsPanel.hide()
+		%HideShowPanelButton.text = "Show panel"
+	else:
+		%SettingsPanel.show()
+		%HideShowPanelButton.text = "Hide panel"
+
+
 func _on_width_slider_value_changed(value):
 	if not is_ready: return
 	
@@ -101,4 +110,3 @@ func _on_draw_1m_boxes_toggled(toggled_on):
 	if get_parent().draw_array_of_boxes:
 		DebugDraw3D.clear_all()
 		get_parent().timer_cubes = 0
-
