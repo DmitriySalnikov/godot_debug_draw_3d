@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.3.1</span>
+                      id="projectnumber">&#160;1.4.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -150,8 +150,8 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>class <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>;</div>
 <div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class </span>DD3D_PhysicsWatcher : <span class="keyword">public</span> Node {</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    GDCLASS(DD3D_PhysicsWatcher, Node)</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">class </span>_DD3D_PhysicsWatcher : <span class="keyword">public</span> Node {</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    GDCLASS(_DD3D_PhysicsWatcher, Node)</div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="keyword">protected</span>:</div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *root_node;</div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods(){};</div>
@@ -159,7 +159,7 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    <span class="keywordtype">void</span> init(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *p_root);</div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>};</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span> </div>
@@ -171,7 +171,7 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
 <div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="keyword">private</span>:</div>
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keyword">friend</span> DD3D_PhysicsWatcher;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="keyword">friend</span> _DD3D_PhysicsWatcher;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keyword">static</span> <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *singleton;</div>
@@ -196,12 +196,12 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
 <div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    Node *_get_current_scene();</div>
 <div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">void</span> _connect_scene_changed();</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> _is_scene_null);</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> p_is_scene_null);</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">void</span> _integrate_into_engine();</div>
 <div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;names, Object *instance);</div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;names);</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names, Object *p_instance);</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names);</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#ifdef TOOLS_ENABLED</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keywordtype">void</span> _try_to_update_cs_bindings();</div>
@@ -260,9 +260,9 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    <span class="keywordtype">void</span> init();</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    <span class="keywordtype">void</span> deinit();</div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span> </div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordtype">void</span> _physics_process_start(<span class="keywordtype">double</span> delta);</div>
-<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>    <span class="keywordtype">void</span> _physics_process_start(<span class="keywordtype">double</span> p_delta);</div>
+<div class="line"><a id="l00174" name="l00174"></a><span class="lineno">  174</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
 <div class="line"><a id="l00175" name="l00175"></a><span class="lineno">  175</span>};</div>
 </div>
 <div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span> </div>
@@ -270,7 +270,7 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>VARIANT_ENUM_CAST(DebugDrawManager::DevTestEnum);</div>
 <div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDebugDraw2D_html"><div class="ttname"><a href="classDebugDraw2D.html">DebugDraw2D</a></div><div class="ttdoc">Singleton class for calling debugging 2D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_2d.h:27</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html"><div class="ttname"><a href="classDebugDraw3D.html">DebugDraw3D</a></div><div class="ttdoc">Singleton class for calling debugging 3D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_3d.h:74</div></div>
+<div class="ttc" id="aclassDebugDraw3D_html"><div class="ttname"><a href="classDebugDraw3D.html">DebugDraw3D</a></div><div class="ttdoc">Singleton class for calling debugging 3D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_3d.h:100</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html"><div class="ttname"><a href="classDebugDrawManager.html">DebugDrawManager</a></div><div class="ttdoc">The main singleton class that handles DebugDraw2D and DebugDraw3D.</div><div class="ttdef"><b>Definition</b> debug_draw_manager.h:59</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html_a56da9c3e5a3b7a97083b48b85cc3737a"><div class="ttname"><a href="classDebugDrawManager.html#a56da9c3e5a3b7a97083b48b85cc3737a">DebugDrawManager::clear_all</a></div><div class="ttdeci">void clear_all()</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html_a5920f8f62eae11b5318843bfa668a6ef"><div class="ttname"><a href="classDebugDrawManager.html#a5920f8f62eae11b5318843bfa668a6ef">DebugDrawManager::is_debug_enabled</a></div><div class="ttdeci">bool is_debug_enabled() const</div></div>

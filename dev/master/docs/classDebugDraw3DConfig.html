@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.3.1</span>
+                      id="projectnumber">&#160;1.4.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -157,11 +157,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_visible_instance_b
 <tr class="memitem:a3836684e14265c7c9ca7cec23626c514" id="r_a3836684e14265c7c9ca7cec23626c514"><td class="memItemLeft" align="right" valign="top"><a id="a3836684e14265c7c9ca7cec23626c514" name="a3836684e14265c7c9ca7cec23626c514"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_use_frustum_culling</b> () const</td></tr>
 <tr class="separator:a3836684e14265c7c9ca7cec23626c514"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9578b8750015110f23718497332a9479" id="r_a9578b8750015110f23718497332a9479"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9578b8750015110f23718497332a9479">set_culling_distance</a> (const real_t &amp;_distance)</td></tr>
-<tr class="separator:a9578b8750015110f23718497332a9479"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09de40896c558425e4f83175b0525595" id="r_a09de40896c558425e4f83175b0525595"><td class="memItemLeft" align="right" valign="top"><a id="a09de40896c558425e4f83175b0525595" name="a09de40896c558425e4f83175b0525595"></a>
-real_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_culling_distance</b> () const</td></tr>
-<tr class="separator:a09de40896c558425e4f83175b0525595"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d7c0467c57762f6a797caaef1c3005c" id="r_a0d7c0467c57762f6a797caaef1c3005c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d7c0467c57762f6a797caaef1c3005c">set_frustum_length_scale</a> (const real_t &amp;_distance)</td></tr>
+<tr class="separator:a0d7c0467c57762f6a797caaef1c3005c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a460bff27a84cac224ea3cf02255401d6" id="r_a460bff27a84cac224ea3cf02255401d6"><td class="memItemLeft" align="right" valign="top"><a id="a460bff27a84cac224ea3cf02255401d6" name="a460bff27a84cac224ea3cf02255401d6"></a>
+real_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_frustum_length_scale</b> () const</td></tr>
+<tr class="separator:a460bff27a84cac224ea3cf02255401d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bb3dbea52970f43ab50a2f7391dac3d" id="r_a6bb3dbea52970f43ab50a2f7391dac3d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bb3dbea52970f43ab50a2f7391dac3d">set_force_use_camera_from_scene</a> (const bool &amp;_state)</td></tr>
 <tr class="separator:a6bb3dbea52970f43ab50a2f7391dac3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0120c0cabb2d9db65290c965c36f9e6" id="r_af0120c0cabb2d9db65290c965c36f9e6"><td class="memItemLeft" align="right" valign="top"><a id="af0120c0cabb2d9db65290c965c36f9e6" name="af0120c0cabb2d9db65290c965c36f9e6"></a>
@@ -237,26 +237,25 @@ Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line_after_hit_c
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set whether frustum culling is used. </p><dl class="section warning"><dt>Warning</dt><dd>At this point, activating this parameter is likely to decrease performance. </dd></dl>
+<p>Set whether frustum culling is used. </p>
 
 </div>
 </div>
-<a id="a9578b8750015110f23718497332a9479" name="a9578b8750015110f23718497332a9479"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9578b8750015110f23718497332a9479">&#9670;&#160;</a></span>set_culling_distance()</h2>
+<a id="a0d7c0467c57762f6a797caaef1c3005c" name="a0d7c0467c57762f6a797caaef1c3005c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d7c0467c57762f6a797caaef1c3005c">&#9670;&#160;</a></span>set_frustum_length_scale()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void DebugDraw3DConfig::set_culling_distance </td>
+          <td class="memname">void DebugDraw3DConfig::set_frustum_length_scale </td>
           <td>(</td>
           <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>_distance</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the culling distance after which instances will stop being displayed to improve performance.</p>
-<p>If set to 0, this parameter will be ignored and instances will be drawn at any distance. </p>
+<p>Change the distance between the Far and Near Planes of the Viewport's Camera3D. </p>
 
 </div>
 </div>
@@ -274,7 +273,7 @@ Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line_after_hit_c
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set to force the use of the scene's default camera. </p>
+<p>Set the forced use of the scene camera instead of the editor camera. </p>
 
 </div>
 </div>
