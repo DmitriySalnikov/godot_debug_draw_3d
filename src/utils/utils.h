@@ -164,7 +164,7 @@ constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + size
 		}                                                                           \
 	}
 
-// TODO: temp constants.
+// HACK temp constants.
 
 #define VEC3_ONE(comp) Vector3(comp, comp, comp)
 const extern godot::Vector3 Vector3_ZERO;
@@ -282,7 +282,7 @@ public:
 		return p;
 	}
 
-	// TODO: need to use make from API when it becomes possible
+	// TODO need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
 	static godot::Dictionary make_dict(Args... args) {

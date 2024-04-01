@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=35 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -130,22 +130,18 @@ _data = {
 
 [sub_resource type="Shader" id="Shader_621vv"]
 code = "shader_type spatial;
-render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_burley,unshaded,ambient_light_disabled,fog_disabled;
+render_mode unshaded;
 
-uniform sampler2D albedo_texture : source_color,filter_linear_mipmap,repeat_enable;
+uniform sampler2D albedo_texture;
 
 void fragment() {
 	ALBEDO = texture(albedo_texture,UV).rgb;
 }
 "
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_xp3xe"]
-viewport_path = NodePath("OtherWorld/SubViewport")
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ho0aq"]
 render_priority = 0
 shader = SubResource("Shader_621vv")
-shader_parameter/albedo_texture = SubResource("ViewportTexture_xp3xe")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_c6mie"]
 material = SubResource("ShaderMaterial_ho0aq")
@@ -157,7 +153,7 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:mesh:material:albedo_texture")
+tracks/0/path = NodePath(".:mesh:material:shader_parameter/albedo_texture")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {

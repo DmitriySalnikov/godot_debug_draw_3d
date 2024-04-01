@@ -126,6 +126,9 @@ public:
 	 * If the World3D of this Viewport has not been used before,
 	 * then the owner of this World3D will be found in the current branch of the tree,
 	 * and special observer nodes will be added to it.
+	 *
+	 * @note
+	 * Objects created for a specific Viewport will use only one camera related to that Viewport for culling.
 	 */
 	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value);
 	Viewport *get_viewport() const;

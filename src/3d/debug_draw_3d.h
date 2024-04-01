@@ -41,7 +41,7 @@ protected:
 	static void _bind_methods(){};
 
 public:
-	virtual void _process(double p_delta);
+	virtual void _process(double p_delta) override;
 	virtual void _notification(int p_what);
 
 	_DD3D_WorldWatcher() :
@@ -92,6 +92,11 @@ public:
  * 		physics_tick_processed = true
  * 		# some DD3D logic
  * ```
+ *
+ * ---
+ * @note
+ * Due to the way Godot registers this addon, it is not possible to use the `draw_` methods
+ * in the first few frames immediately after the project is launched.
  */
 class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
 	GDCLASS(DebugDraw3D, Object)

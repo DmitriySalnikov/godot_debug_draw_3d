@@ -362,7 +362,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						SphereBounds(center, radius),
 						&Colors::empty_color);
 
-				// TODO test bounds
 				geometry_pool.add_or_update_instance(
 						cfg,
 						InstanceType::SPHERE,
@@ -385,7 +384,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 							ProcessType::PROCESS,
 							std::move(l),
 							s,
-							Colors::orange_red);
+							Colors::red);
 				}
 			}
 		}

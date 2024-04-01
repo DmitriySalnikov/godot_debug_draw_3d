@@ -55,13 +55,14 @@ Precompiled for:
 * Linux (built on Ubuntu 20.04)
 * macOS (10.14+)
 * Android (5.0+)
+* iOS
 * Web (Firefox not supported)
+
+This addon also supports working with several World3D and different Viewports.
 
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 
 [![screenshot_web](/images/screenshot_web.png)](https://dd3d.dmitriysalnikov.ru/demo/)
-
-Thanks to Nick Maltbie ([nicholas-maltbie](https://github.com/nicholas-maltbie)) ([#24](https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24))
 
 > [!WARNING]
 >

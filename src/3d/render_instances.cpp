@@ -193,7 +193,6 @@ void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, std::unordered_map<Viewp
 
 	GODOT_STOPWATCH(&time_spent_to_fill_buffers_of_lines);
 
-	// Avoiding a large number of resizes increased the speed from 1.9-2.0ms to 1.4-1.5ms
 	size_t used_vertexes = 0;
 
 	PackedVector3Array vertexes;
