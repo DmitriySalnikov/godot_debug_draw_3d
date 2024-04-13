@@ -1,8 +1,9 @@
 var classDebugDraw3DScopeConfig =
 [
-    [ "set_thickness", "classDebugDraw3DScopeConfig.html#aba0933d144f0a7c4e419afe0eb8401dc", null ],
-    [ "set_center_brightness", "classDebugDraw3DScopeConfig.html#a7ca72dc0f8387a7d3878e0219ec6aa67", null ],
-    [ "set_hd_sphere", "classDebugDraw3DScopeConfig.html#ae8a34d318c8cc87be6287e73bf9a7f2e", null ],
-    [ "set_plane_size", "classDebugDraw3DScopeConfig.html#ab693c80ae02b6eeed85603e305f988e2", null ],
-    [ "set_viewport", "classDebugDraw3DScopeConfig.html#a7ac6eac8a9ff916f33df4ceb33a67f41", null ]
+    [ "set_thickness", "classDebugDraw3DScopeConfig.html#a37ecc60971b0abb942be6ac2de3ca815", null ],
+    [ "set_center_brightness", "classDebugDraw3DScopeConfig.html#a804863d10d459d59e9f123a65da42f1e", null ],
+    [ "set_hd_sphere", "classDebugDraw3DScopeConfig.html#a6731e397233fcbd8c873c8cf2f8a2a88", null ],
+    [ "set_plane_size", "classDebugDraw3DScopeConfig.html#ae03d511f879b614bc59dc3201b634a08", null ],
+    [ "set_viewport", "classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277", null ],
+    [ "set_no_depth_test", "classDebugDraw3DScopeConfig.html#a7743c67671bdce2e946991e0d66031f5", null ]
 ];
