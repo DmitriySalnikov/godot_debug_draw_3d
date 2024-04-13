@@ -154,6 +154,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="default_sources.json" />
+    <None Include="3d\cpp.hint">
+      <Filter>3d</Filter>
+    </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="3d">

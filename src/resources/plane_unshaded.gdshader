@@ -1,5 +1,12 @@
+//#define NO_DEPTH
+
 shader_type spatial;
-render_mode cull_disabled, shadows_disabled, unshaded;
+render_mode cull_disabled, shadows_disabled, unshaded
+#if defined(NO_DEPTH)
+,depth_test_disabled;
+#else
+;
+#endif
 
 varying vec4 custom;
 

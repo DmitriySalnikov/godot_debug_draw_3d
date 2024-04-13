@@ -1,5 +1,12 @@
+//#define NO_DEPTH
+
 shader_type spatial;
-render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords;
+render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords
+#if defined(NO_DEPTH)
+,depth_test_disabled;
+#else
+;
+#endif
 
 varying float brightness_of_center;
 

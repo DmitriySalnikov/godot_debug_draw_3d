@@ -2,7 +2,7 @@
 
 #define DD3D_MAJOR 1
 #define DD3D_MINOR 4
-#define DD3D_PATCH 0
+#define DD3D_PATCH 1
 #define DD3D_VERSION ((DD3D_MAJOR << (8 * 3)) + (DD3D_MINOR << (8 * 2)) + (DD3D_PATCH << (8 * 1)))
 
 #define _DD3D_VERSION_STR_TEXT(text) #text

@@ -13,17 +13,11 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class DebugDraw3DStats;
+enum class MeshMaterialType : char;
 
 class DebugGeometryContainer {
 	friend class DebugDraw3D;
 	class DebugDraw3D *owner;
-
-	enum class UsingShaderType {
-		Wireframe,
-		Billboard,
-		Solid,
-		Expandable,
-	};
 
 	struct MultiMeshStorage {
 		RID instance;
@@ -53,12 +47,15 @@ class DebugGeometryContainer {
 	Ref<World3D> base_world_viewport;
 	int32_t render_layers = 1;
 	bool is_frame_rendered = false;
+	bool no_depth_test = false;
 
-	void CreateMMI(InstanceType p_type, UsingShaderType p_shader, const String &p_name, Ref<ArrayMesh> p_mesh);
+	void CreateMMI(InstanceType p_type, const String &p_name, Ref<ArrayMesh> p_mesh);
 
 public:
-	DebugGeometryContainer(class DebugDraw3D *p_root);
+	DebugGeometryContainer(class DebugDraw3D *p_root, bool p_no_depth_test);
 	~DebugGeometryContainer();
+
+	bool is_no_depth_test() const;
 
 	void set_world(Ref<World3D> p_new_world);
 	Ref<World3D> get_world();

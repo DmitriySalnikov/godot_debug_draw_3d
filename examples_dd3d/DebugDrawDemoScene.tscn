@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=36 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -169,6 +169,10 @@ _data = {
 }
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_tigpa"]
+radius = 0.395
+height = 1.825
+
+[sub_resource type="BoxMesh" id="BoxMesh_b14rm"]
 
 [sub_resource type="SphereShape3D" id="4"]
 radius = 1.0
@@ -514,7 +518,7 @@ current = true
 far = 5.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 4.85623)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 5.72253)
 mesh = SubResource("CapsuleMesh_tigpa")
 
 [node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
@@ -531,10 +535,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.403353, -0.331599, 2.22542)
 transform = Transform3D(0.802141, -0.286294, -0.524028, -0.539546, 0.0285125, -0.841473, 0.25585, 0.957718, -0.131597, -0.475607, -0.670307, 2.30581)
 
 [node name="Position" type="Node3D" parent="Misc"]
-transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 0.853743, -0.331599, -1.73676)
+transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0, -0.462445, 2.90833, 0.853743, 0.0843356, -1.73676)
 
 [node name="GizmoNormal" type="Node3D" parent="Misc"]
-transform = Transform3D(1.95938, 0, -0.848962, 0, 0.999999, 0, 0.525014, 0, 3.16837, 0.890203, -0.306246, 0.356159)
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 0.890203, -0.306246, 0.356159)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Misc/GizmoNormal"]
+transform = Transform3D(0.591801, 0, 4.47035e-08, 0, 0.591801, 0, -4.47035e-08, 0, 0.591801, 0, 0, 0)
+mesh = SubResource("BoxMesh_b14rm")
 
 [node name="GizmoTransform" type="Node3D" parent="Misc"]
 transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.189411, 0.325077, 0.307059, 0.894449, -0.838587, -0.458, -0.176491)

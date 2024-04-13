@@ -20,6 +20,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_viewport, "value");
 	REG_METHOD(get_viewport);
+
+	REG_METHOD(set_no_depth_test, "value");
+	REG_METHOD(is_no_depth_test);
 #undef REG_CLASS_NAME
 }
 
@@ -30,7 +33,7 @@ void DebugDraw3DScopeConfig::_manual_unregister() {
 	unregister_action = nullptr;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
 	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
@@ -39,7 +42,7 @@ real_t DebugDraw3DScopeConfig::get_thickness() const {
 	return data->thickness;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t _value) {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t _value) const {
 	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
@@ -48,31 +51,40 @@ real_t DebugDraw3DScopeConfig::get_center_brightness() const {
 	return data->center_brightness;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool _value) {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool _value) const {
 	data->hd_sphere = _value;
-	return this;
+	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 	return data->hd_sphere;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value) {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value) const {
 	data->plane_size = _value;
-	return this;
+	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 real_t DebugDraw3DScopeConfig::get_plane_size() const {
 	return data->plane_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) {
-	data->viewport = _value;
-	return this;
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
+	data->dgcd.viewport = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 Viewport *DebugDraw3DScopeConfig::get_viewport() const {
-	return data->viewport;
+	return data->dgcd.viewport;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(bool _value) const {
+	data->dgcd.no_depth_test = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+bool DebugDraw3DScopeConfig::is_no_depth_test() const {
+	return data->dgcd.no_depth_test;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
@@ -101,7 +113,7 @@ DebugDraw3DScopeConfig::Data::Data() {
 	center_brightness = 0;
 	hd_sphere = false;
 	plane_size = INFINITY;
-	viewport = nullptr;
+	dgcd = {};
 }
 
 DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
@@ -109,5 +121,7 @@ DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
 	center_brightness = p_parent->center_brightness;
 	hd_sphere = p_parent->hd_sphere;
 	plane_size = p_parent->plane_size;
-	viewport = p_parent->viewport;
+
+	dgcd.viewport = p_parent->dgcd.viewport;
+	dgcd.no_depth_test = p_parent->dgcd.no_depth_test;
 }

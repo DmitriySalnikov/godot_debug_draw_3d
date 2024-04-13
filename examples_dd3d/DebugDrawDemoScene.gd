@@ -75,7 +75,7 @@ func _physics_process(delta: float) -> void:
 
 			## Additional drawing in the Viewport
 			if true:
-				var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1)
+				var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport()).set_thickness(0.01).set_center_brightness(1).set_no_depth_test(true)
 				DebugDraw3D.draw_box_xf(Transform3D(Basis()
 				.scaled(Vector3.ONE*0.3)
 				.rotated(Vector3(0,0,1), PI/4)
@@ -265,7 +265,7 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_gizmo($Misc/GizmoTransform.global_transform, DebugDraw3D.empty_color, true)
 	DebugDraw3D.draw_gizmo($Misc/GizmoOneColor.global_transform, Color.BROWN, true)
 	if true:
-		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5)
+		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5).set_no_depth_test(true)
 		DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
 	
 	var tg : Transform3D = $Grids/Grid.global_transform
@@ -442,6 +442,7 @@ func _draw_array_of_boxes():
 		cubes_max_time = 60
 	
 	if timer_cubes < 0:
+		var start_time = Time.get_ticks_usec()
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
@@ -449,6 +450,7 @@ func _draw_array_of_boxes():
 					cfg.set_thickness(randf_range(0, 0.1))
 					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
 					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - start_time) / 1000.0))
 		timer_cubes = cubes_max_time
 
 

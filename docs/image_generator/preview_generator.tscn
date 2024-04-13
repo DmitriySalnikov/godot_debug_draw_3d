@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://davayb2hh6h3u"]
+[gd_scene load_steps=35 format=3 uid="uid://davayb2hh6h3u"]
 
 [ext_resource type="Script" path="res://image_generator/preview_generator.gd" id="1_1iqys"]
 
@@ -2131,6 +2131,154 @@ tracks/9/keys = {
 "times": PackedFloat32Array(0, 0.6, 0.75, 1.35)
 }
 
+[sub_resource type="Animation" id="Animation_hhbl7"]
+resource_name = "NoDepthTest"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:viewport_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(256, 128)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:single_image")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:lossless")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GridRender/CameraOrigin/Camera3D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -0.150017, 1.72116)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("GridRender/CameraOrigin/Camera3D:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.296706, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("GridRender/CameraOrigin:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.698132, 0, 0)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("OriginInstances:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.44, 0)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("OriginInstances:rotation")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -6.28319, 0)]
+}
+tracks/8/type = "value"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("OriginInstances:scale")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.65, 0.65, 0.65)]
+}
+tracks/9/type = "value"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("OriginUpVector:rotation")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.261799, 0, 0)]
+}
+tracks/10/type = "value"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("NoDepthTestBox:visible")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/11/type = "bezier"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath(".:anim_value_1")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1, 2)
+}
+
 [sub_resource type="Animation" id="Animation_a5v07"]
 resource_name = "PlaneSize"
 loop_mode = 1
@@ -2459,6 +2607,18 @@ tracks/16/keys = {
 "update": 0,
 "values": [Vector3(0.308753, 0.314478, -0.54646)]
 }
+tracks/17/type = "value"
+tracks/17/imported = false
+tracks/17/enabled = true
+tracks/17/path = NodePath("NoDepthTestBox:visible")
+tracks/17/interp = 1
+tracks/17/loop_wrap = true
+tracks/17/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
 
 [sub_resource type="Animation" id="Animation_2pssc"]
 resource_name = "SphereDensity"
@@ -2628,10 +2788,27 @@ _data = {
 "LineBevel": SubResource("Animation_1l2uk"),
 "LineCenterBrightness": SubResource("Animation_dj0n6"),
 "LineThickness": SubResource("Animation_4yn7h"),
+"NoDepthTest": SubResource("Animation_hhbl7"),
 "PlaneSize": SubResource("Animation_a5v07"),
 "RESET": SubResource("Animation_hchms"),
 "SphereDensity": SubResource("Animation_2pssc")
 }
+
+[sub_resource type="Shader" id="Shader_t34go"]
+code = "shader_type spatial;
+render_mode unshaded;
+
+void fragment() {
+	ALBEDO = vec3(0);
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aonqq"]
+render_priority = 0
+shader = SubResource("Shader_t34go")
+
+[sub_resource type="BoxMesh" id="BoxMesh_bwerf"]
+material = SubResource("ShaderMaterial_aonqq")
 
 [node name="PreviewGenerator" type="Control"]
 layout_mode = 3
@@ -2641,7 +2818,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1iqys")
-preview_case = 5
+preview_case = 6
 anim_value_1 = 0.1
 metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 
@@ -2695,7 +2872,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_qjyty")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
-callback_mode_method = 1
 libraries = {
 "": SubResource("AnimationLibrary_ce374")
 }
@@ -2703,6 +2879,12 @@ libraries = {
 [node name="Grid" type="Node3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(3.72127, 0, 3.72127, 0.0105216, 5.26265, -0.0105216, -3.72126, 0.0148798, 3.72126, 0, 0, 0)
+
+[node name="NoDepthTestBox" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(0.382746, 0, 0, 0, 0.666283, 0, 0, 0, 0.382746, 0, 0.440512, 0)
+visible = false
+mesh = SubResource("BoxMesh_bwerf")
 
 [node name="OriginLine" type="Node3D" parent="."]
 unique_name_in_owner = true
@@ -2743,7 +2925,7 @@ transform = Transform3D(1, 6.25849e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-0
 transform = Transform3D(1, 3.12924e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-07, 2.98023e-08, 2.98023e-07, 1, 0.308753, 0.314478, -0.54646)
 
 [node name="OriginCameraFrustum" type="Node3D" parent="."]
-transform = Transform3D(-0.619366, 0, 0.197195, 0, 0.65, 0, -0.197195, 0, -0.619366, 0, 0.44, 0)
+transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 0, 0.44, 0)
 
 [node name="Camera3D" type="Camera3D" parent="OriginCameraFrustum"]
 transform = Transform3D(-6.72483e-08, 0, 1.53846, 0, 1.53846, 0, -1.53846, 0, -6.72483e-08, 1.71191, 0, 0)

@@ -1,5 +1,12 @@
+//#define NO_DEPTH
+
 shader_type spatial;
-render_mode cull_back, shadows_disabled, unshaded;
+render_mode cull_back, shadows_disabled, unshaded
+#if defined(NO_DEPTH)
+,depth_test_disabled;
+#else
+;
+#endif
 
 uniform sampler2D depth_value : hint_depth_texture;
 

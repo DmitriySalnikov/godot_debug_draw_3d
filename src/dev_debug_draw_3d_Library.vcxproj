@@ -284,6 +284,11 @@
     <PreBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="3d\cpp.hint">
+      <FileType>Document</FileType>
+      <DeploymentContent>false</DeploymentContent>
+    </None>
+    <None Include="cpp.hint" />
     <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>

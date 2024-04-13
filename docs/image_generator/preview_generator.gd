@@ -15,6 +15,7 @@ enum PreviewCase {
 	SphereDensity,
 	IcoSphere,
 	PlaneSize,
+	NoDepthTest,
 	
 	Line,
 	Arrow,
@@ -55,6 +56,7 @@ var case_maps = {
 	PreviewCase.SphereDensity : CaseData.new(),
 	PreviewCase.IcoSphere : CaseData.new(),
 	PreviewCase.PlaneSize : CaseData.new(),
+	PreviewCase.NoDepthTest : CaseData.new("NoDepthTest"),
 	
 	PreviewCase.Line : CaseData.new(),
 	PreviewCase.Arrow : CaseData.new("DrawMethods360Lines"),
@@ -102,6 +104,10 @@ var changed_by_code := false
 		changed_by_code = true
 		$Control.size = val
 		$GridRender.size = val * 2
+		
+		if not Engine.is_editor_hint():
+			$Control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			get_tree().root.size = viewport_size
 		changed_by_code = false
 
 @export var anim_value_1: float = 0
@@ -156,7 +162,10 @@ func _set_anim():
 	%AnimationPlayer.seek(0)
 	
 	if not Engine.is_editor_hint():
-		%AnimationPlayer.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
+		if Engine.get_version_info()["minor"] > 1:
+			%AnimationPlayer.callback_mode_process = 2
+		else:
+			%AnimationPlayer.playback_process_mode = 2
 	
 	if not Engine.is_editor_hint() and OS.has_feature("movie"):
 		var anim: Animation = %AnimationPlayer.get_animation(%AnimationPlayer.current_animation)
@@ -257,7 +266,7 @@ func _process(delta):
 		%AnimationPlayer.advance(delta)
 	
 	# Default 3D
-	var _s_def = DebugDraw3D.new_scoped_config().set_thickness(0.05)
+	var _s_def = DebugDraw3D.new_scoped_config().set_thickness(0.05).set_viewport($GridRender)
 	
 	# Default 2D
 	DebugDraw2D.custom_canvas = $Control/PanelContainer
@@ -305,6 +314,9 @@ func _process(delta):
 		PreviewCase.PlaneSize:
 			var _s = DebugDraw3D.new_scoped_config().set_plane_size(anim_value_1)
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
+		PreviewCase.NoDepthTest:
+			var _s = DebugDraw3D.new_scoped_config().set_no_depth_test(anim_value_1 > 0.5)
+			DebugDraw3D.draw_box(%OriginInstances.global_position, %OriginInstances.quaternion, Vector3.ONE * Vector3(0.6, 0.3, 0.3), Color.DEEP_PINK, true)
 		
 		PreviewCase.Line:
 			var _s = DebugDraw3D.new_scoped_config().set_center_brightness(0.7).set_thickness(0.2)

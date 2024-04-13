@@ -30,6 +30,22 @@ class DebugGeometryContainer;
 struct DelayedRendererLine;
 #endif
 
+/// @private
+enum class MeshMaterialType : char {
+	Wireframe,
+	Billboard,
+	Plane,
+	Extendable,
+	MAX,
+};
+
+/// @private
+enum class MeshMaterialVariant : char {
+	Normal,
+	NoDepth,
+	MAX,
+};
+
 #ifndef DISABLE_DEBUG_RENDERING
 /// @private
 class _DD3D_WorldWatcher : public Node3D {
@@ -154,36 +170,26 @@ private:
 
 	// Meshes
 	/// Store meshes shared between many debug containers
-	std::vector<Ref<ArrayMesh> > shared_generated_meshes;
+	std::vector<std::array<Ref<ArrayMesh>, 2> > shared_generated_meshes;
 	/// Store World3D id and debug container
-	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer> > debug_containers;
+	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer>[2]> debug_containers;
 	struct viewportToWorldCache {
 		uint64_t world_id = 0;
-		std::shared_ptr<DebugGeometryContainer> dgc;
+		std::shared_ptr<DebugGeometryContainer> dgcs[2];
 	};
 	std::unordered_map<const Viewport *, viewportToWorldCache> viewport_to_world_cache;
 
 	// Default materials and shaders
-	Ref<ShaderMaterial> shader_wireframe_mat;
-	Ref<Shader> shader_wireframe_code;
-
-	Ref<ShaderMaterial> shader_billboard_mat;
-	Ref<Shader> shader_billboard_code;
-
-	Ref<ShaderMaterial> shader_plane_mat;
-	Ref<Shader> shader_plane_code;
-
-	Ref<ShaderMaterial> shader_extendable_mat;
-	Ref<Shader> shader_extendable_code;
+	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
 
 	// Inherited via IScopeStorage
 	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
-	Ref<ArrayMesh> *get_shared_meshes();
-	std::shared_ptr<DebugGeometryContainer> create_debug_container();
-	std::shared_ptr<DebugGeometryContainer> get_debug_container(Viewport *p_vp);
+	std::array<Ref<ArrayMesh>, 2> *get_shared_meshes();
+	std::shared_ptr<DebugGeometryContainer> create_debug_container(bool p_no_depth_test);
+	std::shared_ptr<DebugGeometryContainer> get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd);
 	void _register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id);
 	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
@@ -201,10 +207,7 @@ private:
 	void set_custom_editor_viewport(std::vector<SubViewport *> p_viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
 
-	Ref<ShaderMaterial> get_wireframe_material();
-	Ref<ShaderMaterial> get_billboard_material();
-	Ref<ShaderMaterial> get_plane_material();
-	Ref<ShaderMaterial> get_extendable_material();
+	Ref<ShaderMaterial> get_material_variant(MeshMaterialType p_type, MeshMaterialVariant p_var);
 
 	void _load_materials();
 	inline bool _is_enabled_override() const;

@@ -180,7 +180,11 @@ void DebugDraw3D::process(double p_delta) {
 
 	// Update 3D debug
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry(p_delta);
+		for (const auto &dgc : p.second) {
+			if (dgc) {
+				dgc->update_geometry(p_delta);
+			}
+		}
 	}
 
 	_clear_scoped_configs();
@@ -196,7 +200,11 @@ void DebugDraw3D::physics_process_start(double p_delta) {
 	FrameMarkStart("3D Physics Step");
 
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry_physics_start(p_delta);
+		for (const auto &dgc : p.second) {
+			if (dgc) {
+				dgc->update_geometry_physics_start(p_delta);
+			}
+		}
 	}
 #endif
 }
@@ -205,7 +213,11 @@ void DebugDraw3D::physics_process_end(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	for (const auto &p : debug_containers) {
-		p.second->update_geometry_physics_end(p_delta);
+		for (const auto &dgc : p.second) {
+			if (dgc) {
+				dgc->update_geometry_physics_end(p_delta);
+			}
+		}
 	}
 
 	FrameMarkEnd("3D Physics Step");
@@ -292,7 +304,7 @@ Node *DebugDraw3D::get_root_node() {
 	return root_node;
 }
 
-Ref<ArrayMesh> *DebugDraw3D::get_shared_meshes() {
+std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 	LOCK_GUARD(datalock);
 	if (!shared_generated_meshes.size()) {
 		bool p_add_bevel = PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric);
@@ -300,72 +312,90 @@ Ref<ArrayMesh> *DebugDraw3D::get_shared_meshes() {
 		bool p_use_icosphere_hd = PS()->get_setting(root_settings_section + s_use_icosphere_hd);
 
 		shared_generated_meshes.resize((int)InstanceType::MAX);
+		for (int i = 0; i < 2; i++) {
+			MeshMaterialType mat_type = MeshMaterialType::Wireframe;
 
-		// WIREFRAME
+#define GEN_MESH(_type, _gen)                      \
+	shared_generated_meshes[(int)_type][i] = _gen; \
+	shared_generated_meshes[(int)_type][i]->surface_set_material(0, get_material_variant(mat_type, i == 0 ? MeshMaterialVariant::Normal : MeshMaterialVariant::NoDepth));
 
-		shared_generated_meshes[(int)InstanceType::CUBE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertexes, GeometryGenerator::CubeIndexes);
-		shared_generated_meshes[(int)InstanceType::CUBE_CENTERED] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertexes, GeometryGenerator::CubeIndexes);
-		shared_generated_meshes[(int)InstanceType::ARROWHEAD] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertexes, GeometryGenerator::ArrowheadIndexes);
-		shared_generated_meshes[(int)InstanceType::POSITION] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes);
-		shared_generated_meshes[(int)InstanceType::SPHERE] = p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2);
-		shared_generated_meshes[(int)InstanceType::SPHERE_HD] = p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2);
-		shared_generated_meshes[(int)InstanceType::CYLINDER] = GeometryGenerator::CreateCylinderLines(16, 1, 1, 2);
-		shared_generated_meshes[(int)InstanceType::CYLINDER_AB] = GeometryGenerator::RotatedMesh(GeometryGenerator::CreateCylinderLines(16, 1, 1, 2), Vector3_RIGHT, Math::deg_to_rad(90.f));
+			// WIREFRAME
 
-		// VOLUMETRIC
+			mat_type = MeshMaterialType::Wireframe;
+			GEN_MESH(InstanceType::CUBE, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CubeVertexes, GeometryGenerator::CubeIndexes));
+			GEN_MESH(InstanceType::CUBE_CENTERED, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertexes, GeometryGenerator::CubeIndexes));
+			GEN_MESH(InstanceType::ARROWHEAD, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertexes, GeometryGenerator::ArrowheadIndexes));
+			GEN_MESH(InstanceType::POSITION, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes));
+			GEN_MESH(InstanceType::SPHERE, p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2));
+			GEN_MESH(InstanceType::SPHERE_HD, p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2));
+			GEN_MESH(InstanceType::CYLINDER, GeometryGenerator::CreateCylinderLines(16, 1, 1, 2));
+			GEN_MESH(InstanceType::CYLINDER_AB, GeometryGenerator::RotatedMesh(GeometryGenerator::CreateCylinderLines(16, 1, 1, 2), Vector3_RIGHT, Math::deg_to_rad(90.f)));
 
-		shared_generated_meshes[(int)InstanceType::LINE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel);
-		shared_generated_meshes[(int)InstanceType::CUBE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE], p_add_bevel);
-		shared_generated_meshes[(int)InstanceType::CUBE_CENTERED_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE_CENTERED], p_add_bevel);
-		shared_generated_meshes[(int)InstanceType::ARROWHEAD_VOLUMETRIC] = GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, p_add_bevel);
-		shared_generated_meshes[(int)InstanceType::POSITION_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::POSITION], p_add_bevel);
-		shared_generated_meshes[(int)InstanceType::SPHERE_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE], false);
-		shared_generated_meshes[(int)InstanceType::SPHERE_HD_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD], false);
-		shared_generated_meshes[(int)InstanceType::CYLINDER_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER], false);
-		shared_generated_meshes[(int)InstanceType::CYLINDER_AB_VOLUMETRIC] = GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER_AB], false);
+			// VOLUMETRIC
 
-		// SOLID
+			mat_type = MeshMaterialType::Extendable;
+			GEN_MESH(InstanceType::LINE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel));
+			GEN_MESH(InstanceType::CUBE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE][i], p_add_bevel));
+			GEN_MESH(InstanceType::CUBE_CENTERED_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE_CENTERED][i], p_add_bevel));
+			GEN_MESH(InstanceType::ARROWHEAD_VOLUMETRIC, GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, p_add_bevel));
+			GEN_MESH(InstanceType::POSITION_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::POSITION][i], p_add_bevel));
+			GEN_MESH(InstanceType::SPHERE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE][i], false));
+			GEN_MESH(InstanceType::SPHERE_HD_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD][i], false));
+			GEN_MESH(InstanceType::CYLINDER_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER][i], false));
+			GEN_MESH(InstanceType::CYLINDER_AB_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER_AB][i], false));
 
-		shared_generated_meshes[(int)InstanceType::BILLBOARD_SQUARE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareBackwardsIndexes);
-		shared_generated_meshes[(int)InstanceType::PLANE] = GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes);
+			// SOLID
+
+			mat_type = MeshMaterialType::Billboard;
+			GEN_MESH(InstanceType::BILLBOARD_SQUARE, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareBackwardsIndexes));
+
+			mat_type = MeshMaterialType::Plane;
+			GEN_MESH(InstanceType::PLANE, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+#undef GEN_MESH
+		}
 	}
 
 	return shared_generated_meshes.data();
 }
 
-std::shared_ptr<DebugGeometryContainer> DebugDraw3D::create_debug_container() {
-	return std::make_shared<DebugGeometryContainer>(this);
+std::shared_ptr<DebugGeometryContainer> DebugDraw3D::create_debug_container(bool p_no_depth_test) {
+	return std::make_shared<DebugGeometryContainer>(this, p_no_depth_test);
 }
 
-std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(Viewport *p_vp) {
+std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	if (!p_vp) {
+	if (!p_dgcd.viewport) {
 		return nullptr;
 	}
 
-	if (const auto &cached_world = viewport_to_world_cache.find(p_vp);
-			cached_world != viewport_to_world_cache.end()) {
-		return cached_world->second.dgc;
+	int dgc_depth = !!p_dgcd.no_depth_test;
+
+	if (const auto &cached_world = viewport_to_world_cache.find(p_dgcd.viewport);
+			cached_world != viewport_to_world_cache.end() && cached_world->second.dgcs[dgc_depth]) {
+		return cached_world->second.dgcs[dgc_depth];
 	}
 
-	Ref<World3D> vp_world = p_vp->find_world_3d();
+	Ref<World3D> vp_world = p_dgcd.viewport->find_world_3d();
 	uint64_t vp_world_id = vp_world->get_instance_id();
 
-	if (const auto &dgc = debug_containers.find(vp_world_id);
-			dgc != debug_containers.end()) {
+	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
+			dgc_pair != debug_containers.end() && dgc_pair->second[dgc_depth]) {
 
-		viewport_to_world_cache[p_vp] = { dgc->first, dgc->second };
-		return dgc->second;
+		viewport_to_world_cache[p_dgcd.viewport].world_id = dgc_pair->first;
+		viewport_to_world_cache[p_dgcd.viewport].dgcs[dgc_depth] = dgc_pair->second[dgc_depth];
+		return dgc_pair->second[dgc_depth];
 	}
 
-	auto dgc = create_debug_container();
+	auto dgc = create_debug_container(p_dgcd.no_depth_test);
 	dgc->set_world(vp_world);
-	debug_containers[vp_world_id] = dgc;
-	viewport_to_world_cache[p_vp] = { vp_world_id, dgc };
+	debug_containers[vp_world_id][dgc_depth] = dgc;
 
-	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_vp), vp_world_id);
+	viewport_to_world_cache[p_dgcd.viewport].world_id = vp_world_id;
+	viewport_to_world_cache[p_dgcd.viewport].dgcs[dgc_depth] = dgc;
+
+	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport), vp_world_id);
 
 	return dgc;
 }
@@ -453,16 +483,27 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3D::scoped_config() {
 void DebugDraw3D::_load_materials() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-#define LOAD_SHADER(code, mat, source) \
-	code.instantiate();                \
-	code->set_code(source);            \
-	mat.instantiate();                 \
-	mat->set_shader(code);
+#define LOAD_SHADER(mat, source) \
+	{                            \
+		Ref<Shader> code;        \
+		code.instantiate();      \
+		code->set_code(source);  \
+		mat.instantiate();       \
+		mat->set_shader(code);   \
+	}
 
-	LOAD_SHADER(shader_wireframe_code, shader_wireframe_mat, DD3DResources::src_resources_wireframe_unshaded_gdshader);
-	LOAD_SHADER(shader_billboard_code, shader_billboard_mat, DD3DResources::src_resources_billboard_unshaded_gdshader);
-	LOAD_SHADER(shader_plane_code, shader_plane_mat, DD3DResources::src_resources_plane_unshaded_gdshader);
-	LOAD_SHADER(shader_extendable_code, shader_extendable_mat, DD3DResources::src_resources_extendable_meshes_gdshader);
+	for (int variant = 0; variant < (int)MeshMaterialVariant::MAX; variant++) {
+		String prefix = "";
+		if (variant == (int)MeshMaterialVariant::NoDepth) {
+			prefix = "#define NO_DEPTH\n";
+		}
+
+		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Wireframe][variant], prefix + DD3DResources::src_resources_wireframe_unshaded_gdshader);
+		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Billboard][variant], prefix + DD3DResources::src_resources_billboard_unshaded_gdshader);
+		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Plane][variant], prefix + DD3DResources::src_resources_plane_unshaded_gdshader);
+		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Extendable][variant], prefix + DD3DResources::src_resources_extendable_meshes_gdshader);
+	}
+#undef LOAD_SHADER
 #endif
 }
 
@@ -478,33 +519,9 @@ std::vector<SubViewport *> DebugDraw3D::get_custom_editor_viewports() {
 	return custom_editor_viewports;
 }
 
-Ref<ShaderMaterial> DebugDraw3D::get_wireframe_material() {
+Ref<ShaderMaterial> DebugDraw3D::get_material_variant(MeshMaterialType p_type, MeshMaterialVariant p_var) {
 #ifndef DISABLE_DEBUG_RENDERING
-	return shader_wireframe_mat;
-#else
-	return Ref<ShaderMaterial>();
-#endif
-}
-
-Ref<ShaderMaterial> DebugDraw3D::get_billboard_material() {
-#ifndef DISABLE_DEBUG_RENDERING
-	return shader_billboard_mat;
-#else
-	return Ref<ShaderMaterial>();
-#endif
-}
-
-Ref<ShaderMaterial> DebugDraw3D::get_plane_material() {
-#ifndef DISABLE_DEBUG_RENDERING
-	return shader_plane_mat;
-#else
-	return Ref<ShaderMaterial>();
-#endif
-}
-
-Ref<ShaderMaterial> DebugDraw3D::get_extendable_material() {
-#ifndef DISABLE_DEBUG_RENDERING
-	return shader_extendable_mat;
+	return mesh_shaders[(int)p_type][(int)p_var];
 #else
 	return Ref<ShaderMaterial>();
 #endif
@@ -553,11 +570,11 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 	stats_3d.instantiate();
 
 	for (const auto &p : debug_containers) {
-		const auto &dgc = p.second;
-
-		if (dgc) {
-			dgc->get_render_stats(stats_3d);
-			res->combine_with(stats_3d);
+		for (const auto &dgc : p.second) {
+			if (dgc) {
+				dgc->get_render_stats(stats_3d);
+				res->combine_with(stats_3d);
+			}
 		}
 	}
 	res->set_scoped_config_stats(scoped_stats_3d.created, scoped_stats_3d.orphans);
@@ -566,15 +583,21 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 }
 
 Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport) {
+	Ref<DebugDraw3DStats> res;
+	res.instantiate();
+#ifndef DISABLE_DEBUG_RENDERING
 	Ref<DebugDraw3DStats> stats_3d;
 	stats_3d.instantiate();
-#ifndef DISABLE_DEBUG_RENDERING
-	auto dgc = get_debug_container(viewport);
 
-	if (dgc)
-		dgc->get_render_stats(stats_3d);
+	for (int i = 0; i < 2; i++) {
+		auto dgc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, !!i));
+		if (dgc) {
+			dgc->get_render_stats(stats_3d);
+			res->combine_with(stats_3d);
+		}
+	}
 #endif
-	return stats_3d;
+	return res;
 }
 
 void DebugDraw3D::regenerate_geometry_meshes() {
@@ -585,10 +608,15 @@ void DebugDraw3D::regenerate_geometry_meshes() {
 	shared_generated_meshes.clear();
 
 	for (auto &p : debug_containers) {
-		Ref<World3D> old_world = p.second->get_world();
+		for (int i = 0; i < 2; i++) {
+			if (p.second[i]) {
+				Ref<World3D> old_world = p.second[i]->get_world();
+				bool no_depth = p.second[i]->is_no_depth_test();
 
-		p.second = create_debug_container();
-		p.second->set_world(old_world);
+				p.second[i] = create_debug_container(no_depth);
+				p.second[i]->set_world(old_world);
+			}
+		}
 	}
 #endif
 }
@@ -597,7 +625,11 @@ void DebugDraw3D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	for (auto &p : debug_containers) {
-		p.second->clear_3d_objects();
+		for (const auto &dgc : p.second) {
+			if (dgc) {
+				dgc->clear_3d_objects();
+			}
+		}
 	}
 #else
 	return;
@@ -613,7 +645,7 @@ void DebugDraw3D::clear_all() {
 
 #define GET_SCOPED_CFG_AND_DGC()                    \
 	auto scfg = scoped_config_for_current_thread(); \
-	auto dgc = get_debug_container(scfg->viewport); \
+	auto dgc = get_debug_container(scfg->dgcd);     \
 	if (!dgc) return
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -1064,7 +1096,7 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
-	Camera3D *cam = scfg->viewport ? scfg->viewport->get_camera_3d() : nullptr;
+	Camera3D *cam = scfg->dgcd.viewport ? scfg->dgcd.viewport->get_camera_3d() : nullptr;
 
 	Vector3 center_pos = plane.project(anchor_point == Vector3_INF ? (cam ? cam->get_global_position() : Vector3()) : anchor_point);
 	real_t plane_size = scfg->plane_size != INFINITY ? scfg->plane_size : (cam ? (real_t)cam->get_far() : 1000);

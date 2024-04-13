@@ -70,13 +70,29 @@ private:
 
 public:
 	/// @private
+	struct DebugContainerDependent {
+		Viewport *viewport;
+		bool no_depth_test;
+
+		DebugContainerDependent() :
+				viewport(nullptr),
+				no_depth_test(false) {
+		}
+
+		DebugContainerDependent(Viewport *p_viewport, bool p_no_depth_test) :
+				viewport(p_viewport),
+				no_depth_test(p_no_depth_test) {
+		}
+	};
+
+	/// @private
 	struct Data {
 		// Update the constructor if changes are made!
 		real_t thickness;
 		real_t center_brightness;
 		bool hd_sphere;
 		real_t plane_size;
-		Viewport *viewport;
+		DebugContainerDependent dgcd;
 
 		Data();
 		Data(const std::shared_ptr<Data> &parent);
@@ -93,7 +109,7 @@ public:
 	 *
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value);
+	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
 	real_t get_thickness() const;
 
 	/**
@@ -101,7 +117,7 @@ public:
 	 *
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value);
+	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
 	real_t get_center_brightness() const;
 
 	/**
@@ -109,7 +125,7 @@ public:
 	 *
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value);
+	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
 	bool is_hd_sphere() const;
 
 	/**
@@ -117,7 +133,7 @@ public:
 	 *
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value);
+	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
 	real_t get_plane_size() const;
 
 	/**
@@ -130,8 +146,19 @@ public:
 	 * @note
 	 * Objects created for a specific Viewport will use only one camera related to that Viewport for culling.
 	 */
-	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value);
+	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value) const;
 	Viewport *get_viewport() const;
+
+	/**
+	 * Set whether the `depth_test_disabled` flag is added or not in the shaders of the debug shapes.
+	 *
+	 * @note
+	 * It may cause artifacts when drawing volumetric objects.
+	 *
+	 * ![](docs/images/classes/NoDepthTest.webp)
+	 */
+	Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
+	bool is_no_depth_test() const;
 
 	/// @private
 	DebugDraw3DScopeConfig();

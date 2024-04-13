@@ -465,9 +465,9 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 
 void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	ZoneScoped;
-	auto &proc = pools[p_cfg->viewport][(int)p_proc];
+	auto &proc = pools[p_cfg->dgcd.viewport][(int)p_proc];
 	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
-	viewport_ids[p_cfg->viewport] = p_cfg->viewport->get_instance_id();
+	viewport_ids[p_cfg->dgcd.viewport] = p_cfg->dgcd.viewport->get_instance_id();
 
 	SphereBounds thick_sphere = p_bounds;
 	thick_sphere.radius += p_cfg->thickness * 0.5f;
@@ -481,9 +481,9 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 
 void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col) {
 	ZoneScoped;
-	auto &proc = pools[p_cfg->viewport][(int)p_proc];
+	auto &proc = pools[p_cfg->dgcd.viewport][(int)p_proc];
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
-	viewport_ids[p_cfg->viewport] = p_cfg->viewport->get_instance_id();
+	viewport_ids[p_cfg->dgcd.viewport] = p_cfg->dgcd.viewport->get_instance_id();
 
 	inst->lines = std::move(p_lines);
 	inst->lines_count = p_line_count;
