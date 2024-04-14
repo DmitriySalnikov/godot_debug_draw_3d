@@ -250,7 +250,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
             }
 
             // Additional drawing in the Viewport
-            using (var _w1 = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()).SetThickness(0.01f).SetCenterBrightness(1))
+            using (var _w1 = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()).SetThickness(0.01f).SetCenterBrightness(1).SetNoDepthTest(true))
             {
                 DebugDraw3D.DrawBoxXf(new Transform3D(Basis.Identity
                     .Scaled(Vector3.One * 0.3f)
@@ -470,7 +470,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         DebugDraw3D.DrawGizmo(dMisc_GizmoTransform.GlobalTransform, null, true);
         DebugDraw3D.DrawGizmo(dMisc_GizmoOneColor.GlobalTransform, Colors.Brown, true);
-        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.5f))
+        using (var s = DebugDraw3D.NewScopedConfig().SetCenterBrightness(0.5f).SetNoDepthTest(true))
         {
             DebugDraw3D.DrawGizmo(dMisc_GizmoNormal.GlobalTransform.Orthonormalized(), null, false);
         }
@@ -712,6 +712,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (timer_cubes <= 0)
         {
+            var start_time = Time.GetTicksUsec();
             for (int x = 0; x < x_size; x++)
             {
                 for (int y = 0; y < y_size; y++)
@@ -725,6 +726,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
                     }
                 }
             }
+            //GD.Print($"Draw Cubes: {((Time.GetTicksUsec() - start_time) / 1000.0):F2}ms");
             timer_cubes = cubes_max_time;
         }
     }

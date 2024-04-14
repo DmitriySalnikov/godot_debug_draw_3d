@@ -189,7 +189,7 @@ private:
 
 	std::array<Ref<ArrayMesh>, 2> *get_shared_meshes();
 	std::shared_ptr<DebugGeometryContainer> create_debug_container(bool p_no_depth_test);
-	std::shared_ptr<DebugGeometryContainer> get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd);
+	std::shared_ptr<DebugGeometryContainer> get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
 	void _register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id);
 	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);

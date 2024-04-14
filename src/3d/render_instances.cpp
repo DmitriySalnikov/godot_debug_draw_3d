@@ -432,6 +432,10 @@ bool GeometryPool::_is_viewport_empty(Viewport *vp) {
 	return true;
 }
 
+void GeometryPool::set_no_depth_test_info(bool p_no_depth_test) {
+	is_no_depth_test = p_no_depth_test;
+}
+
 std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	ZoneScoped;
 	std::vector<Viewport *> res;
@@ -440,7 +444,7 @@ std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	for (const auto &vp : viewport_ids) {
 		if (UtilityFunctions::is_instance_id_valid(vp.second)) {
 			if (_is_viewport_empty(vp.first)) {
-				DEV_PRINT_STD("Viewport (%s) did not contain any debug data, it will be deleted from the World3D's container.\n", vp.first->to_string().utf8().get_data());
+				DEV_PRINT_STD("%s Viewport (%s) did not contain any debug data,\n\tit will be deleted from the World3D's container.\n", is_no_depth_test ? "NoDepth" : "Normal", vp.first->to_string().utf8().get_data());
 				to_delete.push_back(vp.first);
 			} else {
 				res.push_back(vp.first);

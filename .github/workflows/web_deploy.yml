@@ -3,9 +3,20 @@ on:
   push:
     branches-ignore: gh-pages
     # Must not overlap with conditions in `gdextension_build.yml`
-    paths: [docs/**, images/**, dd3d_web_build/**, examples_dd3d/**, Doxyfile, 
-      src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct
-    ]
+    paths:
+      [
+        docs/**,
+        images/**,
+        dd3d_web_build/**,
+        examples_dd3d/**,
+        Doxyfile,
+        src/**,
+        .github/**,
+        "!.github/**/util_*",
+        "patches/**",
+        lib_utils.py,
+        SConstruct,
+      ]
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -137,17 +148,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - platform: web
-          target: template_release
-          arch: wasm32
-          artifact: web.demo_build
-          additional: lto=yes force_enabled_dd3d=yes
+          - platform: web
+            target: template_release
+            arch: wasm32
+            artifact: web.demo_build
+            additional: lto=yes force_enabled_dd3d=yes
 
-        - platform: linux
-          target: editor
-          arch: x86_64
-          artifact: linux.demo_build
-          additional: lto=yes
+          - platform: linux
+            target: editor
+            arch: x86_64
+            artifact: linux.demo_build
+            additional: lto=yes
 
     env:
       EM_VERSION: 3.1.39
@@ -253,9 +264,8 @@ jobs:
           allow_empty_commit: true
           keep_files: true
           commit_message: Updated documentation
-          user_name: 'github-actions-deploy[bot]'
-          user_email: 'github-actions-deploy[bot]@users.noreply.github.com'
-
+          user_name: "github-actions-deploy[bot]"
+          user_email: "github-actions-deploy[bot]@users.noreply.github.com"
 
   export_demo_project:
     name: 🌐📦 Export Demo Project
@@ -360,9 +370,8 @@ jobs:
           allow_empty_commit: true
           keep_files: true
           commit_message: Updated demo build
-          user_name: 'github-actions-deploy[bot]'
-          user_email: 'github-actions-deploy[bot]@users.noreply.github.com'
-
+          user_name: "github-actions-deploy[bot]"
+          user_email: "github-actions-deploy[bot]@users.noreply.github.com"
 
   finalization:
     name: 🏁 Finalization
@@ -380,7 +389,7 @@ jobs:
       - name: Clean unused folders
         if: env.DEV_DEPLOY == 'false'
         continue-on-error: true
-        # default bash without -e (fail-fast) 
+        # default bash without -e (fail-fast)
         # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#exit-codes-and-error-action-preference
         shell: bash --noprofile --norc -o pipefail {0}
         run: |
@@ -640,15 +649,21 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # Upload entire repository
-          path: '.'
+          path: "."
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
-
   restore_on_fail:
     name: 🔄 Restore gh-pages
-    needs: [data_preparation, generate_docs, export_demo_project, finalization, deploy]
+    needs:
+      [
+        data_preparation,
+        generate_docs,
+        export_demo_project,
+        finalization,
+        deploy,
+      ]
     if: failure() || cancelled()
     runs-on: ubuntu-latest
 

@@ -1,9 +1,25 @@
 name: 🛠️ GDExtension Build
 on:
   push:
-    paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
+    paths:
+      [
+        src/**,
+        .github/**,
+        "!.github/**/util_*",
+        "patches/**",
+        lib_utils.py,
+        SConstruct,
+      ]
   pull_request:
-    paths: [src/**, .github/**, "!.github/**/util_*", "patches/**", lib_utils.py, SConstruct]
+    paths:
+      [
+        src/**,
+        .github/**,
+        "!.github/**/util_*",
+        "patches/**",
+        lib_utils.py,
+        SConstruct,
+      ]
   workflow_dispatch:
     inputs:
       production_build:
@@ -120,7 +136,7 @@ jobs:
           use_cache: ${{env.USE_CACHE}}
           token: ${{secrets.TELEMETRY_TOKEN}}
 
-  # ============================================ 
+  # ============================================
 
   ios-gdextension:
     name: 🍏 Ios
@@ -349,21 +365,33 @@ jobs:
           download_export_templates: false
           is_mono: false
 
-      # TODO: Add few attempts
-      - name: Import Assets
+      - name: macOS dependencies
         shell: bash
-        run: ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
-
-      - name: Test Run
-        shell: bash
-        timeout-minutes: 2
+        if: runner.os == 'macOS'
         run: |
-          ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} res://headless_test.tscn || true
+          brew install coreutils
+          alias timeout="gtimeout"
 
-      - name: Check Results
-        shell: bash
+      - name: Test run
+        shell: bash --noprofile --norc -o pipefail {0}
         run: |
-          if [ ! -f "${{env.PROJECT_PATH}}/SUCCESS" ]; then
-            echo "The file reporting success has not been created! Failed."
-            exit 1
-          fi
+          max_attempts=3
+          current_attempt=1
+          last_exit_code=0
+
+          until [ $current_attempt -gt $max_attempts ]; do
+              current_attempt=$((current_attempt + 1))
+              timeout 2m ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
+              timeout 2m ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} res://headless_test.tscn || true
+
+              if [ ! -f "${{env.PROJECT_PATH}}/SUCCESS" ]; then
+                  echo "The file reporting success has not been created! Failed."
+                  last_exit_code=1
+              else
+                  echo "The file reporting success has been created! Success!"
+                  exit 0
+              fi
+          done
+
+          echo "The maximum number of attempts has been reached. Last error code: $?"
+          exit $last_exit_code

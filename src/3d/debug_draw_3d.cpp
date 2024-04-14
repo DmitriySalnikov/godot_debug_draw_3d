@@ -362,7 +362,7 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::create_debug_container(bool
 	return std::make_shared<DebugGeometryContainer>(this, p_no_depth_test);
 }
 
-std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd) {
+std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
@@ -383,17 +383,23 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(const D
 	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
 			dgc_pair != debug_containers.end() && dgc_pair->second[dgc_depth]) {
 
-		viewport_to_world_cache[p_dgcd.viewport].world_id = dgc_pair->first;
-		viewport_to_world_cache[p_dgcd.viewport].dgcs[dgc_depth] = dgc_pair->second[dgc_depth];
+		auto &cache = viewport_to_world_cache[p_dgcd.viewport];
+		cache.world_id = dgc_pair->first;
+		cache.dgcs[dgc_depth] = dgc_pair->second[dgc_depth];
 		return dgc_pair->second[dgc_depth];
+	}
+
+	if (!p_generate_new_container) {
+		return nullptr;
 	}
 
 	auto dgc = create_debug_container(p_dgcd.no_depth_test);
 	dgc->set_world(vp_world);
 	debug_containers[vp_world_id][dgc_depth] = dgc;
 
-	viewport_to_world_cache[p_dgcd.viewport].world_id = vp_world_id;
-	viewport_to_world_cache[p_dgcd.viewport].dgcs[dgc_depth] = dgc;
+	auto &cache = viewport_to_world_cache[p_dgcd.viewport];
+	cache.world_id = vp_world_id;
+	cache.dgcs[dgc_depth] = dgc;
 
 	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport), vp_world_id);
 
@@ -590,7 +596,7 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 	stats_3d.instantiate();
 
 	for (int i = 0; i < 2; i++) {
-		auto dgc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, !!i));
+		auto dgc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, i > 0), false);
 		if (dgc) {
 			dgc->get_render_stats(stats_3d);
 			res->combine_with(stats_3d);
@@ -643,9 +649,9 @@ void DebugDraw3D::clear_all() {
 	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
 #endif
 
-#define GET_SCOPED_CFG_AND_DGC()                    \
-	auto scfg = scoped_config_for_current_thread(); \
-	auto dgc = get_debug_container(scfg->dgcd);     \
+#define GET_SCOPED_CFG_AND_DGC()                      \
+	auto scfg = scoped_config_for_current_thread();   \
+	auto dgc = get_debug_container(scfg->dgcd, true); \
 	if (!dgc) return
 
 #ifndef DISABLE_DEBUG_RENDERING

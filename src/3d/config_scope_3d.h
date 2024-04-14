@@ -28,6 +28,7 @@ using namespace godot;
  * @warning
  * Also, you can't use scope config between `await`s unless this object is freed before `await`.
  * So, narrow the scope if you want to use `await` and DebugDraw3DScopeConfig in the same method.
+ * Or set the value of the variable to `null` so that the object is cleared due to lack of references.
  * ```python
  *	# Bad example
  *	var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)

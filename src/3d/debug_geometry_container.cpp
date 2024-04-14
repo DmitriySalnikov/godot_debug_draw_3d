@@ -18,9 +18,11 @@ using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p_no_depth_test) {
 	ZoneScoped;
+	DEV_PRINT_STD("New " NAMEOF(DebugGeometryContainer) " created: %s\n", p_no_depth_test ? "NoDepth" : "Normal");
 	owner = p_root;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	no_depth_test = p_no_depth_test;
+	geometry_pool.set_no_depth_test_info(no_depth_test);
 
 	// Create wireframe mesh drawer
 	{
@@ -78,6 +80,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 
 DebugGeometryContainer::~DebugGeometryContainer() {
 	ZoneScoped;
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", UtilityFunctions::is_instance_valid(base_world_viewport) ? base_world_viewport->get_instance_id() : 0);
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();

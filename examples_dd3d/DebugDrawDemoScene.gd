@@ -442,7 +442,7 @@ func _draw_array_of_boxes():
 		cubes_max_time = 60
 	
 	if timer_cubes < 0:
-		var start_time = Time.get_ticks_usec()
+		var _start_time = Time.get_ticks_usec()
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
@@ -450,7 +450,7 @@ func _draw_array_of_boxes():
 					cfg.set_thickness(randf_range(0, 0.1))
 					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
 					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul), Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
-		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - start_time) / 1000.0))
+		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
 
 

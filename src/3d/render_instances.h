@@ -109,6 +109,8 @@ private:
 		TIME_USED_TO_SHRINK_DELAYED = 5,
 	};
 
+	bool is_no_depth_test = false;
+
 	template <class TInst>
 	struct ObjectsPool {
 		std::vector<TInst> instant = {};
@@ -230,6 +232,8 @@ public:
 
 	~GeometryPool() {
 	}
+
+	void set_no_depth_test_info(bool p_no_depth_test);
 
 	std::vector<Viewport *> get_and_validate_viewports();
 

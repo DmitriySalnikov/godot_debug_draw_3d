@@ -13,7 +13,6 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class DebugDraw3DStats;
-enum class MeshMaterialType : char;
 
 class DebugGeometryContainer {
 	friend class DebugDraw3D;
