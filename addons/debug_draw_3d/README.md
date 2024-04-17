@@ -58,7 +58,8 @@ Precompiled for:
 * iOS
 * Web (Firefox not supported)
 
-This addon also supports working with several World3D and different Viewports.
+This addon supports working with several World3D and different Viewports.
+There is also a no depth test mode and other settings that can be changed for each instance.
 
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 
@@ -111,15 +112,11 @@ Also, a list of all functions is available in the documentation inside the edito
 
 ## Known issues and limitations
 
-Enabling occlusion culing can lower fps instead of increasing it. At the moment I do not know how to speed up the calculation of the visibility of objects.
-
 The text in the keys and values of a text group cannot contain multi-line strings.
 
 The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
-
-**The version for Godot 4.0 requires explicitly specifying the exact data types, otherwise errors may occur.**
 
 ## More screenshots
 
