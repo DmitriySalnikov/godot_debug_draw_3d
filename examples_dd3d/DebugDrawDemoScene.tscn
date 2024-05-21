@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=39 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -259,6 +259,26 @@ tracks/0/keys = {
 _data = {
 "RESET": SubResource("8")
 }
+
+[sub_resource type="Shader" id="Shader_3cmiq"]
+code = "shader_type spatial;
+render_mode unshaded;
+
+uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
+
+void fragment() {
+	vec4 col = texture(screen_texture, SCREEN_UV);
+	ALBEDO = col.brg;
+	ALPHA = col.a;
+}
+"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_t3isk"]
+render_priority = 0
+shader = SubResource("Shader_3cmiq")
+
+[sub_resource type="BoxMesh" id="BoxMesh_0xv07"]
+material = SubResource("ShaderMaterial_t3isk")
 
 [sub_resource type="Gradient" id="Gradient_tup4c"]
 offsets = PackedFloat32Array(0.00471698, 0.316038, 0.646226, 1)
@@ -663,6 +683,11 @@ material = SubResource("1")
 libraries = {
 "": SubResource("AnimationLibrary_a7f1a")
 }
+
+[node name="PostProcess" type="MeshInstance3D" parent="."]
+transform = Transform3D(-2.18557e-07, 0, 1.5, 0, 5, 0, -5, 0, -6.55671e-08, 16, 0, 0)
+mesh = SubResource("BoxMesh_0xv07")
+skeleton = NodePath("../Lines")
 
 [node name="MusicVisualizer" type="VBoxContainer" parent="."]
 offset_left = 10.0

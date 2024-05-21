@@ -55,6 +55,9 @@ const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/cent
 const char *DebugDraw3D::s_default_hd_spheres = "volumetric_defaults/hd_spheres";
 const char *DebugDraw3D::s_default_plane_size = "volumetric_defaults/plane_size";
 
+const char *DebugDraw3D::s_render_priority = "rendering/render_priority";
+const char *DebugDraw3D::s_render_mode = "rendering/render_mode";
+
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
 
@@ -151,6 +154,9 @@ void DebugDraw3D::init(DebugDrawManager *p_root) {
 	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.8f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
 	DEFINE_SETTING_AND_GET(real_t def_hd_sphere, root_settings_section + s_default_hd_spheres, false, Variant::BOOL);
 	DEFINE_SETTING_AND_GET_HINT(real_t def_plane_size, root_settings_section + s_default_plane_size, 0, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,10000,0.001");
+
+	DEFINE_SETTING(root_settings_section + s_render_priority, 0, Variant::INT);
+	DEFINE_SETTING_HINT(root_settings_section + s_render_mode, 0, Variant::INT, PROPERTY_HINT_ENUM, "Default,Forced Transparent,Forced Opaque");
 
 	default_scoped_config.instantiate();
 
@@ -489,19 +495,33 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3D::scoped_config() {
 void DebugDraw3D::_load_materials() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-#define LOAD_SHADER(mat, source) \
-	{                            \
-		Ref<Shader> code;        \
-		code.instantiate();      \
-		code->set_code(source);  \
-		mat.instantiate();       \
-		mat->set_shader(code);   \
+#define LOAD_SHADER(mat, source)                   \
+	{                                              \
+		Ref<Shader> code;                          \
+		code.instantiate();                        \
+		code->set_code(source);                    \
+		mat.instantiate();                         \
+		mat->set_shader(code);                     \
+		mat->set_render_priority(render_priority); \
 	}
+
+	int render_priority = PS()->get_setting(root_settings_section + s_render_priority);
+	int render_mode = PS()->get_setting(root_settings_section + s_render_mode); // default, transparent, opaque
 
 	for (int variant = 0; variant < (int)MeshMaterialVariant::MAX; variant++) {
 		String prefix = "";
 		if (variant == (int)MeshMaterialVariant::NoDepth) {
 			prefix = "#define NO_DEPTH\n";
+		}
+
+		switch (render_mode) {
+			case 0: break;
+			case 1:
+				prefix = "#define FORCED_TRANSPARENT\n";
+				break;
+			case 2:
+				prefix = "#define FORCED_OPAQUE\n";
+				break;
 		}
 
 		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Wireframe][variant], prefix + DD3DResources::src_resources_wireframe_unshaded_gdshader);
@@ -609,6 +629,9 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 void DebugDraw3D::regenerate_geometry_meshes() {
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
+
+	// Reload materials
+	_load_materials();
 
 	// Force regenerate meshes
 	shared_generated_meshes.clear();

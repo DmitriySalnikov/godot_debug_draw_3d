@@ -275,6 +275,10 @@ func main_update(delta: float) -> void:
 	var tn1 = $Grids/GridCentered/Subdivision.transform.origin
 	DebugDraw3D.draw_grid_xf($Grids/GridCentered.global_transform, Vector2i(tn1.x*10, tn1.z*10))
 	
+	if true:
+		var _s32 = DebugDraw3D.new_scoped_config().set_thickness(0.05)
+		DebugDraw3D.draw_box_xf($PostProcess.global_transform, Color.SEA_GREEN)
+	
 	# 2D
 	DebugDraw2D.config.text_default_size = text_groups_default_font_size
 	DebugDraw2D.config.text_block_offset = text_groups_offset
@@ -302,7 +306,7 @@ func main_update(delta: float) -> void:
 	
 	# Lag Test
 	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
-	DebugDraw3D.draw_box($LagTest.global_position, Quaternion.IDENTITY, Vector3.ONE * 2.01, DebugDraw3D.empty_color, true)
+	DebugDraw3D.draw_box($LagTest.global_position, Quaternion.IDENTITY, Vector3.ONE * 2.01, Color.CHOCOLATE, true)
 	
 	if more_test_cases:
 		for ray in $HitTest/RayEmitter.get_children():

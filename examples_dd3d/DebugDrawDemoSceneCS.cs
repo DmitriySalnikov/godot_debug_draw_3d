@@ -112,6 +112,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dMisc_Grids_GridCentered_Subdivision;
     Node3D dMisc_Grids_GridCentered;
 
+    MeshInstance3D dPostProcess;
     AnimationPlayer dLagTest_RESET;
     Node3D dHitTest_RayEmitter;
 
@@ -170,6 +171,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dMisc_Grids_Grid_Subdivision = GetNode<Node3D>("Grids/Grid/Subdivision");
         dMisc_Grids_GridCentered_Subdivision = GetNode<Node3D>("Grids/GridCentered/Subdivision");
         dMisc_Grids_GridCentered = GetNode<Node3D>("Grids/GridCentered");
+
+        dPostProcess = GetNode<MeshInstance3D>("PostProcess");
 
         dLagTest_RESET = GetNode<AnimationPlayer>("LagTest/RESET");
         dHitTest_RayEmitter = GetNode<Node3D>("HitTest/RayEmitter");
@@ -482,6 +485,11 @@ public partial class DebugDrawDemoSceneCS : Node3D
         var tn1 = dMisc_Grids_GridCentered_Subdivision.Transform.Origin;
         DebugDraw3D.DrawGridXf(dMisc_Grids_GridCentered.GlobalTransform, new Vector2I((int)(tn1.X * 10), (int)(tn1.Z * 10)));
 
+        using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
+        {
+            DebugDraw3D.DrawBoxXf(dPostProcess.GlobalTransform, Colors.SeaGreen);
+        }
+
         // 2D
         DebugDraw2D.Config.TextDefaultSize = text_groups_default_font_size;
         DebugDraw2D.Config.TextBlockOffset = text_groups_offset;
@@ -521,7 +529,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Lag Test
         dLagTest.Position = ((Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0)) + new Vector3(Mathf.Sin(Time.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
-        DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Quaternion.Identity, Vector3.One * 2.01f, null, true);
+        DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Quaternion.Identity, Vector3.One * 2.01f, Colors.Chocolate, true);
 
         if (more_test_cases)
         {

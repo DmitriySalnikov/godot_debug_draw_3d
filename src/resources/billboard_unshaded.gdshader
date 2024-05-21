@@ -1,4 +1,5 @@
 //#define NO_DEPTH
+//#define FORCED_TRANSPARENT
 
 shader_type spatial;
 render_mode cull_back, shadows_disabled, unshaded
@@ -26,4 +27,8 @@ void fragment() {
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 	NORMAL = ALBEDO;
+	
+	#if defined(FORCED_TRANSPARENT)
+	ALPHA = ALPHA;
+	#endif
 }

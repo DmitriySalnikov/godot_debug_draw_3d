@@ -146,6 +146,9 @@ private:
 	const static char *s_default_hd_spheres;
 	const static char *s_default_plane_size;
 
+	const static char *s_render_priority;
+	const static char *s_render_mode;
+
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
 

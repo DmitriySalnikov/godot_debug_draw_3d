@@ -110,6 +110,19 @@ constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + size
 		PS()->add_property_info(info);      \
 		PS()->set_initial_value(path, def); \
 	}
+#define DEFINE_SETTING_HINT(path, def, type, hint, hint_string) \
+	{                                                           \
+		if (!PS()->has_setting(path)) {                         \
+			PS()->set_setting(path, def);                       \
+		}                                                       \
+		Dictionary info;                                        \
+		info["name"] = path;                                    \
+		info["type"] = type;                                    \
+		info["hint"] = hint;                                    \
+		info["hint_string"] = hint_string;                      \
+		PS()->add_property_info(info);                          \
+		PS()->set_initial_value(path, def);                     \
+	}
 #define DEFINE_SETTING_AND_GET(var, path, def, type) \
 	{                                                \
 		if (!PS()->has_setting(path)) {              \
