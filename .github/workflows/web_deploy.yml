@@ -255,7 +255,7 @@ jobs:
           echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           publish_dir: obj/doxygen/html
@@ -361,7 +361,7 @@ jobs:
           echo "Target URL: https://${{needs.data_preparation.outputs.domain}}/$new_ref_name" >> $GITHUB_STEP_SUMMARY
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           publish_dir: ${{env.BUILD_FOLDER}}
