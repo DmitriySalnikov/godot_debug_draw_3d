@@ -55,8 +55,7 @@ runs:
         key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
 
     - name: Download Godot Engine
-      # TODO https://github.com/robinraju/release-downloader/issues/688
-      uses: robinraju/release-downloader@v1.8
+      uses: robinraju/release-downloader@v1.10
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       with:
         repository: "godotengine/godot"
@@ -66,8 +65,7 @@ runs:
         extract: true
 
     - name: Download templates
-      # TODO https://github.com/robinraju/release-downloader/issues/688
-      uses: robinraju/release-downloader@v1.8
+      uses: robinraju/release-downloader@v1.10
       if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.download_export_templates == 'true'}}
       with:
         repository: "godotengine/godot"
