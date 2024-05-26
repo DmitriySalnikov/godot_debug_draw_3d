@@ -51,6 +51,14 @@ def setup_defines_and_flags(env, src_out):
     if env["tracy_enabled"]:
         env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
         src_out.append("src/thirdparty/tracy/public/TracyClient.cpp")
+
+    if env["platform"] == "linux":
+        env.Append(
+            LINKFLAGS=[
+                "-static-libgcc",
+                "-static-libstdc++",
+            ]
+        )
     print()
 
 
