@@ -21,11 +21,6 @@ config/no_csharp_support=true
 buses/default_bus_layout="res://examples_dd3d/VisualizerAudioBus.tres"
 driver/output_latency=50
 
-[debug_draw_3d]
-
-settings/3d/rendering/render_priority=1
-settings/3d/rendering/render_mode=1
-
 [dotnet]
 
 project/assembly_name="Debug Drawing Utility for Godot"
