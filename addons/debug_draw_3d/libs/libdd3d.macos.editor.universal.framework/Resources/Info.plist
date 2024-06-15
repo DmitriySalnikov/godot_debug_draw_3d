@@ -17,9 +17,9 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright (c) Dmitriy Salnikov.</string>
 	<key>CFBundleVersion</key>
-	<string>1.4.1</string>
+	<string>1.4.2</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.4.1</string>
+	<string>1.4.2</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CSResourcesFileMapped</key>
