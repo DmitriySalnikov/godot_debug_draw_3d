@@ -148,6 +148,7 @@ private:
 
 	const static char *s_render_priority;
 	const static char *s_render_mode;
+	const static char *s_render_fog_disabled;
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;

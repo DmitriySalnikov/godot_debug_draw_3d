@@ -3,8 +3,11 @@
 
 shader_type spatial;
 render_mode cull_disabled, shadows_disabled, unshaded
+#if defined(FOG_DISABLED)
+, fog_disabled
+#endif
 #if defined(NO_DEPTH)
-,depth_test_disabled;
+, depth_test_disabled;
 #else
 ;
 #endif

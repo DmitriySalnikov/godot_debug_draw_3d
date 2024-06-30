@@ -17,6 +17,10 @@ sky_material = SubResource("ProceduralSkyMaterial_87638")
 [sub_resource type="Environment" id="Environment_38m85"]
 sky = SubResource("Sky_4jfme")
 tonemap_mode = 2
+fog_light_energy = 0.41
+fog_density = 0.0757
+fog_height = 0.5
+fog_height_density = 4.6102
 
 [sub_resource type="Animation" id="9"]
 resource_name = "New Anim"
