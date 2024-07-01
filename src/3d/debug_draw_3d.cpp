@@ -514,21 +514,21 @@ void DebugDraw3D::_load_materials() {
 	for (int variant = 0; variant < (int)MeshMaterialVariant::MAX; variant++) {
 		String prefix = "";
 		if (variant == (int)MeshMaterialVariant::NoDepth) {
-			prefix = "#define NO_DEPTH\n";
+			prefix += "#define NO_DEPTH\n";
 		}
 
 		switch (render_mode) {
 			case 0: break;
 			case 1:
-				prefix = "#define FORCED_TRANSPARENT\n";
+				prefix += "#define FORCED_TRANSPARENT\n";
 				break;
 			case 2:
-				prefix = "#define FORCED_OPAQUE\n";
+				prefix += "#define FORCED_OPAQUE\n";
 				break;
 		}
 
 		if (fog_disabled) {
-			prefix = "#define FOG_DISABLED\n";
+			prefix += "#define FOG_DISABLED\n";
 		}
 
 		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Wireframe][variant], prefix + DD3DResources::src_resources_wireframe_unshaded_gdshader);
