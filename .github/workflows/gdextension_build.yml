@@ -227,6 +227,7 @@ jobs:
       matrix:
         arch: [wasm32]
         target: [template_debug, template_release]
+        threads: [yes, no]
 
     env:
       EM_VERSION: 3.1.63
@@ -252,8 +253,8 @@ jobs:
           platform: web
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          artifact: web.${{matrix.target}}.${{matrix.arch}}
-          additional: lto=yes
+          artifact: web.${{matrix.target}}.${{matrix.arch}}.threads_${{matrix.threads}}
+          additional: lto=yes threads=${{matrix.threads}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 

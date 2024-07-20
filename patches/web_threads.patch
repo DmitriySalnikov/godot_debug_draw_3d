@@ -1,0 +1,38 @@
+diff --git a/tools/godotcpp.py b/tools/godotcpp.py
+index cc2b02f..4cebea3 100644
+--- a/tools/godotcpp.py
++++ b/tools/godotcpp.py
+@@ -267,6 +267,8 @@ def options(opts, env):
+         )
+     )
+ 
++    opts.Add(BoolVariable(key="threads", help="Enable threading support", default=env.get("threads", True)))
++
+     # compiledb
+     opts.Add(
+         BoolVariable(
+@@ -436,6 +438,8 @@ def generate(env):
+     suffix += "." + env["arch"]
+     if env["ios_simulator"]:
+         suffix += ".simulator"
++    if not env["threads"]:
++        suffix += ".nothreads"
+ 
+     env["suffix"] = suffix  # Exposed when included from another project
+     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+diff --git a/tools/web.py b/tools/web.py
+index 79b4b24..8953325 100644
+--- a/tools/web.py
++++ b/tools/web.py
+@@ -34,8 +34,9 @@ def generate(env):
+     env["SHLIBSUFFIX"] = ".wasm"
+ 
+     # Thread support (via SharedArrayBuffer).
+-    env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
+-    env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
++    if env["threads"]:
++        env.Append(CCFLAGS=["-s", "USE_PTHREADS=1"])
++        env.Append(LINKFLAGS=["-s", "USE_PTHREADS=1"])
+ 
+     # Build as side module (shared library).
+     env.Append(CPPFLAGS=["-s", "SIDE_MODULE=1"])

@@ -14,12 +14,15 @@ macos = { }
 windows.x86_64 = { }
 linux.x86_64 = { }
 
+; by default godot is using threads
+web.wasm32.nothreads = {}
 web.wasm32 = {}
 
 android.arm32 = { }
 android.arm64 = { }
 android.x86_32 = { }
 android.x86_64 = { }
+
 ios = {}
 
 ; -------------------------------------
@@ -29,12 +32,14 @@ macos.template_release = { }
 windows.template_release.x86_64 = { }
 linux.template_release.x86_64 = { }
 
+web.template_release.wasm32.nothreads = { }
 web.template_release.wasm32 = { }
 
 android.template_release.arm32 = { }
 android.template_release.arm64 = { }
 android.template_release.x86_32 = { }
 android.template_release.x86_64 = { }
+
 ios.template_release = {}
 
 ; -------------------------------------
@@ -44,7 +49,9 @@ macos.template_release.forced_dd3d = { }
 windows.template_release.x86_64.forced_dd3d = { }
 linux.template_release.x86_64.forced_dd3d = { }
 
+web.template_release.wasm32.nothreads.forced_dd3d = { }
 web.template_release.wasm32.forced_dd3d = { }
+
 ios.template_release.forced_dd3d = {}
 
 [libraries]
@@ -56,12 +63,14 @@ macos = "libs/libdd3d.macos.editor.universal.framework"
 windows.x86_64 = "libs/libdd3d.windows.editor.x86_64.dll"
 linux.x86_64 = "libs/libdd3d.linux.editor.x86_64.so"
 
-web.wasm32 = "libs/libdd3d.web.template_debug.wasm32.wasm"
+web.wasm32.nothreads = "libs/libdd3d.web.template_debug.wasm32.wasm"
+web.wasm32 = "libs/libdd3d.web.template_debug.wasm32.threads.wasm"
 
 android.arm32 = "libs/libdd3d.android.template_debug.arm32.so"
 android.arm64 = "libs/libdd3d.android.template_debug.arm64.so"
 android.x86_32 = "libs/libdd3d.android.template_debug.x86_32.so"
 android.x86_64 = "libs/libdd3d.android.template_debug.x86_64.so"
+
 ios = "libs/libdd3d.ios.template_debug.universal.dylib"
 
 ; -------------------------------------
@@ -71,12 +80,14 @@ macos.template_release = "libs/libdd3d.macos.template_release.universal.framewor
 windows.template_release.x86_64 = "libs/libdd3d.windows.template_release.x86_64.dll"
 linux.template_release.x86_64 = "libs/libdd3d.linux.template_release.x86_64.so"
 
-web.template_release.wasm32 = "libs/libdd3d.web.template_release.wasm32.wasm"
+web.template_release.wasm32.nothreads = "libs/libdd3d.web.template_release.wasm32.wasm"
+web.template_release.wasm32 = "libs/libdd3d.web.template_release.wasm32.threads.wasm"
 
 android.template_release.arm32 = "libs/libdd3d.android.template_release.arm32.so"
 android.template_release.arm64 = "libs/libdd3d.android.template_release.arm64.so"
 android.template_release.x86_32 = "libs/libdd3d.android.template_release.x86_32.so"
 android.template_release.x86_64 = "libs/libdd3d.android.template_release.x86_64.so"
+
 ios.template_release = "libs/libdd3d.ios.template_release.universal.dylib"
 
 ; -------------------------------------
@@ -86,5 +97,7 @@ macos.template_release.forced_dd3d = "libs/libdd3d.macos.template_release.univer
 windows.template_release.x86_64.forced_dd3d = "libs/libdd3d.windows.template_release.x86_64.enabled.dll"
 linux.template_release.x86_64.forced_dd3d = "libs/libdd3d.linux.template_release.x86_64.enabled.so"
 
-web.template_release.wasm32.forced_dd3d = "libs/libdd3d.web.template_release.wasm32.enabled.wasm"
+web.template_release.wasm32.nothreads.forced_dd3d = "libs/libdd3d.web.template_release.wasm32.enabled.wasm"
+web.template_release.wasm32.forced_dd3d = "libs/libdd3d.web.template_release.wasm32.threads.enabled.wasm"
+
 ios.template_release.forced_dd3d = "libs/libdd3d.ios.template_release.universal.enabled.dylib"

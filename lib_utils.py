@@ -88,6 +88,10 @@ def get_library_object(env, arguments=None, gen_help=None):
 
     # some additional tags
     additional_tags = ""
+
+    if env["platform"] == "web" and env.get("threads", True):
+        additional_tags = ".threads"
+
     if "release" in env["target"] and env["force_enabled_dd3d"]:
         additional_tags += ".enabled"
 

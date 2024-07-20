@@ -72,6 +72,7 @@ private:
 public:
 	/// @private
 	struct DebugContainerDependent {
+		// TODO replace by instance_id
 		Viewport *viewport;
 		bool no_depth_test;
 

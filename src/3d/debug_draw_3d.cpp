@@ -409,16 +409,17 @@ std::shared_ptr<DebugGeometryContainer> DebugDraw3D::get_debug_container(const D
 	cache.world_id = vp_world_id;
 	cache.dgcs[dgc_depth] = dgc;
 
-	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport), vp_world_id);
+	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id);
 
 	return dgc;
 }
 
-void DebugDraw3D::_register_viewport_world_deferred(Viewport *p_vp, const uint64_t p_world_id) {
+void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ vp_id, const uint64_t p_world_id) {
 	ZoneScoped;
 
 	// something failed. need to remove container
-	if (!UtilityFunctions::is_instance_valid(p_vp) || p_vp->is_queued_for_deletion()) {
+	Viewport *p_vp = cast_to<Viewport>(ObjectDB::get_instance(vp_id));
+	if (!p_vp || p_vp->is_queued_for_deletion()) {
 		_remove_debug_container(p_world_id);
 		return;
 	}
@@ -473,14 +474,15 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3D::new_scoped_config() {
 	create_counter++;
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
+	auto unreg_func = [this](const uint64_t &p_thread_id, const uint64_t &p_guard_id) {
+						_unregister_scoped_config(p_thread_id, p_guard_id);
+					};
 	Ref<DebugDraw3DScopeConfig> res(memnew(
 			DebugDraw3DScopeConfig(
 					thread,
 					create_counter,
 					scoped_config_for_current_thread(),
-					[this](const uint64_t &p_thread_id, const uint64_t &p_guard_id) {
-						_unregister_scoped_config(p_thread_id, p_guard_id);
-					})));
+					unreg_func)));
 
 	_register_scoped_config(thread, create_counter, res.ptr());
 	created_scoped_configs++;

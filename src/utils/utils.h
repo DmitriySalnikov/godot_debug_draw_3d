@@ -4,7 +4,6 @@
 #include "profiler.h"
 
 #include <algorithm>
-#include <chrono>
 #include <functional>
 #include <map>
 #include <memory>
@@ -218,7 +217,7 @@ public:
 	// p_custom_callable_to_connect is used here to avoid constantly creating Callable().bindv()
 	template <class T>
 	static bool connect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable, const uint32_t &p_flags = 0, godot::Error *p_out_error = nullptr, std::function<godot::Callable()> p_custom_callable_to_connect = nullptr) {
-		if (godot::UtilityFunctions::is_instance_valid(p_inst) && !p_inst->is_connected(p_signal, p_callable)) {
+		if (p_inst && !p_inst->is_connected(p_signal, p_callable)) {
 			godot::Error err = p_inst->connect(p_signal, p_custom_callable_to_connect ? p_custom_callable_to_connect() : p_callable, p_flags);
 			if (p_out_error)
 				*p_out_error = err;
@@ -229,7 +228,7 @@ public:
 
 	template <class T>
 	static bool disconnect_safe(T p_inst, const godot::StringName &p_signal, const godot::Callable &p_callable) {
-		if (godot::UtilityFunctions::is_instance_valid(p_inst) && p_inst->is_connected(p_signal, p_callable)) {
+		if (p_inst && p_inst->is_connected(p_signal, p_callable)) {
 			p_inst->disconnect(p_signal, p_callable);
 			return true;
 		}
@@ -322,10 +321,8 @@ public:
 #pragma endregion
 };
 
-#define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
-#define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
-#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, false)
-#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, true)
+#if false
+#include <chrono>
 
 class GodotScopedStopwatch {
 	std::chrono::high_resolution_clock::time_point start_time;
@@ -346,3 +343,33 @@ public:
 			*m_time_val = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count());
 	}
 };
+#else
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/time.hpp>
+GODOT_WARNING_RESTORE()
+
+class GodotScopedStopwatch {
+	uint64_t start_time;
+	int64_t *m_time_val;
+	bool m_add;
+
+public:
+	GodotScopedStopwatch(int64_t *p_time_val, bool p_add) {
+		m_time_val = p_time_val;
+		m_add = p_add;
+		start_time = godot::Time::get_singleton()->get_ticks_usec();
+	}
+
+	~GodotScopedStopwatch() {
+		if (m_add)
+			*m_time_val += godot::Time::get_singleton()->get_ticks_usec() - start_time;
+		else
+			*m_time_val = godot::Time::get_singleton()->get_ticks_usec() - start_time;
+	}
+};
+#endif
+
+#define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
+#define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
+#define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, false)
+#define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, true)

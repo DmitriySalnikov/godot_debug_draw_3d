@@ -101,7 +101,7 @@ void DebugDrawManager::_connect_scene_changed() {
 	}
 
 	Node *scene = _get_current_scene();
-	if (scene && UtilityFunctions::is_instance_valid(scene)) {
+	if (scene) {
 		scene->connect(StringName("tree_exiting"), Callable(this, NAMEOF(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		return;
 	}
@@ -295,7 +295,7 @@ void DebugDrawManager::_integrate_into_engine() {
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
-		debug_draw_2d_singleton->default_canvas = (Control *)n;
+		debug_draw_2d_singleton->default_control_id = n->get_instance_id();
 
 		// actual tree for godot 4.0 beta 14
 		//
@@ -336,19 +336,19 @@ void DebugDrawManager::_integrate_into_engine() {
 	} else {
 		set_layer(64);
 
-		auto default_canvas = memnew(Control);
-		default_canvas->set_name("DebugDrawDefaultCanvas");
-		((Control *)default_canvas)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-		((Control *)default_canvas)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-		debug_draw_2d_singleton->default_canvas = default_canvas;
+		auto default_control = memnew(Control);
+		default_control->set_name("DebugDrawDefaultCanvas");
+		((Control *)default_control)->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+		((Control *)default_control)->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		debug_draw_2d_singleton->default_control_id = default_control->get_instance_id();
 
 		// will be auto deleted as child
-		add_child(default_canvas);
+		add_child(default_control);
 
 		debug_draw_3d_singleton->scoped_config()->set_viewport(SCENE_ROOT());
 	}
 
-	debug_draw_2d_singleton->set_custom_canvas(debug_draw_2d_singleton->custom_canvas);
+	debug_draw_2d_singleton->set_custom_canvas(nullptr);
 	_connect_scene_changed();
 #endif
 

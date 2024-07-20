@@ -81,16 +81,20 @@ DebugDraw2D::~DebugDraw2D() {
 	data_graphs.reset();
 	grouped_text.reset();
 
-	if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache))
-		default_canvas->queue_redraw();
-	if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache))
-		custom_canvas->queue_redraw();
+	Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id));
+	Control *custom_control = Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id));
+
+	if (Utils::disconnect_safe(default_control, "draw", call_canvas_item_draw_cache))
+		default_control->queue_redraw();
+
+	if (Utils::disconnect_safe(custom_control, "draw", call_canvas_item_draw_cache))
+		custom_control->queue_redraw();
 
 	if (!IS_EDITOR_HINT()) {
-		if (UtilityFunctions::is_instance_valid(default_canvas))
-			default_canvas->queue_free();
+		if (default_control)
+			default_control->queue_free();
 
-		default_canvas = nullptr;
+		default_control_id = 0;
 	}
 #endif
 
@@ -149,10 +153,10 @@ void DebugDraw2D::physics_process_end(double delta) {
 void DebugDraw2D::_finish_frame_and_update(bool avoid_casts) {
 	ZoneScoped;
 	if (_canvas_need_update) {
-		if (!avoid_casts && UtilityFunctions::is_instance_valid(custom_canvas)) {
+		if (Control *custom_canvas = Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id)); !avoid_casts && custom_canvas) {
 			custom_canvas->queue_redraw();
-		} else if (UtilityFunctions::is_instance_valid(default_canvas)) {
-			default_canvas->queue_redraw();
+		} else if (Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id)); default_control) {
+			default_control->queue_redraw();
 		} else {
 #ifdef TRACY_ENABLE
 			if (DebugDraw2D_frame_mark_2d_started) {
@@ -189,33 +193,34 @@ void DebugDraw2D::_clear_all_internal(bool avoid_casts) {
 
 void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts) {
 	static std::function<Callable()> create_default = [this]() {
-		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(default_canvas));
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(ObjectDB::get_instance(default_control_id)));
 	};
 	static std::function<Callable()> create_custom = [this]() {
-		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(custom_canvas));
+		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(ObjectDB::get_instance(custom_control_id)));
 	};
 
+	Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id));
+	Control *old_custom_canvas = Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id));
+
 	if (!_canvas) {
-		Utils::connect_safe(default_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_default);
+		Utils::connect_safe(default_control, "draw", call_canvas_item_draw_cache, 0, nullptr, create_default);
 		if (!avoid_casts) {
-			if (Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
-				custom_canvas->queue_redraw();
+			if (Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				old_custom_canvas->queue_redraw();
 			}
 		}
-		custom_canvas = _canvas;
+		custom_control_id = 0;
 	} else {
-		if (Utils::disconnect_safe(default_canvas, "draw", call_canvas_item_draw_cache)) {
-			default_canvas->queue_redraw();
+		if (Utils::disconnect_safe(default_control, "draw", call_canvas_item_draw_cache)) {
+			default_control->queue_redraw();
 		}
+		custom_control_id = _canvas->get_instance_id();
 		if (!avoid_casts) {
-			if (custom_canvas != _canvas && Utils::disconnect_safe(custom_canvas, "draw", call_canvas_item_draw_cache)) {
-				custom_canvas->queue_redraw();
+			if (old_custom_canvas != _canvas && Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
+				old_custom_canvas->queue_redraw();
 			}
 
-			custom_canvas = _canvas;
-			Utils::connect_safe(custom_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
-		} else {
-			custom_canvas = _canvas;
+			Utils::connect_safe(_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
 		}
 	}
 }
@@ -224,6 +229,7 @@ void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts
 void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
+	if (!ci) return;
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
@@ -310,12 +316,12 @@ void DebugDraw2D::set_custom_canvas(Control *_canvas) {
 #ifndef DISABLE_DEBUG_RENDERING
 	_set_custom_canvas_internal(_canvas, false);
 #else
-	custom_canvas = _canvas;
+	custom_control_id = _canvas->get_instance_id();
 #endif
 }
 
 Control *DebugDraw2D::get_custom_canvas() const {
-	return custom_canvas;
+	return Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id));
 }
 
 #pragma endregion

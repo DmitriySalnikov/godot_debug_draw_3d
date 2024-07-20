@@ -80,7 +80,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 
 DebugGeometryContainer::~DebugGeometryContainer() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", UtilityFunctions::is_instance_valid(base_world_viewport) ? base_world_viewport->get_instance_id() : 0);
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", base_world_viewport.is_valid() ? base_world_viewport->get_instance_id() : 0);
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();

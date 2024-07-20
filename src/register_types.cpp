@@ -11,7 +11,7 @@
 #include "debug_draw_manager.h"
 #include "utils/utils.h"
 
-DebugDrawManager *debug_draw_manager = nullptr;
+uint64_t debug_draw_manager_id = 0;
 
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef TOOLS_ENABLED
@@ -55,8 +55,9 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 
 		// Since this manager is a node in the scene tree,
 		// it will already be destroyed at the time of cleaning this library.
-		debug_draw_manager = memnew(DebugDrawManager);
+		DebugDrawManager *debug_draw_manager = memnew(DebugDrawManager);
 		debug_draw_manager->init();
+		debug_draw_manager_id = debug_draw_manager->get_instance_id();
 	}
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -79,10 +80,11 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 
 		// If this library is disabled manually before deleting the scene tree (hot-reload),
 		// then an attempt is made to delete this node manually.
-		if (Engine::get_singleton()->get_main_loop() && UtilityFunctions::is_instance_valid(debug_draw_manager)) {
+		DebugDrawManager *debug_draw_manager = Object::cast_to<DebugDrawManager>(ObjectDB::get_instance(debug_draw_manager_id));
+		if (Engine::get_singleton()->get_main_loop() && debug_draw_manager) {
 			memdelete(debug_draw_manager);
 		}
-		debug_draw_manager = nullptr;
+		debug_draw_manager_id = 0;
 
 #if defined(TRACY_DELAYED_INIT) && defined(TRACY_MANUAL_LIFETIME)
 		tracy::ShutdownProfiler();

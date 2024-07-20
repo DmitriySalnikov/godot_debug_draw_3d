@@ -152,7 +152,7 @@ jobs:
             target: template_release
             arch: wasm32
             artifact: web.demo_build
-            additional: lto=yes force_enabled_dd3d=yes
+            additional: lto=yes force_enabled_dd3d=yes threads=yes
 
           - platform: linux
             target: editor

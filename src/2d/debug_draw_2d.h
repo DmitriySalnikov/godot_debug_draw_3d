@@ -42,7 +42,7 @@ private:
 	Ref<DebugDraw2DStats> stats_2d;
 
 	Callable call_canvas_item_draw_cache;
-	Control *default_canvas = nullptr;
+	uint64_t default_control_id = 0;
 
 #ifndef DISABLE_DEBUG_RENDERING
 	std::unique_ptr<GroupedText> grouped_text;
@@ -67,7 +67,7 @@ private:
 	// GENERAL
 
 	bool debug_enabled = true;
-	Control *custom_canvas = nullptr;
+	uint64_t custom_control_id = 0;
 
 	Ref<DebugDraw2DConfig> config;
 
