@@ -229,7 +229,7 @@ jobs:
         target: [template_debug, template_release]
 
     env:
-      EM_VERSION: 3.1.39
+      EM_VERSION: 3.1.63
 
     steps:
       - name: Checkout
