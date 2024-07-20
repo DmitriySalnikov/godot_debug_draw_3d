@@ -2,7 +2,6 @@ cd godot-cpp
 ::set api=custom_api_file="../api.json"
 set api= 
 
-git apply --ignore-space-change --ignore-whitespace ../patches/visibilty_hidden.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
 ::git apply --ignore-space-change --ignore-whitespace ../patches/debug_string.patch

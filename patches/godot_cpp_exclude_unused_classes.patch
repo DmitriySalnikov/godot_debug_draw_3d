@@ -1,26 +1,28 @@
 diff --git a/binding_generator.py b/binding_generator.py
-index 18db9fd..0e00eb1 100644
+index 7911a7e..58188f7 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -1,5 +1,9 @@
- #!/usr/bin/env python
+@@ -5,6 +5,11 @@ import re
+ import shutil
+ from pathlib import Path
  
 +import sys
++
 +sys.path.insert(0, "../patches")
 +import get_used_classes
 +
- import json
- import re
- import shutil
-@@ -76,6 +80,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+ 
+ def generate_mod_version(argcount, const=False, returns=False):
+     s = """
+@@ -76,6 +81,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False, profil
      with open(api_filepath, encoding="utf-8") as api_file:
          api = json.load(api_file)
  
 +    get_used_classes.scan_dependencies(api)
+     build_profile = parse_build_profile(profile_filepath, api)
+ 
      core_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp" / "core"
-     include_gen_folder = Path(output_dir) / "gen" / "include" / "godot_cpp"
-     source_gen_folder = Path(output_dir) / "gen" / "src"
-@@ -131,6 +136,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -133,6 +139,7 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False, profil
          utility_functions_source_path = source_gen_folder / "variant" / "utility_functions.cpp"
          files.append(str(utility_functions_source_path.as_posix()))
  
@@ -28,26 +30,26 @@ index 18db9fd..0e00eb1 100644
      return files
  
  
-@@ -141,6 +147,8 @@ def print_file_list(api_filepath, output_dir, headers=False, sources=False):
+@@ -230,6 +237,8 @@ def parse_build_profile(profile_filepath, api):
  
  
  def scons_emit_files(target, source, env):
 +    get_used_classes.setup(env.get("exclude_unused_classes", True), env.get("folder_to_include_classes", "../src"))
 +
-     files = [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)]
-     env.Clean(target, files)
-     env["godot_cpp_gen_dir"] = target[0].abspath
+     profile_filepath = env.get("build_profile", "")
+     if profile_filepath and not Path(profile_filepath).is_absolute():
+         profile_filepath = str((Path(env.Dir("#").abspath) / profile_filepath).as_posix())
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index efe632a..a35b752 100644
+index cc2b02f..d138052 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
-@@ -183,6 +183,9 @@ def options(opts, env):
-         )
-     )
+@@ -322,6 +322,9 @@ def options(opts, env):
+     opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
+     opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
  
 +    opts.Add(BoolVariable("exclude_unused_classes", "Disable generation of unused classes.", True))
 +    opts.Add(PathVariable("folder_to_include_classes", "Path to the directory containing extension sources", "../src", PathVariable.PathIsDir))
 +
-     # Add platform options
-     for pl in platforms:
-         tool = Tool(pl, toolpath=["tools"])
+     # Add platform options (custom tools can override platforms)
+     for pl in sorted(set(platforms + custom_platforms)):
+         tool = Tool(pl, toolpath=get_platform_tools_paths(env))
