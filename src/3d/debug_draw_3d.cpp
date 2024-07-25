@@ -158,7 +158,9 @@ void DebugDraw3D::init(DebugDrawManager *p_root) {
 
 	DEFINE_SETTING(root_settings_section + s_render_priority, 0, Variant::INT);
 	DEFINE_SETTING_HINT(root_settings_section + s_render_mode, 0, Variant::INT, PROPERTY_HINT_ENUM, "Default,Forced Transparent,Forced Opaque");
-	DEFINE_SETTING(root_settings_section + s_render_fog_disabled, true, Variant::BOOL);
+	if (Utils::is_current_godot_version_in_range(4, 2)) {
+		DEFINE_SETTING(root_settings_section + s_render_fog_disabled, true, Variant::BOOL);
+	}
 
 	default_scoped_config.instantiate();
 
@@ -475,8 +477,8 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3D::new_scoped_config() {
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
 	auto unreg_func = [this](const uint64_t &p_thread_id, const uint64_t &p_guard_id) {
-						_unregister_scoped_config(p_thread_id, p_guard_id);
-					};
+		_unregister_scoped_config(p_thread_id, p_guard_id);
+	};
 	Ref<DebugDraw3DScopeConfig> res(memnew(
 			DebugDraw3DScopeConfig(
 					thread,
@@ -511,7 +513,7 @@ void DebugDraw3D::_load_materials() {
 
 	int render_priority = PS()->get_setting(root_settings_section + s_render_priority);
 	int render_mode = PS()->get_setting(root_settings_section + s_render_mode); // default, transparent, opaque
-	bool fog_disabled = PS()->get_setting(root_settings_section + s_render_fog_disabled);
+	bool fog_disabled = Utils::is_current_godot_version_in_range(4, 2) ? (bool)PS()->get_setting(root_settings_section + s_render_fog_disabled) : false;
 
 	for (int variant = 0; variant < (int)MeshMaterialVariant::MAX; variant++) {
 		String prefix = "";
@@ -529,8 +531,10 @@ void DebugDraw3D::_load_materials() {
 				break;
 		}
 
-		if (fog_disabled) {
-			prefix += "#define FOG_DISABLED\n";
+		if (Utils::is_current_godot_version_in_range(4, 2)) {
+			if (fog_disabled) {
+				prefix += "#define FOG_DISABLED\n";
+			}
 		}
 
 		LOAD_SHADER(mesh_shaders[(int)MeshMaterialType::Wireframe][variant], prefix + DD3DResources::src_resources_wireframe_unshaded_gdshader);

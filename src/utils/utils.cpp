@@ -123,3 +123,42 @@ String Utils::get_scene_tree_as_string(Node *start) {
 	return output;
 }
 #endif
+
+void Utils::get_godot_version(int *major, int *minor, int *patch, int *version_sum) {
+	if (major) {
+		static int static_godot_major = (int)Engine::get_singleton()->get_version_info()["major"];
+		*major = static_godot_major;
+	}
+	if (minor) {
+		static int static_godot_minor = (int)Engine::get_singleton()->get_version_info()["minor"];
+		*minor = static_godot_minor;
+	}
+	if (patch) {
+		static int static_godot_patch = (int)Engine::get_singleton()->get_version_info()["patch"];
+		*patch = static_godot_patch;
+	}
+	if (version_sum) {
+		static int static_godot_version = (((char)(int)Engine::get_singleton()->get_version_info()["major"]) << 3 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["minor"]) << 2 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["patch"]) << 1 * 8);
+		*version_sum = static_godot_version;
+	}
+}
+
+bool Utils::is_current_godot_version_in_range(uint8_t min_major, uint8_t min_minor, uint8_t min_patch, uint8_t max_major, uint8_t max_minor, uint8_t max_patch) {
+	int godot_version;
+	get_godot_version(nullptr, nullptr, nullptr, &godot_version);
+
+	int min_version_sum = ((int8_t)min_major << 3 * 8) + ((int8_t)min_minor << 2 * 8) + ((int8_t)min_patch << 1 * 8);
+	int max_version_sum = ((int8_t)max_major << 3 * 8) + ((int8_t)max_minor << 2 * 8) + ((int8_t)max_patch << 1 * 8);
+
+	bool min_has_value = min_major;
+	bool max_has_value = max_major;
+
+	if (min_has_value && max_has_value) {
+		return godot_version >= min_version_sum && godot_version <= max_version_sum;
+	} else if (min_has_value) {
+		return godot_version >= min_version_sum;
+	} else if (max_has_value) {
+		return godot_version <= max_version_sum;
+	}
+	return false;
+}
