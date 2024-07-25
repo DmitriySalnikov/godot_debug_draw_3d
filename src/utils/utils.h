@@ -321,7 +321,8 @@ public:
 #pragma endregion
 };
 
-#if false
+#ifndef DISABLE_DEBUG_RENDERING
+#ifndef WEB_ENABLED
 #include <chrono>
 
 class GodotScopedStopwatch {
@@ -373,3 +374,7 @@ public:
 #define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)
 #define GODOT_STOPWATCH(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, false)
 #define GODOT_STOPWATCH_ADD(time_val) GodotScopedStopwatch _GODOT_STOPWATCH_CONCAT(godot_stopwatch_, __LINE__)(time_val, true)
+#else
+#define GODOT_STOPWATCH(time_val)
+#define GODOT_STOPWATCH_ADD(time_val)
+#endif

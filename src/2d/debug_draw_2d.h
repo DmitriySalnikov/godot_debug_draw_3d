@@ -50,9 +50,9 @@ private:
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
-	void _finish_frame_and_update(bool avoid_casts);
-	void _clear_all_internal(bool avoid_casts);
-	void _set_custom_canvas_internal(Control *_canvas, bool avoid_casts);
+	void _finish_frame_and_update();
+	void _clear_all_internal();
+	void _set_custom_canvas_internal(Control *_canvas);
 #endif
 
 	void _on_canvas_item_draw(Control *ci);

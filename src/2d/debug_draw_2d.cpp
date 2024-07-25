@@ -130,7 +130,7 @@ void DebugDraw2D::process(double delta) {
 	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
-	_finish_frame_and_update(false);
+	_finish_frame_and_update();
 #endif
 }
 
@@ -150,10 +150,10 @@ void DebugDraw2D::physics_process_end(double delta) {
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
-void DebugDraw2D::_finish_frame_and_update(bool avoid_casts) {
+void DebugDraw2D::_finish_frame_and_update() {
 	ZoneScoped;
 	if (_canvas_need_update) {
-		if (Control *custom_canvas = Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id)); !avoid_casts && custom_canvas) {
+		if (Control *custom_canvas = Object::cast_to<Control>(ObjectDB::get_instance(custom_control_id)); custom_canvas) {
 			custom_canvas->queue_redraw();
 		} else if (Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id)); default_control) {
 			default_control->queue_redraw();
@@ -180,18 +180,18 @@ void DebugDraw2D::_finish_frame_and_update(bool avoid_casts) {
 	}
 }
 
-void DebugDraw2D::_clear_all_internal(bool avoid_casts) {
+void DebugDraw2D::_clear_all_internal() {
 	if (grouped_text)
 		grouped_text->clear_groups();
 	if (data_graphs)
 		data_graphs->clear_graphs();
 	mark_canvas_dirty();
-	_finish_frame_and_update(avoid_casts);
+	_finish_frame_and_update();
 
-	_set_custom_canvas_internal(nullptr, avoid_casts);
+	_set_custom_canvas_internal(nullptr);
 }
 
-void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts) {
+void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas) {
 	static std::function<Callable()> create_default = [this]() {
 		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(ObjectDB::get_instance(default_control_id)));
 	};
@@ -204,10 +204,8 @@ void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts
 
 	if (!_canvas) {
 		Utils::connect_safe(default_control, "draw", call_canvas_item_draw_cache, 0, nullptr, create_default);
-		if (!avoid_casts) {
-			if (Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
-				old_custom_canvas->queue_redraw();
-			}
+		if (Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
+			old_custom_canvas->queue_redraw();
 		}
 		custom_control_id = 0;
 	} else {
@@ -215,13 +213,12 @@ void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas, bool avoid_casts
 			default_control->queue_redraw();
 		}
 		custom_control_id = _canvas->get_instance_id();
-		if (!avoid_casts) {
-			if (old_custom_canvas != _canvas && Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
-				old_custom_canvas->queue_redraw();
-			}
 
-			Utils::connect_safe(_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
+		if (old_custom_canvas != _canvas && Utils::disconnect_safe(old_custom_canvas, "draw", call_canvas_item_draw_cache)) {
+			old_custom_canvas->queue_redraw();
 		}
+
+		Utils::connect_safe(_canvas, "draw", call_canvas_item_draw_cache, 0, nullptr, create_custom);
 	}
 }
 #endif
@@ -314,7 +311,7 @@ Ref<DebugDraw2DConfig> DebugDraw2D::get_config() const {
 void DebugDraw2D::set_custom_canvas(Control *_canvas) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	_set_custom_canvas_internal(_canvas, false);
+	_set_custom_canvas_internal(_canvas);
 #else
 	custom_control_id = _canvas->get_instance_id();
 #endif
@@ -345,7 +342,7 @@ Ref<DebugDraw2DStats> DebugDraw2D::get_render_stats() {
 void DebugDraw2D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	_clear_all_internal(false);
+	_clear_all_internal();
 #endif
 }
 

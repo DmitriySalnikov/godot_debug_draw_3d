@@ -15,6 +15,7 @@ dest_files=["res://.godot/imported/Roboto-Bold.ttf-3674de3d9ad3ee757cd4b4a89f1e1
 Rendering=null
 antialiasing=1
 generate_mipmaps=false
+disable_embedded_bitmaps=true
 multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48

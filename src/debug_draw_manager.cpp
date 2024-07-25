@@ -116,9 +116,7 @@ void DebugDrawManager::_on_scene_changed(bool p_is_scene_null) {
 	if (!is_current_scene_is_null || is_current_scene_is_null != p_is_scene_null) {
 		DEV_PRINT("Scene changed! clear_all()");
 		debug_draw_3d_singleton->clear_all();
-
-		// call this version of `clear_all` to avoid casts on nullptr
-		debug_draw_2d_singleton->_clear_all_internal(true);
+		debug_draw_2d_singleton->_clear_all_internal();
 	}
 
 	is_current_scene_is_null = p_is_scene_null;
