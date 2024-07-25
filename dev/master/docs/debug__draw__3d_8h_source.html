@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.4.3</span>
+                      id="projectnumber">&#160;1.4.4</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -274,7 +274,7 @@ $(function(){initNavTree('debug__draw__3d_8h_source.html',''); initResizable(); 
 <div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    std::array&lt;Ref&lt;ArrayMesh&gt;, 2&gt; *get_shared_meshes();</div>
 <div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    std::shared_ptr&lt;DebugGeometryContainer&gt; create_debug_container(<span class="keywordtype">bool</span> p_no_depth_test);</div>
 <div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    std::shared_ptr&lt;DebugGeometryContainer&gt; get_debug_container(<span class="keyword">const</span> DebugDraw3DScopeConfig::DebugContainerDependent &amp;p_dgcd, <span class="keyword">const</span> <span class="keywordtype">bool</span> p_generate_new_container);</div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <span class="keywordtype">void</span> _register_viewport_world_deferred(Viewport *p_vp, <span class="keyword">const</span> uint64_t p_world_id);</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>    <span class="keywordtype">void</span> _register_viewport_world_deferred(uint64_t <span class="comment">/*Viewport * */</span> p_vp, <span class="keyword">const</span> uint64_t p_world_id);</div>
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    Viewport *_get_root_world_viewport(Viewport *p_vp);</div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    <span class="keywordtype">void</span> _remove_debug_container(<span class="keyword">const</span> uint64_t &amp;p_world_id);</div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span> </div>
