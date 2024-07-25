@@ -19,6 +19,34 @@ func _process(delta: float) -> void:
     DebugDraw2D.set_text("delta", delta)
 ```
 
+An example of using scoped configs:
+
+```python
+@tool
+extends Node3D
+
+func _ready():
+    # Set the base scoped_config.
+    # Each frame will be reset to these scoped values.
+    DebugDraw3D.scoped_config().set_thickness(0.1).set_center_brightness(0.6)
+
+func _process(delta):
+    # Draw using the base scoped config.
+    DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)
+    if true:
+        # Create a scoped config that will exist until exiting this if.
+        var _s = DebugDraw3D.new_scoped_config().set_thickness(0).set_center_brightness(0.1)
+        # Draw with a thickness of 0
+        DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)
+        # If necessary, the values inside this scope can be changed
+        # even before each call to draw_*.
+        _s.set_thickness(0.05)
+        DebugDraw3D.draw_box(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)
+```
+
+@note
+If you want to use a non-standard Viewport for rendering a 3d scene, then do not forget to specify it in the scoped config!
+
 ## CSharp
 
 When you start the engine for the first time, bindings for `C#` will be generated automatically. If this does not happen, you can manually generate them through the `Project - Tools - Debug Draw` menu.
@@ -39,6 +67,15 @@ public override void _Process(float delta)
     DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
     DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond());
     DebugDraw2D.SetText("delta", delta);
+}
+```
+
+Scoped config's work similarly to the GDScript version, but require a manual `Dispose` or using `using`:
+
+```csharp
+using (var _w1 = DebugDraw3D.NewScopedConfig().SetViewport(someViewportHere).SetThickness(0.01f).SetNoDepthTest(true))
+{
+    // ...
 }
 ```
 

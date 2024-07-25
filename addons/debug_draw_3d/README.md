@@ -102,6 +102,37 @@ func _process(delta: float) -> void:
 
 ![screenshot_1](/images/screenshot_1.png)
 
+An example of using scoped configs:
+
+```gdscript
+@tool
+extends Node3D
+
+func _ready():
+    # Set the base scoped_config.
+    # Each frame will be reset to these scoped values.
+    DebugDraw3D.scoped_config().set_thickness(0.1).set_center_brightness(0.6)
+
+func _process(delta):
+    # Draw using the base scoped config.
+    DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)
+    if true:
+        # Create a scoped config that will exist until exiting this if.
+        var _s = DebugDraw3D.new_scoped_config().set_thickness(0).set_center_brightness(0.1)
+        # Draw with a thickness of 0
+        DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)
+        # If necessary, the values inside this scope can be changed
+        # even before each call to draw_*.
+        _s.set_thickness(0.05)
+        DebugDraw3D.draw_box(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)
+```
+
+![screenshot_5](/images/screenshot_5.png)
+
+> [!TIP]
+>
+> If you want to use a non-standard Viewport for rendering a 3d scene, then do not forget to specify it in the scoped config!
+
 ## API
 
 This project has a separate [documentation](https://dd3d.dmitriysalnikov.ru/docs/) page.
