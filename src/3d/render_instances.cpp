@@ -500,6 +500,9 @@ void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConf
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	// ZoneScoped;
+	if (p_cfg->solid) {
+		return GeometryType::Solid;
+	}
 	if (p_cfg->thickness != 0) {
 		return GeometryType::Volumetric;
 	}
@@ -518,6 +521,28 @@ Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DSc
 InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p_type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	// ZoneScoped;
 	switch (_scoped_config_get_geometry_type(p_cfg)) {
+		case GeometryType::Solid: {
+			switch (p_type) {
+				case ConvertableInstanceType::CUBE:
+					return InstanceType::CUBE_SOLID;
+				case ConvertableInstanceType::CUBE_CENTERED:
+					return InstanceType::CUBE_CENTERED_SOLID;
+				case ConvertableInstanceType::SPHERE:
+					if (p_cfg->hd_sphere) {
+						return InstanceType::SPHERE_HD_SOLID;
+					} else {
+						return InstanceType::SPHERE_SOLID;
+					}
+				case ConvertableInstanceType::CYLINDER:
+					return InstanceType::CYLINDER_SOLID;
+				case ConvertableInstanceType::CYLINDER_AB:
+					return InstanceType::CYLINDER_AB_SOLID;
+				default:
+					return InstanceType::CUBE;
+					break;
+			}
+			break;
+		}
 		case GeometryType::Wireframe: {
 			switch (p_type) {
 				case ConvertableInstanceType::CUBE:

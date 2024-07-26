@@ -6,6 +6,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3DScopeConfig
 	REG_METHOD(_manual_unregister);
 
+	REG_METHOD(set_solid, "value");
+	REG_METHOD(is_solid);
+
 	REG_METHOD(set_thickness, "value");
 	REG_METHOD(get_thickness);
 
@@ -31,6 +34,15 @@ void DebugDraw3DScopeConfig::_manual_unregister() {
 		unregister_action(thread_id, guard_id);
 	}
 	unregister_action = nullptr;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_solid(bool _value) const {
+	data->solid = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+bool DebugDraw3DScopeConfig::is_solid() const {
+	return data->solid;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
@@ -109,6 +121,7 @@ DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
 }
 
 DebugDraw3DScopeConfig::Data::Data() {
+	solid = false;
 	thickness = 0;
 	center_brightness = 0;
 	hd_sphere = false;
@@ -117,6 +130,7 @@ DebugDraw3DScopeConfig::Data::Data() {
 }
 
 DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
+	solid = p_parent->solid;
 	thickness = p_parent->thickness;
 	center_brightness = p_parent->center_brightness;
 	hd_sphere = p_parent->hd_sphere;

@@ -74,6 +74,13 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 		CreateMMI(InstanceType::BILLBOARD_SQUARE, meshes[(int)InstanceType::BILLBOARD_SQUARE][mat_variant]);
 		CreateMMI(InstanceType::PLANE, meshes[(int)InstanceType::PLANE][mat_variant]);
 
+		CreateMMI(InstanceType::CUBE_SOLID, meshes[(int)InstanceType::CUBE_SOLID][mat_variant]);
+		CreateMMI(InstanceType::CUBE_CENTERED_SOLID, meshes[(int)InstanceType::CUBE_CENTERED_SOLID][mat_variant]);
+		CreateMMI(InstanceType::SPHERE_SOLID, meshes[(int)InstanceType::SPHERE_SOLID][mat_variant]);
+		CreateMMI(InstanceType::SPHERE_HD_SOLID, meshes[(int)InstanceType::SPHERE_HD_SOLID][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER_SOLID, meshes[(int)InstanceType::CYLINDER_SOLID][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER_AB_SOLID, meshes[(int)InstanceType::CYLINDER_AB_SOLID][mat_variant]);
+
 		set_render_layer_mask(1);
 	}
 }

@@ -90,6 +90,7 @@ public:
 	/// @private
 	struct Data {
 		// Update the constructor if changes are made!
+		bool solid;
 		real_t thickness;
 		real_t center_brightness;
 		bool hd_sphere;
@@ -105,6 +106,15 @@ public:
 	/// @private
 	// It can be used for example in C#
 	void _manual_unregister();
+
+	/**
+	 * Set whether solid geometry or wireframe geometry will be used.
+	 *
+	 * TODO!!
+	 * ![](docs/images/classes/LineThickness.webp)
+	 */
+	Ref<DebugDraw3DScopeConfig> set_solid(bool _value) const;
+	bool is_solid() const;
 
 	/**
 	 * Set the thickness of the volumetric lines. If the value is 0, the standard wireframe rendering will be used.

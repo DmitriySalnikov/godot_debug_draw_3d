@@ -361,6 +361,13 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 
 			mat_type = MeshMaterialType::Plane;
 			GEN_MESH(InstanceType::PLANE, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+
+			GEN_MESH(InstanceType::CUBE_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CubeVertexes, GeometryGenerator::CubeSolidIndexes));
+			GEN_MESH(InstanceType::CUBE_CENTERED_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+			GEN_MESH(InstanceType::SPHERE_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+			GEN_MESH(InstanceType::SPHERE_HD_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+			GEN_MESH(InstanceType::CYLINDER_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
+			GEN_MESH(InstanceType::CYLINDER_AB_SOLID, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, GeometryGenerator::CenteredSquareVertexes, GeometryGenerator::SquareIndexes));
 #undef GEN_MESH
 		}
 	}

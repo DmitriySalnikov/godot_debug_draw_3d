@@ -32,6 +32,8 @@ public:
 	const static std::array<int, 24> CubeIndexes;
 	const static std::array<int, 36> CubeWithDiagonalsIndexes;
 
+	const static std::array<int, 36> CubeSolidIndexes;
+
 	const static std::array<Vector3, 6> ArrowheadVertexes;
 	const static std::array<int, 18> ArrowheadIndexes;
 	const static std::array<int, 8> ArrowheadIndexesSimplified;
