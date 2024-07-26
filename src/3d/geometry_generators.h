@@ -34,7 +34,7 @@ public:
 
 	const static std::array<Vector3, 6> ArrowheadVertexes;
 	const static std::array<int, 18> ArrowheadIndexes;
-	const static std::array<int, 18> ArrowheadIndexesSimplified;
+	const static std::array<int, 8> ArrowheadIndexesSimplified;
 
 	const static std::array<Vector3, 4> CenteredSquareVertexes;
 	const static std::array<int, 6> SquareBackwardsIndexes;

@@ -48,7 +48,7 @@ class DebugGeometryContainer {
 	bool is_frame_rendered = false;
 	bool no_depth_test = false;
 
-	void CreateMMI(InstanceType p_type, const String &p_name, Ref<ArrayMesh> p_mesh);
+	void CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mesh);
 
 public:
 	DebugGeometryContainer(class DebugDraw3D *p_root, bool p_no_depth_test);

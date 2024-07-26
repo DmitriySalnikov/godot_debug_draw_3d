@@ -20,43 +20,31 @@ const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertexes{
 };
 
 const std::array<Vector3, 8> GeometryGenerator::CubeVertexes{
-	Vector3(0, 0, 0),
-	Vector3(1, 0, 0),
-	Vector3(1, 0, 1),
-	Vector3(0, 0, 1),
-	Vector3(0, 1, 0),
-	Vector3(1, 1, 0),
-	Vector3(1, 1, 1),
-	Vector3(0, 1, 1)
+	Vector3(0, 0, 0), // 0
+	Vector3(1, 0, 0), // 1
+	Vector3(1, 0, 1), // 2
+	Vector3(0, 0, 1), // 3
+	Vector3(0, 1, 0), // 4
+	Vector3(1, 1, 0), // 5
+	Vector3(1, 1, 1), // 6
+	Vector3(0, 1, 1) //  7
 };
 
 const std::array<int, 24> GeometryGenerator::CubeIndexes{
-	0,
-	1,
-	1,
-	2,
-	2,
-	3,
-	3,
-	0,
+	0, 1,
+	1, 2,
+	2, 3,
+	3, 0,
 
-	4,
-	5,
-	5,
-	6,
-	6,
-	7,
-	7,
-	4,
+	4, 5,
+	5, 6,
+	6, 7,
+	7, 4,
 
-	0,
-	4,
-	1,
-	5,
-	2,
-	6,
-	3,
-	7,
+	0, 4,
+	1, 5,
+	2, 6,
+	3, 7
 };
 
 const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndexes{
@@ -112,40 +100,27 @@ const std::array<Vector3, 6> GeometryGenerator::ArrowheadVertexes{
 };
 
 const std::array<int, 18> GeometryGenerator::ArrowheadIndexes{
-	0,
-	1,
-	0,
-	2,
-	0,
-	3,
-	0,
-	4,
+	0, 1,
+	0, 2,
+	0, 3,
+	0, 4,
 	// Center line
-	5,
-	0,
+	5, 0,
 	// Cross
 	// 1, 2,
 	// 3, 4,
 	// Or Cross to center
-	5,
-	1,
-	5,
-	2,
-	5,
-	3,
-	5,
-	4,
+	5, 1,
+	5, 2,
+	5, 3,
+	5, 4
 };
 
-const std::array<int, 18> GeometryGenerator::ArrowheadIndexesSimplified{
-	0,
-	1,
-	0,
-	2,
-	0,
-	3,
-	0,
-	4,
+const std::array<int, 8> GeometryGenerator::ArrowheadIndexesSimplified{
+	0, 1,
+	0, 2,
+	0, 3,
+	0, 4
 };
 
 const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertexes{
@@ -156,21 +131,15 @@ const std::array<Vector3, 4> GeometryGenerator::CenteredSquareVertexes{
 };
 
 const std::array<int, 6> GeometryGenerator::SquareBackwardsIndexes{
-	0,
-	1,
-	2,
-	2,
-	3,
-	0,
+	0, 1,
+	2, 2,
+	3, 0
 };
 
 const std::array<int, 6> GeometryGenerator::SquareIndexes{
-	0,
-	2,
-	1,
-	2,
-	0,
-	3,
+	0, 2,
+	1, 2,
+	0, 3
 };
 
 const std::array<Vector3, 6> GeometryGenerator::PositionVertexes{
@@ -183,12 +152,9 @@ const std::array<Vector3, 6> GeometryGenerator::PositionVertexes{
 };
 
 const std::array<int, 6> GeometryGenerator::PositionIndexes{
-	0,
-	1,
-	2,
-	3,
-	4,
-	5,
+	0, 1,
+	2, 3,
+	4, 5
 };
 
 #pragma endregion

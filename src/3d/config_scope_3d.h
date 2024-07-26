@@ -94,7 +94,7 @@ public:
 		real_t center_brightness;
 		bool hd_sphere;
 		real_t plane_size;
-		DebugContainerDependent dgcd;
+		DebugContainerDependent dcd;
 
 		Data();
 		Data(const std::shared_ptr<Data> &parent);

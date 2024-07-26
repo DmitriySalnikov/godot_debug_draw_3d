@@ -48,31 +48,31 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 		auto *meshes = owner->get_shared_meshes();
 		int mat_variant = !!no_depth_test;
 
-		CreateMMI(InstanceType::CUBE, NAMEOF(mmi_cubes), meshes[(int)InstanceType::CUBE][mat_variant]);
-		CreateMMI(InstanceType::CUBE_CENTERED, NAMEOF(mmi_cubes_centered), meshes[(int)InstanceType::CUBE_CENTERED][mat_variant]);
-		CreateMMI(InstanceType::ARROWHEAD, NAMEOF(mmi_arrowheads), meshes[(int)InstanceType::ARROWHEAD][mat_variant]);
-		CreateMMI(InstanceType::POSITION, NAMEOF(mmi_positions), meshes[(int)InstanceType::POSITION][mat_variant]);
-		CreateMMI(InstanceType::SPHERE, NAMEOF(mmi_spheres), meshes[(int)InstanceType::SPHERE][mat_variant]);
-		CreateMMI(InstanceType::SPHERE_HD, NAMEOF(mmi_spheres_hd), meshes[(int)InstanceType::SPHERE_HD][mat_variant]);
-		CreateMMI(InstanceType::CYLINDER, NAMEOF(mmi_cylinders), meshes[(int)InstanceType::CYLINDER][mat_variant]);
-		CreateMMI(InstanceType::CYLINDER_AB, NAMEOF(mmi_cylinders), meshes[(int)InstanceType::CYLINDER_AB][mat_variant]);
+		CreateMMI(InstanceType::CUBE, meshes[(int)InstanceType::CUBE][mat_variant]);
+		CreateMMI(InstanceType::CUBE_CENTERED, meshes[(int)InstanceType::CUBE_CENTERED][mat_variant]);
+		CreateMMI(InstanceType::ARROWHEAD, meshes[(int)InstanceType::ARROWHEAD][mat_variant]);
+		CreateMMI(InstanceType::POSITION, meshes[(int)InstanceType::POSITION][mat_variant]);
+		CreateMMI(InstanceType::SPHERE, meshes[(int)InstanceType::SPHERE][mat_variant]);
+		CreateMMI(InstanceType::SPHERE_HD, meshes[(int)InstanceType::SPHERE_HD][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER, meshes[(int)InstanceType::CYLINDER][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER_AB, meshes[(int)InstanceType::CYLINDER_AB][mat_variant]);
 
 		// VOLUMETRIC
 
-		CreateMMI(InstanceType::LINE_VOLUMETRIC, NAMEOF(mmi_cubes_volumetric), meshes[(int)InstanceType::LINE_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::CUBE_VOLUMETRIC, NAMEOF(mmi_cubes_volumetric), meshes[(int)InstanceType::CUBE_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, NAMEOF(mmi_cubes_centered_volumetric), meshes[(int)InstanceType::CUBE_CENTERED_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, NAMEOF(mmi_arrowheads_volumetric), meshes[(int)InstanceType::ARROWHEAD_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::POSITION_VOLUMETRIC, NAMEOF(mmi_positions_volumetric), meshes[(int)InstanceType::POSITION_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, NAMEOF(mmi_spheres_volumetric), meshes[(int)InstanceType::SPHERE_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, NAMEOF(mmi_spheres_hd_volumetric), meshes[(int)InstanceType::SPHERE_HD_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, NAMEOF(mmi_cylinders_volumetric), meshes[(int)InstanceType::CYLINDER_VOLUMETRIC][mat_variant]);
-		CreateMMI(InstanceType::CYLINDER_AB_VOLUMETRIC, NAMEOF(mmi_cylinders_volumetric), meshes[(int)InstanceType::CYLINDER_AB_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::LINE_VOLUMETRIC, meshes[(int)InstanceType::LINE_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CUBE_VOLUMETRIC, meshes[(int)InstanceType::CUBE_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CUBE_CENTERED_VOLUMETRIC, meshes[(int)InstanceType::CUBE_CENTERED_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::ARROWHEAD_VOLUMETRIC, meshes[(int)InstanceType::ARROWHEAD_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::POSITION_VOLUMETRIC, meshes[(int)InstanceType::POSITION_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, meshes[(int)InstanceType::SPHERE_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, meshes[(int)InstanceType::SPHERE_HD_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, meshes[(int)InstanceType::CYLINDER_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CYLINDER_AB_VOLUMETRIC, meshes[(int)InstanceType::CYLINDER_AB_VOLUMETRIC][mat_variant]);
 
 		// SOLID
 
-		CreateMMI(InstanceType::BILLBOARD_SQUARE, NAMEOF(mmi_billboard_squares), meshes[(int)InstanceType::BILLBOARD_SQUARE][mat_variant]);
-		CreateMMI(InstanceType::PLANE, NAMEOF(mmi_planes), meshes[(int)InstanceType::PLANE][mat_variant]);
+		CreateMMI(InstanceType::BILLBOARD_SQUARE, meshes[(int)InstanceType::BILLBOARD_SQUARE][mat_variant]);
+		CreateMMI(InstanceType::PLANE, meshes[(int)InstanceType::PLANE][mat_variant]);
 
 		set_render_layer_mask(1);
 	}
@@ -90,7 +90,7 @@ bool DebugGeometryContainer::is_no_depth_test() const {
 	return no_depth_test;
 }
 
-void DebugGeometryContainer::CreateMMI(InstanceType p_type, const String &p_name, Ref<ArrayMesh> p_mesh) {
+void DebugGeometryContainer::CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mesh) {
 	ZoneScoped;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
@@ -277,7 +277,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 			// Draw custom sphere for 1 frame
 			for (auto &i : new_instances) {
-				cfg->dgcd.viewport = vp;
+				cfg->dcd.viewport = vp;
 				Vector3 diag = i.max - i.min;
 				Vector3 center = i.center;
 				real_t radius = i.radius;
@@ -309,7 +309,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 				Vector3 center = o->bounds.center;
 				real_t radius = o->bounds.radius;
 
-				cfg->dgcd.viewport = vp;
+				cfg->dcd.viewport = vp;
 				geometry_pool.add_or_update_instance(
 						cfg,
 						InstanceType::CUBE_CENTERED,

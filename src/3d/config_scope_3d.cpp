@@ -70,21 +70,21 @@ real_t DebugDraw3DScopeConfig::get_plane_size() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
-	data->dgcd.viewport = _value;
+	data->dcd.viewport = _value;
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 Viewport *DebugDraw3DScopeConfig::get_viewport() const {
-	return data->dgcd.viewport;
+	return data->dcd.viewport;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(bool _value) const {
-	data->dgcd.no_depth_test = _value;
+	data->dcd.no_depth_test = _value;
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 bool DebugDraw3DScopeConfig::is_no_depth_test() const {
-	return data->dgcd.no_depth_test;
+	return data->dcd.no_depth_test;
 }
 
 DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
@@ -113,7 +113,7 @@ DebugDraw3DScopeConfig::Data::Data() {
 	center_brightness = 0;
 	hd_sphere = false;
 	plane_size = INFINITY;
-	dgcd = {};
+	dcd = {};
 }
 
 DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
@@ -122,6 +122,6 @@ DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
 	hd_sphere = p_parent->hd_sphere;
 	plane_size = p_parent->plane_size;
 
-	dgcd.viewport = p_parent->dgcd.viewport;
-	dgcd.no_depth_test = p_parent->dgcd.no_depth_test;
+	dcd.viewport = p_parent->dcd.viewport;
+	dcd.no_depth_test = p_parent->dcd.no_depth_test;
 }

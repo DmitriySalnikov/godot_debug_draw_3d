@@ -685,28 +685,21 @@ void DebugDraw3D::clear_all() {
 	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
 #endif
 
-#define GET_SCOPED_CFG_AND_DGC()                      \
-	auto scfg = scoped_config_for_current_thread();   \
-	auto dgc = get_debug_container(scfg->dgcd, true); \
+#define GET_SCOPED_CFG_AND_DGC()                     \
+	auto scfg = scoped_config_for_current_thread();  \
+	auto dgc = get_debug_container(scfg->dcd, true); \
 	if (!dgc) return
 
 #ifndef DISABLE_DEBUG_RENDERING
 
 Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
-	bool ex = Math::is_equal_approx(p_dir.x, 0);
-	bool ey = Math::is_equal_approx(p_dir.y, 0);
-	bool ez = Math::is_equal_approx(p_dir.z, 0);
-
-	if (ex) {
-		if (ey) {
-			return Vector3_UP;
-		} else if (ez) {
+	if (Math::is_equal_approx(p_dir.x, 0)) {
+		if (Math::is_equal_approx(p_dir.z, 0))
 			return Vector3_FORWARD;
-		}
 		return Vector3_UP;
-	} else if (ey) {
+	} else if (Math::is_equal_approx(p_dir.y, 0)) {
 		return p_dir.normalized().cross(Vector3_UP);
-	} else if (ez) {
+	} else if (Math::is_equal_approx(p_dir.z, 0)) {
 		return Vector3_UP;
 	}
 
@@ -1138,7 +1131,7 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
-	Camera3D *cam = scfg->dgcd.viewport ? scfg->dgcd.viewport->get_camera_3d() : nullptr;
+	Camera3D *cam = scfg->dcd.viewport ? scfg->dcd.viewport->get_camera_3d() : nullptr;
 
 	Vector3 center_pos = plane.project(anchor_point == Vector3_INF ? (cam ? cam->get_global_position() : Vector3()) : anchor_point);
 	real_t plane_size = scfg->plane_size != INFINITY ? scfg->plane_size : (cam ? (real_t)cam->get_far() : 1000);
