@@ -94,20 +94,17 @@ runs:
       shell: bash
       run: |
         echo "::group::🛠️ GDExtesion Compilation 🛠️"
-        cd godot-cpp
-        git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude_unused_classes.patch
-        git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
-        git apply --ignore-space-change --ignore-whitespace ../patches/web_threads.patch
-        cd ..
+        scons apply_patches
 
         telemetry_args=""
         if [ "${{env.PRODUCTION_BUILD}}" == "true" ] && [ "${{inputs.target}}" == "editor" ] && [ "${{steps.checkout_tele_repo.conclusion}}" == "success" ]; then
           telemetry_args="telemetry_enabled=yes"
         fi
+        scons_params="platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}"
 
-        scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}} $telemetry_args
+        scons $scons_params $telemetry_args
         if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.additional_enabled_dd3d}}" == "true" ]; then
-          scons platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} force_enabled_dd3d=yes ${{inputs.additional}}
+          scons $scons_params force_enabled_dd3d=yes
         fi
         echo "::endgroup::"
 
@@ -115,14 +112,11 @@ runs:
       if: runner.os != 'Windows' && inputs.platform != 'android' && inputs.platform != 'web'
       shell: bash
       run: |
-        if [ "${{inputs.platform}}" == 'macos' ]; then
-          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep "Mach-O universal" | cut -d: -f1)
-          echo "Found files: $found_files"
-          strip -u $found_files
-        elif [ "${{inputs.platform}}" == 'ios' ]; then
-          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep ".dylib" | cut -d: -f1)
+        if [ "${{inputs.platform}}" == 'ios' ] || [ "${{inputs.platform}}" == 'macos' ]; then
+          found_files=$(find -L ${{inputs.output_libs_path}} -type f -iname "*.dylib")
           echo "Found files: $found_files"
           while IFS= read -r file; do
+              echo "Strip '$file'"
               strip -u "$file"
           done <<< "$found_files"
         else

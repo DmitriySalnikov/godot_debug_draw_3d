@@ -564,7 +564,8 @@ transform = Transform3D(1.51514, 0.589536, 1.00858, -1.34875, 0.662262, 1.133, 0
 [node name="GizmoNormal" type="Node3D" parent="Misc"]
 transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 0.890203, -0.306246, 0.356159)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Misc/GizmoNormal"]
+[node name="ZDepthTestCube" type="MeshInstance3D" parent="Misc/GizmoNormal"]
+unique_name_in_owner = true
 transform = Transform3D(0.591801, 0, 4.47035e-08, 0, 0.591801, 0, -4.47035e-08, 0, 0.591801, 0, 0, 0)
 mesh = SubResource("BoxMesh_b14rm")
 

@@ -313,7 +313,7 @@ void DebugDraw2D::set_custom_canvas(Control *_canvas) {
 #ifndef DISABLE_DEBUG_RENDERING
 	_set_custom_canvas_internal(_canvas);
 #else
-	custom_control_id = _canvas->get_instance_id();
+	custom_control_id = _canvas ? _canvas->get_instance_id() : 0;
 #endif
 }
 

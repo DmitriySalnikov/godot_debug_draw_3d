@@ -94,6 +94,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dCylinder3a;
     Node3D dCylinder3b;
 
+    MeshInstance3D dPlaneOrigin;
+    MeshInstance3D pZDepthTestCube;
+
     MeshInstance3D dOtherWorld;
     SubViewport dOtherWorldViewport;
     Node3D dOtherWorldBox;
@@ -153,6 +156,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dCylinder2 = GetNode<Node3D>("Cylinders/Cylinder2");
         dCylinder3a = GetNode<Node3D>("Cylinders/Cylinder3/1");
         dCylinder3b = GetNode<Node3D>("Cylinders/Cylinder3/2");
+
+        dPlaneOrigin = GetNode<MeshInstance3D>("PlaneOrigin");
+        pZDepthTestCube = GetNode<MeshInstance3D>("%ZDepthTestCube");
 
         dOtherWorld = GetNode<MeshInstance3D>("OtherWorld");
         dOtherWorldViewport = GetNode<SubViewport>("OtherWorld/SubViewport");
@@ -295,13 +301,20 @@ public partial class DebugDrawDemoSceneCS : Node3D
             DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
             DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond());
             DebugDraw2D.SetText("delta", delta);
+
             dHitTest.Visible = false;
             dLagTest.Visible = false;
+            dPlaneOrigin.Visible = false;
+            pZDepthTestCube.Visible = false;
+            dOtherWorld.Visible = false;
             return;
         }
 
         dHitTest.Visible = true;
         dLagTest.Visible = true;
+        dPlaneOrigin.Visible = true;
+        pZDepthTestCube.Visible = true;
+        dOtherWorld.Visible = true;
 
         // Testing the rendering layers by showing the image from the second camera inside the 2D panel
         DebugDraw3D.Config.GeometryRenderLayers = !Input.IsKeyPressed(Key.Alt) ? 1 : 0b10010;

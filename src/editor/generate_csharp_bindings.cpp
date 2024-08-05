@@ -35,8 +35,7 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 	if (FileAccess::file_exists(old_api_path)) {
 		return true;
 	}
-	
-	
+
 	const String api_path = output_directory.path_join(api_file_name);
 	if (FileAccess::file_exists(api_path)) {
 		auto file = FileAccess::open(api_path, FileAccess::READ);
@@ -71,10 +70,9 @@ void GenerateCSharpBindingsPlugin::generate() {
 	// Delete the file with the older naming convention
 	const String old_api_path = output_directory.path_join("DebugDrawGeneratedAPI.cs");
 	if (FileAccess::file_exists(old_api_path)) {
-		PRINT("Attempt to delete API file with older naming convention: " + out_path);
+		PRINT("Attempt to delete API file with older naming convention: " + old_api_path);
 		ERR_FAIL_COND(dir->remove(old_api_path) != Error::OK);
 	}
-	
 
 	// First, delete the old file to check for locks
 	if (FileAccess::file_exists(out_path)) {

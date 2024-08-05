@@ -111,12 +111,19 @@ func main_update(delta: float) -> void:
 		DebugDraw2D.set_text("Frames drawn", Engine.get_frames_drawn())
 		DebugDraw2D.set_text("FPS", Engine.get_frames_per_second())
 		DebugDraw2D.set_text("delta", delta)
+		
 		$HitTest.visible = false
 		$LagTest.visible = false
+		$PlaneOrigin.visible = false
+		$OtherWorld.visible = false
+		%ZDepthTestCube.visible = false
 		return
 	
 	$HitTest.visible = true
 	$LagTest.visible = true
+	$PlaneOrigin.visible = true
+	$OtherWorld.visible = true
+	%ZDepthTestCube.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
 	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_ALT) else 0b10010
