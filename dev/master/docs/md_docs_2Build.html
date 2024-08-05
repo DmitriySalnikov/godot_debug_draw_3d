@@ -129,7 +129,7 @@ $(function(){initNavTree('md_docs_2Build.html',''); initResizable(); });
 <div class="fragment"><div class="line"><span class="comment"># To apply all patches automatically, you can call a single command:</span></div>
 <div class="line">scons apply_patches</div>
 <div class="line"> </div>
-<div class="line"> </div>
+<div class="line"><span class="comment"># #Or apply each patch individually following the instructions below:</span></div>
 <div class="line"> </div>
 <div class="line">cd godot-cpp</div>
 <div class="line"><span class="comment"># Optional</span></div>
@@ -145,14 +145,18 @@ $(function(){initNavTree('md_docs_2Build.html',''); initResizable(); });
 <div class="line"><span class="comment"># target=editor is used for both the editor and the debug template.</span></div>
 <div class="line">scons target=editor dev_build=yes debug_symbols=yes</div>
 <div class="line"> </div>
-<div class="line"> </div>
+<div class="line"><span class="comment"># #Android builds</span></div>
+<div class="line"><span class="comment"># ANDROID_NDK_ROOT is required in your environment variables.</span></div>
+<div class="line"><span class="comment"># Or ANDROID_HOME with &#39;ndk/23.2.8568313&#39; installed.</span></div>
 <div class="line">scons platform=android target=template_release arch=arm64v8</div>
 <div class="line"><span class="comment"># If you have a different version of NDK installed and both ANDROID_HOME</span></div>
 <div class="line"><span class="comment"># and ANDROID_NDK_ROOT have been added to the environment variables,</span></div>
 <div class="line"><span class="comment"># then you will have to explicitly specify ANDROID_HOME=&quot;&quot;</span></div>
 <div class="line">scons platform=android target=template_release arch=arm64v8 ANDROID_HOME=<span class="stringliteral">&quot;&quot;</span></div>
 <div class="line"> </div>
-<div class="line"> </div>
+<div class="line"><span class="comment"># #Web build</span></div>
+<div class="line"><span class="comment"># GDExtension for Web currently works best with Emscripten &#39;3.1.63&#39;.</span></div>
+<div class="line"><span class="comment"># Add threads=[yes|no] depending on the version of Godot and the export flags.</span></div>
 <div class="line">scons platform=web target=template_debug</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md14"></a>
 JavaScript/Web build</h1>
