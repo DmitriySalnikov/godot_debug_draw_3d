@@ -61,13 +61,14 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
         env.Append(CPPDEFINES=["DISABLE_DEBUG_RENDERING"])
 
     if env["telemetry_enabled"]:
-        tele_src = "src/editor/my_telemetry_modules/GDExtension/usage_time_reporter.cpp"
-        if os.path.exists(tele_src):
+        tele_src = "editor/my_telemetry_modules/GDExtension/usage_time_reporter.cpp"
+        if os.path.exists(os.path.join(src_folder, tele_src)):
             env.Append(CPPDEFINES=["TELEMETRY_ENABLED"])
             src_out.append(tele_src)
             print("Compiling with telemetry support!")
         else:
-            print("No telemetry source file found. telemetry_enabled will be ignored!")
+            print("No telemetry source file found.")
+            env.Exit(1)
 
     if env["lto"]:
         if env.get("is_msvc", False):
@@ -80,7 +81,7 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
 
     if env["tracy_enabled"]:
         env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
-        src_out.append("src/thirdparty/tracy/public/TracyClient.cpp")
+        src_out.append("thirdparty/tracy/public/TracyClient.cpp")
 
     if env.get("is_msvc", False):
         env.Append(LINKFLAGS=["/WX:NO"])
@@ -133,7 +134,9 @@ def apply_patches(target, source, env: SConsEnvironment):
 # Additional build of the projects via CMake
 # def build_cmake(target, source, env: SConsEnvironment):
 #    extra_flags = []
-#    return lib_utils_external.cmake_build_project(env, "opus", extra_flags)
+#    if env["platform"] in ["macos", "ios"]:
+#        extra_flags += ["-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64", "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"]
+#    return lib_utils_external.cmake_build_project(env, "project", extra_flags)
 
 env: SConsEnvironment = SConscript("godot-cpp/SConstruct")
 env = env.Clone()
