@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
-	<string>libdd3d.macos.template_release.universal.enabled</string>
+	<string>libdd3d.macos.template_release.universal.enabled.dylib</string>
 	<key>CFBundleName</key>
 	<string>Debug Draw 3D</string>
 	<key>CFBundleDisplayName</key>
@@ -17,9 +17,9 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright (c) Dmitriy Salnikov.</string>
 	<key>CFBundleVersion</key>
-	<string>1.4.3</string>
+	<string>1.4.4</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.4.3</string>
+	<string>1.4.4</string>
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CSResourcesFileMapped</key>
