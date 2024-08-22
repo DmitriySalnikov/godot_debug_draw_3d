@@ -125,7 +125,8 @@ $(function(){initNavTree('md_docs_2Export.html',''); initResizable(); });
   <div class="headertitle"><div class="title">Exporting a project</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md12"></a> Most likely, when exporting a release version of a game, you don't want to export the debug library along with it. But since there is still no <code>Conditional Compilation</code> in <code>GDScript</code>, so I decided to create a <code>dummy</code> library that has the same API as a regular library, but has minimal impact on performance, even if calls to its methods occur. The <code>dummy</code> library is used by default in the release version. However if you need to use debug rendering in the release version, then you can add the <code>forced_dd3d</code> feature when exporting. In this case, the release library with all the functionality will be used.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md12"></a> Most likely, when exporting a release version of a game, you don't want to export the debug library along with it. But since there is still no <code>Conditional Compilation</code> in <code>GDScript</code>, so I decided to create a <code>dummy</code> library that has the same API as a regular library, but has minimal impact on performance, even if calls to its methods occur. The <code>dummy</code> library is used by default in the release version.</p>
+<p>However if you need to use debug rendering in the release version, then you can add the <code>forced_dd3d</code> feature when exporting. In this case, the release library with all the functionality will be used.</p>
 <div class="image">
 <img src="export_features.png" alt=""/>
 </div>
