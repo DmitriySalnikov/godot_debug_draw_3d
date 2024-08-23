@@ -41,6 +41,7 @@ used_classes.json
 .mono/
 obj/
 bin/
+cmake_build_out/*
 src/gen/*
 src/editor/my_telemetry_modules
 addons/debug_draw_3d/libs/~*

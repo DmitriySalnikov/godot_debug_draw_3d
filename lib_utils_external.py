@@ -11,7 +11,7 @@ import os, subprocess, shutil
 def get_cmake_build_dir_name(env: SConsEnvironment) -> str:
     if env.get("threads", True) and env["platform"] == "web":
         return f"{env["platform"]}_{env["arch"]}_threads"
-    return f"{env["platform"]}_{env["arch"]}"
+    return f"cmake_build_out/{env["platform"]}_{env["arch"]}"
 
 
 # Get a path to the build folder of the cmake library

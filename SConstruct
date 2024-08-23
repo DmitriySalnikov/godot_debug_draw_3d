@@ -4,7 +4,7 @@ from SCons.Script import SConscript
 from SCons.Script.SConscript import SConsEnvironment
 
 import SCons, SCons.Script
-import os, platform
+import sys, os, platform
 import lib_utils, lib_utils_external
 
 # Fixing the encoding of the console
@@ -131,11 +131,19 @@ def apply_patches(target, source, env: SConsEnvironment):
     return lib_utils_external.apply_git_patches(env, patches_to_apply, "godot-cpp")
 
 
+def get_android_toolchain() -> str:
+    sys.path.insert(0, "godot-cpp/tools")
+    import android
+    sys.path.pop(0)
+    return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")
+
 # Additional build of the projects via CMake
 # def build_cmake(target, source, env: SConsEnvironment):
 #    extra_flags = []
 #    if env["platform"] in ["macos", "ios"]:
 #        extra_flags += ["-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64", "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.14"]
+#    if env["platform"] in ["android"]:
+#        extra_flags += [f"-DCMAKE_TOOLCHAIN_FILE={get_android_toolchain()}"]
 #    return lib_utils_external.cmake_build_project(env, "project", extra_flags)
 
 env: SConsEnvironment = SConscript("godot-cpp/SConstruct")
