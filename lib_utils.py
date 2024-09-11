@@ -8,7 +8,7 @@ import os, json, re
 
 
 def get_sources(src: list, src_folder: str, lib_name: str = "unity_"):
-    res = [src_folder + "/" + file for file in src]
+    res = [os.path.join(src_folder, file) for file in src]
     res = unity_tools.generate_unity_build(res, lib_name + "_")
     return res
 

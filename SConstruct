@@ -135,6 +135,7 @@ def apply_patches(target, source, env: SConsEnvironment):
 def get_android_toolchain() -> str:
     sys.path.insert(0, "godot-cpp/tools")
     import android
+
     sys.path.pop(0)
     return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")
 

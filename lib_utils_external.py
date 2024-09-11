@@ -91,7 +91,7 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
     linker_flags = extra_c_compiler_flags.get("linker_flags", []).copy()
 
     if platform == "windows":
-        arch_map = { "arm32": "ARM", "arm64": "ARM64", "x86_32":  "Win32", "x86_64":"x64" }
+        arch_map = { "arm32": "ARM", "arm64": "ARM64", "x86_32": "Win32", "x86_64":"x64" }
         platform_args += ["-G", "Visual Studio 17 2022",
                           "-A", arch_map[arch],
                           "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" + ("" if env["use_static_cpp"] else "DLL")]
