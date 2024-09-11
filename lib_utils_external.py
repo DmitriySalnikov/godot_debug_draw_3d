@@ -146,8 +146,10 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
         result = subprocess.run(
             ["cmake", "--build", get_cmake_build_dir(env, lib_path)] + build_args,
             check=True,
+            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            universal_newlines=True,
             encoding="utf-8",
         )
         print_subprocess_result(result, "cmake build")

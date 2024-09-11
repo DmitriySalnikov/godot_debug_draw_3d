@@ -2,12 +2,6 @@
 
 #include "utils/compiler.h"
 
-#ifdef TOOLS_ENABLED
-#ifdef TELEMETRY_ENABLED
-#include "editor/my_telemetry_modules/GDExtension/usage_time_reporter.h"
-#endif
-#endif
-
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_layer.hpp>
 GODOT_WARNING_RESTORE()
@@ -98,11 +92,6 @@ private:
 
 #ifdef TOOLS_ENABLED
 	void _try_to_update_cs_bindings();
-
-#ifdef TELEMETRY_ENABLED
-	std::unique_ptr<UsageTimeReporter> time_usage_reporter;
-	void _on_telemetry_sending_completed();
-#endif
 #endif
 
 	// TEST C# API GENERATOR

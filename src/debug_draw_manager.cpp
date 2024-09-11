@@ -4,7 +4,6 @@
 #include "2d/grouped_text.h"
 #include "3d/debug_draw_3d.h"
 #include "utils/utils.h"
-#include "version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/generate_csharp_bindings.h"
@@ -60,12 +59,6 @@ void DebugDrawManager::_bind_methods() {
 #endif
 
 #define REG_CLASS_NAME DebugDrawManager
-
-#ifdef TOOLS_ENABLED
-#ifdef TELEMETRY_ENABLED
-	ClassDB::bind_method(D_METHOD(NAMEOF(_on_telemetry_sending_completed)), &DebugDrawManager::_on_telemetry_sending_completed);
-#endif
-#endif
 
 	// TODO use CALLABLE_MP in 4.2!
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
@@ -242,12 +235,6 @@ void DebugDrawManager::_integrate_into_engine() {
 			if (display_server) {
 				bool is_enabled = display_server->call("window_can_draw", 0);
 				set_debug_enabled(is_enabled);
-
-#if defined(TOOLS_ENABLED) && defined(TELEMETRY_ENABLED)
-				if (IS_EDITOR_HINT() && is_enabled) {
-					time_usage_reporter = std::make_unique<UsageTimeReporter>(DD3D_VERSION_STR, Utils::root_settings_section, [&]() { call_deferred(NAMEOF(_on_telemetry_sending_completed)); });
-				}
-#endif
 			}
 		} else {
 			set_debug_enabled(false);
@@ -417,11 +404,4 @@ void DebugDrawManager::_try_to_update_cs_bindings() {
 	}
 }
 
-#ifdef TELEMETRY_ENABLED
-void DebugDrawManager::_on_telemetry_sending_completed() {
-	if (time_usage_reporter) {
-		time_usage_reporter->stop_thread();
-	}
-}
-#endif
 #endif

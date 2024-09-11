@@ -33,7 +33,7 @@ inputs:
     description: Secrets token
   telemetry_version:
     description: Telemetry version
-    default: 0d1d7b0b889fc1a00b5229cf567a7626c585749d
+    default: b8386398c134f3c7503139e84f952d62207e54ae
 runs:
   using: composite
   steps:
@@ -46,7 +46,7 @@ runs:
     - name: Checkout telemetry repo
       uses: actions/checkout@v4
       id: checkout_tele_repo
-      if: ${{env.PRODUCTION_BUILD == 'true' && inputs.target == 'editor'}}
+      if: ${{env.PRODUCTION_BUILD == 'true' && contains(fromJSON('["template_debug", "editor"]'), inputs.target) && contains(fromJSON('["linux", "macos", "windows"]'), inputs.platform)}}
       continue-on-error: true
       with:
         repository: ${{github.repository_owner}}/my_telemetry_modules
@@ -97,7 +97,7 @@ runs:
         scons apply_patches
 
         telemetry_args=""
-        if [ "${{env.PRODUCTION_BUILD}}" == "true" ] && [ "${{inputs.target}}" == "editor" ] && [ "${{steps.checkout_tele_repo.conclusion}}" == "success" ]; then
+        if [[ "${{env.PRODUCTION_BUILD}}" == "true" && " template_debug editor " == *" ${{inputs.target}} "* && " linux macos windows " == *" ${{inputs.platform}} "* && "${{steps.checkout_tele_repo.conclusion}}" == "success" ]]; then
           telemetry_args="telemetry_enabled=yes"
         fi
         scons_params="platform=${{inputs.platform}} arch=${{inputs.arch}} target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}"

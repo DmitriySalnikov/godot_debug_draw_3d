@@ -18,12 +18,14 @@
                 "TYPED_METHOD_BIND",
                 "HOT_RELOAD_ENABLED",
                 "TOOLS_ENABLED",
-                "TELEMETRY_ENABLED"
+                "TELEMETRY_ENABLED",
+                "TELEMETRY_PROJECT_DD3D"
             ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "compilerPath": "cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64",
-            "compilerPath": "C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.35.32215/bin/Hostx64/x64/cl.exe"
+            "intelliSenseMode": "windows-msvc-x64"
         }
     ],
     "version": 4

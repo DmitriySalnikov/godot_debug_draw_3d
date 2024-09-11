@@ -33,7 +33,7 @@ on:
 
 # Stop the same workflow actions
 concurrency:
-  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
+  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}-${{inputs.production_build}}
   cancel-in-progress: true
 
 permissions:
@@ -230,7 +230,7 @@ jobs:
         threads: [yes, no]
 
     env:
-      EM_VERSION: 3.1.63
+      EM_VERSION: 3.1.64
 
     steps:
       - name: Checkout
@@ -308,6 +308,7 @@ jobs:
         with:
           name: ${{steps.output_info.outputs.artifact_name}}
           retention-days: 7
+          include-hidden-files: true
           path: extracted_files/*
 
   # ============================================
@@ -333,7 +334,9 @@ jobs:
     env:
       # Sync with container: image:
       GODOT_VERSION: 4.2.1-stable
+      ADDON_DIR: debug_draw_3d
       PROJECT_PATH: dd3d_web_build
+      TESTS_PATH: examples_dd3d
 
     steps:
       - name: Checkout code
@@ -342,19 +345,19 @@ jobs:
       - name: Delete old libs folder
         shell: bash
         run: |
-          rm -rf addons/debug_draw_3d/libs
+          rm -rf addons/${{env.ADDON_DIR}}/libs
 
       - name: Download Binaries
         uses: actions/download-artifact@v4
         with:
-          path: addons/debug_draw_3d/libs
+          path: addons/${{env.ADDON_DIR}}/libs
           name: ${{needs.collect-gdextension.outputs.artifact_name}}
 
       - name: Prepare Test Project
         shell: bash
         run: |
           cp -r addons ${{env.PROJECT_PATH}}/addons
-          cp -r examples_dd3d ${{env.PROJECT_PATH}}/examples_dd3d
+          cp -r ${{env.TESTS_PATH}} ${{env.PROJECT_PATH}}/${{env.TESTS_PATH}}
           find ${{env.PROJECT_PATH}} -mindepth 1
 
       - name: Setup Godot

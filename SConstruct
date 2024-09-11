@@ -22,6 +22,7 @@ patches_to_apply = [
     "patches/godot_cpp_exclude_unused_classes.patch",  # Removes unused godot-cpp classes from the build process
     "patches/unity_build.patch",  # Speeds up the build by merging the source files. It can increase the size of assemblies.
     "patches/web_threads.patch",  # Adds the build flag that appeared in Godot 4.3. Required for a web build compatible with Godot 4.3.
+    "patches/big_int_fix.patch",  # Fixes runtime link errors
 ]
 
 print(
@@ -63,7 +64,7 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
     if env["telemetry_enabled"]:
         tele_src = "editor/my_telemetry_modules/GDExtension/usage_time_reporter.cpp"
         if os.path.exists(os.path.join(src_folder, tele_src)):
-            env.Append(CPPDEFINES=["TELEMETRY_ENABLED"])
+            env.Append(CPPDEFINES=["TELEMETRY_ENABLED", "TELEMETRY_PROJECT_DD3D"])
             src_out.append(tele_src)
             print("Compiling with telemetry support!")
         else:
@@ -136,6 +137,7 @@ def get_android_toolchain() -> str:
     import android
     sys.path.pop(0)
     return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")
+
 
 # Additional build of the projects via CMake
 # def build_cmake(target, source, env: SConsEnvironment):

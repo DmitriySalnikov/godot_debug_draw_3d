@@ -1,0 +1,112 @@
+name: 📈 Upload new draft artifacts
+
+on:
+  workflow_dispatch:
+
+# Stop the same workflow actions
+concurrency:
+  group: ${{github.workflow}}-${{github.ref}}
+  cancel-in-progress: true
+
+jobs:
+  get_version:
+    name: Get the current version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{steps.getversion.outputs.version}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout: src/version.h
+
+      - name: Get library version
+        id: getversion
+        shell: bash
+        env:
+          REF: ${{github.ref_name}}
+        run: |
+          # Get lib version
+          source_file="src/version.h"
+
+          major=$(grep -oP '(?<=#define DD3D_MAJOR )\d+' "$source_file")
+          minor=$(grep -oP '(?<=#define DD3D_MINOR )\d+' "$source_file")
+          patch=$(grep -oP '(?<=#define DD3D_PATCH )\d+' "$source_file")
+
+          version_string="$major.$minor.$patch"
+
+          echo "version=$version_string" >> $GITHUB_OUTPUT
+          echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+
+  create_release_artifact:
+    name: Create release artifact
+    needs: get_version
+    runs-on: ubuntu-latest
+    outputs:
+      zipname: ${{steps.zip.outputs.zipname}}
+
+    env:
+      ADDON_FOLDER_NAME: debug_draw_3d
+      ADDON_ROOT_FOLDER_NAME: debug_draw_3d-${{needs.get_version.outputs.version}}
+      RELEASE_PREFIX_NAME: debug-draw-3d
+      DOWNLOAD_ARTIFACT_NAME: .gdextension_libs_production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: ${{env.ADDON_ROOT_FOLDER_NAME}} # godot asset library by default skips root folder
+          sparse-checkout: |
+            addons
+          sparse-checkout-cone-mode: false
+
+      - name: Download Binaries
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: gdextension_build.yml
+          branch: ${{github.ref_name}}
+          name: ${{env.DOWNLOAD_ARTIFACT_NAME}}
+          name_is_regexp: false
+          search_artifacts: true
+          skip_unpack: false
+          path: ${{env.ADDON_ROOT_FOLDER_NAME}}/addons/${{env.ADDON_FOLDER_NAME}}/libs
+          #event: workflow_dispatch
+
+      - name: Create ZIP archive
+        id: zip
+        run: |
+          zipname="${{env.RELEASE_PREFIX_NAME}}_${{needs.get_version.outputs.version}}.zip"
+          zip -r $zipname ${{env.ADDON_ROOT_FOLDER_NAME}}/addons
+          echo "zipname=$zipname" >> $GITHUB_OUTPUT
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{steps.zip.outputs.zipname}}
+          retention-days: 7
+          path: ${{steps.zip.outputs.zipname}}
+
+  upload_github_draft:
+    name: Upload GitHub draft
+    needs: 
+      - get_version
+      - create_release_artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Binaries
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Upload Draft Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: ${{needs.get_version.outputs.version}}
+          files: ${{needs.create_release_artifact.outputs.zipname}}
+          generate_release_notes: true
+          append_body: true
+          fail_on_unmatched_files: true

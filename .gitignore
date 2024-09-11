@@ -41,11 +41,11 @@ used_classes.json
 .mono/
 obj/
 bin/
+libs/
 cmake_build_out/*
 src/gen/*
 src/editor/my_telemetry_modules
-addons/debug_draw_3d/libs/~*
-addons/debug_draw_3d/gen/*
+addons/debug_draw_3d/gen/
 clang_rt.asan_*
 docs/images/classes/temp/
 SUCCESS
