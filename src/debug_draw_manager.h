@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/compiler.h"
+#include "utils/native_api_hooks.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/canvas_layer.hpp>
@@ -51,7 +52,7 @@ public:
  * Dbg2.set_text("Frametime", delta)
  * ```
  */
-class DebugDrawManager : public CanvasLayer {
+NAPI_CLASS_SINGLETON class DebugDrawManager : public CanvasLayer {
 	GDCLASS(DebugDrawManager, CanvasLayer)
 protected:
 	/// @private
@@ -65,10 +66,10 @@ private:
 	static DebugDrawManager *singleton;
 
 	String root_settings_section;
-	const static char *s_initial_state;
-	const static char *s_manager_aliases;
-	const static char *s_dd2d_aliases;
-	const static char *s_dd3d_aliases;
+	static constexpr const char *s_initial_state = "initial_debug_state";
+	static constexpr const char *s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
+	static constexpr const char *s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
+	static constexpr const char *s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
 
 	double log_flush_time = 0;
 	bool debug_enabled = true;
@@ -91,40 +92,35 @@ private:
 	void _register_singleton_aliases(const TypedArray<StringName> &p_names, Object *p_instance);
 	void _unregister_singleton_aliases(const TypedArray<StringName> &p_names);
 
-#ifdef TOOLS_ENABLED
-	void _try_to_update_cs_bindings();
-#endif
-
 	// TEST C# API GENERATOR
 #ifdef DEV_ENABLED
 public:
-	enum DevTestEnum : int {
-		FIRST_VALUE = 0,
+	NAPI_ENUM enum DevTestEnum : int {
+		FIRST_VALUE = 0, // Test comment
 		SECOND_VALUE = 1,
 	};
 
-private:
 	static Object *default_arg_obj;
 
 	// Test regular arguments
-	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath) {};
-	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
-	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
-	void api_test4(RID, Callable, Signal, Dictionary, Array){};
-	void api_test5(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
+	NAPI void api_test1(godot::Variant arg1, godot::Object *arg2, bool arg3, int arg4, float arg5, godot::String arg6, godot::StringName arg7, godot::NodePath arg8) {};
+	NAPI void api_test2(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) {};
+	NAPI void api_test3(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) {};
+	NAPI void api_test4(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) {};
+	NAPI void api_test5(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {};
 	// Test with default arguments
-	Variant api_test6(Object *, Variant, Variant, bool, int, DevTestEnum, float, String, StringName, NodePath) { return "test var"; };
-	Color api_test7(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i) { return Color(4, 3, 2, 1); };
-	DevTestEnum api_test8(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection) { return (DevTestEnum)1; };
-	Object *api_test9(RID, Callable, Signal, Dictionary, Array) { return this; };
-	void api_test10(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};
+	NAPI godot::Variant api_test6(godot::Object *arg1, godot::Variant arg2, bool arg3, int arg4, DebugDrawManager::DevTestEnum arg5, float arg6, godot::String arg7, godot::StringName arg8, godot::NodePath arg9) { return "test var"; }
+	NAPI godot::Color api_test7(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) { return godot::Color(4, 3, 2, 1); }
+	NAPI DebugDrawManager::DevTestEnum api_test8(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) { return (DevTestEnum)1; }
+	NAPI godot::Object *api_test9(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) { return this; }
+	NAPI void api_test10(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {};
 
 public:
 #endif
 
 public:
 	/// @private
-	static const char *s_extension_unloading;
+	static constexpr const char *s_extension_unloading = "extension_unloading";
 
 	DebugDrawManager();
 	~DebugDrawManager();
@@ -134,12 +130,18 @@ public:
 	 */
 	static DebugDrawManager *get_singleton() {
 		return singleton;
-	};
+	}
 
 	/// @private
 	Node *get_current_scene();
 
 #pragma region Exposed Methods
+#ifdef NATIVE_API_ENABLED
+	Dictionary _get_native_functions();
+	bool _get_native_functions_is_double();
+	int64_t _get_native_functions_hash();
+#endif
+
 	/**
 	 * Clear all 2D and 3D geometry
 	 */

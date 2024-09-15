@@ -38,6 +38,7 @@ var physics_tick_processed := false
 
 var timer_1 := 0.0
 var timer_cubes := 0.0
+var cubes_max_time := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
@@ -537,8 +538,12 @@ func _draw_array_of_boxes():
 					
 					if show_text and z == 0:
 						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_max_time)
-		#print("Draw Cubes: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
+		print("Draw Cubes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
+	
+	if timer_cubes > cubes_max_time:
+		DebugDraw3D.clear_all();
+		timer_cubes = 0;
 
 
 func _ready() -> void:

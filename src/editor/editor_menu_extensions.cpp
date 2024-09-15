@@ -1,7 +1,6 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor_menu_extensions.h"
-#include "generate_csharp_bindings.h"
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
@@ -322,7 +321,7 @@ inline String DebugDrawMenuExtensionPlugin::_get_plugin_name() const {
 
 void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " _enter_tree\n");
+	DEV_PRINT_STD("%s _enter_tree\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	PopupMenu *menu = memnew(PopupMenu);
 	menu->connect("id_pressed", callable_mp(this, &DebugDrawMenuExtensionPlugin::_on_id_pressed));
@@ -372,7 +371,8 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(int p_id) {
 			break;
 		}
 		case MENU_GENERATE_CSHARP_BINDING: {
-			GenerateCSharpBindingsPlugin().generate();
+			// TODO:
+			UtilityFunctions::print("DEPRECATED");
 			break;
 		}
 		default:
@@ -399,7 +399,7 @@ void DebugDrawMenuExtensionPlugin::_on_gui_input(const Ref<godot::InputEvent> ie
 }
 
 DebugDrawMenuExtensionPlugin::DebugDrawMenuExtensionPlugin() {
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " constructor\n");
+	DEV_PRINT_STD("%s constructor\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	menu_item_name = "Debug Draw";
 }

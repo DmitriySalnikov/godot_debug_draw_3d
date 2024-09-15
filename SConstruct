@@ -2,14 +2,18 @@
 
 from SCons.Script import SConscript
 from SCons.Script.SConscript import SConsEnvironment
+from SCons.Script import ARGLIST, ARGUMENTS, BUILD_TARGETS, COMMAND_LINE_TARGETS, DEFAULT_TARGETS
 
 import SCons, SCons.Script
 import sys, os, platform, re
-import lib_utils, lib_utils_external
+import lib_utils, lib_utils_external, lib_utils_gen_dd3d_api
 
 # Fixing the encoding of the console
 if platform.system() == "Windows":
     os.system("chcp 65001")
+
+EnsureSConsVersion(4, 0) # type: ignore
+EnsurePythonVersion(3, 8) # type: ignore
 
 # Project config
 project_name = "Debug Draw 3D"
@@ -24,9 +28,11 @@ patches_to_apply = [
 ]
 
 print(
-    f"If you add new source files (e.g. .cpp, .c), do not forget to specify them in '{src_folder}/default_sources.json'.\n\tOr add them to 'setup_defines_and_flags' inside 'SConstruct'."
+    f"If you add new source files (e.g. .cpp, .c), do not forget to specify them in '{src_folder}/default_sources.json'."
+    + f"\n\tOr add them to 'setup_defines_and_flags' inside 'SConstruct'."
 )
 print("To apply git patches, use 'scons apply_patches'.")
+print("To generate native APIs, use 'scons gen_apis'.")
 # print("To build cmake libraries, use 'scons build_cmake'.")
 
 
@@ -43,6 +49,8 @@ def setup_options(env: SConsEnvironment, arguments):
         )
     )
 
+    opts.Add(BoolVariable("build_cpp_api_tests", "Build only cpp api tests", False))
+    opts.Add(BoolVariable("native_api_enabled", "Enable the native API module", True))
     opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
@@ -66,7 +74,7 @@ def setup_options(env: SConsEnvironment, arguments):
 
 
 # Additional compilation flags
-def setup_defines_and_flags(env: SConsEnvironment, src_out):
+def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
     # Add more sources to `src_out` if needed
 
     if "release" in env["target"] and not env["force_enabled_dd3d"]:
@@ -129,6 +137,12 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
     if env["platform"] == "web":
         if env["dev_build"]:
             env.Append(LINKFLAGS=["-sASSERTIONS=1", "-gsource-map"])
+
+    if env["native_api_enabled"]:
+        env.Append(CPPDEFINES=["NATIVE_API_ENABLED"])
+        if not COMMAND_LINE_TARGETS:
+            gen_apis(None, None, env, src_out)
+
     print()
 
 
@@ -238,9 +252,19 @@ def apply_patches(target, source, env: SConsEnvironment):
     return lib_utils_external.apply_git_patches(env, patches_to_apply, "godot-cpp")
 
 
+def gen_apis(target, source, env: SConsEnvironment, src_out: list = []):
+    return lib_utils_gen_dd3d_api.gen_apis(
+        env,
+        "src/native_api/templates/c_api.cpp",
+        os.path.join(os.path.dirname(env["addon_output_dir"]), "native_api"),
+        src_folder,
+        src_out,
+    )
+
+
 def get_android_toolchain() -> str:
     sys.path.insert(0, "godot-cpp/tools")
-    import android
+    import android # type: ignore
 
     sys.path.pop(0)
     return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")
@@ -264,17 +288,56 @@ setup_options(env, args)
 setup_defines_and_flags(env, additional_src)
 generate_sources_for_resources(env, additional_src)
 
+scons_cache_path = os.environ.get("SCONS_CACHE")
+if scons_cache_path is None:
+    # store all obj's in a dedicated folder
+    env["SHOBJPREFIX"] = "#obj/"
+else:
+    env.CacheDir(scons_cache_path)
+    env.Decider("MD5")
+
 extra_tags = ""
 if "release" in env["target"] and env["force_enabled_dd3d"]:
     extra_tags += ".enabled"
 
+if not env["build_cpp_api_tests"]:
+    lib_utils.get_library_object(
+        env, project_name, lib_name, extra_tags, env["addon_output_dir"], src_folder, additional_src
+    )
+
 if env.get("precision", "single") == "double":
     extra_tags += ".double"
 
-lib_utils.get_library_object(
-    env, project_name, lib_name, extra_tags, env["addon_output_dir"], src_folder, additional_src
-)
-
 # Register console commands
 env.Command("apply_patches", [], apply_patches)
+env.Command("gen_apis", [], gen_apis)
 # env.Command("build_cmake", [], build_cmake)
+
+
+## CPP API TESTS
+
+if env["build_cpp_api_tests"]:
+    tests_src_folder = "tests_native_api/cpp"
+    env.Append(CPPPATH=src_folder)
+    env["SHOBJPREFIX"] = "#obj/"
+    additional_tags = ""
+    if env["platform"] == "web" and env.get("threads", True):
+        additional_tags = ".threads"
+
+    lib_filename = "lib{}.{}.{}.{}{}".format(
+        "dd3d_cpp_api", env["platform"], env["target"], env["arch"], additional_tags
+    )
+    lib_filename = os.path.join(tests_src_folder, "addon_cpp_api_test", "libs", lib_filename + env["SHLIBSUFFIX"])
+
+    additional_src = []
+
+    if env["tracy_enabled"]:
+        additional_src.append("src/utils/TracyClientCustom.cpp")
+
+    shbin = env.Default(
+        env.SharedLibrary(
+            target=env.File(lib_filename),
+            source=lib_utils.get_sources(env.Glob(os.path.join(tests_src_folder, "*.cpp")), "", "test_c_api")
+            + additional_src,
+        )
+    )

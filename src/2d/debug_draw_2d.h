@@ -2,6 +2,7 @@
 
 #include "common/colors.h"
 #include "utils/compiler.h"
+#include "utils/native_api_hooks.h"
 
 #include <memory>
 
@@ -22,7 +23,7 @@ class GroupedText;
  *
  * Currently, this class supports drawing an overlay with text.
  */
-class DebugDraw2D : public Object {
+NAPI_CLASS_SINGLETON class DebugDraw2D : public Object {
 	GDCLASS(DebugDraw2D, Object)
 
 	friend DebugDrawManager;
@@ -32,7 +33,7 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	// 2d
-	const static char *s_marked_dirty;
+	static constexpr const char *s_marked_dirty = "marked_dirty";
 
 	bool _canvas_need_update = true;
 	Ref<Font> _font;
@@ -86,7 +87,7 @@ public:
 	 */
 	static DebugDraw2D *get_singleton() {
 		return singleton;
-	};
+	}
 	/// @private
 	void mark_canvas_dirty();
 
@@ -104,25 +105,25 @@ public:
 	/**
 	 * Set whether debug drawing works or not.
 	 */
-	void set_debug_enabled(const bool &_state);
-	bool is_debug_enabled() const;
+	NAPI void set_debug_enabled(const bool &_state);
+	NAPI bool is_debug_enabled() const;
 
 	/**
 	 * Set the configuration global for everything in DebugDraw2D.
 	 */
-	void set_config(Ref<DebugDraw2DConfig> _cfg);
+	NAPI void set_config(Ref<DebugDraw2DConfig> _cfg);
 	/**
 	 * Get the DebugDraw2DConfig.
 	 */
-	Ref<DebugDraw2DConfig> get_config() const;
+	NAPI Ref<DebugDraw2DConfig> get_config() const;
 
 	/**
 	 * Set a custom Control to be used as the canvas for drawing the graphic.
 	 *
 	 * You can use any Control, even one that is in a different window.
 	 */
-	void set_custom_canvas(Control *_canvas);
-	Control *get_custom_canvas() const;
+	NAPI void set_custom_canvas(godot::Control *_canvas);
+	NAPI godot::Control *get_custom_canvas() const;
 #pragma endregion // Exposed Parametes
 
 #pragma region Exposed Draw Functions
@@ -132,12 +133,12 @@ public:
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw2DStats> get_render_stats();
+	NAPI Ref<DebugDraw2DStats> get_render_stats();
 
 	/**
 	 * Clear all 2D objects
 	 */
-	void clear_all();
+	NAPI void clear_all();
 
 #pragma region Text
 	/**
@@ -150,13 +151,13 @@ public:
 	 * @param title_size Title font size
 	 * @param text_size Text font size
 	 */
-	void begin_text_group(String group_title, int group_priority = 0, Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
+	NAPI void begin_text_group(godot::String group_title, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
 	/**
 	 * Ends the text group. Should be called after DebugDraw2D.begin_text_group.
 	 *
 	 * If you need to create multiple groups, just call DebugDraw2D.begin_text_group again and this function at the end.
 	 */
-	void end_text_group();
+	NAPI void end_text_group();
 	/**
 	 * Add or update text in an overlay
 	 *
@@ -166,12 +167,12 @@ public:
 	 * @param color_of_value Value color
 	 * @param duration Expiration time
 	 */
-	void set_text(String key, Variant value = Variant(), int priority = 0, Color color_of_value = Colors::empty_color, real_t duration = -1);
+	NAPI void set_text(godot::String key, godot::Variant value = godot::Variant(), int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 	/**
 	 * Clear all text
 	 */
-	void clear_texts();
+	NAPI void clear_texts();
 #pragma endregion // Text
 #pragma endregion // Exposed Draw Functions
 };

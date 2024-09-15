@@ -53,8 +53,12 @@ void DebugDraw3DScopeConfig::_manual_unregister() {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
-	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
+	set_thickness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_thickness_selfreturn(real_t _value) const {
+	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
 }
 
 real_t DebugDraw3DScopeConfig::get_thickness() const {
@@ -62,8 +66,12 @@ real_t DebugDraw3DScopeConfig::get_thickness() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t _value) const {
-	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
+	set_center_brightness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_center_brightness_selfreturn(real_t _value) const {
+	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
 }
 
 real_t DebugDraw3DScopeConfig::get_center_brightness() const {
@@ -71,8 +79,12 @@ real_t DebugDraw3DScopeConfig::get_center_brightness() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool _value) const {
-	data->hd_sphere = _value;
+	set_hd_sphere_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_hd_sphere_selfreturn(bool _value) const {
+	data->hd_sphere = _value;
 }
 
 bool DebugDraw3DScopeConfig::is_hd_sphere() const {
@@ -80,8 +92,12 @@ bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value) const {
-	data->plane_size = _value;
+	set_plane_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_plane_size_selfreturn(real_t _value) const {
+	data->plane_size = _value;
 }
 
 real_t DebugDraw3DScopeConfig::get_plane_size() const {
@@ -89,11 +105,15 @@ real_t DebugDraw3DScopeConfig::get_plane_size() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_transform(Transform3D _value) const {
+	set_transform_selfreturn(_value);
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_transform_selfreturn(Transform3D _value) const {
 	const static Transform3D identity = Transform3D();
 
 	data->transform = _value;
 	data->custom_xform = _value != identity;
-	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 Transform3D DebugDraw3DScopeConfig::get_transform() const {
@@ -101,13 +121,16 @@ Transform3D DebugDraw3DScopeConfig::get_transform() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_color(Color _value) const {
+	set_text_outline_color_selfreturn(_value);
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_color_selfreturn(Color _value) const {
 	data->text_outline_color = _value;
 	uint32_t hash = hash_murmur3_one_float(_value.r);
 	hash = hash_murmur3_one_float(_value.g, hash);
 	hash = hash_murmur3_one_float(_value.b, hash);
 	data->text_outline_color_hash = hash_murmur3_one_float(_value.a, hash);
-
-	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 Color DebugDraw3DScopeConfig::get_text_outline_color() const {
@@ -115,17 +138,25 @@ Color DebugDraw3DScopeConfig::get_text_outline_color() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_size(int32_t _value) const {
-	data->text_outline_size = _value;
+	set_text_outline_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_size_selfreturn(int32_t _value) const {
+	data->text_outline_size = _value;
 }
 
 int32_t DebugDraw3DScopeConfig::get_text_outline_size() const {
 	return data->text_outline_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool value) const {
-	data->text_fixed_size = value;
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool _value) const {
+	set_text_fixed_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_text_fixed_size_selfreturn(bool _value) const {
+	data->text_fixed_size = _value;
 }
 
 bool DebugDraw3DScopeConfig::get_text_fixed_size() const {
@@ -133,8 +164,12 @@ bool DebugDraw3DScopeConfig::get_text_fixed_size() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(Ref<Font> _value) const {
-	data->text_font = _value;
+	set_text_font_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_font_selfreturn(Ref<Font> _value) const {
+	data->text_font = _value;
 }
 
 Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
@@ -142,9 +177,13 @@ Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
+	set_viewport_selfreturn(_value);
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_viewport_selfreturn(godot::Viewport *_value) const {
 	data->dcd.viewport = _value;
 	data->dcd.viewport_id = _value ? _value->get_instance_id() : 0;
-	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
 Viewport *DebugDraw3DScopeConfig::get_viewport() const {
@@ -152,8 +191,12 @@ Viewport *DebugDraw3DScopeConfig::get_viewport() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(bool _value) const {
-	data->dcd.no_depth_test = _value;
+	set_no_depth_test_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NSELF_RETURN DebugDraw3DScopeConfig::set_no_depth_test_selfreturn(bool _value) const {
+	data->dcd.no_depth_test = _value;
 }
 
 bool DebugDraw3DScopeConfig::is_no_depth_test() const {
