@@ -458,7 +458,6 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
 			dgc_pair != debug_containers.end() && dgc_pair->second.dgcs[dgc_depth]) {
-
 		viewport_to_world_cache[p_dgcd.viewport] = &dgc_pair->second;
 		return &dgc_pair->second;
 	}
@@ -642,7 +641,8 @@ void DebugDraw3D::_load_materials() {
 		}
 
 		switch (render_mode) {
-			case 0: break;
+			case 0:
+				break;
 			case 1:
 				prefix += "#define FORCED_TRANSPARENT\n";
 				break;
@@ -1409,9 +1409,7 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_s
 
 #undef MAX_SUBDIVISIONS
 
-	Vector3 origin = is_centered ?
-							 transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 :
-							 transform.origin;
+	Vector3 origin = is_centered ? transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 : transform.origin;
 
 	std::vector<Vector3> lines;
 	for (int x = 0; x < subdivision.x + 1; x++) {

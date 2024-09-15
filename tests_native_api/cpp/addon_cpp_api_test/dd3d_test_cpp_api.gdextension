@@ -1,0 +1,41 @@
+[configuration]
+
+entry_symbol = "dd3d_test_cpp_api_init"
+compatibility_minimum = "4.1.4"
+reloadable = false
+
+[libraries]
+
+; -------------------------------------
+; debug
+
+macos = "libs/libdd3d_cpp_api.macos.editor.universal.framework"
+windows.x86_64 = "libs/libdd3d_cpp_api.windows.editor.x86_64.dll"
+linux.x86_64 = "libs/libdd3d_cpp_api.linux.editor.x86_64.so"
+
+web.wasm32.nothreads = "libs/libdd3d_cpp_api.web.template_debug.wasm32.wasm"
+web.wasm32 = "libs/libdd3d_cpp_api.web.template_debug.wasm32.threads.wasm"
+
+android.arm32 = "libs/libdd3d_cpp_api.android.template_debug.arm32.so"
+android.arm64 = "libs/libdd3d_cpp_api.android.template_debug.arm64.so"
+android.x86_32 = "libs/libdd3d_cpp_api.android.template_debug.x86_32.so"
+android.x86_64 = "libs/libdd3d_cpp_api.android.template_debug.x86_64.so"
+
+ios = "libs/libdd3d_cpp_api.ios.template_debug.universal.dylib"
+
+; -------------------------------------
+; release
+
+macos.template_release = "libs/libdd3d_cpp_api.macos.template_release.universal.framework"
+windows.template_release.x86_64 = "libs/libdd3d_cpp_api.windows.template_release.x86_64.dll"
+linux.template_release.x86_64 = "libs/libdd3d_cpp_api.linux.template_release.x86_64.so"
+
+web.template_release.wasm32.nothreads = "libs/libdd3d_cpp_api.web.template_release.wasm32.wasm"
+web.template_release.wasm32 = "libs/libdd3d_cpp_api.web.template_release.wasm32.threads.wasm"
+
+android.template_release.arm32 = "libs/libdd3d_cpp_api.android.template_release.arm32.so"
+android.template_release.arm64 = "libs/libdd3d_cpp_api.android.template_release.arm64.so"
+android.template_release.x86_32 = "libs/libdd3d_cpp_api.android.template_release.x86_32.so"
+android.template_release.x86_64 = "libs/libdd3d_cpp_api.android.template_release.x86_64.so"
+
+ios.template_release = "libs/libdd3d_cpp_api.ios.template_release.universal.dylib"

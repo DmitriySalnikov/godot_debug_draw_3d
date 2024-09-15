@@ -2,6 +2,7 @@
 
 #include "common/colors.h"
 #include "utils/compiler.h"
+#include "utils/native_api_hooks.h"
 
 #include <functional>
 
@@ -17,14 +18,14 @@ using namespace godot;
  *
  * You can use DebugDraw2D.get_config to get the current instance of the configuration.
  */
-class DebugDraw2DConfig : public RefCounted {
+NAPI_CLASS_REF class DebugDraw2DConfig : public RefCounted {
 	GDCLASS(DebugDraw2DConfig, RefCounted)
 
 public:
 	/**
 	 * Available positions for placing text blocks.
 	 */
-	enum BlockPosition : int {
+	NAPI_ENUM enum BlockPosition : int {
 		POSITION_LEFT_TOP = 0,
 		POSITION_RIGHT_TOP = 1,
 		POSITION_LEFT_BOTTOM = 2,
@@ -67,50 +68,50 @@ public:
 	/**
 	 * Position of the text block
 	 */
-	void set_text_block_position(BlockPosition _position);
-	BlockPosition get_text_block_position() const;
+	NAPI void set_text_block_position(DebugDraw2DConfig::BlockPosition _position);
+	NAPI DebugDraw2DConfig::BlockPosition get_text_block_position() const;
 
 	/**
 	 * Offset from the corner selected in 'set_text_block_position'
 	 */
-	void set_text_block_offset(const Vector2i &_offset);
-	Vector2i get_text_block_offset() const;
+	NAPI void set_text_block_offset(const godot::Vector2i &_offset);
+	NAPI godot::Vector2i get_text_block_offset() const;
 
 	/**
 	 * Text padding for each line
 	 */
-	void set_text_padding(const Vector2i &_padding);
-	Vector2i get_text_padding() const;
+	NAPI void set_text_padding(const godot::Vector2i &_padding);
+	NAPI godot::Vector2i get_text_padding() const;
 
 	/**
 	 * How long the text remains visible after creation.
 	 */
-	void set_text_default_duration(const real_t &_duration);
-	real_t get_text_default_duration() const;
+	NAPI void set_text_default_duration(const real_t &_duration);
+	NAPI real_t get_text_default_duration() const;
 
 	/**
 	 * Default text size
 	 */
-	void set_text_default_size(const int &_size);
-	int get_text_default_size() const;
+	NAPI void set_text_default_size(const int &_size);
+	NAPI int get_text_default_size() const;
 
 	/**
 	 * Default color of the text
 	 */
-	void set_text_foreground_color(const Color &_new_color);
-	Color get_text_foreground_color() const;
+	NAPI void set_text_foreground_color(const godot::Color &_new_color);
+	NAPI godot::Color get_text_foreground_color() const;
 
 	/**
 	 * Background color of the text
 	 */
-	void set_text_background_color(const Color &_new_color);
-	Color get_text_background_color() const;
+	NAPI void set_text_background_color(const godot::Color &_new_color);
+	NAPI godot::Color get_text_background_color() const;
 
 	/**
 	 * Custom text Font
 	 */
-	void set_text_custom_font(const Ref<Font> &_custom_font);
-	Ref<Font> get_text_custom_font() const;
+	NAPI void set_text_custom_font(const Ref<godot::Font> &_custom_font);
+	NAPI Ref<godot::Font> get_text_custom_font() const;
 };
 
 VARIANT_ENUM_CAST(DebugDraw2DConfig::BlockPosition);
