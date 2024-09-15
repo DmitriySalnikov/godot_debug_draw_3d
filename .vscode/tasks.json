@@ -1,0 +1,76 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "editor_build",
+            "command": "scons",
+            "args": [
+                "target=editor",
+                "debug_symbols=yes",
+                "dev_build=yes",
+                "lto=yes",
+                //"telemetry_enabled=yes",
+                "tracy_enabled=yes",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "editor_build_double",
+            "command": "scons",
+            "args": [
+                "target=editor",
+                "debug_symbols=yes",
+                "dev_build=yes",
+                "lto=yes",
+                //"telemetry_enabled=yes",
+                "precision=double",
+                "tracy_enabled=yes",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "test_cpp_api",
+            "command": "scons",
+            "args": [
+                "build_cpp_api_tests=yes",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                "custom_godotcpp_suffix=.test_napi",
+                "target=editor",
+                "debug_symbols=yes",
+                "dev_build=yes",
+                "tracy_enabled=yes",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ],
+    "version": "2.0.0"
+}

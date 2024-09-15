@@ -46,6 +46,7 @@ cmake_build_out/*
 src/gen/*
 src/editor/dst_modules
 addons/debug_draw_3d/gen/
+addons/debug_draw_3d/native_api/
 clang_rt.asan_*
 docs/images/classes/temp/
 SUCCESS

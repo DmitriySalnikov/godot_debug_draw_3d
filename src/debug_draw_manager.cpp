@@ -3,6 +3,7 @@
 #include "2d/debug_draw_2d.h"
 #include "2d/grouped_text.h"
 #include "3d/debug_draw_3d.h"
+#include "native_api/c_api.h"
 #include "utils/utils.h"
 
 #ifdef TOOLS_ENABLED
@@ -57,6 +58,11 @@ void DebugDrawManager::_bind_methods() {
 #endif
 
 #define REG_CLASS_NAME DebugDrawManager
+
+#ifdef NATIVE_API_ENABLED
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions)), &DebugDrawManager::_get_native_functions);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_hash)), &DebugDrawManager::_get_native_functions_hash);
+#endif
 
 	// TODO use CALLABLE_MP in 4.2!
 	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
@@ -126,6 +132,16 @@ DebugDrawManager::~DebugDrawManager() {
 	memdelete(default_arg_obj);
 #endif
 }
+
+#ifdef NATIVE_API_ENABLED
+Dictionary DebugDrawManager::_get_native_functions() {
+	return NATIVE_API::get_functions().get("functions", Dictionary());
+}
+
+int64_t DebugDrawManager::_get_native_functions_hash() {
+	return NATIVE_API::get_functions().get("hash", 0);
+}
+#endif
 
 void DebugDrawManager::clear_all() {
 	ZoneScoped;

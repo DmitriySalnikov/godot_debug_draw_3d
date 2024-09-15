@@ -1,5 +1,5 @@
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index cc2b02f..4cebea3 100644
+index cc2b02f..dbeecce 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
 @@ -267,6 +267,8 @@ def options(opts, env):
@@ -11,15 +11,15 @@ index cc2b02f..4cebea3 100644
      # compiledb
      opts.Add(
          BoolVariable(
-@@ -436,6 +438,8 @@ def generate(env):
-     suffix += "." + env["arch"]
-     if env["ios_simulator"]:
-         suffix += ".simulator"
+@@ -429,6 +431,8 @@ def generate(env):
+ 
+     # Suffix
+     suffix = ".{}.{}".format(env["platform"], env["target"])
 +    if not env["threads"]:
 +        suffix += ".nothreads"
- 
-     env["suffix"] = suffix  # Exposed when included from another project
-     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+     if env.dev_build:
+         suffix += ".dev"
+     if env["precision"] == "double":
 diff --git a/tools/web.py b/tools/web.py
 index 79b4b24..8953325 100644
 --- a/tools/web.py

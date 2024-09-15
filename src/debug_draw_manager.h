@@ -137,6 +137,11 @@ public:
 	};
 
 #pragma region Exposed Methods
+#ifdef NATIVE_API_ENABLED
+	Dictionary _get_native_functions();
+	int64_t _get_native_functions_hash();
+#endif
+
 	/**
 	 * Clear all 2D and 3D geometry
 	 */

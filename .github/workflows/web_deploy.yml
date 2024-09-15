@@ -50,7 +50,7 @@ env:
 jobs:
   data_preparation:
     name: ⛏ Data preparation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       head_sha: ${{steps.get_sha.outputs.head_sha}}
       lib_version: ${{steps.get_version.outputs.version}}
@@ -374,7 +374,7 @@ jobs:
   finalization:
     name: 🏁 Finalization
     needs: [data_preparation, export_demo_project]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout
@@ -635,7 +635,7 @@ jobs:
   deploy:
     name: 🌐 Deploy
     needs: [finalization]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     environment:
       name: github-pages
@@ -672,7 +672,7 @@ jobs:
         deploy,
       ]
     if: failure() || cancelled()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout

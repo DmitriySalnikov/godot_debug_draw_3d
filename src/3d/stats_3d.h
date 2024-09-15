@@ -21,7 +21,7 @@ using namespace godot;
  *
  * `total_time_spent_usec` reports the time in microseconds spent to process everything and display the geometry on the screen.
  */
-class DebugDraw3DStats : public RefCounted {
+NAPI_CLASS_REF DebugDraw3DStats : public RefCounted {
 	GDCLASS(DebugDraw3DStats, RefCounted)
 
 protected:
@@ -33,9 +33,12 @@ private:                                     \
 	type name = def;                         \
                                              \
 public:                                      \
-	type get_##name() const { return name; } \
+	type get_##name() const {                \
+		return name;                         \
+	}                                        \
 	void set_##name(int64_t val) {}
 
+	// TODO gen API
 	DEFINE_DEFAULT_PROP(instances, int64_t, 0);
 	DEFINE_DEFAULT_PROP(lines, int64_t, 0);
 	DEFINE_DEFAULT_PROP(instances_physics, int64_t, 0);

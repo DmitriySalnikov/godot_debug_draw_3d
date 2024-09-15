@@ -40,16 +40,26 @@ index 7911a7e..58188f7 100644
      if profile_filepath and not Path(profile_filepath).is_absolute():
          profile_filepath = str((Path(env.Dir("#").abspath) / profile_filepath).as_posix())
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index cc2b02f..d138052 100644
+index cc2b02f..7133db2 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
-@@ -322,6 +322,9 @@ def options(opts, env):
+@@ -322,6 +322,10 @@ def options(opts, env):
      opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
      opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
  
 +    opts.Add(BoolVariable("exclude_unused_classes", "Disable generation of unused classes.", True))
 +    opts.Add(PathVariable("folder_to_include_classes", "Path to the directory containing extension sources", "../src", PathVariable.PathIsDir))
++    opts.Add(PathVariable("custom_godotcpp_suffix", "Additional custom library suffix", "", PathVariable.PathAccept))
 +
      # Add platform options (custom tools can override platforms)
      for pl in sorted(set(platforms + custom_platforms)):
          tool = Tool(pl, toolpath=get_platform_tools_paths(env))
+@@ -437,7 +441,7 @@ def generate(env):
+     if env["ios_simulator"]:
+         suffix += ".simulator"
+ 
+-    env["suffix"] = suffix  # Exposed when included from another project
++    env["suffix"] = suffix + env["custom_godotcpp_suffix"] # Exposed when included from another project
+     env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
+ 
+     # compile_commands.json

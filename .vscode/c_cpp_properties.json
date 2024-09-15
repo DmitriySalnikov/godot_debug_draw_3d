@@ -18,6 +18,7 @@
         "TYPED_METHOD_BIND",
         "HOT_RELOAD_ENABLED",
         "TOOLS_ENABLED",
+        "NATIVE_API_ENABLED",
         "TELEMETRY_ENABLED",
         "TELEMETRY_PROJECT_DD3D"
         //"REAL_T_IS_DOUBLE"

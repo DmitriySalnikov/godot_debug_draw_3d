@@ -3,7 +3,34 @@
   <ItemGroup>
     <ClCompile Include="debug_draw_manager.cpp" />
     <ClCompile Include="register_types.cpp" />
+    <ClCompile Include="native_api\templates\c_api.cpp">
+      <Filter>native_api\templates</Filter>
+    </ClCompile>
+    <ClCompile Include="gen\c_api.gen.cpp">
+      <Filter>gen</Filter>
+    </ClCompile>
+    <ClCompile Include="api\c_api.cpp">
+      <Filter>api</Filter>
+    </ClCompile>
     <ClCompile Include="3d\config_scope_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\debug_draw_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\config_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\debug_geometry_container.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\stats_3d.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\geometry_generators.cpp">
+      <Filter>3d</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\render_instances.cpp">
       <Filter>3d</Filter>
     </ClCompile>
     <ClCompile Include="thirdparty\tracy\public\TracyClient.cpp">
@@ -23,24 +50,6 @@
     </ClCompile>
     <ClCompile Include="editor\generate_csharp_bindings.cpp">
       <Filter>editor</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\debug_draw_3d.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\config_3d.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\debug_geometry_container.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\stats_3d.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\geometry_generators.cpp">
-      <Filter>3d</Filter>
-    </ClCompile>
-    <ClCompile Include="3d\render_instances.cpp">
-      <Filter>3d</Filter>
     </ClCompile>
     <ClCompile Include="utils\math_utils.cpp">
       <Filter>utils</Filter>
@@ -70,7 +79,49 @@
   <ItemGroup>
     <ClInclude Include="debug_draw_manager.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="native_api\templates\cpp\dd3d_cpp_api.hpp">
+      <Filter>native_api\templates\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="native_api\c_api.h">
+      <Filter>native_api</Filter>
+    </ClInclude>
+    <ClInclude Include="native_api\c_api_shared.hpp">
+      <Filter>native_api</Filter>
+    </ClInclude>
+    <ClInclude Include="utils\native_api_hooks.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="api\c_api.h">
+      <Filter>api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\include\c_api_shared.h">
+      <Filter>api\include</Filter>
+    </ClInclude>
+    <ClInclude Include="api\include\dd3d_cpp_api.h">
+      <Filter>api\include</Filter>
+    </ClInclude>
     <ClInclude Include="3d\config_scope_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\debug_draw_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\config_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\debug_geometry_container.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\render_instances_enums.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\stats_3d.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\geometry_generators.h">
+      <Filter>3d</Filter>
+    </ClInclude>
+    <ClInclude Include="3d\render_instances.h">
       <Filter>3d</Filter>
     </ClInclude>
     <ClInclude Include="thirdparty\tracy\public\tracy\Tracy.hpp">
@@ -90,24 +141,6 @@
     </ClInclude>
     <ClInclude Include="editor\generate_csharp_bindings.h">
       <Filter>editor</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\debug_draw_3d.h">
-      <Filter>3d</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\config_3d.h">
-      <Filter>3d</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\debug_geometry_container.h">
-      <Filter>3d</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\stats_3d.h">
-      <Filter>3d</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\geometry_generators.h">
-      <Filter>3d</Filter>
-    </ClInclude>
-    <ClInclude Include="3d\render_instances.h">
-      <Filter>3d</Filter>
     </ClInclude>
     <ClInclude Include="utils\math_utils.h">
       <Filter>utils</Filter>
@@ -145,50 +178,62 @@
     <ClInclude Include="common\i_scope_storage.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="3d\render_instances_enums.h">
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
+    <None Include="default_sources.json" />
+    <None Include="3d\cpp.hint">
       <Filter>3d</Filter>
-    </ClInclude>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="debug_strings.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="default_sources.json" />
-    <None Include="3d\cpp.hint">
-      <Filter>3d</Filter>
-    </None>
-    <None Include="cpp.hint" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="3d">
-      <UniqueIdentifier>{41bf4d2b-e2a7-4109-bad0-948fa34741d5}</UniqueIdentifier>
+    <Filter Include="native_api">
+      <UniqueIdentifier>{917a8820-60a1-402e-b9e7-0d81071a57e8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="thirdparty">
-      <UniqueIdentifier>{d2dca650-da5d-42d5-a533-a4cb3529c4e2}</UniqueIdentifier>
+    <Filter Include="native_api\templates">
+      <UniqueIdentifier>{145c26c3-c203-4140-8600-06d2e400c369}</UniqueIdentifier>
     </Filter>
-    <Filter Include="thirdparty\tracy">
-      <UniqueIdentifier>{efda6ef3-f051-4442-bc2f-6c63cca454d2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="thirdparty\tracy\public">
-      <UniqueIdentifier>{bc54e771-22f9-483b-a35c-5a48ee64eb21}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="thirdparty\tracy\public\tracy">
-      <UniqueIdentifier>{36333054-a1bd-4649-9207-8d8bce0b984a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="gen">
-      <UniqueIdentifier>{aea0059b-e5e1-4da7-aeb4-ac472710074d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="editor">
-      <UniqueIdentifier>{10105c02-b1e0-40f4-9047-8ae4a2fa42f6}</UniqueIdentifier>
+    <Filter Include="native_api\templates\cpp">
+      <UniqueIdentifier>{42c60729-b118-40ec-9df5-30baf501832f}</UniqueIdentifier>
     </Filter>
     <Filter Include="utils">
-      <UniqueIdentifier>{3404b05e-f966-44bc-af61-f57bc56b8a05}</UniqueIdentifier>
+      <UniqueIdentifier>{7eb6901f-bd2f-4c40-8ea7-36dffcd0be19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gen">
+      <UniqueIdentifier>{12c255c5-929d-4f42-9490-22e24b7d82fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="api">
+      <UniqueIdentifier>{634b244b-9c1f-42b5-acde-865e3bc48cf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="api\include">
+      <UniqueIdentifier>{6b40455a-2e43-4a24-8177-12b9c0b21ad3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3d">
+      <UniqueIdentifier>{e62fad78-57a4-4474-8cbe-a6fb97bace81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{a2ab5e41-2d2f-4572-a6f9-46608aed1ff8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy">
+      <UniqueIdentifier>{163c4db9-09af-4c6f-903a-74a5c7625032}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public">
+      <UniqueIdentifier>{6e148e21-a733-46b0-83e6-1e192e622c80}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\tracy\public\tracy">
+      <UniqueIdentifier>{fe15911b-7dc5-48db-bb5f-b48b06e26665}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="editor">
+      <UniqueIdentifier>{7ded5941-d938-4e5a-b283-e6a86b3130c4}</UniqueIdentifier>
     </Filter>
     <Filter Include="2d">
-      <UniqueIdentifier>{965d83d6-bdd9-46a6-8730-dff1da56df4b}</UniqueIdentifier>
+      <UniqueIdentifier>{8e668da9-2096-44d2-882e-5d32eef81630}</UniqueIdentifier>
     </Filter>
     <Filter Include="common">
-      <UniqueIdentifier>{7d8a069a-6586-404e-94cb-6d3870d25eb5}</UniqueIdentifier>
+      <UniqueIdentifier>{c1529992-b9f2-4d8f-947d-60ceb423e7a6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

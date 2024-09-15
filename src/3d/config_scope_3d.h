@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/compiler.h"
+#include "utils/native_api_hooks.h"
 
 #include <functional>
 #include <memory>
@@ -55,7 +56,7 @@ using namespace godot;
  *     DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
  * ```
  */
-class DebugDraw3DScopeConfig : public RefCounted {
+NAPI_CLASS_REF DebugDraw3DScopeConfig : public RefCounted {
 	GDCLASS(DebugDraw3DScopeConfig, RefCounted)
 
 protected:
@@ -103,40 +104,42 @@ public:
 	std::shared_ptr<Data> data = nullptr;
 
 	/// @private
-	// It can be used for example in C#
-	void _manual_unregister();
+	/**
+	 * It can be used for example in C#
+	 */
+	NAPI void _manual_unregister();
 
 	/**
 	 * Set the thickness of the volumetric lines. If the value is 0, the standard wireframe rendering will be used.
 	 *
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
-	real_t get_thickness() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
+	NAPI real_t get_thickness() const;
 
 	/**
 	 * Set the brightness of the central part of the volumetric lines.
 	 *
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
-	real_t get_center_brightness() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
+	NAPI real_t get_center_brightness() const;
 
 	/**
 	 * Set the mesh density of the sphere
 	 *
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
-	bool is_hd_sphere() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
+	NAPI bool is_hd_sphere() const;
 
 	/**
 	 * Set the size of the `Plane` in DebugDraw3D.draw_plane. If set to `INF`, the `Far` parameter of the current camera will be used.
 	 *
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
-	real_t get_plane_size() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
+	NAPI real_t get_plane_size() const;
 
 	/**
 	 * Set which Viewport will be used to get World3D.
@@ -148,8 +151,8 @@ public:
 	 * @note
 	 * Objects created for a specific Viewport will use only one camera related to that Viewport for culling.
 	 */
-	Ref<DebugDraw3DScopeConfig> set_viewport(Viewport *_value) const;
-	Viewport *get_viewport() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_viewport(godot::Viewport * _value) const;
+	NAPI godot::Viewport *get_viewport() const;
 
 	/**
 	 * Set whether the `depth_test_disabled` flag is added or not in the shaders of the debug shapes.
@@ -159,13 +162,12 @@ public:
 	 *
 	 * ![](docs/images/classes/NoDepthTest.webp)
 	 */
-	Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
-	bool is_no_depth_test() const;
+	NAPI Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
+	NAPI bool is_no_depth_test() const;
 
 	/// @private
 	DebugDraw3DScopeConfig();
 
-	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
 	/// @private
 	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_parent, const unregister_func p_unreg);
 	~DebugDraw3DScopeConfig();

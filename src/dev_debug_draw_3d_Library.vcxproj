@@ -378,6 +378,7 @@
     <ClCompile Include="3d\render_instances.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="api\c_api.cpp" />
     <ClCompile Include="common\colors.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -387,8 +388,10 @@
     </ClCompile>
     <ClCompile Include="editor\editor_menu_extensions.cpp" />
     <ClCompile Include="editor\generate_csharp_bindings.cpp" />
+    <ClCompile Include="gen\c_api.gen.cpp" />
     <ClCompile Include="gen\editor_resources.gen.cpp" />
     <ClCompile Include="gen\shared_resources.gen.cpp" />
+    <ClCompile Include="native_api\templates\c_api.cpp" />
     <ClCompile Include="register_types.cpp" />
     <ClCompile Include="thirdparty\tracy\public\TracyClient.cpp">
       <IncludeInUnityFile>false</IncludeInUnityFile>
@@ -436,6 +439,9 @@
     <ClInclude Include="3d\render_instances.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="api\c_api.h" />
+    <ClInclude Include="api\include\c_api_shared.h" />
+    <ClInclude Include="api\include\dd3d_cpp_api.h" />
     <ClInclude Include="common\circular_buffer.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
@@ -453,10 +459,14 @@
     <ClInclude Include="editor\generate_csharp_bindings.h" />
     <ClInclude Include="gen\editor_resources.gen.h" />
     <ClInclude Include="gen\shared_resources.gen.h" />
+    <ClInclude Include="native_api\c_api.h" />
+    <ClInclude Include="native_api\c_api_shared.hpp" />
+    <ClInclude Include="native_api\templates\cpp\dd3d_cpp_api.hpp" />
     <ClInclude Include="thirdparty\tracy\public\tracy\Tracy.hpp" />
     <ClInclude Include="utils\math_utils.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>
+    <ClInclude Include="utils\native_api_hooks.h" />
     <ClInclude Include="utils\profiler.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

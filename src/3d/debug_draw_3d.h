@@ -4,6 +4,7 @@
 #include "common/i_scope_storage.h"
 #include "config_scope_3d.h"
 #include "render_instances_enums.h"
+#include "utils/native_api_hooks.h"
 #include "utils/profiler.h"
 
 #include <map>
@@ -113,7 +114,7 @@ public:
  * Due to the way Godot registers this addon, it is not possible to use the `draw_` methods
  * in the first few frames immediately after the project is launched.
  */
-class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
+NAPI_CLASS_SINGLETON DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
@@ -165,9 +166,9 @@ private:
 				id(id), scfg(scfg) {}
 	};
 	// stores thread id and array of id's with ptrs
-	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
+	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig>> scoped_configs;
 	// stores thread id and most recent config
-	std::unordered_map<uint64_t, std::shared_ptr<DebugDraw3DScopeConfig::Data> > cached_scoped_configs;
+	std::unordered_map<uint64_t, std::shared_ptr<DebugDraw3DScopeConfig::Data>> cached_scoped_configs;
 	uint64_t created_scoped_configs = 0;
 	struct {
 		uint64_t created;
@@ -179,7 +180,7 @@ private:
 
 	// Meshes
 	/// Store meshes shared between many debug containers
-	std::vector<std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> > shared_generated_meshes;
+	std::vector<std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX>> shared_generated_meshes;
 
 	/// Store World3D id and debug container
 	struct ViewportToDebugContainerItem {
@@ -198,14 +199,14 @@ private:
 	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
 
 	// Inherited via IScopeStorage
-	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
+	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig * p_cfg) override;
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
 	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugGeometryContainer *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
 	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id);
-	Viewport *_get_root_world_viewport(Viewport *p_vp);
+	Viewport *_get_root_world_viewport(Viewport * p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
@@ -220,7 +221,7 @@ private:
 
 #endif
 
-	void init(DebugDrawManager *p_root);
+	void init(DebugDrawManager * p_root);
 
 	void set_custom_editor_viewport(std::vector<SubViewport *> p_viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
@@ -257,7 +258,7 @@ public:
 	 */
 	static DebugDraw3D *get_singleton() {
 		return singleton;
-	};
+	}
 
 #pragma region Configs
 	/**
@@ -267,13 +268,13 @@ public:
 	 *
 	 * Store this instance in a local variable inside the method.
 	 */
-	Ref<DebugDraw3DScopeConfig> new_scoped_config();
+	NAPI Ref<DebugDraw3DScopeConfig> new_scoped_config();
 	/**
 	 * Returns the default scope settings that will be applied at the start of each new frame.
 	 *
 	 * Default values can be overridden in the project settings `debug_draw_3d/settings/3d/volumetric_defaults`.
 	 */
-	Ref<DebugDraw3DScopeConfig> scoped_config() override;
+	NAPI Ref<DebugDraw3DScopeConfig> scoped_config() override;
 
 	/**
 	 * Set the configuration global for everything in DebugDraw3D.
@@ -288,7 +289,7 @@ public:
 
 #pragma region Exposed Parameters
 	/// @private
-	void set_empty_color(const Color &col) {};
+	void set_empty_color(const godot::Color &col) {};
 	/**
 	 * Get the color that is used as the default parameter for `draw_*` calls.
 	 */
@@ -297,8 +298,8 @@ public:
 	/**
 	 * Set whether debug drawing works or not.
 	 */
-	void set_debug_enabled(const bool &state);
-	bool is_debug_enabled() const;
+	NAPI void set_debug_enabled(const bool &state);
+	NAPI bool is_debug_enabled() const;
 
 #pragma endregion // Exposed Parametes
 
@@ -316,7 +317,7 @@ public:
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw3DStats> get_render_stats_for_world(Viewport *viewport);
+	Ref<DebugDraw3DStats> get_render_stats_for_world(godot::Viewport * viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL
@@ -330,17 +331,17 @@ public:
 	 *
 	 * Can be useful if you want to change some project settings and not restart the project.
 	 */
-	void regenerate_geometry_meshes();
+	NAPI void regenerate_geometry_meshes();
 
 	/**
 	 * Clear all 3D geometry
 	 */
-	void clear_all();
+	NAPI void clear_all();
 
 #pragma region Spheres
 
 	/// @private
-	void draw_sphere_base(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_sphere_base(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw a sphere
 	 *
@@ -351,7 +352,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_sphere(const Vector3 &position, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_sphere(const godot::Vector3 &position, const real_t &radius = 0.5f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw a sphere with a radius of 0.5
 	 *
@@ -361,7 +362,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_sphere_xf(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_sphere_xf(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Spheres
 
@@ -376,7 +377,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_cylinder(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_cylinder(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a cylinder between points A and B with a certain radius
@@ -389,7 +390,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const real_t &radius = 0.5f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_cylinder_ab(const godot::Vector3 &a, const godot::Vector3 &b, const real_t &radius = 0.5f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Cylinders
 
@@ -409,7 +410,7 @@ public:
 	 * @param is_box_centered Set where the center of the box will be. In the center or in the bottom corner
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_box(const Vector3 &position, const Quaternion &rotation, const Vector3 &size, const Color &color = Colors::empty_color, const bool &is_box_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_box(const godot::Vector3 &position, const Quaternion &rotation, const godot::Vector3 &size, const godot::Color &color = Colors::empty_color, const bool &is_box_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a box between points A and B by rotating and scaling based on the up vector
@@ -425,7 +426,7 @@ public:
 	 * @param is_ab_diagonal Set uses the diagonal between the corners or the diagonal between the centers of two edges
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 &up, const Color &color = Colors::empty_color, const bool &is_ab_diagonal = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_box_ab(const godot::Vector3 &a, const godot::Vector3 &b, const godot::Vector3 &up, const godot::Color &color = Colors::empty_color, const bool &is_ab_diagonal = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a box as in DebugDraw3D.draw_box
@@ -435,7 +436,7 @@ public:
 	 * @param is_box_centered Set where the center of the box will be. In the center or in the bottom corner
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_box_xf(const Transform3D &transform, const Color &color = Colors::empty_color, const bool &is_box_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_box_xf(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const bool &is_box_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a box as in DebugDraw3D.draw_box, but based on the AABB
@@ -444,7 +445,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_aabb(const AABB &aabb, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_aabb(const AABB &aabb, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw the box as in DebugDraw3D.draw_aabb, but AABB is defined by the diagonal AB
@@ -454,7 +455,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_aabb_ab(const Vector3 &a, const Vector3 &b, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_aabb_ab(const godot::Vector3 &a, const godot::Vector3 &b, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Boxes
 
@@ -476,7 +477,7 @@ public:
 	 * @param after_hit_color Color of line after hit position
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_line_hit(const Vector3 &start, const Vector3 &end, const Vector3 &hit, const bool &is_hit, const real_t &hit_size = 0.25f, const Color &hit_color = Colors::empty_color, const Color &after_hit_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_line_hit(const godot::Vector3 &start, const godot::Vector3 &end, const godot::Vector3 &hit, const bool &is_hit, const real_t &hit_size = 0.25f, const godot::Color &hit_color = Colors::empty_color, const godot::Color &after_hit_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw line separated by hit point.
@@ -494,12 +495,12 @@ public:
 	 * @param after_hit_color Color of line after hit position
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_line_hit_offset(const Vector3 &start, const Vector3 &end, const bool &is_hit, const real_t &unit_offset_of_hit = 0.5f, const real_t &hit_size = 0.25f, const Color &hit_color = Colors::empty_color, const Color &after_hit_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_line_hit_offset(const godot::Vector3 &start, const godot::Vector3 &end, const bool &is_hit, const real_t &unit_offset_of_hit = 0.5f, const real_t &hit_size = 0.25f, const godot::Color &hit_color = Colors::empty_color, const godot::Color &after_hit_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma region Normal
 
 	/// @private
-	void draw_lines_c(const std::vector<Vector3> &lines, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_lines_c(const std::vector<Vector3> &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw a single line
 	 *
@@ -510,7 +511,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_line(const Vector3 &a, const Vector3 &b, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_line(const godot::Vector3 &a, const godot::Vector3 &b, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a ray.
@@ -523,7 +524,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_ray(const godot::Vector3 &origin, const godot::Vector3 &direction, const real_t &length, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw an array of lines. Each line is two points, so the array must be of even size.
@@ -534,7 +535,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_lines(const PackedVector3Array &lines, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_lines(const godot::PackedVector3Array &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw an array of lines.
@@ -547,7 +548,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_line_path(const PackedVector3Array &path, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_line_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Normal
 
@@ -556,11 +557,11 @@ public:
 	/**
 	 * Draw the arrowhead
 	 *
-	 * @param transform Transform3D of the Arrowhead
+	 * @param transform godot::Transform3D of the Arrowhead
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_arrowhead(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_arrowhead(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw line with arrowhead
@@ -574,7 +575,7 @@ public:
 	 * @param is_absolute_size Is `arrow_size` absolute or relative to the length of the string?
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_arrow(const Vector3 &a, const Vector3 &b, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_arrow(const godot::Vector3 &a, const godot::Vector3 &b, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Same as DebugDraw3D.draw_arrow, but uses origin, direction and length instead of A and B.
@@ -587,7 +588,7 @@ public:
 	 * @param is_absolute_size Is `arrow_size` absolute or relative to the line length?
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_arrow_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_arrow_ray(const godot::Vector3 &origin, const godot::Vector3 &direction, const real_t &length, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.5f, const bool &is_absolute_size = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a sequence of points connected by lines with arrows like DebugDraw3D.draw_line_path.
@@ -600,7 +601,7 @@ public:
 	 * @param is_absolute_size Is the `arrow_size` absolute or relative to the length of the line?
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_arrow_path(const PackedVector3Array &path, const Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_arrow_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Arrows
 #pragma region Points
@@ -619,7 +620,7 @@ public:
 	 * @param size Size of squares
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_point_path(const PackedVector3Array &path, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const Color &points_color = Colors::empty_color, const Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_point_path(const godot::PackedVector3Array &path, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &points_color = Colors::empty_color, const godot::Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Points
 #pragma endregion // Lines
@@ -637,7 +638,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_points(const PackedVector3Array &points, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_points(const godot::PackedVector3Array &points, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a square that will always be turned towards the camera
@@ -647,7 +648,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_square(const Vector3 &position, const real_t &size = 0.2f, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_square(const godot::Vector3 &position, const real_t &size = 0.2f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draws a plane of non-infinite size relative to the position of the current camera.
@@ -661,18 +662,18 @@ public:
 	 * @param anchor_point A point that is projected onto a Plane, and its projection is used as the center of the drawn plane
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_plane(const Plane &plane, const Color &color = Colors::empty_color, const Vector3 &anchor_point = Vector3(INFINITY, INFINITY, INFINITY), const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_plane(const godot::Plane &plane, const godot::Color &color = Colors::empty_color, const godot::Vector3 &anchor_point = godot::Vector3(INFINITY, INFINITY, INFINITY), const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw 3 intersecting lines with the given transformations
 	 *
 	 * ![](docs/images/classes/DrawPosition.webp)
 	 *
-	 * @param transform Transform3D of lines
+	 * @param transform godot::Transform3D of lines
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_position(const Transform3D &transform, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_position(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw 3 lines with the given transformations and arrows at the ends
@@ -681,12 +682,12 @@ public:
 	 *
 	 * ![is_centered = true](docs/images/classes/DrawGizmoCentered.webp)
 	 *
-	 * @param transform Transform3D of lines
+	 * @param transform godot::Transform3D of lines
 	 * @param color Primary color
 	 * @param is_centered If `true`, then the lines will intersect in the center of the transform
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_gizmo(const Transform3D &transform, const Color &color = Colors::empty_color, const bool &is_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_gizmo(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const bool &is_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw simple grid with given size and subdivision
@@ -701,25 +702,25 @@ public:
 	 * @param is_centered Draw lines relative to origin
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_grid(const Vector3 &origin, const Vector3 &x_size, const Vector3 &y_size, const Vector2i &subdivision, const Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_grid(const godot::Vector3 &origin, const godot::Vector3 &x_size, const godot::Vector3 &y_size, const godot::Vector2i &subdivision, const godot::Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a simple grid with a given transform and subdivision.
 	 *
 	 * Like DebugDraw3D.draw_grid, but instead of origin, x_size and y_size, a single transform is used.
 	 *
-	 * @param transform Transform3D of the Grid
+	 * @param transform godot::Transform3D of the Grid
 	 * @param p_subdivision Number of cells for the X and Y axes
 	 * @param color Primary color
 	 * @param is_centered Draw lines relative to origin
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_grid_xf(const Transform3D &transform, const Vector2i &p_subdivision, const Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_grid_xf(const godot::Transform3D &transform, const godot::Vector2i &p_subdivision, const godot::Color &color = Colors::empty_color, const bool &is_centered = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma region Camera Frustum
 
 	/// @private
-	void draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw camera frustum area.
 	 *
@@ -729,7 +730,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_camera_frustum(const class godot::Camera3D *camera, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_camera_frustum(const class godot::Camera3D *camera, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw the frustum area of the camera based on an array of 6 planes.
@@ -738,7 +739,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_camera_frustum_planes(const Array &camera_frustum, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_camera_frustum_planes(const godot::Array &camera_frustum, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Camera Frustum
 

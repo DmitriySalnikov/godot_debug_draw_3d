@@ -91,6 +91,7 @@ def read_all_text(file_path: str) -> str | None:
 
 
 def write_all_text(file_path: str, text: str) -> bool:
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, "w+", encoding="utf-8") as file:
         file.write(text)
         return True

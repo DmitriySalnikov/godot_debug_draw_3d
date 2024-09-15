@@ -42,6 +42,7 @@ var physics_tick_processed := false
 
 var timer_1 := 0.0
 var timer_cubes := 0.0
+var cubes_max_time := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
@@ -443,7 +444,7 @@ func _draw_array_of_boxes():
 	var y_size := 50
 	var z_size := 3
 	var mul := 1
-	var cubes_max_time := 1.25
+	cubes_max_time = 1.25
 	var cfg = DebugDraw3D.new_scoped_config()
 	
 	if draw_1m_boxes:
@@ -462,8 +463,12 @@ func _draw_array_of_boxes():
 					cfg.set_thickness(randf_range(0, 0.1))
 					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
 					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul) + global_position, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
-		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
+		print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
+	
+	if timer_cubes > cubes_max_time:
+		DebugDraw3D.clear_all()
+		timer_cubes = 0
 
 
 func _graph_test():

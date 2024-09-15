@@ -14,7 +14,7 @@ using namespace godot;
  *
  * You can use DebugDraw3D.get_config to get the current instance of the configuration.
  */
-class DebugDraw3DConfig : public RefCounted {
+NAPI_CLASS_REF DebugDraw3DConfig : public RefCounted {
 	GDCLASS(DebugDraw3DConfig, RefCounted)
 
 private:
