@@ -34,7 +34,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::request_completed(String body) {
 	Variant p = json->get_data();
 
 	if (err != Error::OK || p.get_type() != Variant::Type::DICTIONARY) {
-		DEV_PRINT_STD_ERR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to parse the response body.\n");
+		DEV_PRINT_STD_ERR("%s: Failed to parse the response body.\n", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker));
 		return;
 	}
 
@@ -118,7 +118,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to initialize connection. Error: {0}", UtilityFunctions::error_string(err));
+				PRINT_ERROR("{0}: Failed to initialize connection. Error: {1}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), UtilityFunctions::error_string(err));
 				return;
 			}
 		} else {
@@ -129,7 +129,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 		while (http.is_valid() && !is_thread_closing) {
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to connect. Error: {0}", UtilityFunctions::error_string(err));
+				PRINT_ERROR("{0}: Failed to connect. Error: {1}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), UtilityFunctions::error_string(err));
 				return;
 			}
 
@@ -140,7 +140,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 				case godot::HTTPClient::STATUS_CANT_RESOLVE:
 				case godot::HTTPClient::STATUS_CANT_CONNECT:
 				case godot::HTTPClient::STATUS_TLS_HANDSHAKE_ERROR:
-					PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Connection error: {0}", status);
+					PRINT_ERROR("{0}: Connection error: {1}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), status);
 					return;
 				case godot::HTTPClient::STATUS_RESOLVING:
 				case godot::HTTPClient::STATUS_CONNECTING:
@@ -148,7 +148,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 				case godot::HTTPClient::STATUS_BODY:
 				default:
 					if (status != prev_status) {
-						DEV_PRINT_STD(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Connecting status: %d\n", status);
+						DEV_PRINT_STD("%s: Connecting status: %d\n", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), status);
 					}
 					break;
 				case godot::HTTPClient::STATUS_CONNECTED:
@@ -167,7 +167,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 		String request_url = "/asset-library/api/asset/" + String::num_int64(addon_id);
 		err = http->request(HTTPClient::METHOD_GET, request_url, PackedStringArray());
 		if (err != Error::OK) {
-			PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to create a request. Error: {0}", UtilityFunctions::error_string(err));
+			PRINT_ERROR("{0}: Failed to create a request. Error: {1}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), UtilityFunctions::error_string(err));
 			return;
 		}
 
@@ -175,7 +175,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 
 			err = http->poll();
 			if (err != Error::OK) {
-				PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to get a response from \"{0}\". Error: {1}", godot_domain + request_url, UtilityFunctions::error_string(err));
+				PRINT_ERROR("{0}: Failed to get a response from \"{1}\". Error: {2}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), godot_domain + request_url, UtilityFunctions::error_string(err));
 				return;
 			}
 
@@ -195,7 +195,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 				return;
 			} else {
 				if (code != 0) {
-					PRINT_ERROR(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Failed to get a response from \"{0}\". Code: {1}", godot_domain + request_url, code);
+					PRINT_ERROR("{0}: Failed to get a response from \"{1}\". Code: {2}", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker), godot_domain + request_url, code);
 					return;
 				}
 			}
@@ -203,7 +203,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
-		DEV_PRINT_STD(NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker) ": Thread finished\n");
+		DEV_PRINT_STD("%s: Thread finished\n", NAMEOF(_DebugDraw3DAssetLibraryUpdateChecker));
 	});
 }
 

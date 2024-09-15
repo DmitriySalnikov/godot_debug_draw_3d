@@ -174,6 +174,14 @@ setup_options(env, args)
 setup_defines_and_flags(env, additional_src)
 generate_sources_for_resources(env, additional_src)
 
+scons_cache_path = os.environ.get("SCONS_CACHE")
+if scons_cache_path is None:
+    # store all obj's in a dedicated folder
+    env["SHOBJPREFIX"] = "#obj/"
+else:
+    env.CacheDir(scons_cache_path)
+    env.Decider("MD5")
+
 extra_tags = ""
 if "release" in env["target"] and env["force_enabled_dd3d"]:
     extra_tags += ".enabled"

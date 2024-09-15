@@ -158,20 +158,20 @@ static String get_file_name_in_repository(const String &name) {
 		PS()->set_initial_value(path, def);        \
 	}
 
-#define ASSIGN_SINGLETON(class_name)                                         \
-	if (!singleton) {                                                        \
-		singleton = this;                                                    \
-	} else {                                                                 \
-		PRINT_ERROR("Only 1 instance of " NAMEOF(class_name) " is allowed"); \
+#define ASSIGN_SINGLETON(class_name)                                          \
+	if (!singleton) {                                                         \
+		singleton = this;                                                     \
+	} else {                                                                  \
+		PRINT_ERROR("Only 1 instance of {0} is allowed", NAMEOF(class_name)); \
 	}
 
-#define UNASSIGN_SINGLETON(class_name)                                              \
-	if (singleton) {                                                                \
-		if (singleton == this) {                                                    \
-			singleton = nullptr;                                                    \
-		} else {                                                                    \
-			PRINT_ERROR("More than 1 " NAMEOF(class_name) " instance was created"); \
-		}                                                                           \
+#define UNASSIGN_SINGLETON(class_name)                                               \
+	if (singleton) {                                                                 \
+		if (singleton == this) {                                                     \
+			singleton = nullptr;                                                     \
+		} else {                                                                     \
+			PRINT_ERROR("More than 1 {0} instance was created", NAMEOF(class_name)); \
+		}                                                                            \
 	}
 
 // HACK temp constants.

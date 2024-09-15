@@ -7,26 +7,30 @@ import SCons
 import os, json, re
 
 
-def get_sources(src: list, src_folder: str, lib_name: str = "unity_"):
-    res = [os.path.join(src_folder, file) for file in src]
+def get_sources(src: list, src_folder: str = "", lib_name: str = "unity_"):
+    if len(src_folder):
+        res = [os.path.join(src_folder, file) for file in src]
+    else:
+        res = src.copy()
     res = unity_tools.generate_unity_build(res, lib_name + "_")
     return res
 
 
-def get_library_object(env: SConsEnvironment, project_name: str, lib_name: str, extra_tags: str, output_path: str, src_folder: str, additional_src: list) -> str:
+def get_library_object(
+    other_env: SConsEnvironment,
+    project_name: str,
+    lib_name: str,
+    extra_tags: str,
+    output_path: str,
+    src_folder: str,
+    additional_src: list,
+) -> str:
+    env = other_env.Clone()
     env.Append(CPPPATH=src_folder)
 
     src = []
     with open(src_folder + "/default_sources.json") as f:
         src = json.load(f)
-
-    scons_cache_path = os.environ.get("SCONS_CACHE")
-    if scons_cache_path is None:
-        # store all obj's in a dedicated folder
-        env["SHOBJPREFIX"] = "#obj/"
-    else:
-        env.CacheDir(scons_cache_path)
-        env.Decider("MD5")
 
     # some additional tags if needed
     additional_tags = ""
@@ -34,7 +38,10 @@ def get_library_object(env: SConsEnvironment, project_name: str, lib_name: str, 
     if env["platform"] == "web" and env.get("threads", True):
         additional_tags = ".threads"
 
-    lib_filename = "lib{}.{}.{}.{}{}".format(lib_name, env["platform"], env["target"], env["arch"], additional_tags + extra_tags) + env["SHLIBSUFFIX"]
+    lib_filename = (
+        "lib{}.{}.{}.{}{}".format(lib_name, env["platform"], env["target"], env["arch"], additional_tags + extra_tags)
+        + env["SHLIBSUFFIX"]
+    )
 
     if env["platform"] == "macos":
         generate_framework_folder(env, project_name, lib_name, lib_filename, output_path)
@@ -43,10 +50,7 @@ def get_library_object(env: SConsEnvironment, project_name: str, lib_name: str, 
         lib_filename = os.path.join(output_path, lib_filename)
 
     env.Default(
-        env.SharedLibrary(
-            target=env.File(lib_filename),
-            source=get_sources(additional_src + src, src_folder, lib_name)
-        )
+        env.SharedLibrary(target=env.File(lib_filename), source=get_sources(additional_src + src, src_folder, lib_name))
     )
 
     return lib_filename
@@ -67,7 +71,35 @@ def get_library_version():
     return f"{major_value}.{minor_value}.{patch_value}"
 
 
-def generate_framework_folder(env: SConsEnvironment, project_name: str, lib_name: str, lib_filename: str, output_path: str):
+def read_all_text(file_path: str) -> str | None:
+    try:
+        with open(file_path, "r") as file:
+            text_data = file.read()
+    except UnicodeDecodeError:
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                text_data = file.read()
+        except UnicodeDecodeError as e:
+            print(
+                "Couldn't open file due to 'UnicodeDecodeError' exception: "
+                + (file_path).resolve().as_posix()
+                + "\nException: "
+                + str(e)
+            )
+            return None
+    return text_data
+
+
+def write_all_text(file_path: str, text: str) -> bool:
+    with open(file_path, "w+", encoding="utf-8") as file:
+        file.write(text)
+        return True
+    return False
+
+
+def generate_framework_folder(
+    env: SConsEnvironment, project_name: str, lib_name: str, lib_filename: str, output_path: str
+):
     min_version = env.get("macos_deployment_target", "10.15")
     lib_version = get_library_version()
     lib_filename_noext = os.path.splitext(lib_filename)[0]
@@ -113,10 +145,12 @@ def generate_framework_folder(env: SConsEnvironment, project_name: str, lib_name
         info_plist_file.write(info_plist)
 
 
-def generate_resources_cpp_h_files(input_files: list, namespace: str, src_folder: str, output_no_ext: str, src_out: list):
+def generate_resources_cpp_h_files(
+    input_files: list, namespace: str, src_folder: str, output_no_ext: str, src_out: list
+):
     """
     input_files : list of tuples
-        (path: str, is_text: bool)
+        (path: str, is_text: bool, content: list)
     namespace : str
         source code namespace
     src_folder : str
@@ -151,31 +185,26 @@ def generate_resources_cpp_h_files(input_files: list, namespace: str, src_folder
         for input_file_touple in input_files:
             is_text = input_file_touple[1]
             input_file_path = input_file_touple[0]
+            file_content = None
+            if len(input_file_touple) >= 3:
+                file_content = input_file_touple[2]
             file_name_escaped = input_file_path.replace(".", "_").replace("/", "_").replace("\\", "_").replace(":", "_")
 
             if is_text:
-                try:
-                    with open(input_file_path, "r") as file:
-                        text_data = file.read()
-                except UnicodeDecodeError:
-                    try:
-                        with open(input_file_path, "r", encoding="utf-8") as file:
-                            text_data = file.read()
-                    except UnicodeDecodeError as e:
-                        print(
-                            "Skipping file due to 'UnicodeDecodeError' exception: "
-                            + (input_file_path).resolve().as_posix()
-                            + "\nException: "
-                            + str(e)
-                        )
-                        continue
+                if file_content == None:
+                    text_data = read_all_text(input_file_path)
+                else:
+                    text_data = file_content
 
                 cpp_file.write(f'\tconst char *{file_name_escaped} = R"({text_data})";\n\n')
 
                 h_file.write(f"\textern const char *{file_name_escaped};\n")
             else:
-                with open(input_file_touple[0], "rb") as input_file:
-                    binary_data = input_file.read()
+                if file_content == None:
+                    with open(input_file_touple[0], "rb") as input_file:
+                        binary_data = input_file.read()
+                else:
+                    binary_data = file_content
 
                 cpp_array = ", ".join([f"{byte}" for byte in binary_data])
                 cpp_file.write(

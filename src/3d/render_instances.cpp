@@ -32,13 +32,13 @@ frustum:
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
-	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
+	DEV_PRINT_STD("New %s created\n", NAMEOF(DelayedRendererInstance));
 }
 
 DelayedRendererLine::DelayedRendererLine() :
 		DelayedRenderer(),
 		lines_count(0) {
-	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
+	DEV_PRINT_STD("New %s created\n", NAMEOF(DelayedRendererLine));
 }
 
 void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {

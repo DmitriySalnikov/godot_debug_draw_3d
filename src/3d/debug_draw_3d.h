@@ -53,7 +53,7 @@ class _DD3D_WorldWatcher : public Node3D {
 protected:
 	DebugDraw3D *m_owner = nullptr;
 	uint64_t m_world_id;
-	static void _bind_methods(){};
+	static void _bind_methods() {};
 
 public:
 	virtual void _process(double p_delta) override;
@@ -136,19 +136,19 @@ private:
 	static DebugDraw3D *singleton;
 
 	String root_settings_section;
-	const static char *s_use_icosphere;
-	const static char *s_use_icosphere_hd;
-	const static char *s_add_bevel_to_volumetric;
-	const static char *s_default_frustum_scale;
+	static constexpr const char *s_use_icosphere = "use_icosphere";
+	static constexpr const char *s_use_icosphere_hd = "use_icosphere_for_hd";
+	static constexpr const char *s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
+	static constexpr const char *s_default_frustum_scale = "defaults/frustum_length_scale";
 
-	const static char *s_default_thickness;
-	const static char *s_default_center_brightness;
-	const static char *s_default_hd_spheres;
-	const static char *s_default_plane_size;
+	static constexpr const char *s_default_thickness = "volumetric_defaults/thickness";
+	static constexpr const char *s_default_center_brightness = "volumetric_defaults/center_brightness";
+	static constexpr const char *s_default_hd_spheres = "volumetric_defaults/hd_spheres";
+	static constexpr const char *s_default_plane_size = "volumetric_defaults/plane_size";
 
-	const static char *s_render_priority;
-	const static char *s_render_mode;
-	const static char *s_render_fog_disabled;
+	static constexpr const char *s_render_priority = "rendering/render_priority";
+	static constexpr const char *s_render_mode = "rendering/render_mode";
+	static constexpr const char *s_render_fog_disabled = "rendering/disable_fog";
 
 	std::vector<SubViewport *> custom_editor_viewports;
 	DebugDrawManager *root_node = nullptr;
@@ -288,7 +288,7 @@ public:
 
 #pragma region Exposed Parameters
 	/// @private
-	void set_empty_color(const Color &col){};
+	void set_empty_color(const Color &col) {};
 	/**
 	 * Get the color that is used as the default parameter for `draw_*` calls.
 	 */

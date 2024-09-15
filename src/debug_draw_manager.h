@@ -17,7 +17,7 @@ class _DD3D_PhysicsWatcher : public Node {
 	GDCLASS(_DD3D_PhysicsWatcher, Node)
 protected:
 	DebugDrawManager *root_node;
-	static void _bind_methods(){};
+	static void _bind_methods() {};
 
 public:
 	void init(DebugDrawManager *p_root);
@@ -65,10 +65,10 @@ private:
 	static DebugDrawManager *singleton;
 
 	String root_settings_section;
-	const static char *s_initial_state;
-	const static char *s_manager_aliases;
-	const static char *s_dd2d_aliases;
-	const static char *s_dd3d_aliases;
+	static constexpr const char *s_initial_state = "initial_debug_state";
+	static constexpr const char *s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
+	static constexpr const char *s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
+	static constexpr const char *s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
 
 	double log_flush_time = 0;
 	bool debug_enabled = true;
@@ -107,7 +107,7 @@ private:
 	static Object *default_arg_obj;
 
 	// Test regular arguments
-	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath){};
+	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath) {};
 	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
 	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
 	void api_test4(RID, Callable, Signal, Dictionary, Array){};
@@ -124,7 +124,7 @@ public:
 
 public:
 	/// @private
-	static const char *s_extension_unloading;
+	static constexpr const char *s_extension_unloading = "extension_unloading";
 
 	DebugDrawManager();
 	~DebugDrawManager();

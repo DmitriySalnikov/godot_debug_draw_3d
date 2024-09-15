@@ -34,7 +34,7 @@ private:
 	DebugDrawManager *root_node = nullptr;
 
 	// 2d
-	const static char *s_marked_dirty;
+	static constexpr const char *s_marked_dirty = "marked_dirty";
 
 	bool _is_drawing_frame = true;
 	bool _canvas_need_update = true;

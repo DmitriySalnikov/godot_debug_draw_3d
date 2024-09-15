@@ -25,7 +25,7 @@ inline String DebugDrawMenuExtensionPlugin::_get_plugin_name() const {
 
 void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " _enter_tree\n");
+	DEV_PRINT_STD("%s _enter_tree\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	PopupMenu *menu = memnew(PopupMenu);
 	menu->connect("id_pressed", Callable(this, NAMEOF(_on_id_pressed)));
@@ -75,7 +75,7 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId p_id) {
 }
 
 DebugDrawMenuExtensionPlugin::DebugDrawMenuExtensionPlugin() {
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " constructor\n");
+	DEV_PRINT_STD("%s constructor\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	menu_item_name = "Debug Draw";
 }

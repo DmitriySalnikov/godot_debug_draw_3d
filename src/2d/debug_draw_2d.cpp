@@ -13,7 +13,6 @@ GODOT_WARNING_RESTORE()
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw2D *DebugDraw2D::singleton = nullptr;
-const char *DebugDraw2D::s_marked_dirty = "marked_dirty";
 
 void DebugDraw2D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw2D
