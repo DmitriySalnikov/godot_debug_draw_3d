@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://b1t231cdom61b"]
+
+[node name="DD3DTestCppApiNode" type="DD3DTestCppApiNode"]

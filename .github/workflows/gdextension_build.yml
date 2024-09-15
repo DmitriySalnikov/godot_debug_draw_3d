@@ -202,7 +202,7 @@ jobs:
           link-to-sdk: true
           local-cache: true
 
-      # TODO revisit after some updates of nttld/setup-ndk
+      # TODO: revisit after some updates of nttld/setup-ndk
       - name: Restore Android Symlinks
         run: |
           directory="${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin"

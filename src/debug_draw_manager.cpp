@@ -3,11 +3,8 @@
 #include "2d/debug_draw_2d.h"
 #include "2d/grouped_text.h"
 #include "3d/debug_draw_3d.h"
+#include "native_api/c_api.h"
 #include "utils/utils.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/generate_csharp_bindings.h"
-#endif
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
@@ -37,13 +34,6 @@ void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
-const char *DebugDrawManager::s_initial_state = "initial_debug_state";
-const char *DebugDrawManager::s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
-const char *DebugDrawManager::s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
-const char *DebugDrawManager::s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
-
-const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
-
 void DebugDrawManager::_bind_methods() {
 #ifdef DEV_ENABLED
 	ClassDB::bind_method(D_METHOD(NAMEOF(api_test1)), &DebugDrawManager::api_test1);
@@ -64,6 +54,12 @@ void DebugDrawManager::_bind_methods() {
 #endif
 
 #define REG_CLASS_NAME DebugDrawManager
+
+#ifdef NATIVE_API_ENABLED
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions)), &DebugDrawManager::_get_native_functions);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_is_double)), &DebugDrawManager::_get_native_functions_is_double);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_hash)), &DebugDrawManager::_get_native_functions_hash);
+#endif
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
 
@@ -128,7 +124,28 @@ DebugDrawManager::~DebugDrawManager() {
 #ifdef DEV_ENABLED
 	memdelete(default_arg_obj);
 #endif
+#ifdef NATIVE_API_ENABLED
+	NATIVE_API::clear_orphaned_refs();
+#endif
 }
+
+#ifdef NATIVE_API_ENABLED
+Dictionary DebugDrawManager::_get_native_functions() {
+	return NATIVE_API::get_functions().get("functions", Dictionary());
+}
+
+bool DebugDrawManager::_get_native_functions_is_double() {
+#ifdef REAL_T_IS_DOUBLE
+	return true;
+#else
+	return false;
+#endif
+}
+
+int64_t DebugDrawManager::_get_native_functions_hash() {
+	return NATIVE_API::get_functions().get("hash", 0);
+}
+#endif
 
 void DebugDrawManager::clear_all() {
 	ZoneScoped;
@@ -373,12 +390,6 @@ void DebugDrawManager::_integrate_into_engine() {
 	debug_draw_2d_singleton->set_custom_canvas(nullptr);
 	_connect_scene_changed();
 #endif
-
-#ifdef TOOLS_ENABLED
-	if (IS_EDITOR_HINT()) {
-		_try_to_update_cs_bindings();
-	}
-#endif
 }
 
 void DebugDrawManager::_process_start(double p_delta) {
@@ -430,15 +441,3 @@ void DebugDrawManager::_physics_process(double p_delta) {
 	}
 #endif
 }
-
-#ifdef TOOLS_ENABLED
-void DebugDrawManager::_try_to_update_cs_bindings() {
-	ZoneScoped;
-	auto g = GenerateCSharpBindingsPlugin();
-	if (g.is_need_to_update()) {
-		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");
-		g.generate();
-	}
-}
-
-#endif
