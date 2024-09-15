@@ -65,10 +65,10 @@ private:
 	static DebugDrawManager *singleton;
 
 	String root_settings_section;
-	const static char *s_initial_state;
-	const static char *s_manager_aliases;
-	const static char *s_dd2d_aliases;
-	const static char *s_dd3d_aliases;
+	static constexpr const char *s_initial_state = "initial_debug_state";
+	static constexpr const char *s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
+	static constexpr const char *s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
+	static constexpr const char *s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
 
 	double log_flush_time = 0;
 	bool debug_enabled = true;
@@ -123,7 +123,7 @@ public:
 
 public:
 	/// @private
-	static const char *s_extension_unloading;
+	static constexpr const char *s_extension_unloading = "extension_unloading";
 
 	DebugDrawManager();
 	~DebugDrawManager();

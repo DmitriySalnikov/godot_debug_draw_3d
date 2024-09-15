@@ -37,13 +37,6 @@ void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
-const char *DebugDrawManager::s_initial_state = "initial_debug_state";
-const char *DebugDrawManager::s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
-const char *DebugDrawManager::s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
-const char *DebugDrawManager::s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
-
-const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
-
 void DebugDrawManager::_bind_methods() {
 #ifdef DEV_ENABLED
 	ClassDB::bind_method(D_METHOD(NAMEOF(api_test1)), &DebugDrawManager::api_test1);

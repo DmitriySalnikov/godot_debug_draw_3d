@@ -80,19 +80,6 @@ DebugDraw3D::ViewportToDebugContainerItem::~ViewportToDebugContainerItem() {
 #endif
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
-const char *DebugDraw3D::s_use_icosphere = "use_icosphere";
-const char *DebugDraw3D::s_use_icosphere_hd = "use_icosphere_for_hd";
-const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
-const char *DebugDraw3D::s_default_frustum_scale = "defaults/frustum_length_scale";
-
-const char *DebugDraw3D::s_default_thickness = "volumetric_defaults/thickness";
-const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/center_brightness";
-const char *DebugDraw3D::s_default_hd_spheres = "volumetric_defaults/hd_spheres";
-const char *DebugDraw3D::s_default_plane_size = "volumetric_defaults/plane_size";
-
-const char *DebugDraw3D::s_render_priority = "rendering/render_priority";
-const char *DebugDraw3D::s_render_mode = "rendering/render_mode";
-const char *DebugDraw3D::s_render_fog_disabled = "rendering/disable_fog";
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D

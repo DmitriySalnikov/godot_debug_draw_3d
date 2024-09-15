@@ -18,7 +18,7 @@ using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_depth_test) {
 	ZoneScoped;
-	DEV_PRINT_STD("New " NAMEOF(DebugGeometryContainer) " created: %s\n", p_no_depth_test ? "NoDepth" : "Normal");
+	DEV_PRINT_STD("New %s created: %s\n", NAMEOF(DebugGeometryContainer), p_no_depth_test ? "NoDepth" : "Normal");
 	owner = p_owner;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	no_depth_test = p_no_depth_test;
