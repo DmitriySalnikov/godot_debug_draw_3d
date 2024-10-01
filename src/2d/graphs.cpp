@@ -160,7 +160,7 @@ DebugDraw2DGraph::GraphPosition DebugDraw2DGraph::get_corner() const {
 }
 
 void DebugDraw2DGraph::set_line_width(const real_t _width) {
-	line_width = Math::clamp(_width, 1.0f, 32.0f);
+	line_width = Math::clamp(_width, (real_t)1.0, (real_t)32.0);
 }
 
 real_t DebugDraw2DGraph::get_line_width() const {

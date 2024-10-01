@@ -46,7 +46,7 @@ bool DebugDraw3DConfig::is_use_frustum_culling() const {
 }
 
 void DebugDraw3DConfig::set_frustum_length_scale(const real_t &_distance) {
-	frustum_length_scale = Math::clamp(_distance, 0.0f, 1.0f);
+	frustum_length_scale = Math::clamp(_distance, (real_t)0.0, (real_t)1.0);
 }
 
 real_t DebugDraw3DConfig::get_frustum_length_scale() const {
