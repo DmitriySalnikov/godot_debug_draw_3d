@@ -1,4 +1,11 @@
 var searchData=
 [
-  ['end_5ftext_5fgroup_0',['end_text_group',['../classDebugDraw2D.html#afa404c23686cc5c5e43dc8b20aa56707',1,'DebugDraw2D']]]
+  ['get_5fconfig_0',['get_config',['../classDebugDraw2D.html#a05ae1dd207cf6a6c1000bf323a023cd4',1,'DebugDraw2D']]],
+  ['get_5fempty_5fcolor_1',['get_empty_color',['../classDebugDraw2D.html#aa01386e943f05eed86693cef08d99eaf',1,'DebugDraw2D']]],
+  ['get_5fgraph_2',['get_graph',['../classDebugDraw2D.html#a8618e2dcf355bea9ab395ef8d0ce1fd5',1,'DebugDraw2D']]],
+  ['get_5fgraph_5fnames_3',['get_graph_names',['../classDebugDraw2D.html#ae408480bba044e6ca890dc722924bf29',1,'DebugDraw2D']]],
+  ['get_5frender_5fstats_4',['get_render_stats',['../classDebugDraw2D.html#aa7eca39840443b931406ac82a942d0e5',1,'DebugDraw2D']]],
+  ['get_5fsingleton_5',['get_singleton',['../classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345',1,'DebugDrawManager::get_singleton()'],['../classDebugDraw2D.html#ac428fc3907d0db39a3cfb4c24390040d',1,'DebugDraw2D::get_singleton()']]],
+  ['get_5ftitle_6',['get_title',['../classDebugDraw2DGraph.html#a41e6ea5f8ac4d6515d8eff0bd16c3607',1,'DebugDraw2DGraph']]],
+  ['graph_5fupdate_5fdata_7',['graph_update_data',['../classDebugDraw2D.html#aa494f3f100af41ab0a66d8df3e777fef',1,'DebugDraw2D']]]
 ];

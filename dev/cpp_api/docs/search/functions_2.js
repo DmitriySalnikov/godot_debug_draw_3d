@@ -1,32 +1,4 @@
 var searchData=
 [
-  ['draw_5faabb_0',['draw_aabb',['../classDebugDraw3D.html#a2c9ec951e1b24371f871dd58262be5c3',1,'DebugDraw3D']]],
-  ['draw_5faabb_5fab_1',['draw_aabb_ab',['../classDebugDraw3D.html#a520b1314dfbbfbe028e5a284dee21c50',1,'DebugDraw3D']]],
-  ['draw_5farrow_2',['draw_arrow',['../classDebugDraw3D.html#ac03051ccfbea98d2f2a7c1a30246cf15',1,'DebugDraw3D']]],
-  ['draw_5farrow_5fpath_3',['draw_arrow_path',['../classDebugDraw3D.html#a5950afa649af14d841f1052135d87925',1,'DebugDraw3D']]],
-  ['draw_5farrow_5fray_4',['draw_arrow_ray',['../classDebugDraw3D.html#a15e50284a00faa36263a8b3dfafea9d1',1,'DebugDraw3D']]],
-  ['draw_5farrowhead_5',['draw_arrowhead',['../classDebugDraw3D.html#adc0e9a92e7000a045f5abd117627b482',1,'DebugDraw3D']]],
-  ['draw_5fbox_6',['draw_box',['../classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2',1,'DebugDraw3D']]],
-  ['draw_5fbox_5fab_7',['draw_box_ab',['../classDebugDraw3D.html#a192c122debc722fb17efad11889ecc64',1,'DebugDraw3D']]],
-  ['draw_5fbox_5fxf_8',['draw_box_xf',['../classDebugDraw3D.html#ac6f8bde18422bf3242dbdab59fa3c5d8',1,'DebugDraw3D']]],
-  ['draw_5fcamera_5ffrustum_9',['draw_camera_frustum',['../classDebugDraw3D.html#a19aa42f0b5636585e248887a48659a31',1,'DebugDraw3D']]],
-  ['draw_5fcamera_5ffrustum_5fplanes_10',['draw_camera_frustum_planes',['../classDebugDraw3D.html#a0e6b921d1b031771c1a8c92b0f7ad952',1,'DebugDraw3D']]],
-  ['draw_5fcylinder_11',['draw_cylinder',['../classDebugDraw3D.html#a3e15d1a945f1450aa9ad5c279e8a42ac',1,'DebugDraw3D']]],
-  ['draw_5fcylinder_5fab_12',['draw_cylinder_ab',['../classDebugDraw3D.html#a12b06c027f8c62267e7b92e6afd513d8',1,'DebugDraw3D']]],
-  ['draw_5fgizmo_13',['draw_gizmo',['../classDebugDraw3D.html#a959d91ea23e241885343edc16c635afe',1,'DebugDraw3D']]],
-  ['draw_5fgrid_14',['draw_grid',['../classDebugDraw3D.html#a8ce9cb415745ca416330b15d829ed57e',1,'DebugDraw3D']]],
-  ['draw_5fgrid_5fxf_15',['draw_grid_xf',['../classDebugDraw3D.html#a13bb05c98a7a7ee84eeb51762e894581',1,'DebugDraw3D']]],
-  ['draw_5fline_16',['draw_line',['../classDebugDraw3D.html#a086bea6fe552b96f6f8e2a062ad3ec82',1,'DebugDraw3D']]],
-  ['draw_5fline_5fhit_17',['draw_line_hit',['../classDebugDraw3D.html#a4d5bd57cd6be954f355d3bf84acd417c',1,'DebugDraw3D']]],
-  ['draw_5fline_5fhit_5foffset_18',['draw_line_hit_offset',['../classDebugDraw3D.html#a9c7a6fcef195074fbdc561edf37c5031',1,'DebugDraw3D']]],
-  ['draw_5fline_5fpath_19',['draw_line_path',['../classDebugDraw3D.html#a4dd1a3c44bb4bc44f1d1dfce1e841fc5',1,'DebugDraw3D']]],
-  ['draw_5flines_20',['draw_lines',['../classDebugDraw3D.html#aa9d1a8d1e3fcac43e6804ebbbf8043c3',1,'DebugDraw3D']]],
-  ['draw_5fplane_21',['draw_plane',['../classDebugDraw3D.html#aa127e9bc9816e73d08d79f87ddc22e43',1,'DebugDraw3D']]],
-  ['draw_5fpoint_5fpath_22',['draw_point_path',['../classDebugDraw3D.html#adcacfabb6bf1ef45ee06143add1e7ddd',1,'DebugDraw3D']]],
-  ['draw_5fpoints_23',['draw_points',['../classDebugDraw3D.html#a0dfcec260bcd10a53c88c8132c914a82',1,'DebugDraw3D']]],
-  ['draw_5fposition_24',['draw_position',['../classDebugDraw3D.html#aafe3190b1cfb3f7dffc24aa0ccb12e09',1,'DebugDraw3D']]],
-  ['draw_5fray_25',['draw_ray',['../classDebugDraw3D.html#a435011c02959e69ab416574c10d36199',1,'DebugDraw3D']]],
-  ['draw_5fsphere_26',['draw_sphere',['../classDebugDraw3D.html#a4f5c5e4f2e51d193e07a21d621c52652',1,'DebugDraw3D']]],
-  ['draw_5fsphere_5fxf_27',['draw_sphere_xf',['../classDebugDraw3D.html#ab3d534d2d10d5c164e94a2534677dbfa',1,'DebugDraw3D']]],
-  ['draw_5fsquare_28',['draw_square',['../classDebugDraw3D.html#a0ec17b0d31940170414e1e6d68e8d003',1,'DebugDraw3D']]]
+  ['end_5ftext_5fgroup_0',['end_text_group',['../classDebugDraw2D.html#afa404c23686cc5c5e43dc8b20aa56707',1,'DebugDraw2D']]]
 ];

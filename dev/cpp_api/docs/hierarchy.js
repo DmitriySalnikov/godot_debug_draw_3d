@@ -3,12 +3,8 @@ var hierarchy =
     [ "CanvasLayer", null, [
       [ "DebugDrawManager", "classDebugDrawManager.html", null ]
     ] ],
-    [ "IScopeStorage", null, [
-      [ "DebugDraw3D", "classDebugDraw3D.html", null ]
-    ] ],
     [ "Object", null, [
-      [ "DebugDraw2D", "classDebugDraw2D.html", null ],
-      [ "DebugDraw3D", "classDebugDraw3D.html", null ]
+      [ "DebugDraw2D", "classDebugDraw2D.html", null ]
     ] ],
     [ "RefCounted", null, [
       [ "DebugDraw2DConfig", "classDebugDraw2DConfig.html", null ],
@@ -17,7 +13,6 @@ var hierarchy =
       ] ],
       [ "DebugDraw2DStats", "classDebugDraw2DStats.html", null ],
       [ "DebugDraw3DConfig", "classDebugDraw3DConfig.html", null ],
-      [ "DebugDraw3DScopeConfig", "classDebugDraw3DScopeConfig.html", null ],
       [ "DebugDraw3DStats", "classDebugDraw3DStats.html", null ]
     ] ]
 ];

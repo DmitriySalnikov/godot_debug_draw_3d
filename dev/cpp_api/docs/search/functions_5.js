@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['is_5fdebug_5fenabled_0',['is_debug_enabled',['../classDebugDrawManager.html#a5920f8f62eae11b5318843bfa668a6ef',1,'DebugDrawManager']]]
+  ['remove_5fgraph_0',['remove_graph',['../classDebugDraw2D.html#aa3fd46e6ca0ac70d0780878b27102ea4',1,'DebugDraw2D']]]
 ];

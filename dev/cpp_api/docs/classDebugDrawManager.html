@@ -130,7 +130,7 @@ $(function(){initNavTree('classDebugDrawManager.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 
-<p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a>.  
+<p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and DebugDraw3D.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="debug__draw__manager_8h_source.html">debug_draw_manager.h</a>&gt;</code></p>
@@ -143,12 +143,6 @@ Inheritance diagram for DebugDrawManager:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a30a2f06d9f2502e495894d84e162453a" id="r_a30a2f06d9f2502e495894d84e162453a"><td class="memItemLeft" align="right" valign="top"><a id="a30a2f06d9f2502e495894d84e162453a" name="a30a2f06d9f2502e495894d84e162453a"></a>
-Dictionary&#160;</td><td class="memItemRight" valign="bottom"><b>_get_native_functions</b> ()</td></tr>
-<tr class="separator:a30a2f06d9f2502e495894d84e162453a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a74a7c83b86528266e206b6606bafc868" id="r_a74a7c83b86528266e206b6606bafc868"><td class="memItemLeft" align="right" valign="top"><a id="a74a7c83b86528266e206b6606bafc868" name="a74a7c83b86528266e206b6606bafc868"></a>
-int64_t&#160;</td><td class="memItemRight" valign="bottom"><b>_get_native_functions_hash</b> ()</td></tr>
-<tr class="separator:a74a7c83b86528266e206b6606bafc868"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a56da9c3e5a3b7a97083b48b85cc3737a" id="r_a56da9c3e5a3b7a97083b48b85cc3737a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a56da9c3e5a3b7a97083b48b85cc3737a">clear_all</a> ()</td></tr>
 <tr class="separator:a56da9c3e5a3b7a97083b48b85cc3737a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa2a02002be21f77c31559926bd66bcbe" id="r_aa2a02002be21f77c31559926bd66bcbe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2a02002be21f77c31559926bd66bcbe">set_debug_enabled</a> (bool value)</td></tr>
@@ -162,13 +156,13 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:acad2fdc13f2c2f4c991bef6a58953345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a>. </p>
+<div class="textblock"><p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and DebugDraw3D. </p>
 <p>Several additional settings can be found in the project settings.</p>
 <dl class="section note"><dt>Note</dt><dd>The following settings require a restart.</dd></dl>
 <p><code>debug_draw_3d/settings/initial_debug_state</code> sets the initial debugging state.</p>
 <p><code>debug_draw_3d/settings/common/DebugDrawManager_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDrawManager.html" title="The main singleton class that handles DebugDraw2D and DebugDraw3D.">DebugDrawManager</a> to be registered as additional singletons.</p>
 <p><code>debug_draw_3d/settings/common/DebugDraw2D_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> to be registered as additional singletons.</p>
-<p><code>debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a> to be registered as additional singletons.</p>
+<p><code>debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases</code> sets aliases for DebugDraw3D to be registered as additional singletons.</p>
 <p>Using these aliases you can reference singletons with shorter words:</p>
 <div class="fragment"><div class="line">var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)</div>
 <div class="line">Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)</div>

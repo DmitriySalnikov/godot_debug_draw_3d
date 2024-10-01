@@ -133,15 +133,13 @@ $(function(){initNavTree('md_docs_2Examples.html',''); initResizable(); });
 <div class="line">    var line_begin = Vector3(-1, sin(_time * 4), 0)</div>
 <div class="line">    var line_end = Vector3(1, cos(_time * 4), 0)</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))</div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a086bea6fe552b96f6f8e2a062ad3ec82">DebugDraw3D.draw_line</a>(line_begin, line_end, Color(1, 1, 0))</div>
+<div class="line">    DebugDraw3D.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))</div>
+<div class="line">    DebugDraw3D.draw_line(line_begin, line_end, Color(1, 1, 0))</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Time&quot;</span>, _time)</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Frames drawn&quot;</span>, Engine.get_frames_drawn())</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;FPS&quot;</span>, Engine.get_frames_per_second())</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;delta&quot;</span>, delta)</div>
 <div class="ttc" id="aclassDebugDraw2D_html_abf06cb513639049d9097f4d08684c387"><div class="ttname"><a href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D::set_text</a></div><div class="ttdeci">void set_text(String key, Variant value=Variant(), int priority=0, Color color_of_value=Colors::empty_color, real_t duration=-1)</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html_a086bea6fe552b96f6f8e2a062ad3ec82"><div class="ttname"><a href="classDebugDraw3D.html#a086bea6fe552b96f6f8e2a062ad3ec82">DebugDraw3D::draw_line</a></div><div class="ttdeci">void draw_line(const Vector3 &amp;a, const Vector3 &amp;b, const Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html_a5a6b00c854cfb3c1f480eb4d2a8977d2"><div class="ttname"><a href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D::draw_box</a></div><div class="ttdeci">void draw_box(const Vector3 &amp;position, const Quaternion &amp;rotation, const Vector3 &amp;size, const Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 </div><!-- fragment --><p>An example of using scoped configs:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">@tool</span></div>
 <div class="line">extends Node3D</div>
@@ -149,22 +147,20 @@ $(function(){initNavTree('md_docs_2Examples.html',''); initResizable(); });
 <div class="line">func _ready():</div>
 <div class="line">    <span class="comment"># Set the base scoped_config.</span></div>
 <div class="line">    <span class="comment"># Each frame will be reset to these scoped values.</span></div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a827362cf4d4cafe6e4b704cb848113b5">DebugDraw3D.scoped_config</a>().set_thickness(0.1).set_center_brightness(0.6)</div>
+<div class="line">    DebugDraw3D.scoped_config().set_thickness(0.1).set_center_brightness(0.6)</div>
 <div class="line"> </div>
 <div class="line">func _process(delta):</div>
 <div class="line">    <span class="comment"># Draw using the base scoped config.</span></div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)</div>
+<div class="line">    DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)</div>
 <div class="line">    <span class="keywordflow">if</span> true:</div>
 <div class="line">        <span class="comment"># Create a scoped config that will exist until exiting this if.</span></div>
-<div class="line">        var _s = <a class="code hl_function" href="classDebugDraw3D.html#a634f471de18ba07b4ff83182577215e5">DebugDraw3D.new_scoped_config</a>().set_thickness(0).set_center_brightness(0.1)</div>
+<div class="line">        var _s = DebugDraw3D.new_scoped_config().set_thickness(0).set_center_brightness(0.1)</div>
 <div class="line">        <span class="comment"># Draw with a thickness of 0</span></div>
-<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)</div>
+<div class="line">        DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)</div>
 <div class="line">        <span class="comment"># If necessary, the values inside this scope can be changed</span></div>
 <div class="line">        <span class="comment"># even before each call to draw_*.</span></div>
 <div class="line">        _s.set_thickness(0.05)</div>
-<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)</div>
-<div class="ttc" id="aclassDebugDraw3D_html_a634f471de18ba07b4ff83182577215e5"><div class="ttname"><a href="classDebugDraw3D.html#a634f471de18ba07b4ff83182577215e5">DebugDraw3D::new_scoped_config</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; new_scoped_config()</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html_a827362cf4d4cafe6e4b704cb848113b5"><div class="ttname"><a href="classDebugDraw3D.html#a827362cf4d4cafe6e4b704cb848113b5">DebugDraw3D::scoped_config</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; scoped_config() override</div></div>
+<div class="line">        DebugDraw3D.draw_box(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)</div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>If you want to use a non-standard Viewport for rendering a 3d scene, then do not forget to specify it in the scoped config!</dd></dl>
 <h1><a class="anchor" id="autotoc_md8"></a>
 CSharp</h1>
@@ -179,31 +175,30 @@ CSharp</h1>
 <div class="line">    var line_begin = <span class="keyword">new</span> Vector3(-1, Mathf.Sin(_time * 4f), 0);</div>
 <div class="line">    var line_end = <span class="keyword">new</span> Vector3(1, Mathf.Cos(_time * 4f), 0);</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.DrawBox(box_pos, <span class="keyword">new</span> Vector3(1, 2, 1), <span class="keyword">new</span> Color(0, 1, 0));</div>
-<div class="line">    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.DrawLine(line_begin, line_end, <span class="keyword">new</span> Color(1, 1, 0));</div>
+<div class="line">    DebugDraw3D.DrawBox(box_pos, <span class="keyword">new</span> Vector3(1, 2, 1), <span class="keyword">new</span> Color(0, 1, 0));</div>
+<div class="line">    DebugDraw3D.DrawLine(line_begin, line_end, <span class="keyword">new</span> Color(1, 1, 0));</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;Time&quot;</span>, _time);</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;Frames drawn&quot;</span>, Engine.GetFramesDrawn());</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;FPS&quot;</span>, Engine.GetFramesPerSecond());</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;delta&quot;</span>, delta);</div>
 <div class="line">}</div>
 <div class="ttc" id="aclassDebugDraw2D_html"><div class="ttname"><a href="classDebugDraw2D.html">DebugDraw2D</a></div><div class="ttdoc">Singleton class for calling debugging 2D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_2d.h:27</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html"><div class="ttname"><a href="classDebugDraw3D.html">DebugDraw3D</a></div><div class="ttdoc">Singleton class for calling debugging 3D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_3d.h:116</div></div>
 </div><!-- fragment --><p>Scoped config's work similarly to the GDScript version, but require a manual <code>Dispose</code> or using <code>using</code>:</p>
-<div class="fragment"><div class="line"><span class="keyword">using</span> (var _w1 = <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.NewScopedConfig().SetViewport(someViewportHere).SetThickness(0.01f).SetNoDepthTest(<span class="keyword">true</span>))</div>
+<div class="fragment"><div class="line"><span class="keyword">using</span> (var _w1 = DebugDraw3D.NewScopedConfig().SetViewport(someViewportHere).SetThickness(0.01f).SetNoDepthTest(<span class="keyword">true</span>))</div>
 <div class="line">{</div>
 <div class="line">    <span class="comment">// ...</span></div>
 <div class="line">}</div>
 </div><!-- fragment --><dl class="section warning"><dt>Warning</dt><dd>C# bindings work using ClassDB, which greatly decreases its performance and it can run slower than GDScript. There is currently no way to fix this.</dd></dl>
 <h1><a class="anchor" id="autotoc_md9"></a>
 Aliases</h1>
-<p>If you don't want to write <code><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></code>/<code><a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a></code> every time, so you can use aliases for these singletons.</p>
+<p>If you don't want to write <code>DebugDraw3D</code>/<code><a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a></code> every time, so you can use aliases for these singletons.</p>
 <div class="fragment"><div class="line">var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)</div>
 <div class="line">Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)</div>
 <div class="line">Dbg2.set_text(<span class="stringliteral">&quot;Frametime&quot;</span>, delta)</div>
 </div><!-- fragment --><p>There is more information in the description of <a class="el" href="classDebugDrawManager.html" title="The main singleton class that handles DebugDraw2D and DebugDraw3D.">DebugDrawManager</a>.</p>
 <h1><a class="anchor" id="autotoc_md10"></a>
 Scope configs</h1>
-<p>When using <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a>, you will probably want to use the scoped configurations <a class="el" href="classDebugDraw3DScopeConfig.html" title="This class is used to override scope parameters for DebugDraw3D.">DebugDraw3DScopeConfig</a>. With this class you will be able to change the thickness of the geometry, the brightness of the volumetric shapes, the density of the sphere mesh and possibly other parameters in the future.</p>
+<p>When using DebugDraw3D, you will probably want to use the scoped configurations DebugDraw3DScopeConfig. With this class you will be able to change the thickness of the geometry, the brightness of the volumetric shapes, the density of the sphere mesh and possibly other parameters in the future.</p>
 <div class="image">
 <img src="LineThickness.webp" alt=""/>
 </div>
