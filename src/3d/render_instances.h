@@ -33,21 +33,21 @@ public:
 };
 
 struct GeometryPoolData3DInstance {
-	Vector3 basis_x;
+	Vector3Float basis_x;
 	float origin_x;
-	Vector3 basis_y;
+	Vector3Float basis_y;
 	float origin_y;
-	Vector3 basis_z;
+	Vector3Float basis_z;
 	float origin_z;
 	Color color;
 	Color custom;
 
 	GeometryPoolData3DInstance() :
-			basis_x(Vector3()),
+			basis_x(),
 			origin_x(0),
-			basis_y(Vector3()),
+			basis_y(),
 			origin_y(0),
-			basis_z(Vector3()),
+			basis_z(),
 			origin_z(0),
 			color(Color()),
 			custom(Color()) {}

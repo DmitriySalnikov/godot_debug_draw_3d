@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://c6fkx0e7sri1d"]
+
+[ext_resource type="Script" path="res://resources/debug/test_extended.gd" id="1_qh7ib"]
+[ext_resource type="ArrayMesh" uid="uid://83qs2t5wxctw" path="res://debug_meshes/normal/10.mesh" id="2_3hlxm"]
+
+[sub_resource type="MultiMesh" id="MultiMesh_e532d"]
+transform_format = 1
+use_colors = true
+use_custom_data = true
+instance_count = 1
+mesh = ExtResource("2_3hlxm")
+buffer = PackedFloat32Array(0.702432, 0, -0.136374, 0, 0, 0.923358, 0, 0, 0.248153, 0, 1.27818, 0, 0.392157, 0.584314, 0.929412, 1, 0.159, 0.245, 0, 0)
+
+[node name="Root" type="Node3D"]
+transform = Transform3D(0.802547, 0, -0.596589, 0, 1, 0, 0.596589, 0, 0.802547, 0, 0, 0)
+script = ExtResource("1_qh7ib")
+thickness = 0.159
+brightness = 0.245
+
+[node name="MMesh" type="MultiMeshInstance3D" parent="."]
+transform = Transform3D(0.702432, 0, -0.136374, 0, 0.923358, 0, 0.248153, 0, 1.27818, 0, 0, 0)
+rotation_edit_mode = 2
+multimesh = SubResource("MultiMesh_e532d")

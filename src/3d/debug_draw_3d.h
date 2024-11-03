@@ -204,6 +204,10 @@ private:
 
 	void create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration = 0);
 
+#ifdef DEV_ENABLED
+	void _save_generated_meshes();
+#endif
+
 #endif
 
 	void init(DebugDrawManager *p_root);

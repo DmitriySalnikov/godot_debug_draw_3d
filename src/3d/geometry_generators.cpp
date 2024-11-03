@@ -199,11 +199,11 @@ Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const V
 	};
 
 	auto rotate_f32 = [&axis, &angle](PackedFloat32Array &arr) {
-		for (int i = 0; i < arr.size(); i += 3) {
+		for (int64_t i = 0; i < arr.size(); i += 3) {
 			Vector3 v = Vector3(arr[i + 0], arr[i + 1], arr[i + 2]).rotated(axis, angle);
-			arr[i + 0] = v.x;
-			arr[i + 1] = v.y;
-			arr[i + 2] = v.z;
+			arr[i + 0] = (float)v.x;
+			arr[i + 1] = (float)v.y;
+			arr[i + 2] = (float)v.z;
 		}
 	};
 
@@ -270,7 +270,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 			PackedColorArray(),
 			PackedVector3Array(),
 			res_uv,
-			Utils::convert_packed_array_to_diffrent_types<PackedFloat32Array>(res_custom0),
+			Utils::convert_packed_vector3_to_packed_float(res_custom0),
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
@@ -543,7 +543,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const real_t &radius
 			PackedColorArray(),
 			PackedVector3Array(),
 			uv,
-			Utils::convert_packed_array_to_diffrent_types<PackedFloat32Array>(custom0),
+			Utils::convert_packed_vector3_to_packed_float(custom0),
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 

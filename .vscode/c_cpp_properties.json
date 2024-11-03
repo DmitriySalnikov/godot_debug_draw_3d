@@ -1,32 +1,33 @@
 {
-    "configurations": [
-        {
-            "name": "DefaultCPP",
-            "includePath": [
-                "${workspaceFolder}/src/**",
-                "${workspaceFolder}/godot-cpp/gdextension/**",
-                "${workspaceFolder}/godot-cpp/include",
-                "${workspaceFolder}/godot-cpp/gen/include"
-            ],
-            "defines": [
-                "DEBUG_ENABLED",
-                "DEV_ENABLED",
-                "UNICODE",
-                "_UNICODE",
-                "GDEXTENSION_LIBRARY",
-                "NOMINMAX",
-                "TYPED_METHOD_BIND",
-                "HOT_RELOAD_ENABLED",
-                "TOOLS_ENABLED",
-                "TELEMETRY_ENABLED",
-                "TELEMETRY_PROJECT_DD3D"
-            ],
-            "windowsSdkVersion": "10.0.22000.0",
-            "compilerPath": "cl.exe",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "DefaultCPP",
+      "includePath": [
+        "${workspaceFolder}/src/**",
+        "${workspaceFolder}/godot-cpp/gdextension/**",
+        "${workspaceFolder}/godot-cpp/include",
+        "${workspaceFolder}/godot-cpp/gen/include"
+      ],
+      "defines": [
+        "DEBUG_ENABLED",
+        "DEV_ENABLED",
+        "UNICODE",
+        "_UNICODE",
+        "GDEXTENSION_LIBRARY",
+        "NOMINMAX",
+        "TYPED_METHOD_BIND",
+        "HOT_RELOAD_ENABLED",
+        "TOOLS_ENABLED",
+        "TELEMETRY_ENABLED",
+        "TELEMETRY_PROJECT_DD3D"
+        //"REAL_T_IS_DOUBLE"
+      ],
+      "windowsSdkVersion": "10.0.22000.0",
+      "compilerPath": "cl.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-msvc-x64"
+    }
+  ],
+  "version": 4
 }

@@ -85,8 +85,6 @@ static String get_file_name_in_repository(const String &name) {
 
 #pragma endregion !BINDING REGISTRATION
 
-constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(godot::Transform3D) + sizeof(godot::Color) /*Instance Color*/ + sizeof(godot::Color) /*Custom Data*/) / sizeof(real_t));
-
 #define IS_EDITOR_HINT() Engine::get_singleton()->is_editor_hint()
 #define SCENE_TREE() Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop())
 #define SCENE_ROOT() (SCENE_TREE()->get_root())
@@ -193,6 +191,20 @@ const extern godot::Vector3 Vector3_FORWARD;
 
 const extern godot::Quaternion Quaternion_IDENTITY;
 
+#if REAL_T_IS_DOUBLE
+struct Vector3Float {
+	float x, y, z;
+	Vector3Float() :
+			x{}, y{}, z{} {}
+	Vector3Float(float x, float y, float z) :
+			x(x), y(y), z(z) {}
+	Vector3Float(godot::Vector3 v) :
+			x((float)v.x), y((float)v.y), z((float)v.z) {}
+};
+#else
+typedef godot::Vector3 Vector3Float;
+#endif
+
 class Utils {
 #if DEBUG_ENABLED
 	struct LogData {
@@ -254,7 +266,7 @@ public:
 		TPool p;
 		if (!arr.empty()) {
 			auto *data = arr.data();
-			if (data) {
+			if (arr.size()) {
 				p.resize(arr.size());
 				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
 			}
@@ -273,7 +285,7 @@ public:
 
 		if (!arr.empty()) {
 			auto *data = arr.data();
-			if (data) {
+			if (arr.size()) {
 				p.resize(arr.size() * sizeof(arr[0]) / s);
 				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
 			}
@@ -281,24 +293,7 @@ public:
 		return p;
 	}
 
-	template <class TPool, class TContainer>
-	static TPool convert_packed_array_to_diffrent_types(TContainer &arr) {
-		ZoneScoped;
-
-		TPool p;
-		p.resize(1);
-		long s = sizeof(p[0]);
-		p.resize(0);
-
-		if (!arr.is_empty()) {
-			auto *data = arr.ptr();
-			if (data) {
-				p.resize(arr.size() * sizeof(arr[0]) / s);
-				memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
-			}
-		}
-		return p;
-	}
+	static godot::PackedFloat32Array convert_packed_vector3_to_packed_float(godot::PackedVector3Array &arr);
 
 	// TODO need to use make from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES

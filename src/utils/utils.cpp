@@ -144,6 +144,7 @@ void Utils::get_godot_version(int *major, int *minor, int *patch, int *version_s
 }
 
 bool Utils::is_current_godot_version_in_range(uint8_t min_major, uint8_t min_minor, uint8_t min_patch, uint8_t max_major, uint8_t max_minor, uint8_t max_patch) {
+	ZoneScoped;
 	int godot_version;
 	get_godot_version(nullptr, nullptr, nullptr, &godot_version);
 
@@ -161,4 +162,33 @@ bool Utils::is_current_godot_version_in_range(uint8_t min_major, uint8_t min_min
 		return godot_version <= max_version_sum;
 	}
 	return false;
+}
+
+godot::PackedFloat32Array Utils::convert_packed_vector3_to_packed_float(godot::PackedVector3Array &arr) {
+	ZoneScoped;
+
+	godot::PackedFloat32Array p;
+	long s = sizeof(float);
+
+	if (!arr.is_empty()) {
+#if REAL_T_IS_DOUBLE
+		if (arr.size()) {
+			p.resize(arr.size() * 3);
+			auto *w = p.ptrw();
+			for (int64_t i = 0; i < arr.size(); i++) {
+				const godot::Vector3 &v = arr[i];
+				w[i * 3 + 0] = (float)v.x;
+				w[i * 3 + 1] = (float)v.y;
+				w[i * 3 + 2] = (float)v.z;
+			}
+		}
+#else
+		auto *data = arr.ptr();
+		if (data) {
+			p.resize(arr.size() * sizeof(arr[0]) / s);
+			memcpy(p.ptrw(), data, sizeof(arr[0]) * arr.size());
+		}
+#endif
+	}
+	return p;
 }

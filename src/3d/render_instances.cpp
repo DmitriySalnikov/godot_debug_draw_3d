@@ -53,6 +53,8 @@ void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes,
 void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
 	ZoneScoped;
 
+	constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(float) * 3 /*3 components*/ * 4 /*4 vectors3*/ + sizeof(godot::Color) /*Instance Color*/ + sizeof(godot::Color) /*Custom Data*/) / sizeof(float));
+
 	// reset timers
 	time_spent_to_cull_instances = 0;
 	time_spent_to_fill_buffers_of_instances = 0;
@@ -146,7 +148,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 			auto w = buffer.ptrw();
 
 			for (auto &inst : visible_buffer) {
-				memcpy(w + last_added++ * INSTANCE_DATA_FLOAT_COUNT, reinterpret_cast<const real_t *>(&inst->data), INSTANCE_DATA_FLOAT_COUNT * sizeof(real_t));
+				memcpy(w + last_added++ * INSTANCE_DATA_FLOAT_COUNT, reinterpret_cast<const float *>(&inst->data), INSTANCE_DATA_FLOAT_COUNT * sizeof(float));
 			}
 		}
 

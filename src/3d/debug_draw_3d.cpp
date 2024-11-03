@@ -12,6 +12,12 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/classes/world3d.hpp>
+
+// save meshes
+#if !defined(DISABLE_DEBUG_RENDERING) && defined(DEV_ENABLED)
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/resource_saver.hpp>
+#endif
 GODOT_WARNING_RESTORE()
 
 #define NEED_LEAVE (!_is_enabled_override())
@@ -71,6 +77,10 @@ void DebugDraw3D::_bind_methods() {
 	REG_PROP(config, Variant::OBJECT, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
 
 #pragma endregion
+
+#if !defined(DISABLE_DEBUG_RENDERING) && defined(DEV_ENABLED)
+	ClassDB::bind_method(D_METHOD(NAMEOF(_save_generated_meshes)), &DebugDraw3D::_save_generated_meshes);
+#endif
 
 #pragma region Draw Functions
 	ClassDB::bind_method(D_METHOD(NAMEOF(regenerate_geometry_meshes)), &DebugDraw3D::regenerate_geometry_meshes);
@@ -691,6 +701,22 @@ void DebugDraw3D::clear_all() {
 	if (!dgc) return
 
 #ifndef DISABLE_DEBUG_RENDERING
+
+#ifdef DEV_ENABLED
+void DebugDraw3D::_save_generated_meshes() {
+	if (!shared_generated_meshes.size())
+		return;
+
+	for (int i = 0; i < 2; i++) {
+		for (int type = 0; type < (int)InstanceType::MAX; type++) {
+			Ref<ArrayMesh> mesh = shared_generated_meshes[type][i];
+			String dir_path = FMT_STR("res://debug_meshes/{0}", i == 0 ? "normal" : "no_depth");
+			DirAccess::make_dir_recursive_absolute(dir_path);
+			ResourceSaver::get_singleton()->save(mesh, FMT_STR("{0}/{1}.mesh", dir_path, type), ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::SaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS);
+		}
+	}
+}
+#endif
 
 Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	if (Math::is_equal_approx(p_dir.x, 0)) {
