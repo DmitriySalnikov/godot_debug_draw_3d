@@ -158,7 +158,12 @@ private:
 #ifndef DISABLE_DEBUG_RENDERING
 	ProfiledMutex(std::recursive_mutex, datalock, "3D Geometry lock");
 
-	typedef std::pair<uint64_t, DebugDraw3DScopeConfig *> ScopedPairIdConfig;
+	struct ScopedPairIdConfig {
+		uint64_t id;
+		DebugDraw3DScopeConfig *scfg;
+		ScopedPairIdConfig(uint64_t id, DebugDraw3DScopeConfig *scfg) :
+				id(id), scfg(scfg) {}
+	};
 	// stores thread id and array of id's with ptrs
 	std::unordered_map<uint64_t, std::vector<ScopedPairIdConfig> > scoped_configs;
 	// stores thread id and most recent config
@@ -174,14 +179,20 @@ private:
 
 	// Meshes
 	/// Store meshes shared between many debug containers
-	std::vector<std::array<Ref<ArrayMesh>, 2> > shared_generated_meshes;
+	std::vector<std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> > shared_generated_meshes;
+
 	/// Store World3D id and debug container
-	std::unordered_map<uint64_t, std::shared_ptr<DebugGeometryContainer>[2]> debug_containers;
-	struct viewportToWorldCache {
-		uint64_t world_id = 0;
-		std::shared_ptr<DebugGeometryContainer> dgcs[2];
+	struct ViewportToDebugContainerItem {
+		uint64_t world_id;
+		std::unique_ptr<DebugGeometryContainer> dgcs[(int)MeshMaterialVariant::MAX];
+
+		ViewportToDebugContainerItem();
+		ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept;
+		~ViewportToDebugContainerItem();
 	};
-	std::unordered_map<const Viewport *, viewportToWorldCache> viewport_to_world_cache;
+
+	std::unordered_map<uint64_t, ViewportToDebugContainerItem> debug_containers;
+	std::unordered_map<const Viewport *, ViewportToDebugContainerItem *> viewport_to_world_cache;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
@@ -191,9 +202,8 @@ private:
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
-	std::array<Ref<ArrayMesh>, 2> *get_shared_meshes();
-	std::shared_ptr<DebugGeometryContainer> create_debug_container(bool p_no_depth_test);
-	std::shared_ptr<DebugGeometryContainer> get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
+	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
+	DebugGeometryContainer *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
 	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id);
 	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
@@ -220,7 +230,8 @@ private:
 	void _load_materials();
 	inline bool _is_enabled_override() const;
 
-	void process(double p_delta);
+	void process_start(double delta);
+	void process_end(double delta);
 	void physics_process_start(double p_delta);
 	void physics_process_end(double p_delta);
 

@@ -22,7 +22,12 @@ Object *DebugDrawManager::default_arg_obj = nullptr;
 #ifndef DISABLE_DEBUG_RENDERING
 void _DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
 	root_node = p_root;
+	set_process_priority(INT32_MIN);
 	set_physics_process_priority(INT32_MIN);
+}
+
+void _DD3D_PhysicsWatcher::_process(double p_delta) {
+	root_node->_process_start(p_delta);
 }
 
 void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
@@ -344,6 +349,13 @@ void DebugDrawManager::_integrate_into_engine() {
 #endif
 }
 
+void DebugDrawManager::_process_start(double p_delta) {
+	if (debug_enabled) {
+		debug_draw_3d_singleton->process_start(p_delta);
+		debug_draw_2d_singleton->process_start(p_delta);
+	}
+}
+
 void DebugDrawManager::_process(double p_delta) {
 	// To discover what causes the constant look here:
 	// https://github.com/godotengine/godot/blob/baf6b4634d08bc3e193a38b86e96945052002f64/servers/rendering/rendering_server_default.h#L104
@@ -356,10 +368,10 @@ void DebugDrawManager::_process(double p_delta) {
 	//	}
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->process(p_delta);
-		DebugDraw2D::get_singleton()->process(p_delta);
+		debug_draw_3d_singleton->process_end(p_delta);
+		debug_draw_2d_singleton->process_end(p_delta);
 
-		if (!DebugDraw2D::get_singleton()->is_drawing_frame()) {
+		if (!debug_draw_2d_singleton->is_drawing_frame()) {
 			FrameMark;
 		}
 	}
@@ -372,7 +384,7 @@ void DebugDrawManager::_process(double p_delta) {
 	}
 
 #ifdef TRACY_ENABLE
-	if (!debug_enabled || !DebugDraw2D::get_singleton()->is_debug_enabled()) {
+	if (!debug_enabled || !debug_draw_2d_singleton->is_debug_enabled()) {
 		FrameMark;
 	}
 #endif
@@ -380,16 +392,16 @@ void DebugDrawManager::_process(double p_delta) {
 
 void DebugDrawManager::_physics_process_start(double p_delta) {
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->physics_process_start(p_delta);
-		DebugDraw2D::get_singleton()->physics_process_start(p_delta);
+		debug_draw_3d_singleton->physics_process_start(p_delta);
+		debug_draw_2d_singleton->physics_process_start(p_delta);
 	}
 }
 
 void DebugDrawManager::_physics_process(double p_delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	if (debug_enabled) {
-		DebugDraw3D::get_singleton()->physics_process_end(p_delta);
-		DebugDraw2D::get_singleton()->physics_process_end(p_delta);
+		debug_draw_3d_singleton->physics_process_end(p_delta);
+		debug_draw_2d_singleton->physics_process_end(p_delta);
 	}
 #endif
 }

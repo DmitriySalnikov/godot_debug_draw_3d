@@ -20,7 +20,7 @@ private:
 
 	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
 	static void GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
-	static IcosphereTriMesh MakeIcosphereTriMesh(const real_t &radius, const int &resolution);
+	static IcosphereTriMesh MakeIcosphereTriMesh(const float &radius, const int &resolution);
 
 public:
 #pragma region Predefined Geometry Parts
@@ -58,10 +58,10 @@ public:
 	}
 
 	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
-	static Ref<ArrayMesh> RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const real_t &angle);
+	static Ref<ArrayMesh> RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle);
 
 	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps = false);
-	static Ref<ArrayMesh> CreateVolumetricArrowHead(const real_t &radius, const real_t &length, const real_t &offset_mult, const bool &add_bevel);
+	static Ref<ArrayMesh> CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel);
 
 	static Ref<ArrayMesh> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
 	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes);
@@ -73,7 +73,7 @@ public:
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes);
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes);
 
-	static Ref<ArrayMesh> CreateIcosphereLines(const real_t &radius, const int &depth);
-	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const int &subdivide = 1);
-	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const int &subdivide = 1);
+	static Ref<ArrayMesh> CreateIcosphereLines(const float &radius, const int &depth);
+	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide = 1);
+	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide = 1);
 };

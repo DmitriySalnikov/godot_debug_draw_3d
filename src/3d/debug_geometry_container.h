@@ -43,7 +43,12 @@ class DebugGeometryContainer {
 	ImmediateMeshStorage immediate_mesh_storage;
 
 	GeometryPool geometry_pool;
-	Ref<World3D> base_world_viewport;
+	Ref<World3D> viewport_world;
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	Vector3 center_position;
+	Vector3 prev_center_position;
+#endif
+
 	int32_t render_layers = 1;
 	bool is_frame_rendered = false;
 	bool no_depth_test = false;
@@ -58,6 +63,11 @@ public:
 
 	void set_world(Ref<World3D> p_new_world);
 	Ref<World3D> get_world();
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	const Vector3 &get_center_position();
+	void update_center_positions();
+#endif
 
 	void update_geometry(double p_delta);
 	void update_geometry_physics_start(double p_delta);

@@ -66,7 +66,7 @@ private:
 	uint64_t thread_id;
 	uint64_t guard_id;
 
-	typedef std::function<void(const uint64_t &, const uint64_t &)> unregister_func;
+	using unregister_func = std::function<void(const uint64_t &, const uint64_t &)>;
 	unregister_func unregister_action;
 
 public:

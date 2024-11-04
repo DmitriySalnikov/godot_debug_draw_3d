@@ -743,7 +743,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
                         var size = Vector3.One;
                         cfg.SetThickness(Random.Shared.NextSingle() * 0.1f);
                         //size = new Vector3(Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f);
-                        DebugDraw3D.DrawBox(new Vector3(x * mul, (-4 - z) * mul, y * mul), Quaternion.Identity, size, null, false, cubes_max_time);
+                        DebugDraw3D.DrawBox(new Vector3(x * mul, (-4 - z) * mul, y * mul) + GlobalPosition, Quaternion.Identity, size, null, false, cubes_max_time);
                     }
                 }
             }

@@ -191,7 +191,7 @@ const extern godot::Vector3 Vector3_FORWARD;
 
 const extern godot::Quaternion Quaternion_IDENTITY;
 
-#if REAL_T_IS_DOUBLE
+#ifdef REAL_T_IS_DOUBLE
 struct Vector3Float {
 	float x, y, z;
 	Vector3Float() :
@@ -202,7 +202,7 @@ struct Vector3Float {
 			x((float)v.x), y((float)v.y), z((float)v.z) {}
 };
 #else
-typedef godot::Vector3 Vector3Float;
+using Vector3Float = godot::Vector3;
 #endif
 
 class Utils {

@@ -512,7 +512,7 @@ GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_pt
 Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
 	// ZoneScoped;
 	if (_scoped_config_get_geometry_type(p_cfg) == GeometryType::Volumetric)
-		return Color(p_cfg->thickness, p_cfg->center_brightness, 0, 0);
+		return Color((float)p_cfg->thickness, (float)p_cfg->center_brightness, (float)0, (float)0);
 
 	return Color();
 }

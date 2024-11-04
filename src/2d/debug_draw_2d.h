@@ -58,7 +58,8 @@ private:
 	void _on_canvas_item_draw(Control *ci);
 	inline bool _is_enabled_override() const;
 
-	void process(double delta);
+	void process_start(double delta);
+	void process_end(double delta);
 	void physics_process_start(double delta);
 	void physics_process_end(double delta);
 

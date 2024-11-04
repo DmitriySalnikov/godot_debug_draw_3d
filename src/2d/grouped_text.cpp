@@ -296,7 +296,7 @@ void GroupedText::draw(CanvasItem *p_ci, const Ref<Font> &p_font, const Vector2 
 				const Vector2 text_padding = owner->get_config()->get_text_padding();
 				const Vector2 font_offset = Vector2(0, (real_t)draw_font->get_ascent(font_size)) + text_padding;
 
-				float size_right_revert = (size.x + text_padding.x * 2) * right_side_multiplier;
+				real_t size_right_revert = (size.x + text_padding.x * 2) * right_side_multiplier;
 				backgrounds.push_back(DrawRectInstance(
 						Rect2(Vector2(pos.x + size_right_revert, pos.y).floor(), Vector2(size.x + text_padding.x * 2, size.y + text_padding.y * 2).floor()),
 						owner->get_config()->get_text_background_color()));

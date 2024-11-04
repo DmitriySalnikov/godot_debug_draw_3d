@@ -80,7 +80,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 
 DebugGeometryContainer::~DebugGeometryContainer() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", base_world_viewport.is_valid() ? base_world_viewport->get_instance_id() : 0);
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();
@@ -100,7 +100,6 @@ void DebugGeometryContainer::CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mes
 	new_mm.instantiate();
 	new_mm->set_name(String::num_int64((int)p_type));
 
-	new_mm->set_transform_format(MultiMesh::TransformFormat::TRANSFORM_3D);
 	new_mm->set_use_colors(true);
 	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	new_mm->set_use_custom_data(true);
@@ -118,23 +117,59 @@ void DebugGeometryContainer::CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mes
 
 void DebugGeometryContainer::set_world(Ref<World3D> p_new_world) {
 	ZoneScoped;
-	if (p_new_world == base_world_viewport) {
+	if (p_new_world == viewport_world) {
 		return;
 	}
 
-	base_world_viewport = p_new_world;
+	viewport_world = p_new_world;
+
 	RenderingServer *rs = RenderingServer::get_singleton();
-	RID scenario = base_world_viewport.is_valid() ? base_world_viewport->get_scenario() : RID();
+	RID scenario = viewport_world.is_valid() ? viewport_world->get_scenario() : RID();
 
 	for (auto &s : multi_mesh_storage) {
 		rs->instance_set_scenario(s.instance, scenario);
 	}
+
 	rs->instance_set_scenario(immediate_mesh_storage.instance, scenario);
 }
 
 Ref<World3D> DebugGeometryContainer::get_world() {
-	return base_world_viewport;
+	return viewport_world;
 }
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+const Vector3 &DebugGeometryContainer::get_center_position() {
+	return center_position;
+}
+
+void DebugGeometryContainer::update_center_positions() {
+	if (center_position == prev_center_position)
+		return;
+
+	Vector3 pos_diff = prev_center_position - center_position;
+	prev_center_position = center_position;
+
+	geometry_pool.for_each_instance([&pos_diff](DelayedRendererInstance *i) {
+		i->data.origin_x += (float)pos_diff.x;
+		i->data.origin_y += (float)pos_diff.y;
+		i->data.origin_z += (float)pos_diff.z;
+	});
+
+	geometry_pool.for_each_line([&pos_diff](DelayedRendererLine *i) {
+		for (size_t l = 0; l < i->lines_count; l++) {
+			i->lines[l] += pos_diff;
+		}
+	});
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	Transform3D xf = Transform3D(Basis(), center_position);
+	for (auto &s : multi_mesh_storage) {
+		rs->instance_set_transform(s.instance, xf);
+	}
+
+	rs->instance_set_transform(immediate_mesh_storage.instance, xf);
+}
+#endif
 
 void DebugGeometryContainer::update_geometry(double p_delta) {
 	ZoneScoped;
@@ -172,6 +207,10 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		set_render_layer_mask(owner->get_config()->get_geometry_render_layers());
 	}
 
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+#define FIX_DOUBLE_PRECISION_ERRORS
+#endif
+
 	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
 	{
 		ZoneScopedN("Get frustums");
@@ -199,12 +238,24 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 				if (owner->config->is_force_use_camera_from_scene() && cam) {
 					frustum_arrays.push_back({ cam->get_frustum(), cam });
+
+#ifdef FIX_DOUBLE_PRECISION_ERRORS
+					center_position = cam->get_global_position();
+#endif
 				} else if (custom_editor_viewports.size() > 0) {
+					bool is_updated = false;
 					for (const auto &evp : custom_editor_viewports) {
 						if (evp->get_update_mode() == SubViewport::UpdateMode::UPDATE_ALWAYS) {
-							Camera3D *cam = evp->get_camera_3d();
-							if (cam) {
-								frustum_arrays.push_back({ cam->get_frustum(), cam });
+							Camera3D *vp_cam = evp->get_camera_3d();
+							if (vp_cam) {
+								frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
+
+								if (!is_updated) {
+									is_updated = true;
+#ifdef FIX_DOUBLE_PRECISION_ERRORS
+									center_position = vp_cam->get_global_position();
+#endif
+								}
 							}
 						}
 					}
@@ -214,6 +265,10 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 				Camera3D *vp_cam = vp_p->get_camera_3d();
 				if (vp_cam) {
 					frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
+
+#ifdef FIX_DOUBLE_PRECISION_ERRORS
+					center_position = vp_cam->get_global_position();
+#endif
 				}
 #ifdef DEBUG_ENABLED
 			}
@@ -253,6 +308,11 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			culling_data[vp_p] = std::make_shared<GeometryPoolCullingData>(frustum_planes, frustum_boxes);
 		}
 	}
+
+#ifdef FIX_DOUBLE_PRECISION_ERRORS
+	update_center_positions();
+#endif
+#undef FIX_DOUBLE_PRECISION_ERRORS
 
 	// Debug bounds of instances and lines
 	if (owner->get_config()->is_visible_instance_bounds()) {

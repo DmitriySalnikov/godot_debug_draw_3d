@@ -22,6 +22,7 @@ protected:
 public:
 	void init(DebugDrawManager *p_root);
 
+	virtual void _process(double p_delta) override;
 	virtual void _physics_process(double p_delta) override;
 };
 #endif
@@ -155,6 +156,8 @@ public:
 	/// @private
 	void deinit();
 
+	/// @private
+	void _process_start(double p_delta);
 	/// @private
 	virtual void _process(double p_delta) override;
 	/// @private

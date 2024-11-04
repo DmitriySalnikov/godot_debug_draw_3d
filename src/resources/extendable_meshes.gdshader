@@ -1,8 +1,12 @@
 //#define NO_DEPTH
+//#define NO_WORLD_COORD
 //#define FORCED_TRANSPARENT
 
 shader_type spatial;
-render_mode cull_disabled, shadows_disabled, unshaded, world_vertex_coords
+render_mode cull_disabled, shadows_disabled, unshaded
+#if !defined(NO_WORLD_COORD)
+, world_vertex_coords
+#endif
 #if defined(FOG_DISABLED)
 , fog_disabled
 #endif
@@ -23,7 +27,12 @@ mat3 orthonormalize(mat3 m) {
 
 void vertex() {
 	brightness_of_center = INSTANCE_CUSTOM.y;
-	VERTEX = VERTEX + (CUSTOM0.xyz * INSTANCE_CUSTOM.x) * orthonormalize(inverse(mat3(normalize(MODEL_MATRIX[0].xyz), normalize(MODEL_MATRIX[1].xyz), normalize(MODEL_MATRIX[2].xyz))));
+	VERTEX = VERTEX + (CUSTOM0.xyz * INSTANCE_CUSTOM.x)
+#if !defined(NO_WORLD_COORD)
+	 * orthonormalize(inverse(mat3(normalize(MODEL_MATRIX[0].xyz), normalize(MODEL_MATRIX[1].xyz), normalize(MODEL_MATRIX[2].xyz))));
+#else
+	;
+#endif
 }
 
 vec3 toLinearFast(vec3 col) {

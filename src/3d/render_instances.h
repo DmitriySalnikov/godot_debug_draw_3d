@@ -54,11 +54,11 @@ struct GeometryPoolData3DInstance {
 
 	GeometryPoolData3DInstance(const Transform3D &p_xf, const Color &p_color, const Color &p_custom) :
 			basis_x(p_xf.basis[0]),
-			origin_x(p_xf.origin.x),
+			origin_x((float)p_xf.origin.x),
 			basis_y(p_xf.basis[1]),
-			origin_y(p_xf.origin.y),
+			origin_y((float)p_xf.origin.y),
 			basis_z(p_xf.basis[2]),
-			origin_z(p_xf.origin.z),
+			origin_z((float)p_xf.origin.z),
 			color(p_color),
 			custom(p_custom) {}
 };

@@ -20,9 +20,9 @@
 #if _MSC_VER
 
 #define GODOT_WARNING_DISABLE() \
-	__pragma(warning(disable : 4244 26451 26495))
+	__pragma(warning(disable : 4309 4244 26451 26495))
 #define GODOT_WARNING_RESTORE() \
-	__pragma(warning(default : 4244 26451 26495))
+	__pragma(warning(default : 4309 4244 26451 26495))
 
 #define MSVC_WARNING_DISABLE(n) __pragma(warning(disable \
 												 : n))

@@ -35,7 +35,7 @@ public:
 	bool is_expired();
 };
 
-typedef std::shared_ptr<TextGroupItem> TextGroupItem_ptr;
+using TextGroupItem_ptr = std::shared_ptr<TextGroupItem>;
 
 class TextGroup {
 private:
@@ -74,7 +74,7 @@ public:
 	void cleanup_texts(const std::function<void()> &p_update, const double &p_delta);
 };
 
-typedef std::shared_ptr<TextGroup> TextGroup_ptr;
+using TextGroup_ptr = std::shared_ptr<TextGroup>;
 
 class GroupedText {
 	struct DrawRectInstance {

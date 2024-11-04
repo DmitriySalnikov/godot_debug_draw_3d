@@ -183,7 +183,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const Pac
 	return mesh;
 }
 
-Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const real_t &angle) {
+Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle) {
 	Array arrs = mesh->surface_get_arrays(0);
 	Mesh::PrimitiveType ptype = mesh->surface_get_primitive_type(0);
 	ERR_FAIL_COND_V(arrs.size() == 0, mesh);
@@ -244,7 +244,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 	PackedVector2Array res_uv;
 
 	if (has_indexes) {
-		for (int i = 0; i < indexes.size(); i += 2) {
+		for (int64_t i = 0; i < indexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[indexes[i]] : Vector3(0, 1, 0.0001f);
 
 			if (add_bevel)
@@ -253,7 +253,7 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
 		}
 	} else {
-		for (int i = 0; i < vertexes.size(); i += 2) {
+		for (int64_t i = 0; i < vertexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[i] : Vector3(0, 1, 0.0001f);
 
 			if (add_bevel)
@@ -451,14 +451,14 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	}
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const real_t &radius, const real_t &length, const real_t &offset_mult, const bool &add_bevel) {
+Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel) {
 	PackedVector3Array vertexes;
 	PackedVector2Array uv;
 	PackedVector3Array custom0;
 	PackedInt32Array indexes;
 
-	real_t front_offset = add_bevel ? .5f : 0;
-	real_t square_diag_mult = MathUtils::Sqrt2;
+	float front_offset = add_bevel ? .5f : 0;
+	float square_diag_mult = MathUtils::Sqrt2;
 
 	vertexes.push_back(Vector3(0, 0, 0)); // 0
 
@@ -591,49 +591,49 @@ void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &p
 	ZoneScoped;
 	vertexes.resize(((size_t)path.size() - 1) * 2);
 
-	for (size_t i = 0; i < (size_t)path.size() - 1; i++) {
-		vertexes[i * 2 + 0] = path[(int)i];
-		vertexes[i * 2 + 1] = path[(int)i + 1];
+	for (int64_t i = 0; i < path.size() - 1; i++) {
+		vertexes[i * 2 + 0] = path[i];
+		vertexes[i * 2 + 1] = path[i + 1];
 	}
 }
 
 void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &path, Vector3 *vertexes) {
 	ZoneScoped;
 
-	for (size_t i = 0; i < (size_t)path.size() - 1; i++) {
-		vertexes[i * 2 + 0] = path[(int)i];
-		vertexes[i * 2 + 1] = path[(int)i + 1];
+	for (int64_t i = 0; i < path.size() - 1; i++) {
+		vertexes[i * 2 + 0] = path[i];
+		vertexes[i * 2 + 1] = path[i + 1];
 	}
 }
 
 void GeometryGenerator::ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes) {
 	ZoneScoped;
-	indexes.resize((size_t)tri_indexes.size() * 2);
+	indexes.resize(tri_indexes.size() * 2);
 
-	for (size_t i = 0; i < (size_t)tri_indexes.size() / 3; i++) {
-		indexes[i * 6 + 0] = tri_indexes[(int)i * 3 + 0];
-		indexes[i * 6 + 1] = tri_indexes[(int)i * 3 + 1];
-		indexes[i * 6 + 2] = tri_indexes[(int)i * 3 + 1];
-		indexes[i * 6 + 3] = tri_indexes[(int)i * 3 + 2];
-		indexes[i * 6 + 4] = tri_indexes[(int)i * 3 + 2];
-		indexes[i * 6 + 5] = tri_indexes[(int)i * 3 + 0];
+	for (int64_t i = 0; i < tri_indexes.size() / 3; i++) {
+		indexes[i * 6 + 0] = tri_indexes[i * 3 + 0];
+		indexes[i * 6 + 1] = tri_indexes[i * 3 + 1];
+		indexes[i * 6 + 2] = tri_indexes[i * 3 + 1];
+		indexes[i * 6 + 3] = tri_indexes[i * 3 + 2];
+		indexes[i * 6 + 4] = tri_indexes[i * 3 + 2];
+		indexes[i * 6 + 5] = tri_indexes[i * 3 + 0];
 	}
 }
 
 void GeometryGenerator::ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes) {
 	ZoneScoped;
 
-	for (size_t i = 0; i < (size_t)tri_indexes.size() / 3; i++) {
-		indexes[i * 6 + 0] = tri_indexes[(int)i * 3 + 0];
-		indexes[i * 6 + 1] = tri_indexes[(int)i * 3 + 1];
-		indexes[i * 6 + 2] = tri_indexes[(int)i * 3 + 1];
-		indexes[i * 6 + 3] = tri_indexes[(int)i * 3 + 2];
-		indexes[i * 6 + 4] = tri_indexes[(int)i * 3 + 2];
-		indexes[i * 6 + 5] = tri_indexes[(int)i * 3 + 0];
+	for (int64_t i = 0; i < tri_indexes.size() / 3; i++) {
+		indexes[i * 6 + 0] = tri_indexes[i * 3 + 0];
+		indexes[i * 6 + 1] = tri_indexes[i * 3 + 1];
+		indexes[i * 6 + 2] = tri_indexes[i * 3 + 1];
+		indexes[i * 6 + 3] = tri_indexes[i * 3 + 2];
+		indexes[i * 6 + 4] = tri_indexes[i * 3 + 2];
+		indexes[i * 6 + 5] = tri_indexes[i * 3 + 0];
 	}
 }
 
-GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(const real_t &radius, const int &resolution) {
+GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(const float &radius, const int &resolution) {
 	// https://winter.dev/projects/mesh/icosphere
 	const float Z = (1.0f + Math::sqrt(5.0f)) / 2.0f; // Golden ratio
 
@@ -703,7 +703,7 @@ GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(cons
 		std::unordered_map<uint64_t, int> triangleFromEdge;
 		int indexCount = currentIndexCount;
 
-		for (int t = 0; t < indexCount; t += 3) {
+		for (int64_t t = 0; t < indexCount; t += 3) {
 			int midpoints[3] = {};
 
 			for (int e = 0; e < 3; e++) {
@@ -772,7 +772,7 @@ GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(cons
 	return sphere;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const real_t &radius, const int &depth) {
+Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const float &radius, const int &depth) {
 	auto res = MakeIcosphereTriMesh(radius, depth);
 
 	// PRINT("{0} vertexes, {1} indexes", res.vertexes.size(), res.indexes.size());
@@ -789,7 +789,7 @@ Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const real_t &radius, con
 			res.normals);
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const real_t &radius, const int &subdivide) {
+Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide) {
 	ZoneScoped;
 	int lats = _lats * subdivide;
 	int lons = _lons * subdivide;
@@ -856,9 +856,9 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 			normals);
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const real_t &radius, const real_t &height, const int &subdivide) {
+Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide) {
 	ZoneScoped;
-	real_t angle = 360.f / edges;
+	float angle = 360.f / edges;
 
 	PackedVector3Array vertexes;
 	PackedVector3Array normals;

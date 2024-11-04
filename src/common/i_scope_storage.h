@@ -22,7 +22,7 @@ private:
 #endif
 
 public:
-	typedef std::function<void(uint64_t, uint64_t)> unregister_func;
+	using unregister_func = std::function<void(uint64_t, uint64_t)>;
 
 	virtual Ref<TCfgStorage> scoped_config() = 0;
 };

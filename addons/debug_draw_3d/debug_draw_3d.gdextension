@@ -101,3 +101,53 @@ web.template_release.wasm32.nothreads.forced_dd3d = "libs/libdd3d.web.template_r
 web.template_release.wasm32.forced_dd3d = "libs/libdd3d.web.template_release.wasm32.threads.enabled.wasm"
 
 ios.template_release.forced_dd3d = "libs/libdd3d.ios.template_release.universal.enabled.dylib"
+
+; -------------------------------------
+; DOUBLE PRECISION
+; -------------------------------------
+
+; -------------------------------------
+; debug
+
+macos.double = "libs/libdd3d.macos.editor.universal.double.framework"
+windows.x86_64.double = "libs/libdd3d.windows.editor.x86_64.double.dll"
+linux.x86_64.double = "libs/libdd3d.linux.editor.x86_64.double.so"
+
+web.wasm32.nothreads.double = "libs/libdd3d.web.template_debug.wasm32.double.wasm"
+web.wasm32.double = "libs/libdd3d.web.template_debug.wasm32.threads.double.wasm"
+
+android.arm32.double = "libs/libdd3d.android.template_debug.arm32.double.so"
+android.arm64.double = "libs/libdd3d.android.template_debug.arm64.double.so"
+android.x86_32.double = "libs/libdd3d.android.template_debug.x86_32.double.so"
+android.x86_64.double = "libs/libdd3d.android.template_debug.x86_64.double.so"
+
+ios.double = "libs/libdd3d.ios.template_debug.universal.dylib"
+
+; -------------------------------------
+; release no debug draw
+
+macos.template_release.double = "libs/libdd3d.macos.template_release.universal.double.framework"
+windows.template_release.x86_64.double = "libs/libdd3d.windows.template_release.x86_64.double.dll"
+linux.template_release.x86_64.double = "libs/libdd3d.linux.template_release.x86_64.double.so"
+
+web.template_release.wasm32.nothreads.double = "libs/libdd3d.web.template_release.wasm32.double.wasm"
+web.template_release.wasm32.double = "libs/libdd3d.web.template_release.wasm32.threads.double.wasm"
+
+android.template_release.arm32.double = "libs/libdd3d.android.template_release.arm32.double.so"
+android.template_release.arm64.double = "libs/libdd3d.android.template_release.arm64.double.so"
+android.template_release.x86_32.double = "libs/libdd3d.android.template_release.x86_32.double.so"
+android.template_release.x86_64.double = "libs/libdd3d.android.template_release.x86_64.double.so"
+
+ios.template_release.double = "libs/libdd3d.ios.template_release.universal.double.dylib"
+
+; -------------------------------------
+; release forced debug draw
+
+macos.template_release.forced_dd3d.double = "libs/libdd3d.macos.template_release.universal.enabled.double.framework"
+windows.template_release.x86_64.forced_dd3d.double = "libs/libdd3d.windows.template_release.x86_64.enabled.double.dll"
+linux.template_release.x86_64.forced_dd3d.double = "libs/libdd3d.linux.template_release.x86_64.enabled.double.so"
+
+web.template_release.wasm32.nothreads.forced_dd3d.double = "libs/libdd3d.web.template_release.wasm32.enabled.double.wasm"
+web.template_release.wasm32.forced_dd3d.double = "libs/libdd3d.web.template_release.wasm32.threads.enabled.double.wasm"
+
+ios.template_release.forced_dd3d.double = "libs/libdd3d.ios.template_release.universal.enabled.double.dylib"

@@ -91,14 +91,14 @@ class GenerateCSharpBindingsPlugin {
 	TypedArray<StringName> generate_for_classes;
 	TypedArray<StringName> avoid_caching_for_classes;
 
-	typedef std::map<StringName, std::vector<String> > extend_class_strings;
+	using extend_class_strings = std::map<StringName, std::vector<String> >;
 	extend_class_strings additional_statics_for_classes;
 	extend_class_strings override_disposable_for_classes;
 
 	PackedStringArray singletons;
 	bool is_shift_pressed = false;
 	bool is_generate_unload_event = false;
-	typedef std::map<String, DefaultData> remap_data;
+	using remap_data = std::map<String, DefaultData>;
 
 	std::map<Variant::Type, String> types_map = {
 		{ Variant::NIL, "NILL" },

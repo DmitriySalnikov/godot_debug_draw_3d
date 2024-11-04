@@ -109,7 +109,10 @@ DebugDraw2D::~DebugDraw2D() {
 static bool DebugDraw2D_frame_mark_2d_started = false;
 #endif
 
-void DebugDraw2D::process(double delta) {
+void DebugDraw2D::process_start(double delta) {
+}
+
+void DebugDraw2D::process_end(double delta) {
 	ZoneScoped;
 
 #ifdef TRACY_ENABLE
