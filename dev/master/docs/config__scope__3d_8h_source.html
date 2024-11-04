@@ -154,7 +154,7 @@ $(function(){initNavTree('config__scope__3d_8h_source.html',''); initResizable()
 <div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    uint64_t thread_id;</div>
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    uint64_t guard_id;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keyword">typedef</span> std::function&lt;void(<span class="keyword">const</span> uint64_t &amp;, <span class="keyword">const</span> uint64_t &amp;)&gt; unregister_func;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keyword">using </span>unregister_func = std::function&lt;void(<span class="keyword">const</span> uint64_t &amp;, <span class="keyword">const</span> uint64_t &amp;)&gt;;</div>
 <div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    unregister_func unregister_action;</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">public</span>:</div>
