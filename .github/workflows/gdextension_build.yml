@@ -176,7 +176,6 @@ jobs:
       fail-fast: false
       matrix:
         arch: [arm32, arm64, x86_32, x86_64]
-        target: [template_debug, template_release]
 
     steps:
       - name: Checkout
@@ -204,13 +203,25 @@ jobs:
               echo "Changed $(basename "$link") from $current_target to $new_target"
           done
 
-      - name: Compile GDExtension
+      - name: Compile GDExtension target=template_debug
         uses: ./.github/actions/compile_gdextension
         with:
           platform: android
-          target: ${{matrix.target}}
+          target: template_debug
           arch: ${{matrix.arch}}
-          artifact: libdd3d-android.${{matrix.target}}.${{matrix.arch}}
+          artifact: libdd3d-android.template_debug.${{matrix.arch}}
+          additional: lto=yes
+          additional_enabled_dd3d: false
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
+
+      - name: Compile GDExtension target=template_release
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: android
+          target: template_release
+          arch: ${{matrix.arch}}
+          artifact: libdd3d-android.template_release.${{matrix.arch}}
           additional: lto=yes
           additional_enabled_dd3d: false
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
@@ -227,7 +238,6 @@ jobs:
       matrix:
         arch: [wasm32]
         target: [template_debug, template_release]
-        threads: [yes, no]
 
     env:
       EM_VERSION: 3.1.64
@@ -247,21 +257,32 @@ jobs:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: obj/emsdk_cache
 
-      - name: Compile GDExtension
+      - name: Compile GDExtension threads=no
         uses: ./.github/actions/compile_gdextension
         with:
           platform: web
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          artifact: libdd3d-web.${{matrix.target}}.${{matrix.arch}}.threads_${{matrix.threads}}
-          additional: lto=yes threads=${{matrix.threads}}
+          artifact: libdd3d-web.${{matrix.target}}.${{matrix.arch}}.threads_no
+          additional: lto=yes threads=no
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
+
+      - name: Compile GDExtension threads=yes
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: web
+          target: ${{matrix.target}}
+          arch: ${{matrix.arch}}
+          artifact: libdd3d-web.${{matrix.target}}.${{matrix.arch}}.threads_yes
+          additional: lto=yes threads=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   double-debug-gdextension:
-    name: "2️⃣ Double debug: ${{matrix.runner-os}}, Plat-${{matrix.platform}}"
+    name: "2️⃣ Double: ${{matrix.runner-os}}, Platform-${{matrix.platform}}"
     runs-on: ${{matrix.runner-os}}
 
     strategy:
@@ -290,9 +311,21 @@ jobs:
         uses: ./.github/actions/compile_gdextension
         with:
           platform: ${{matrix.platform}}
-          target: "editor"
+          target: editor
           arch: ${{matrix.arch}}
-          artifact: libdouble-${{matrix.platform}}.${{matrix.arch}}
+          artifact: libdouble-${{matrix.platform}}.editor.${{matrix.arch}}
+          additional: lto=yes precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
+          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
+          use_cache: ${{env.USE_CACHE}}
+          token: ${{secrets.TELEMETRY_TOKEN}}
+
+      - name: Compile GDExtension
+        uses: ./.github/actions/compile_gdextension
+        with:
+          platform: ${{matrix.platform}}
+          target: template_release
+          arch: ${{matrix.arch}}
+          artifact: libdouble-${{matrix.platform}}.template_release.${{matrix.arch}}
           additional: lto=yes precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
