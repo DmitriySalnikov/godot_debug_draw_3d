@@ -12,8 +12,6 @@ render_mode cull_back, shadows_disabled, unshaded
 ;
 #endif
 
-uniform sampler2D depth_value : hint_depth_texture;
-
 void vertex()
 {
 	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);

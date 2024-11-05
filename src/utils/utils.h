@@ -323,6 +323,7 @@ public:
 };
 
 #ifndef DISABLE_DEBUG_RENDERING
+#ifndef WEB_ENABLED
 #include <chrono>
 
 class GodotScopedStopwatch {
@@ -338,13 +339,40 @@ public:
 	}
 
 	~GodotScopedStopwatch() {
-		using namespace std::chrono;
 		if (m_add)
-			*m_time_val += static_cast<int64_t>(duration_cast<microseconds>(high_resolution_clock::now() - start_time).count());
+			*m_time_val += static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count());
 		else
-			*m_time_val = static_cast<int64_t>(duration_cast<microseconds>(high_resolution_clock::now() - start_time).count());
+			*m_time_val = static_cast<int64_t>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start_time).count());
 	}
 };
+#else
+// TODO delete when the minimum version is upgraded.
+// cannot be deleted due to a mismatch in the Emscripten version.
+// 4.2.3 or 4.3
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/time.hpp>
+GODOT_WARNING_RESTORE()
+
+class GodotScopedStopwatch {
+	uint64_t start_time;
+	int64_t *m_time_val;
+	bool m_add;
+
+public:
+	GodotScopedStopwatch(int64_t *p_time_val, bool p_add) {
+		m_time_val = p_time_val;
+		m_add = p_add;
+		start_time = godot::Time::get_singleton()->get_ticks_usec();
+	}
+
+	~GodotScopedStopwatch() {
+		if (m_add)
+			*m_time_val += godot::Time::get_singleton()->get_ticks_usec() - start_time;
+		else
+			*m_time_val = godot::Time::get_singleton()->get_ticks_usec() - start_time;
+	}
+};
+#endif
 
 #define _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2) name1##name2
 #define _GODOT_STOPWATCH_CONCAT(name1, name2) _GODOT_STOPWATCH_CONCAT_IMPL(name1, name2)

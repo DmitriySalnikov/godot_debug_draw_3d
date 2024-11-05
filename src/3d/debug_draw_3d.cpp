@@ -1169,8 +1169,6 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	Transform3D t(Basis().scaled(VEC3_ONE(size)), position);
-
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
@@ -1179,7 +1177,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 			InstanceType::BILLBOARD_SQUARE,
 			duration,
 			GET_PROC_TYPE(),
-			FIX_PRECISION_TRANSFORM(t),
+			Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(position)),
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size),
 			&Colors::empty_color);
