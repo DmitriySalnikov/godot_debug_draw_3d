@@ -6,6 +6,7 @@ extends Node3D
 @export var update_in_physics := false
 @export var test_text := true
 @export var test_graphs := false
+@export var test_fps_graph := true
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
 @export var draw_1m_boxes := false
@@ -540,6 +541,8 @@ func _get_sin_wave_for_graph() -> float:
 
 
 func _remove_graphs():
+	if not test_fps_graph:
+		DebugDraw2D.remove_graph(&"FPS")
 	DebugDraw2D.remove_graph(&"randf")
 	DebugDraw2D.remove_graph(&"fps")
 	DebugDraw2D.remove_graph(&"fps2")

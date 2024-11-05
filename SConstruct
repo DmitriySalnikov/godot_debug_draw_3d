@@ -48,8 +48,8 @@ def setup_options(env: SConsEnvironment, arguments):
     opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
-    opts.Add(BoolVariable("fix_precision_enabled", "Fix precision errors at greater distances, utilizing more CPU resources.", True))
-    opts.Add(BoolVariable("shader_world_coords_enabled", "Use world coordinates in shaders, if applicable.\nDisable it for stability at a great distance from the center of the world.", True))
+    opts.Add(BoolVariable("fix_precision_enabled", "Fix precision errors at greater distances, utilizing more CPU resources.\nApplies only in combination with 'precision=double'", True))
+    opts.Add(BoolVariable("shader_world_coords_enabled", "Use world coordinates in shaders, if applicable.\nExpandable meshes become more uniform.\nDisable it for stability at a great distance from the center of the world.", True))
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
 
     opts.Update(env)

@@ -46,7 +46,7 @@ class DebugGeometryContainer {
 	Ref<World3D> viewport_world;
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 	Vector3 center_position;
-	Vector3 prev_center_position;
+	Vector3 new_center_position;
 #endif
 
 	int32_t render_layers = 1;

@@ -13,6 +13,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool update_in_physics = false;
     [Export] bool test_text = true;
     [Export] bool test_graphs = false;
+    [Export] bool test_fps_graph = true;
     [Export] bool more_test_cases = true;
     [Export] bool draw_array_of_boxes = false;
     [Export] bool draw_1m_boxes = false;
@@ -824,6 +825,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     void _remove_graphs()
     {
+        if (!test_fps_graph)
+            DebugDraw2D.RemoveGraph("FPS");
         DebugDraw2D.RemoveGraph("randf");
         DebugDraw2D.RemoveGraph("fps");
         DebugDraw2D.RemoveGraph("fps2");

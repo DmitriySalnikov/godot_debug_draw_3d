@@ -362,6 +362,7 @@ public:
 	DataGraphManager(class DebugDraw2D *root);
 	~DataGraphManager();
 
+	void mark_canvas_dirty();
 	void draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const;
 	Ref<DebugDraw2DGraph> create_graph(const StringName &_title);
 	Ref<DebugDraw2DGraph> create_fps_graph(const StringName &_title);

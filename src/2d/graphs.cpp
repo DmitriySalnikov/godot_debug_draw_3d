@@ -73,6 +73,11 @@ DebugDraw2DGraph::DebugDraw2DGraph(DataGraphManager *_owner, StringName _title) 
 
 DebugDraw2DGraph::~DebugDraw2DGraph() {
 	custom_font.unref();
+#ifndef DISABLE_DEBUG_RENDERING
+	if (owner) {
+		owner->mark_canvas_dirty();
+	}
+#endif
 }
 
 void DebugDraw2DGraph::_init(DataGraphManager *_owner, StringName _title) {
@@ -487,7 +492,7 @@ DebugDraw2DGraph::graph_rects DebugDraw2DGraph::draw(CanvasItem *_ci, const Ref<
 	if (buffer_data->is_filled() || buffer_data->size() > 2) {
 		Vector2 base_pos = rects.base.position + Vector2(1, 1);
 		Vector2 size = rects.base.size - Vector2(1, 3);
-		double difference = max - min;
+		// double difference = max - min;
 		double size_multiplier_x = size.x / (get_buffer_size() - 2);
 		// double size_multiplier_y = difference != 0.0 ? size.y / Math::remap(buffer_data->get(0), min, max, graph_range.min, graph_range.max) : 0.0;
 		PackedVector2Array line_points;
@@ -675,6 +680,12 @@ DataGraphManager::~DataGraphManager() {
 	graphs.clear();
 }
 
+void DataGraphManager::mark_canvas_dirty() {
+	if (owner) {
+		owner->mark_canvas_dirty();
+	}
+}
+
 void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, double _delta) const {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
@@ -720,7 +731,7 @@ void DataGraphManager::draw(CanvasItem *_ci, Ref<Font> _font, Vector2 _vp_size, 
 	// 'rect' is a parameter storing the rectangle of the parent node
 	// 'corner' is a parameter inherited from the root node
 	std::function<void(const GraphsNode *, const DebugDraw2DGraph::graph_rects &, const DebugDraw2DGraph::GraphPosition &, const bool &)> iterate_nodes;
-	iterate_nodes = [&, this](const GraphsNode *node, const DebugDraw2DGraph::graph_rects &rects, const DebugDraw2DGraph::GraphPosition &corner, const bool &is_root) {
+	iterate_nodes = [&](const GraphsNode *node, const DebugDraw2DGraph::graph_rects &rects, const DebugDraw2DGraph::GraphPosition &corner, const bool &is_root) {
 		DebugDraw2DGraph::graph_rects prev_rects = node->instance->draw(_ci, _font, rects, corner, is_root, _delta);
 
 		for (auto &g : node->children) {

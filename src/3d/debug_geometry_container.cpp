@@ -143,11 +143,13 @@ const Vector3 &DebugGeometryContainer::get_center_position() {
 }
 
 void DebugGeometryContainer::update_center_positions() {
-	if (center_position == prev_center_position)
+	if (center_position.distance_to(new_center_position) < 8192)
 		return;
 
-	Vector3 pos_diff = prev_center_position - center_position;
-	prev_center_position = center_position;
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " Updated instance positions: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
+
+	Vector3 pos_diff = center_position - new_center_position;
+	center_position = new_center_position;
 
 	geometry_pool.for_each_instance([&pos_diff](DelayedRendererInstance *i) {
 		i->data.origin_x += (float)pos_diff.x;
@@ -240,7 +242,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					frustum_arrays.push_back({ cam->get_frustum(), cam });
 
 #ifdef FIX_DOUBLE_PRECISION_ERRORS
-					center_position = cam->get_global_position();
+					new_center_position = cam->get_global_position();
 #endif
 				} else if (custom_editor_viewports.size() > 0) {
 					bool is_updated = false;
@@ -253,7 +255,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 								if (!is_updated) {
 									is_updated = true;
 #ifdef FIX_DOUBLE_PRECISION_ERRORS
-									center_position = vp_cam->get_global_position();
+									new_center_position = vp_cam->get_global_position();
 #endif
 								}
 							}
@@ -267,7 +269,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					frustum_arrays.push_back({ vp_cam->get_frustum(), vp_cam });
 
 #ifdef FIX_DOUBLE_PRECISION_ERRORS
-					center_position = vp_cam->get_global_position();
+					new_center_position = vp_cam->get_global_position();
 #endif
 				}
 #ifdef DEBUG_ENABLED

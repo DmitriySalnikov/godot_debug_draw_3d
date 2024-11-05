@@ -80,6 +80,7 @@ INPUT                  = docs/Introduction.md \
                         docs/Examples.md \
                         docs/Export.md \
                         docs/Build.md \
+                        docs/DoublePrecision.md \
                         src/debug_draw_manager.h \
                         src/2d/debug_draw_2d.h \
                         src/2d/config_2d.h \
