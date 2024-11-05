@@ -273,7 +273,7 @@ jobs:
     needs: [data_preparation, generate_docs, web-gdextension]
 
     env:
-      GODOT_VERSION: 4.2.1-stable
+      GODOT_VERSION: 4.2.2-stable
       PROJECT_PATH: dd3d_web_build
       BUILD_FOLDER: demo_build
 

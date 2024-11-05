@@ -307,7 +307,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Compile GDExtension
+      - name: Compile GDExtension target=editor
         uses: ./.github/actions/compile_gdextension
         with:
           platform: ${{matrix.platform}}
@@ -319,7 +319,7 @@ jobs:
           use_cache: ${{env.USE_CACHE}}
           token: ${{secrets.TELEMETRY_TOKEN}}
 
-      - name: Compile GDExtension
+      - name: Compile GDExtension target=template_release
         uses: ./.github/actions/compile_gdextension
         with:
           platform: ${{matrix.platform}}
@@ -408,7 +408,7 @@ jobs:
 
     env:
       # Sync with container: image:
-      GODOT_VERSION: 4.2.1-stable
+      GODOT_VERSION: 4.2.2-stable
       ADDON_DIR: debug_draw_3d
       PROJECT_PATH: dd3d_web_build
       TESTS_PATH: examples_dd3d
