@@ -55,6 +55,7 @@ var searchData=
   ['set_5fviewport_52',['set_viewport',['../classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277',1,'DebugDraw3DScopeConfig']]],
   ['set_5fvisible_5finstance_5fbounds_53',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]],
   ['settings_54',['Project Settings',['../md_docs_2Examples.html#autotoc_md11',1,'']]],
-  ['steps_55',['Next steps',['../index.html#autotoc_md6',1,'']]],
-  ['support_20me_56',['Support me',['../index.html#autotoc_md5',1,'']]]
+  ['shader_5fworld_5fcoords_5fenabled_20yes_20no_20tt_20default_3a_20yes_55',['&lt;tt&gt;shader_world_coords_enabled=yes|no&lt;/tt&gt; (default: yes)',['../md_docs_2DoublePrecision.html#autotoc_md18',1,'']]],
+  ['steps_56',['Next steps',['../index.html#autotoc_md6',1,'']]],
+  ['support_20me_57',['Support me',['../index.html#autotoc_md5',1,'']]]
 ];
