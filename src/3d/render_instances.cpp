@@ -485,7 +485,7 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 	inst->is_visible = true;
 }
 
-void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col) {
+void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb) {
 	ZoneScoped;
 	auto &proc = pools[p_cfg->dcd.viewport][(int)p_proc];
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
@@ -494,7 +494,7 @@ void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConf
 	inst->lines = std::move(p_lines);
 	inst->lines_count = p_line_count;
 	inst->color = p_col;
-	inst->bounds = MathUtils::calculate_vertex_bounds(inst->lines.get(), p_line_count);
+	inst->bounds = p_aabb;
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;

@@ -768,6 +768,8 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 	GET_SCOPED_CFG_AND_DGC();
 
 	if (!scfg->thickness) {
+		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines.get(), p_line_count);
+
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 		for (size_t l = 0; l < p_line_count; l++) {
 			p_lines[l] -= dgc->get_center_position();
@@ -779,7 +781,8 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 				GET_PROC_TYPE(),
 				std::move(p_lines),
 				p_line_count,
-				p_col);
+				p_col,
+				aabb);
 	} else {
 		for (int i = 0; i < p_line_count; i += 2) {
 			ZoneScopedN("Convert AB to xf");

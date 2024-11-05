@@ -402,7 +402,8 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 							ProcessType::PROCESS,
 							std::move(l),
 							s,
-							Colors::red);
+							Colors::red,
+							MathUtils::calculate_vertex_bounds(l.get(), s));
 				}
 			}
 		}
