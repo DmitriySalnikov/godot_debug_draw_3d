@@ -61,7 +61,7 @@ Precompiled for:
 This addon supports working with several World3D and different Viewports.
 There is also a no depth test mode and other settings that can be changed for each instance.
 
-This library supports double-precision builds, for more information, [see the documentation](https://dd3d.dmitriysalnikov.ru/docs/1.4.5/md_docs_2DoublePrecision.html).
+This library supports double-precision builds, for more information, [see the documentation](https://dd3d.dmitriysalnikov.ru/docs/?page=md_docs_2DoublePrecision.html).
 
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 

@@ -553,7 +553,16 @@ jobs:
               <meta http-equiv="refresh" content="1; url=REDIRECT_TO_FOLDER/" />
             </noscript>
             <script>
-              window.location.replace("REDIRECT_TO_FOLDER/" + window.location.hash);
+              // Getting the parameters from the URL
+              const queryParams = new URLSearchParams(window.location.search);
+              const pageParam = queryParams.get("page");
+
+              // Forming the final URL using the parameter value ?page
+              if (pageParam) {
+                window.location.replace(`REDIRECT_TO_FOLDER/${pageParam}${window.location.hash}`);
+              } else {
+                window.location.replace(`REDIRECT_TO_FOLDER/${window.location.hash}`);
+              }
             </script>
             <style>
               html {
