@@ -1,5 +1,6 @@
 [
   "solid",
   "master",
-  "cpp_api"
+  "cpp_api",
+  "ci_lib_version_mark"
 ]
