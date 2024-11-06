@@ -13,31 +13,17 @@ jobs:
     name: Get the current version
     runs-on: ubuntu-latest
     outputs:
-      version: ${{steps.getversion.outputs.version}}
+      version: ${{steps.get_version.outputs.version}}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          sparse-checkout: src/version.h
+          sparse-checkout: .github/actions/get_lib_version/action.yml
 
       - name: Get library version
-        id: getversion
-        shell: bash
-        env:
-          REF: ${{github.ref_name}}
-        run: |
-          # Get lib version
-          source_file="src/version.h"
-
-          major=$(grep -oP '(?<=#define DD3D_MAJOR )\d+' "$source_file")
-          minor=$(grep -oP '(?<=#define DD3D_MINOR )\d+' "$source_file")
-          patch=$(grep -oP '(?<=#define DD3D_PATCH )\d+' "$source_file")
-
-          version_string="$major.$minor.$patch"
-
-          echo "version=$version_string" >> $GITHUB_OUTPUT
-          echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+        id: get_version
+        uses: ./.github/actions/get_lib_version
 
   create_release_artifact:
     name: Create release artifact
@@ -49,8 +35,8 @@ jobs:
     env:
       ADDON_FOLDER_NAME: debug_draw_3d
       ADDON_ROOT_FOLDER_NAME: debug_draw_3d-${{needs.get_version.outputs.version}}
-      RELEASE_PREFIX_NAME: debug-draw-3d
-      DOWNLOAD_ARTIFACT_NAME: .gdextension_libs_production
+      RELEASE_ZIP_NAME: debug-draw-3d_${{needs.get_version.outputs.version}}.zip
+      DOWNLOAD_ARTIFACT_NAME: .gdextension_libs_production-${{needs.get_version.outputs.version}}
 
     steps:
       - name: Checkout
@@ -77,7 +63,7 @@ jobs:
       - name: Create ZIP archive
         id: zip
         run: |
-          zipname="${{env.RELEASE_PREFIX_NAME}}_${{needs.get_version.outputs.version}}.zip"
+          zipname="${{env.RELEASE_ZIP_NAME}}"
           zip -r $zipname ${{env.ADDON_ROOT_FOLDER_NAME}}/addons
           echo "zipname=$zipname" >> $GITHUB_OUTPUT
 

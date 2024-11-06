@@ -17,7 +17,7 @@ inputs:
     required: false
 outputs:
   godot_folder:
-    description: Path to the Godot executable file
+    description: Path to the Godot folder
     value: ${{steps.store_folder.outputs.path}}
   godot:
     description: Path to the Godot executable file

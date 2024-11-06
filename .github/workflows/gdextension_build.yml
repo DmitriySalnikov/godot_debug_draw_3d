@@ -353,6 +353,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get library version
+        id: get_version
+        uses: ./.github/actions/get_lib_version
+
       - name: Download Binaries
         uses: actions/download-artifact@v4
         with:
@@ -376,7 +380,7 @@ jobs:
           cd extracted_files
           echo "Total size: $(du -ch -b | grep total | cut -f1 | awk '{printf "%.2f", $1/1048576}') MB, Total number of files: $(find . -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
 
-          echo "artifact_name=${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}" >> $GITHUB_OUTPUT
+          echo "artifact_name=${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}-${{steps.get_version.outputs.version}}" >> $GITHUB_OUTPUT
 
       - name: Upload GDExtension
         uses: actions/upload-artifact@v4

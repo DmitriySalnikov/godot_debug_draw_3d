@@ -1,0 +1,39 @@
+name: Get library version
+description: Get library version
+outputs:
+  version:
+    description: The current version of the library
+    value: ${{steps.get_version.outputs.version}}
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        path: get_version_temp_repositiory
+        sparse-checkout: src/version.h
+
+    - name: Get library version
+      id: get_version
+      shell: bash
+      env:
+        REF: ${{github.ref_name}}
+      run: |
+        # Get lib version
+        source_file="get_version_temp_repositiory/src/version.h"
+
+        major=$(grep -oP '(?<=#define DD3D_MAJOR )\d+' "$source_file")
+        minor=$(grep -oP '(?<=#define DD3D_MINOR )\d+' "$source_file")
+        patch=$(grep -oP '(?<=#define DD3D_PATCH )\d+' "$source_file")
+
+        version_string="$major.$minor.$patch"
+
+        echo "version=$version_string" >> $GITHUB_OUTPUT
+        echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: Clear temp repository
+      shell: bash
+      run: |
+        rm -rf "get_version_temp_repositiory"
+

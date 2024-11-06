@@ -53,8 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       head_sha: ${{steps.get_sha.outputs.head_sha}}
-      lib_version: ${{steps.get_lib_version.outputs.version}}
-      deploy_version: ${{steps.get_lib_version.outputs.deploy_version}}
+      lib_version: ${{steps.get_version.outputs.version}}
+      deploy_version: ${{steps.get_deploy_version.outputs.deploy_version}}
       domain: ${{steps.get_domain.outputs.domain}}
 
     steps:
@@ -79,6 +79,16 @@ jobs:
           echo "head_sha=$sha" >> $GITHUB_OUTPUT
           echo "\`$sha\` will be used as a restore point." >> $GITHUB_STEP_SUMMARY
 
+      - name: Checkout Action
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          sparse-checkout: .github/actions/get_lib_version/action.yml
+
+      - name: Get library version
+        id: get_version
+        uses: ./.github/actions/get_lib_version
+
       - name: Checkout version.h
         uses: actions/checkout@v4
         with:
@@ -86,31 +96,19 @@ jobs:
           sparse-checkout: |
             src/version.h
 
-      - name: Get library version
-        id: get_lib_version
+      - name: Get deploy version
+        id: get_deploy_version
         shell: bash
         env:
           REF: ${{github.ref_name}}
         run: |
-          # Get DD3D version
-          source_file="current/src/version.h"
-
-          major=$(grep -oP '(?<=#define DD3D_MAJOR )\d+' "$source_file")
-          minor=$(grep -oP '(?<=#define DD3D_MINOR )\d+' "$source_file")
-          patch=$(grep -oP '(?<=#define DD3D_PATCH )\d+' "$source_file")
-
-          version_string="$major.$minor.$patch"
-
-          echo "version=$version_string" >> $GITHUB_OUTPUT
-          echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
-
           fixed_ref_name=$(echo "$REF" | tr -c [:alnum:]+[:cntrl:] [_*])
           deploy_version=""
           if [ "${{env.DEV_DEPLOY}}" == "true" ]; then
             deploy_version=$fixed_ref_name
             echo "deploy_version=$deploy_version" >> $GITHUB_OUTPUT
           else
-            deploy_version=$version_string
+            deploy_version=${{steps.get_version.outputs.version}}
             echo "deploy_version=$deploy_version" >> $GITHUB_OUTPUT
           fi
           echo "Deploy version: \`$deploy_version\`" >> $GITHUB_STEP_SUMMARY
