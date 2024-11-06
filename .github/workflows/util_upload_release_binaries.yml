@@ -46,6 +46,7 @@ jobs:
           path: ${{env.ADDON_ROOT_FOLDER_NAME}} # godot asset library by default skips root folder
           sparse-checkout: |
             addons
+            examples_dd3d
           sparse-checkout-cone-mode: false
 
       - name: Download Binaries
@@ -64,7 +65,7 @@ jobs:
         id: zip
         run: |
           zipname="${{env.RELEASE_ZIP_NAME}}"
-          zip -r $zipname ${{env.ADDON_ROOT_FOLDER_NAME}}/addons
+          zip -r $zipname ${{env.ADDON_ROOT_FOLDER_NAME}}/addons ${{env.ADDON_ROOT_FOLDER_NAME}}/examples_dd3d
           echo "zipname=$zipname" >> $GITHUB_OUTPUT
 
       - name: Upload Artifact

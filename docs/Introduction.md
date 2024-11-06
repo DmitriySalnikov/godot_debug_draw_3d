@@ -47,9 +47,16 @@ Precompiled for:
 * Android
 * Web (WebAssembly)
 
+This addon supports working with several World3D and different Viewports.
+There is also a no depth test mode and other settings that can be changed for each instance.
+
+This library supports double-precision builds, for more information, see [Double Precision](DoublePrecision.md).
+
 ## Download
 
-To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or download the archive from the [GitHub](https://github.com/DmitriySalnikov/godot_debug_draw_3d) page by clicking the button at the top of the repository page: `Code -> Download ZIP`, then unzip it to your project folder. Or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page (just download one of the `Source Codes` in assets).
+To download, use the [Godot Asset Library](https://godotengine.org/asset-library/asset/1766) or use one of the stable versions from the [GitHub Releases](https://github.com/DmitriySalnikov/godot_debug_draw_3d/releases) page.
+
+For versions prior to `1.4.5`, just download one of the `source codes` in the assets. For newer versions, download `debug-draw-3d_[version].zip`.
 
 ### Installation
 
