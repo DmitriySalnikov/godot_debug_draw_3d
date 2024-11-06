@@ -8,7 +8,16 @@
     <meta http-equiv="refresh" content="1; url=1.4.5/" />
   </noscript>
   <script>
-    window.location.replace("1.4.5/" + window.location.hash);
+    // Getting the parameters from the URL
+    const queryParams = new URLSearchParams(window.location.search);
+    const pageParam = queryParams.get("page");
+
+    // Forming the final URL using the parameter value ?page
+    if (pageParam) {
+      window.location.replace(`1.4.5/${pageParam}${window.location.hash}`);
+    } else {
+      window.location.replace(`1.4.5/${window.location.hash}`);
+    }
   </script>
   <style>
     html {
