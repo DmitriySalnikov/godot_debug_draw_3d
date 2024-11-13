@@ -89,7 +89,7 @@ INPUT                  = docs/Introduction.md \
                         src/3d/debug_draw_3d.h \
                         src/3d/config_scope_3d.h \
                         src/3d/config_3d.h \
-                        src/3d/stats_3d.h \
+                        src/3d/stats_3d.h
 
 # The IMAGE_PATH tag can be used to specify one or more files or directories
 # that contain images that are to be included in the documentation (see the
@@ -98,6 +98,42 @@ INPUT                  = docs/Introduction.md \
 IMAGE_PATH             = docs/images \
                         docs/images/classes \
                         images
+
+# The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
+# other source files which should be copied to the HTML output directory. Note
+# that these files will be copied to the base HTML output directory. Use the
+# $relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these
+# files. In the HTML_STYLESHEET file, use the file name only. Also note that the
+# files will be copied as-is; there are no commands or markers available.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_EXTRA_FILES       = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
+                        docs/doxygen_resources/doc_version_select.js \
+                        images/icon_3d_32.png \
+                        docs/images/fix_precision_enabled.webm \
+                        docs/images/shader_world_coords_enabled.webm 
+
+# The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
+# cascading style sheets that are included after the standard style sheets
+# created by doxygen. Using this option one can overrule certain style aspects.
+# This is preferred over using HTML_STYLESHEET since it does not replace the
+# standard style sheet and is therefore more robust against future updates.
+# Doxygen will copy the style sheet files to the output directory.
+# Note: The order of the extra style sheet files is of importance (e.g. the last
+# style sheet in the list overrules the setting of the previous ones in the
+# list).
+# Note: Since the styling of scrollbars can currently not be overruled in
+# Webkit/Chromium, the styling will be left out of the default doxygen.css if
+# one or more extra stylesheets have been specified. So if scrollbar
+# customization is desired it has to be added explicitly. For an example see the
+# documentation.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_EXTRA_STYLESHEET  = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome.css \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
+                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                        docs/doxygen_resources/custom.css
 
 # The HTML_HEADER tag can be used to specify a user-defined HTML header file for
 # each generated HTML page. If the tag is left blank doxygen will generate a
@@ -140,40 +176,6 @@ HTML_FOOTER            = docs/doxygen_resources/footer.html
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
 HTML_STYLESHEET        =
-
-# The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
-# cascading style sheets that are included after the standard style sheets
-# created by doxygen. Using this option one can overrule certain style aspects.
-# This is preferred over using HTML_STYLESHEET since it does not replace the
-# standard style sheet and is therefore more robust against future updates.
-# Doxygen will copy the style sheet files to the output directory.
-# Note: The order of the extra style sheet files is of importance (e.g. the last
-# style sheet in the list overrules the setting of the previous ones in the
-# list).
-# Note: Since the styling of scrollbars can currently not be overruled in
-# Webkit/Chromium, the styling will be left out of the default doxygen.css if
-# one or more extra stylesheets have been specified. So if scrollbar
-# customization is desired it has to be added explicitly. For an example see the
-# documentation.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_EXTRA_STYLESHEET  = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome.css \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only.css \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-sidebar-only-darkmode-toggle.css \
-                        docs/doxygen_resources/custom.css
-
-# The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
-# other source files which should be copied to the HTML output directory. Note
-# that these files will be copied to the base HTML output directory. Use the
-# $relpath^ marker in the HTML_HEADER and/or HTML_FOOTER files to load these
-# files. In the HTML_STYLESHEET file, use the file name only. Also note that the
-# files will be copied as-is; there are no commands or markers available.
-# This tag requires that the tag GENERATE_HTML is set to YES.
-
-HTML_EXTRA_FILES       = docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
-                        docs/doxygen_resources/doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
-                        docs/doxygen_resources/doc_version_select.js \
-                        images/icon_3d_32.png \
 
 # If the CREATE_SUBDIRS tag is set to YES then doxygen will create up to 4096
 # sub-directories (in 2 levels) under the output directory of each output format

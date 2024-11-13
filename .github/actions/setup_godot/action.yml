@@ -38,13 +38,13 @@ runs:
           echo "Fixed path: $tmp_path_unix"
         fi
 
-        echo "path=$tmp_path/godot_installation" >> $GITHUB_OUTPUT
-        echo "path_unix=$tmp_path_unix/godot_installation" >> $GITHUB_OUTPUT
+        echo "path=$tmp_path/godot_installation_${{inputs.tag}}" >> $GITHUB_OUTPUT
+        echo "path_unix=$tmp_path_unix/godot_installation_${{inputs.tag}}" >> $GITHUB_OUTPUT
 
         if [[ "${{inputs.file_suffix}}" == *"macos"* ]]; then
-          echo "exe=$tmp_path_unix/godot_installation/Godot.app/Contents/MacOS/Godot" >> $GITHUB_OUTPUT
+          echo "exe=$tmp_path_unix/godot_installation_${{inputs.tag}}/Godot.app/Contents/MacOS/Godot" >> $GITHUB_OUTPUT
         else
-          echo "exe=$tmp_path_unix/godot_installation/godot" >> $GITHUB_OUTPUT
+          echo "exe=$tmp_path_unix/godot_installation_${{inputs.tag}}/godot" >> $GITHUB_OUTPUT
         fi
 
     - name: Restore cache directory
@@ -77,6 +77,7 @@ runs:
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       shell: bash
       run: |
+        # TODO test mono
         if [ "${{inputs.is_mono}}" == "true" ]; then
           echo "Move the Mono files to the root of the temporary folder"
           mv -f Godot*/* temp_download/ || true
@@ -115,7 +116,7 @@ runs:
           fi
         done
 
-        echo "Move files to installation folder"
+        echo "Move files to the installation folder"
         mv -f temp_download/ ${{steps.store_folder.outputs.path_unix}}/
         touch ${{steps.store_folder.outputs.path_unix}}/._sc_
 

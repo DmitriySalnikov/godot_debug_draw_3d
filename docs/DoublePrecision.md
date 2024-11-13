@@ -25,7 +25,12 @@ This flag enables a hack that moves the centers of all multimesh to the camera p
 
 Enabling or disabling the `fix_precision_enabled` flag only affects if `precision=double` is enabled.
 
-![fix_precision_enabled](images/fix_precision_enabled.webp)
+\htmlonly
+<video width="100%" autoplay loop muted>
+  <source src="fix_precision_enabled.webm" type="video/webm">
+  There should be a <a href="fix_precision_enabled.webm">video</a> here, but your browser does not support WebM VP9 video.
+</video>
+\endhtmlonly
 
 ### `shader_world_coords_enabled=yes|no` (default: yes)
 
@@ -33,7 +38,12 @@ This flag changes how meshes using world coordinates will be displayed. This cat
 
 `shader_world_coords_enabled` flag can be toggled independently of `precision=double`.
 
-![shader_world_coords_enabled](images/shader_world_coords_enabled.webp)
+\htmlonly
+<video width="100%" autoplay loop muted>
+  <source src="shader_world_coords_enabled.webm" type="video/webm">
+  There should be a <a href="shader_world_coords_enabled.webm">video</a> here, but your browser does not support WebM VP9 video.
+</video>
+\endhtmlonly
 
 But enabling world coordinates allows normalization of volumetric meshes within `float` precision.
 

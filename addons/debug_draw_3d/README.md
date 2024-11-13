@@ -53,7 +53,7 @@ Precompiled for:
 
 * Windows
 * Linux (built on Ubuntu 20.04)
-* macOS (10.14+)
+* macOS (10.15+)
 * Android (5.0+)
 * iOS
 * Web (Firefox not supported)
@@ -66,10 +66,6 @@ This library supports double-precision builds, for more information, [see the do
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 
 [![screenshot_web](/images/screenshot_web.png)](https://dd3d.dmitriysalnikov.ru/demo/)
-
-> [!WARNING]
->
-> * Firefox most likely can't run this demo
 
 ## Download
 

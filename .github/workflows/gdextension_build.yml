@@ -439,11 +439,29 @@ jobs:
           cp -r ${{env.TESTS_PATH}} ${{env.PROJECT_PATH}}/${{env.TESTS_PATH}}
           find ${{env.PROJECT_PATH}} -mindepth 1
 
-      - name: Setup Godot
+      - name: Setup Godot 4.1
         uses: ./.github/actions/setup_godot
-        id: setup_godot
+        id: setup_godot_4_1
         with:
-          tag: ${{env.GODOT_VERSION}}
+          tag: 4.1.4-stable
+          file_suffix: ${{matrix.file_suffix}}
+          download_export_templates: false
+          is_mono: false
+
+      - name: Setup Godot 4.2
+        uses: ./.github/actions/setup_godot
+        id: setup_godot_4_2
+        with:
+          tag: 4.2.2-stable
+          file_suffix: ${{matrix.file_suffix}}
+          download_export_templates: false
+          is_mono: false
+
+      - name: Setup Godot 4.3
+        uses: ./.github/actions/setup_godot
+        id: setup_godot_4_3
+        with:
+          tag: 4.3-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
           is_mono: false
@@ -455,26 +473,58 @@ jobs:
           brew install coreutils
           alias timeout="gtimeout"
 
-      - name: Test run
+      - name: Test runs
         shell: bash --noprofile --norc -o pipefail {0}
         run: |
-          max_attempts=3
-          current_attempt=1
-          last_exit_code=0
+          run_tests() {
+            godot_exe="$1"
+            echo "::group::🧪Testing '$godot_exe'"
 
-          until [ $current_attempt -gt $max_attempts ]; do
+            max_attempts=3
+            current_attempt=1
+            last_exit_code=0
+
+            # Cleanup
+            rm -f "${{env.PROJECT_PATH}}/SUCCESS"
+            rm -rf "${{env.PROJECT_PATH}}/.godot"
+
+            until [ $current_attempt -gt $max_attempts ]; do
               current_attempt=$((current_attempt + 1))
-              timeout 2m ${{steps.setup_godot.outputs.godot}} -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
-              timeout 2m ${{steps.setup_godot.outputs.godot}} -v --headless --path ${{env.PROJECT_PATH}} res://headless_test.tscn || true
+              echo "============================================="
+              echo "🛒 Project preparation"
+              echo "============================================="
+              timeout 2m $godot_exe -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
+
+              echo "============================================="
+              echo "✅ --check-only test without MainLoop"
+              echo "============================================="
+              timeout 2m $godot_exe -v --headless --path ${{env.PROJECT_PATH}} --check-only --script res://check-only_test.gd
+              if [ $? -ne 0 ]; then
+                echo "[$godot_exe] The test without MainLoop failed. Exiting."
+                exit 1
+              fi
+
+              echo "============================================="
+              echo "🧪 Actual testing"
+              echo "============================================="
+              timeout 2m $godot_exe -v --headless --path ${{env.PROJECT_PATH}} res://headless_test.tscn || true
 
               if [ ! -f "${{env.PROJECT_PATH}}/SUCCESS" ]; then
-                  echo "The file reporting success has not been created! Failed."
-                  last_exit_code=1
+                echo "[$godot_exe] The file reporting success has not been created! Failed."
+                last_exit_code=1
               else
-                  echo "The file reporting success has been created! Success!"
-                  exit 0
+                echo "[$godot_exe] The file reporting success has been created! Success!"
+                return 0
               fi
-          done
+            done
 
-          echo "The maximum number of attempts has been reached. Last error code: $?"
-          exit $last_exit_code
+            echo "[$godot_exe] The maximum number of attempts has been reached. Last error code: $?"
+            exit $last_exit_code
+          }
+
+          run_tests "${{steps.setup_godot_4_1.outputs.godot}}"
+          echo "::endgroup::"
+          run_tests "${{steps.setup_godot_4_2.outputs.godot}}"
+          echo "::endgroup::"
+          run_tests "${{steps.setup_godot_4_3.outputs.godot}}"
+          echo "::endgroup::"
