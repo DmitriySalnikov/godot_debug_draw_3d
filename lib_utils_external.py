@@ -10,8 +10,8 @@ import os, subprocess, shutil
 # Get the name of the cmake build directory
 def get_cmake_build_dir_name(env: SConsEnvironment) -> str:
     if env.get("threads", True) and env["platform"] == "web":
-        return f"{env["platform"]}_{env["arch"]}_threads"
-    return f"cmake_build_out/{env["platform"]}_{env["arch"]}"
+        return f'{env["platform"]}_{env["arch"]}_threads'
+    return f'cmake_build_out/{env["platform"]}_{env["arch"]}'
 
 
 # Get a path to the build folder of the cmake library
@@ -106,11 +106,11 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
     elif platform == "android":
         arch_map = { "arm32": "armeabi-v7a", "arm64": "arm64-v8a", "x86_32":  "x86", "x86_64":"x86_64" }
         platform_args += ["-G", "Ninja Multi-Config",
-                        f"-DCMAKE_TOOLCHAIN_FILE={os.getenv("ANDROID_HOME")}/ndk/25.2.9519653/build/cmake/android.toolchain.cmake",
-                        f"-DANDROID_ABI={arch_map[arch]}", f"-DANDROID_PLATFORM={env.get("android_api_level", 21)}",]
+                        f'-DCMAKE_TOOLCHAIN_FILE={os.getenv("ANDROID_HOME")}/ndk/25.2.9519653/build/cmake/android.toolchain.cmake',
+                        f'-DANDROID_ABI={arch_map[arch]}", f"-DANDROID_PLATFORM={env.get("android_api_level", 21)}',]
     elif platform == "web":
         platform_args += ["-G", "Ninja Multi-Config",
-                        f"-DCMAKE_TOOLCHAIN_FILE={os.path.dirname(WhereIs("emcc"))}/cmake/Modules/Platform/Emscripten.cmake",]
+                        f'-DCMAKE_TOOLCHAIN_FILE={os.path.dirname(WhereIs("emcc"))}/cmake/Modules/Platform/Emscripten.cmake',]
         if env.get("threads", True):
             compiler_flags += ["-sUSE_PTHREADS=1"]
             linker_flags += ["-sUSE_PTHREADS=1"]
@@ -118,9 +118,9 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
     build_args += ["--config", "Debug" if env["dev_build"] else "Release"]
 
     if len(compiler_flags):
-        platform_args += [f"-DCMAKE_C_FLAGS={";".join(compiler_flags)}", f"-DCMAKE_CXX_FLAGS={";".join(compiler_flags)}"]
+        platform_args += [f'-DCMAKE_C_FLAGS={";".join(compiler_flags)}', f'-DCMAKE_CXX_FLAGS={";".join(compiler_flags)}']
     if len(linker_flags):
-        platform_args += [f"-DCMAKE_EXE_LINKER_FLAGS={";".join(linker_flags)}"]
+        platform_args += [f'-DCMAKE_EXE_LINKER_FLAGS={";".join(linker_flags)}']
 
     curdir = os.curdir
     os.chdir(lib_path)
