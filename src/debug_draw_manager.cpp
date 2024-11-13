@@ -233,6 +233,12 @@ void DebugDrawManager::_unregister_singleton_aliases(const TypedArray<StringName
 void DebugDrawManager::_integrate_into_engine() {
 	ZoneScoped;
 
+	if (!SCENE_TREE()) {
+		// Running via the console with a custom `MainLoop` or with `--check-only`
+		set_debug_enabled(false);
+		return;
+	}
+
 	// disable by default for headless
 	{
 		if (Engine::get_singleton()->has_singleton("DisplayServer")) {

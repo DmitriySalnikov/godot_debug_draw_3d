@@ -91,7 +91,7 @@ void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		// If this library is disabled manually before deleting the scene tree (hot-reload),
 		// then an attempt is made to delete this node manually.
 		DebugDrawManager *debug_draw_manager = Object::cast_to<DebugDrawManager>(ObjectDB::get_instance(debug_draw_manager_id));
-		if (Engine::get_singleton()->get_main_loop() && debug_draw_manager) {
+		if (debug_draw_manager) {
 			memdelete(debug_draw_manager);
 		}
 		debug_draw_manager_id = 0;
