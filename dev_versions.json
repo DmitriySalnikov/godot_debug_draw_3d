@@ -1,5 +1,6 @@
 [
   "solid",
   "master",
-  "cpp_api"
+  "cpp_api",
+  "check_only_CI"
 ]
