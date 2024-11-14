@@ -331,6 +331,35 @@ jobs:
           use_cache: ${{env.USE_CACHE}}
           token: ${{secrets.TELEMETRY_TOKEN}}
 
+  # ============================================
+
+  check-python-version:
+    name: 🐍 Check compatibility with python
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        PYTHON_VER: ["3.8"] # this is the minimum available version to install on ubuntu 22.04 and 24.04
+                            # but the code is most likely compatible with python 3.6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .
+            patches
+
+      - name: Setup python ${{matrix.PYTHON_VER}}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{matrix.PYTHON_VER}}
+
+      - name: Try to compile all .py files
+        run: |
+          python --version
+          files="SConstruct $(find . -maxdepth 1 -name "*.py") $(find patches -name "*.py")"
+          echo "Found files: '$files'"
+          python -m py_compile $files
+          echo "All files compiled successfully!"
 
   # ============================================
 
