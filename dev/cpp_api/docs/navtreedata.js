@@ -44,6 +44,13 @@ var NAVTREE =
     [ "Build", "md_docs_2Build.html", [
       [ "JavaScript/Web build", "md_docs_2Build.html#autotoc_md14", null ]
     ] ],
+    [ "Double Precision", "md_docs_2DoublePrecision.html", [
+      [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md16", [
+        [ "fix_precision_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md17", null ],
+        [ "shader_world_coords_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md18", null ]
+      ] ],
+      [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md19", null ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],

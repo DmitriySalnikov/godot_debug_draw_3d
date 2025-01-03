@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.4.5</span>
+                      id="projectnumber">&#160;1.4.6</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -361,20 +361,21 @@ $(function(){initNavTree('graphs_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>    DataGraphManager(<span class="keyword">class</span> <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a> *root);</div>
 <div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>    ~DataGraphManager();</div>
 <div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span> </div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>    <span class="keywordtype">void</span> draw(CanvasItem *_ci, Ref&lt;Font&gt; _font, Vector2 _vp_size, <span class="keywordtype">double</span> _delta) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>    Ref&lt;DebugDraw2DGraph&gt; create_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>    Ref&lt;DebugDraw2DGraph&gt; create_fps_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>    <span class="keywordtype">void</span> auto_update_graphs(<span class="keywordtype">double</span> delta);</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>    <span class="keywordtype">void</span> graph_update_data(<span class="keyword">const</span> StringName &amp;_title, <span class="keyword">const</span> <span class="keywordtype">double</span> &amp;_data);</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keywordtype">void</span> remove_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordtype">void</span> clear_graphs();</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    Ref&lt;DebugDraw2DGraph&gt; get_graph(<span class="keyword">const</span> StringName &amp;_title) <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    PackedStringArray get_graph_names() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>    <span class="keywordtype">size_t</span> get_graphs_enabled() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    <span class="keywordtype">size_t</span> get_graphs_total() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>};</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span> </div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>    <span class="keywordtype">void</span> mark_canvas_dirty();</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>    <span class="keywordtype">void</span> draw(CanvasItem *_ci, Ref&lt;Font&gt; _font, Vector2 _vp_size, <span class="keywordtype">double</span> _delta) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>    Ref&lt;DebugDraw2DGraph&gt; create_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>    Ref&lt;DebugDraw2DGraph&gt; create_fps_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>    <span class="keywordtype">void</span> auto_update_graphs(<span class="keywordtype">double</span> delta);</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keywordtype">void</span> graph_update_data(<span class="keyword">const</span> StringName &amp;_title, <span class="keyword">const</span> <span class="keywordtype">double</span> &amp;_data);</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordtype">void</span> remove_graph(<span class="keyword">const</span> StringName &amp;_title);</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>    <span class="keywordtype">void</span> clear_graphs();</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>    Ref&lt;DebugDraw2DGraph&gt; get_graph(<span class="keyword">const</span> StringName &amp;_title) <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>    PackedStringArray get_graph_names() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    <span class="keywordtype">size_t</span> get_graphs_enabled() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <span class="keywordtype">size_t</span> get_graphs_total() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>};</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span><span class="preprocessor">#endif</span></div>
 <div class="ttc" id="aclassDebugDraw2DFPSGraph_html"><div class="ttname"><a href="classDebugDraw2DFPSGraph.html">DebugDraw2DFPSGraph</a></div><div class="ttdoc">This version of the graphs is automatically updated and displays FPS or Frametime.</div><div class="ttdef"><b>Definition</b> graphs.h:318</div></div>
 <div class="ttc" id="aclassDebugDraw2DFPSGraph_html_a76c87dc6d3d8284884608a1f61043700"><div class="ttname"><a href="classDebugDraw2DFPSGraph.html#a76c87dc6d3d8284884608a1f61043700">DebugDraw2DFPSGraph::set_data_getter</a></div><div class="ttdeci">virtual void set_data_getter(const Callable &amp;_callable) override</div></div>
 <div class="ttc" id="aclassDebugDraw2DFPSGraph_html_a81a7f4fd6fa499dcb9efd8e593941afd"><div class="ttname"><a href="classDebugDraw2DFPSGraph.html#a81a7f4fd6fa499dcb9efd8e593941afd">DebugDraw2DFPSGraph::set_frame_time_mode</a></div><div class="ttdeci">void set_frame_time_mode(const bool _state)</div></div>

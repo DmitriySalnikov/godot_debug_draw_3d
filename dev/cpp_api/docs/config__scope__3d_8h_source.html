@@ -58,7 +58,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D (and 2D)<span
-                      id="projectnumber">&#160;1.4.5</span>
+                      id="projectnumber">&#160;1.4.6</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -154,7 +154,7 @@ $(function(){initNavTree('config__scope__3d_8h_source.html',''); initResizable()
 <div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    uint64_t thread_id;</div>
 <div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    uint64_t guard_id;</div>
 <div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span> </div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keyword">typedef</span> std::function&lt;void(<span class="keyword">const</span> uint64_t &amp;, <span class="keyword">const</span> uint64_t &amp;)&gt; unregister_func;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keyword">using </span>unregister_func = std::function&lt;void(<span class="keyword">const</span> uint64_t &amp;, <span class="keyword">const</span> uint64_t &amp;)&gt;;</div>
 <div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    unregister_func unregister_action;</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
 <div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">public</span>:</div>
