@@ -114,7 +114,9 @@ public:
 	 *
 	 * ![](docs/images/classes/LineThickness.webp)
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
+	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_thickness_selfreturn(real_t _value) const;
 	NAPI real_t get_thickness() const;
 
 	/**
@@ -122,7 +124,9 @@ public:
 	 *
 	 * ![](docs/images/classes/LineCenterBrightness.webp)
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
+	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_center_brightness_selfreturn(real_t _value) const;
 	NAPI real_t get_center_brightness() const;
 
 	/**
@@ -130,7 +134,9 @@ public:
 	 *
 	 * ![](docs/images/classes/SphereDensity.webp)
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
+	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_hd_sphere_selfreturn(bool _value) const;
 	NAPI bool is_hd_sphere() const;
 
 	/**
@@ -138,7 +144,9 @@ public:
 	 *
 	 * ![](docs/images/classes/PlaneSize.webp)
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
+	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_plane_size_selfreturn(real_t _value) const;
 	NAPI real_t get_plane_size() const;
 
 	/**
@@ -151,7 +159,9 @@ public:
 	 * @note
 	 * Objects created for a specific Viewport will use only one camera related to that Viewport for culling.
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_viewport(godot::Viewport * _value) const;
+	Ref<DebugDraw3DScopeConfig> set_viewport(godot::Viewport * _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_viewport_selfreturn(godot::Viewport * _value) const;
 	NAPI godot::Viewport *get_viewport() const;
 
 	/**
@@ -162,7 +172,9 @@ public:
 	 *
 	 * ![](docs/images/classes/NoDepthTest.webp)
 	 */
-	NAPI Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
+	Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
+	/// @private
+	NAPI NSELF_RETURN set_no_depth_test_selfreturn(bool _value) const;
 	NAPI bool is_no_depth_test() const;
 
 	/// @private

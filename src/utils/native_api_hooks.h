@@ -4,3 +4,4 @@
 #define NAPI_CLASS_SINGLETON class
 #define NAPI_CLASS_REF class
 #define NAPI
+#define NSELF_RETURN void

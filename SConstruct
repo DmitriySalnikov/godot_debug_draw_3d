@@ -30,8 +30,8 @@ patches_to_apply = [
 ]
 
 print(
-    f"If you add new source files (e.g. .cpp, .c), do not forget to specify them in '{src_folder}/default_sources.json'."+
-    f"\n\tOr add them to 'setup_defines_and_flags' inside 'SConstruct'."
+    f"If you add new source files (e.g. .cpp, .c), do not forget to specify them in '{src_folder}/default_sources.json'."
+    + f"\n\tOr add them to 'setup_defines_and_flags' inside 'SConstruct'."
 )
 print("To apply git patches, use 'scons apply_patches'.")
 print("To generate native APIs, use 'scons gen_apis'.")
@@ -56,8 +56,20 @@ def setup_options(env: SConsEnvironment, arguments):
     opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
-    opts.Add(BoolVariable("fix_precision_enabled", "Fix precision errors at greater distances, utilizing more CPU resources.\nApplies only in combination with 'precision=double'", True))
-    opts.Add(BoolVariable("shader_world_coords_enabled", "Use world coordinates in shaders, if applicable.\nExpandable meshes become more uniform.\nDisable it for stability at a great distance from the center of the world.", True))
+    opts.Add(
+        BoolVariable(
+            "fix_precision_enabled",
+            "Fix precision errors at greater distances, utilizing more CPU resources.\nApplies only in combination with 'precision=double'",
+            True,
+        )
+    )
+    opts.Add(
+        BoolVariable(
+            "shader_world_coords_enabled",
+            "Use world coordinates in shaders, if applicable.\nExpandable meshes become more uniform.\nDisable it for stability at a great distance from the center of the world.",
+            True,
+        )
+    )
     opts.Add(BoolVariable("lto", "Link-time optimization", False))
 
     opts.Update(env)
@@ -105,7 +117,7 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
 
     if env["tracy_enabled"]:
         env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
-        src_out.append("thirdparty/tracy/public/TracyClient.cpp")
+        src_out.append("utils/TracyClientCustom.cpp")
 
     if env["fix_precision_enabled"]:
         env.Append(CPPDEFINES=["FIX_PRECISION_ENABLED"])
@@ -162,7 +174,12 @@ def apply_patches(target, source, env: SConsEnvironment):
 
 
 def gen_apis(target, source, env: SConsEnvironment, src_out: list = []):
-    return lib_utils_gen_dd3d_api.gen_apis(env, "src/native_api/templates/c_api.cpp", os.path.join(os.path.dirname(env["addon_output_dir"]), "native_api"), src_out)
+    return lib_utils_gen_dd3d_api.gen_apis(
+        env,
+        "src/native_api/templates/c_api.cpp",
+        os.path.join(os.path.dirname(env["addon_output_dir"]), "native_api"),
+        src_out,
+    )
 
 
 def get_android_toolchain() -> str:
@@ -232,9 +249,16 @@ if env["build_cpp_api_tests"]:
     )
     lib_filename = os.path.join(tests_src_folder, "addon_cpp_api_test", "libs", lib_filename + env["SHLIBSUFFIX"])
 
+    additional_src = []
+
+    if env["tracy_enabled"]:
+        # env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
+        additional_src.append("src/utils/TracyClientCustom.cpp")
+
     shbin = env.Default(
         env.SharedLibrary(
             target=env.File(lib_filename),
-            source=lib_utils.get_sources(env.Glob(os.path.join(tests_src_folder, "*.cpp")), "", "test_c_api"),
+            source=lib_utils.get_sources(env.Glob(os.path.join(tests_src_folder, "*.cpp")), "", "test_c_api")
+            + additional_src,
         )
     )

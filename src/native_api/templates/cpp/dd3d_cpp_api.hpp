@@ -19,6 +19,10 @@ __pragma(warning(disable : 4244 26451 26495));
 __pragma(warning(default : 4244 26451 26495));
 #endif
 
+#ifndef ZoneScoped
+#define ZoneScoped
+#endif
+
 struct _DD3D_Loader_ {
 	static constexpr const char *log_prefix = "[DD3D] ";
 #ifndef DD3D_DISABLE_MISMATCH_CHECKS
@@ -32,6 +36,8 @@ struct _DD3D_Loader_ {
 	}
 
 	static godot::Object *get_dd3d() {
+		ZoneScoped;
+
 		godot::Object *&dd3d_c = dd3d_cached();
 		if (!dd3d_c && godot::Engine::get_singleton()->has_singleton("DebugDrawManager")) {
 			godot::Object *dd3d = godot::Engine::get_singleton()->get_singleton("DebugDrawManager");
@@ -56,6 +62,7 @@ struct _DD3D_Loader_ {
 
 	template <typename func>
 	static bool load_function(func &val, const char *name) {
+		ZoneScoped;
 		if (Object *dd3d = get_dd3d(); dd3d) {
 			int64_t api_hash = dd3d->call(get_funcs_hash_name);
 
@@ -86,6 +93,7 @@ struct _DD3D_Loader_ {
 };
 
 #define LOAD_AND_CALL_FUNC_POINTER(_name, ...)              \
+	ZoneScoped;                                             \
 	if (!_name) {                                           \
 		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
 			return;                                         \
@@ -95,6 +103,7 @@ struct _DD3D_Loader_ {
 	}
 
 #define LOAD_AND_CALL_FUNC_POINTER_SELFRET(_name, ...)      \
+	ZoneScoped;                                             \
 	if (!_name) {                                           \
 		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
 			return this;                                    \
@@ -104,6 +113,7 @@ struct _DD3D_Loader_ {
 	}
 
 #define LOAD_AND_CALL_FUNC_POINTER_RET(_name, _def_ret_val, ...) \
+	ZoneScoped;                                                  \
 	if (!_name) {                                                \
 		if (!_DD3D_Loader_::load_function(_name, #_name)) {      \
 			return _def_ret_val;                                 \
@@ -114,6 +124,7 @@ struct _DD3D_Loader_ {
 	return _def_ret_val
 
 #define LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED(_name, _cls, _def_ret_val, ...) \
+	ZoneScoped;                                                                      \
 	if (!_name) {                                                                    \
 		if (!_DD3D_Loader_::load_function(_name, #_name)) {                          \
 			return _def_ret_val;                                                     \

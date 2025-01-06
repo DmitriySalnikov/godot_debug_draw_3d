@@ -104,6 +104,8 @@
 #else
 
 #include "thirdparty/tracy/public/tracy/Tracy.hpp"
+// Undefine `poll` as it may override godot::HTTPClient::poll
+#undef poll
 
 #define ProfiledMutex(type, varname, desc) TracyLockableN(type, varname, desc)
 

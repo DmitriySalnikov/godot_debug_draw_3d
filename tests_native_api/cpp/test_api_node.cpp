@@ -1,7 +1,9 @@
 #include "test_api_node.h"
 
-#include "../../addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp"
 #include "../src/utils/compiler.h"
+#include "../src/utils/profiler.h"
+
+#include "../../addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
@@ -34,6 +36,9 @@ void DD3DTestCppApiNode::_ready() {
 
 float timer_cubes = 0;
 void DD3DTestCppApiNode::_process(double p_delta) {
+	FrameMark;
+	ZoneScoped;
+
 	DebugDraw3D::draw_sphere(Vector3(1, 1, 1), 2, Color(1, 1, 0), 0);
 
 	// TODO 16ms GD
@@ -71,7 +76,7 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	}
 
 	timer_cubes -= p_delta;
-	if (timer_cubes > cubes_max_time){
+	if (timer_cubes > cubes_max_time) {
 		DebugDraw3D::clear_all();
 		timer_cubes = 0;
 	}

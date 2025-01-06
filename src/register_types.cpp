@@ -38,6 +38,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 #if defined(TRACY_DELAYED_INIT) && defined(TRACY_MANUAL_LIFETIME)
 		tracy::StartupProfiler();
+		tracy::GetProfiler().SetProgramName("libdd3d");
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING

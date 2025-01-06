@@ -59,7 +59,8 @@ DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
-		: world_id(std::exchange(other.world_id, 0)) {
+		:
+		world_id(std::exchange(other.world_id, 0)) {
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
 	}
@@ -262,13 +263,11 @@ const std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3D::scoped_config_f
 	LOCK_GUARD(datalock);
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
 
-	const auto &it = cached_scoped_configs.find(thread);
-	if (it != cached_scoped_configs.cend()) {
+	if (const auto &it = cached_scoped_configs.find(thread); it != cached_scoped_configs.cend()) {
 		return it->second;
 	}
 
-	const auto &it_v = scoped_configs.find(thread);
-	if (it_v != scoped_configs.cend()) {
+	if (const auto &it_v = scoped_configs.find(thread); it_v != scoped_configs.cend()) {
 		const auto &cfgs = it_v->second;
 		if (!cfgs.empty()) {
 			DebugDraw3DScopeConfig *tmp = cfgs.back().scfg;
@@ -410,7 +409,6 @@ DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeC
 
 	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
 			dgc_pair != debug_containers.end() && dgc_pair->second.dgcs[dgc_depth]) {
-
 		viewport_to_world_cache[p_dgcd.viewport] = &dgc_pair->second;
 		return dgc_pair->second.dgcs[dgc_depth].get();
 	}
@@ -538,7 +536,8 @@ void DebugDraw3D::_load_materials() {
 		}
 
 		switch (render_mode) {
-			case 0: break;
+			case 0:
+				break;
 			case 1:
 				prefix += "#define FORCED_TRANSPARENT\n";
 				break;
@@ -702,13 +701,15 @@ void DebugDraw3D::clear_all() {
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
 #define GET_PROC_TYPE() (Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)
-#define CHECK_BEFORE_CALL() \
-	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
+#define CHECK_BEFORE_CALL()                          \
+	if (NEED_LEAVE || config->is_freeze_3d_render()) \
+		return;
 
 #define GET_SCOPED_CFG_AND_DGC()                     \
 	auto scfg = scoped_config_for_current_thread();  \
 	auto dgc = get_debug_container(scfg->dcd, true); \
-	if (!dgc) return
+	if (!dgc)                                        \
+	return
 
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 #define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())
@@ -1281,9 +1282,7 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_s
 
 #undef MAX_SUBDIVISIONS
 
-	Vector3 origin = is_centered ?
-							 transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 :
-							 transform.origin;
+	Vector3 origin = is_centered ? transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 : transform.origin;
 
 	std::vector<Vector3> lines;
 	for (int x = 0; x < subdivision.x + 1; x++) {

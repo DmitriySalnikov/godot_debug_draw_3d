@@ -14,20 +14,16 @@ using namespace godot;
 
 namespace NATIVE_API {
 
-void *test_api_func(const int &i, const Vector2 &v, const float *f, float const *ff = nullptr) {
-	UtilityFunctions::print("WTF WOW ", i, v);
-	return nullptr;
-}
-
 // GENERATOR_DD3D_FUNCTIONS_DEFINES
 
 Dictionary get_functions() {
+	ZoneScoped;
+	
 	static Dictionary result;
 	if (result.is_empty()) {
 		Dictionary functions;
 #define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t) & _name, "signature", DD3DShared::get_function_signature(&_name))
 
-		ADD_FUNC(test_api_func);
 		// GENERATOR_DD3D_FUNCTIONS_REGISTERS
 
 #undef ADD_FUNC

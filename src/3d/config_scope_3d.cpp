@@ -34,8 +34,12 @@ void DebugDraw3DScopeConfig::_manual_unregister() {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
-	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
+	set_thickness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_thickness_selfreturn(real_t _value) const {
+	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
 }
 
 real_t DebugDraw3DScopeConfig::get_thickness() const {
@@ -43,8 +47,12 @@ real_t DebugDraw3DScopeConfig::get_thickness() const {
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t _value) const {
-	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
+	set_center_brightness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_center_brightness_selfreturn(real_t _value) const {
+	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
 }
 
 real_t DebugDraw3DScopeConfig::get_center_brightness() const {
@@ -56,6 +64,10 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool _value) c
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_hd_sphere_selfreturn(bool _value) const {
+	data->hd_sphere = _value;
+}
+
 bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 	return data->hd_sphere;
 }
@@ -63,6 +75,10 @@ bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value) const {
 	data->plane_size = _value;
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_plane_size_selfreturn(real_t _value) const {
+	data->plane_size = _value;
 }
 
 real_t DebugDraw3DScopeConfig::get_plane_size() const {
@@ -74,6 +90,10 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_valu
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_viewport_selfreturn(godot::Viewport *_value) const {
+	data->dcd.viewport = _value;
+}
+
 Viewport *DebugDraw3DScopeConfig::get_viewport() const {
 	return data->dcd.viewport;
 }
@@ -81,6 +101,10 @@ Viewport *DebugDraw3DScopeConfig::get_viewport() const {
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(bool _value) const {
 	data->dcd.no_depth_test = _value;
 	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_no_depth_test_selfreturn(bool _value) const {
+	data->dcd.no_depth_test = _value;
 }
 
 bool DebugDraw3DScopeConfig::is_no_depth_test() const {

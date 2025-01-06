@@ -70,12 +70,12 @@ def get_api_functions(headers: list) -> dict:
 
             if line.startswith("NAPI "):
                 func_name_match = re.search(r"\b(\w+)\s*\(", line)
-                fun_name = func_name_match.group(1).strip()
-                ret_type = line[: line.index(fun_name)].replace("NAPI ", "").strip()
+                func_name = func_name_match.group(1).strip()
+                ret_type = line[: line.index(func_name)].replace("NAPI ", "").strip()
 
                 is_self_return = False
                 if is_refcounted:
-                    if ret_type == f"Ref<{current_class}>":
+                    if ret_type == "NSELF_RETURN" or ret_type == f"Ref<{current_class}>":
                         ret_type = "void"
                         is_self_return = True
 
@@ -134,10 +134,10 @@ def get_api_functions(headers: list) -> dict:
                     "return": ret_type,
                     "self_return": is_self_return,
                     "args": args_dict,
-                    "name": fun_name,
+                    "name": func_name,
                     "docs": docs,
                 }
-                functions[f"{current_class}_{fun_name}"] = fun_dict
+                functions[f"{current_class}_{func_name}"] = fun_dict
     return classes
 
 
@@ -161,18 +161,21 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
         new_funcs.append(f"static std::unordered_set<{cls}_NAPIWrapper*> {cls}_NAPIWrapper_storage;")
         new_funcs.append("")
         new_funcs.append(f"static void* {cls}_create() {{")
+        new_funcs.append("\tZoneScoped;")
         new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};")
         new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
         new_funcs.append("\treturn inst;")
         new_funcs.append("};")
         new_funcs.append("")
         new_funcs.append(f"static void* {cls}_create_from_ref(Ref<{cls}> ref) {{")
+        new_funcs.append("\tZoneScoped;")
         new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{ref}};")
         new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
         new_funcs.append("\treturn inst;")
         new_funcs.append("};")
         new_funcs.append("")
         new_funcs.append(f"static void {cls}_destroy(void *inst) {{")
+        new_funcs.append("\tZoneScoped;")
         new_funcs.append(
             f"\tif (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst)); it != {cls}_NAPIWrapper_storage.end()){{"
         )
@@ -211,9 +214,12 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
 
             args = func["args"]
 
+            # func define
+            new_func_define_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args])
             new_funcs.append(
-                f'static {"void *" if is_ret_custom_ref else ret_type} {func_name}({", ".join([f'{a["type"]} {a["name"]}' for a in args])}) {{'
+                f'static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
             )
+            new_funcs.append("\tZoneScoped;")
 
             if is_singleton:
                 if ret_type != "void":
@@ -364,13 +370,11 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             # Name
             if cls_is_class and not is_private:
-                new_lines.append(
-                    f'{cls_indent}{get_ref_to_native_name(ret)} {func_orig_name}({", ".join([f'{a["type"]} {a["name"]}' for a in args[1:]])}) {{'
-                )
+                inner_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args[1:]])
+                new_lines.append(f"{cls_indent}{get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{")
             else:
-                new_lines.append(
-                    f'{cls_indent}static {get_ref_to_native_name(ret)} {func_orig_name}({", ".join([f'{a["type"]} {a["name"]}' for a in args])}) {{'
-                )
+                inner_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args])
+                new_lines.append(f"{cls_indent}static {get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{")
 
             # Func pointer
             new_lines.append(

@@ -7,10 +7,10 @@
             "args": [
                 "target=editor",
                 "debug_symbols=yes",
-                "dev_build=yes",
-                "lto=yes",
+                //"dev_build=yes",
+                //"lto=yes",
                 //"telemetry_enabled=yes",
-                "tracy_enabled=yes",
+                //"tracy_enabled=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -34,7 +34,7 @@
                 "lto=yes",
                 //"telemetry_enabled=yes",
                 "precision=double",
-                "tracy_enabled=yes",
+                //"tracy_enabled=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -57,8 +57,9 @@
                 "custom_godotcpp_suffix=.test_napi",
                 "target=editor",
                 "debug_symbols=yes",
-                "dev_build=yes",
-                "tracy_enabled=yes",
+                //"dev_build=yes",
+                //"lto=yes",
+                //"tracy_enabled=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
