@@ -11,8 +11,6 @@ var hierarchy =
       [ "DebugDraw2DGraph", "classDebugDraw2DGraph.html", [
         [ "DebugDraw2DFPSGraph", "classDebugDraw2DFPSGraph.html", null ]
       ] ],
-      [ "DebugDraw2DStats", "classDebugDraw2DStats.html", null ],
-      [ "DebugDraw3DConfig", "classDebugDraw3DConfig.html", null ],
-      [ "DebugDraw3DStats", "classDebugDraw3DStats.html", null ]
+      [ "DebugDraw2DStats", "classDebugDraw2DStats.html", null ]
     ] ]
 ];
