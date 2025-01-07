@@ -114,7 +114,7 @@ public:
  * Due to the way Godot registers this addon, it is not possible to use the `draw_` methods
  * in the first few frames immediately after the project is launched.
  */
-NAPI_CLASS_SINGLETON DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
+NAPI_CLASS_SINGLETON class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, DebugDraw3DScopeConfig::Data> {
 	GDCLASS(DebugDraw3D, Object)
 
 	friend DebugDrawManager;
@@ -199,14 +199,14 @@ private:
 	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
 
 	// Inherited via IScopeStorage
-	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig * p_cfg) override;
+	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
 	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugGeometryContainer *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
 	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id);
-	Viewport *_get_root_world_viewport(Viewport * p_vp);
+	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
@@ -221,7 +221,7 @@ private:
 
 #endif
 
-	void init(DebugDrawManager * p_root);
+	void init(DebugDrawManager *p_root);
 
 	void set_custom_editor_viewport(std::vector<SubViewport *> p_viewports);
 	std::vector<SubViewport *> get_custom_editor_viewports();
@@ -279,11 +279,11 @@ public:
 	/**
 	 * Set the configuration global for everything in DebugDraw3D.
 	 */
-	void set_config(Ref<DebugDraw3DConfig> cfg);
+	NAPI void set_config(Ref<DebugDraw3DConfig> cfg);
 	/**
 	 * Get the DebugDraw3DConfig.
 	 */
-	Ref<DebugDraw3DConfig> get_config() const;
+	NAPI Ref<DebugDraw3DConfig> get_config() const;
 
 #pragma endregion // Configs
 
@@ -317,7 +317,7 @@ public:
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw3DStats> get_render_stats_for_world(godot::Viewport * viewport);
+	Ref<DebugDraw3DStats> get_render_stats_for_world(godot::Viewport *viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL

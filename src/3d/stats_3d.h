@@ -22,7 +22,7 @@ using namespace godot;
  *
  * `total_time_spent_usec` reports the time in microseconds spent to process everything and display the geometry on the screen.
  */
-NAPI_CLASS_REF DebugDraw3DStats : public RefCounted {
+NAPI_CLASS_REF class DebugDraw3DStats : public RefCounted {
 	GDCLASS(DebugDraw3DStats, RefCounted)
 
 protected:

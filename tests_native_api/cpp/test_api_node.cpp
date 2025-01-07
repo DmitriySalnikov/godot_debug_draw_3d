@@ -31,7 +31,24 @@ DD3DTestCppApiNode::DD3DTestCppApiNode() {
 }
 
 void DD3DTestCppApiNode::_ready() {
+	// Some Ref tests
 	DebugDraw3DScopeConfig();
+
+	auto cfg = DebugDraw3D::get_config();
+	UtilityFunctions::print("Frustum scale: ", cfg->get_frustum_length_scale(), ", Visible bounds: ", cfg->is_visible_instance_bounds());
+
+	cfg = std::make_shared<DebugDraw3DConfig>(false);
+	DebugDraw3D::set_config(cfg);
+
+	cfg = std::make_shared<DebugDraw3DConfig>();
+	cfg->set_visible_instance_bounds(true);
+	DebugDraw3D::set_config(cfg);
+	auto cfg2 = DebugDraw3D::get_config();
+	DEV_ASSERT(cfg2->is_visible_instance_bounds() == true);
+	UtilityFunctions::print("New Visible bounds: ", cfg2->is_visible_instance_bounds());
+	cfg2->set_visible_instance_bounds(false);
+	DEV_ASSERT(cfg2->is_visible_instance_bounds() == false);
+	UtilityFunctions::print("New Visible bounds: ", cfg2->is_visible_instance_bounds());
 }
 
 float timer_cubes = 0;
@@ -41,7 +58,8 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 
 	DebugDraw3D::draw_sphere(Vector3(1, 1, 1), 2, Color(1, 1, 0), 0);
 
-	// TODO 16ms GD
+	// 16ms GD
+	// 2.5ms cpp
 	// Lots of boxes to check performance..
 	int x_size = 50;
 	int y_size = 50;
@@ -50,7 +68,8 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	float cubes_max_time = 1.25;
 	auto cfg = DebugDraw3D::new_scoped_config();
 
-	// TODO 2060ms GD
+	// 2060ms GD
+	// 430ms cpp
 	if (one_million_boxes) {
 		x_size = 100;
 		y_size = 100;

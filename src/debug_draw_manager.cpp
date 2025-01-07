@@ -131,6 +131,9 @@ DebugDrawManager::~DebugDrawManager() {
 #ifdef DEV_ENABLED
 	memdelete(default_arg_obj);
 #endif
+#ifdef NATIVE_API_ENABLED
+	NATIVE_API::clear_orphaned_refs();
+#endif
 }
 
 #ifdef NATIVE_API_ENABLED

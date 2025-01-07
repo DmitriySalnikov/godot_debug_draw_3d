@@ -47,7 +47,7 @@ def get_api_functions(headers: list) -> dict:
                 # replaces images with placeholder
                 docs = [re.sub(r"(\!\[.*\]\(.*\))", "[THERE WAS AN IMAGE]", line) for line in docs]
 
-            class_prefixes = ["NAPI_CLASS ", "NAPI_CLASS_SINGLETON ", "NAPI_CLASS_REF "]
+            class_prefixes = ["NAPI_CLASS class ", "NAPI_CLASS_SINGLETON class ", "NAPI_CLASS_REF class "]
             class_prefix = ""
             for p in class_prefixes:
                 if line.startswith(p):
@@ -144,10 +144,12 @@ def get_api_functions(headers: list) -> dict:
 def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> dict:
     # TODO load all headers
     # and better to load all processed headers
-    classes = get_api_functions(["src/3d/config_scope_3d.h", "src/3d/debug_draw_3d.h"])
+    header_files = ["src/3d/config_3d.h", "src/3d/config_scope_3d.h", "src/3d/debug_draw_3d.h"]
+    classes = get_api_functions(header_files)
 
     new_funcs = []
     new_func_regs = []
+    new_ref_clears = []
 
     for cls in classes:
         is_refcounted = classes[cls]["type"] == "refcounted"
@@ -163,6 +165,13 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
         new_funcs.append(f"static void* {cls}_create() {{")
         new_funcs.append("\tZoneScoped;")
         new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};")
+        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
+        new_funcs.append("\treturn inst;")
+        new_funcs.append("};")
+        new_funcs.append("")
+        new_funcs.append(f"static void* {cls}_create_nullptr() {{")
+        new_funcs.append("\tZoneScoped;")
+        new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{}};")
         new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
         new_funcs.append("\treturn inst;")
         new_funcs.append("};")
@@ -186,7 +195,10 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
         new_funcs.append("")
 
         new_func_regs.append(f"\t\tADD_FUNC({cls}_create);")
+        new_func_regs.append(f"\t\tADD_FUNC({cls}_create_nullptr);")
         new_func_regs.append(f"\t\tADD_FUNC({cls}_destroy);")
+
+        new_ref_clears.append(f"\tCLEAR_REFS({cls}, {cls}_NAPIWrapper_storage);")
 
     for cls in classes:
         class_type = classes[cls]["type"]
@@ -214,36 +226,48 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
 
             args = func["args"]
 
+            def process_arg_defines(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+                if is_ref_in_api(type):
+                    return f"void *{name}"
+                return f"{type} {name}"
+
+            def process_arg_calls(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+                if is_ref_in_api(type):
+                    return f"static_cast<{get_ref_class_name(type)}_NAPIWrapper*>({name})->ref"
+                return f"{name}"
+
             # func define
-            new_func_define_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args])
+            new_func_define_args = ", ".join([process_arg_defines(a) for a in args])
             new_funcs.append(
                 f'static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
             )
             new_funcs.append("\tZoneScoped;")
 
             if is_singleton:
+                call_args = ", ".join([process_arg_calls(a) for a in args])
+
                 if ret_type != "void":
                     if is_ret_custom_ref:
                         new_funcs.append(
-                            f'\treturn {get_ref_class_name(ret_type)}_create_from_ref({cls}::get_singleton()->{func_orig_name}({", ".join([a["name"] for a in args])}));'
+                            f"\treturn {get_ref_class_name(ret_type)}_create_from_ref({cls}::get_singleton()->{func_orig_name}({call_args}));"
                         )
                     else:
-                        new_funcs.append(
-                            f'\treturn {cls}::get_singleton()->{func_orig_name}({", ".join([a["name"] for a in args])});'
-                        )
+                        new_funcs.append(f"\treturn {cls}::get_singleton()->{func_orig_name}({call_args});")
                 else:
-                    new_funcs.append(
-                        f'\t{cls}::get_singleton()->{func_orig_name}({", ".join([a["name"] for a in args])});'
-                    )
+                    new_funcs.append(f"\t{cls}::get_singleton()->{func_orig_name}({call_args});")
             else:
+                call_args = ", ".join([process_arg_calls(a) for a in args[1:]])
+
                 if ret_type != "void":
                     new_funcs.append(
-                        f'\treturn static_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({", ".join([a["name"] for a in args[1:]])});'
+                        f"\treturn static_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({call_args});"
                     )
                 else:
-                    new_funcs.append(
-                        f'\tstatic_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({", ".join([a["name"] for a in args[1:]])});'
-                    )
+                    new_funcs.append(f"\tstatic_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({call_args});")
             new_funcs.append("}")
             new_funcs.append("")
 
@@ -252,8 +276,14 @@ def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> 
     c_api_temp_data = lib_utils.read_all_text(c_api_template)
     c_api_lines = c_api_temp_data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
 
+    insert_lines_at_mark(
+        c_api_lines,
+        "// GENERATOR_DD3D_API_INCLUDES",
+        [f'#include "{file.replace("src/","")}"' for file in header_files],
+    )
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_DEFINES", new_funcs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTERS", new_func_regs)
+    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
     c_api_file_name, c_api_file_ext = os.path.splitext(os.path.basename(c_api_template))
 
     c_api_gen_path = os.path.join("gen", f"{c_api_file_name}.gen{c_api_file_ext}")
@@ -289,12 +319,12 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             new_lines.append(f"{cls_indent}{cls}(void *inst) :")
             new_lines.append(f"{cls_indent}\t\tinst(inst) {{}}")
             new_lines.append("")
-            new_lines.append(f"{cls_indent}{cls}() :")
-            new_lines.append(f"{cls_indent}\t\tinst(create()) {{}}")
+            new_lines.append(f"{cls_indent}{cls}(bool instantiate = true) :")
+            new_lines.append(f"{cls_indent}\t\tinst(instantiate ? create() : create_nullptr()) {{}}")
             new_lines.append("")
-            new_lines.append(f"{cls_indent}~{cls}() {{")
-            new_lines.append(f"{cls_indent}\tdestroy(inst);")
-            new_lines.append(f"{cls_indent}}}")
+            new_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst); }}")
+            new_lines.append("")
+            new_lines.append(f"{cls_indent}operator void *() const {{ return inst; }}")
             new_lines.append("")
             namespaces[cls] += new_lines
 
@@ -303,6 +333,15 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 "self_return": False,
                 "args": [],
                 "name": "create",
+                "docs": [],
+                "private": True,
+            }
+
+            functions[f"{cls}_create_nullptr"] = {
+                "return": "void *",
+                "self_return": False,
+                "args": [],
+                "name": "create_nullptr",
                 "docs": [],
                 "private": True,
             }
@@ -321,6 +360,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 "private": True,
             }
 
+        prev_private_state = False
         for func_name in functions:
             func: dict = functions[func_name]
             func_orig_name = func["name"]
@@ -358,31 +398,63 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     return f"std::shared_ptr<{get_ref_class_name(ret_type)}>"
                 return ret_type
 
+            def process_arg_defines(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+                if is_ref_in_api(type):
+                    return f"std::shared_ptr<{get_ref_class_name(type)}>({name})"
+                return f"{type} {name}"
+
+            def process_arg_ptr_defines(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+                if is_ref_in_api(type):
+                    return f"void *"
+                return f"{type}"
+
+            def process_arg_calls(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+                if is_ref_in_api(type):
+                    return f"*{name}"
+                return f"{name}"
+
+            new_lines = []
+
+            if prev_private_state != is_private:
+                prev_private_state = is_private
+                if is_private:
+                    new_lines.append("private:")
+                else:
+                    new_lines.append("public:")
+
             docs = func["docs"]
             if len(docs):
                 docs = [cls_indent + " * " + line for line in docs]
                 docs.insert(0, f"{cls_indent}/**")
                 docs.insert(len(docs), f"{cls_indent} */")
 
-            new_lines = docs
-            if is_private:
-                new_lines.append("private:")
+            new_lines += docs
 
             # Name
             if cls_is_class and not is_private:
-                inner_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args[1:]])
-                new_lines.append(f"{cls_indent}{get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{")
+                inner_args = ", ".join([process_arg_defines(a) for a in args[1:]])
+                new_lines.append(
+                    f'{cls_indent}{get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                )
             else:
-                inner_args = ", ".join([f'{a["type"]} {a["name"]}' for a in args])
-                new_lines.append(f"{cls_indent}static {get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{")
+                inner_args = ", ".join([process_arg_defines(a) for a in args])
+                new_lines.append(
+                    f'{cls_indent}static {get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                )
 
             # Func pointer
             new_lines.append(
-                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret)}(*{func_name})({", ".join([a["type"] for a in args])}) = nullptr;'
+                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret)}(*{func_name})({", ".join([process_arg_ptr_defines(a) for a in args])}) = nullptr;'
             )
 
             def_ret_val = get_default_ret_val(ret)
-            call_args = ", ".join([a["name"] for a in args])
+            call_args = ", ".join([process_arg_calls(a) for a in args])
 
             if ret != "void" and not self_ret:
                 if is_ref_in_api(ret):
@@ -400,9 +472,6 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 else:
                     new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER({func_name}, {call_args});")
             new_lines.append(f"{cls_indent}}}")
-
-            if is_private:
-                new_lines.append("public:")
 
             new_lines.append("")
 

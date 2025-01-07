@@ -28,7 +28,7 @@ void fragment() {
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 	NORMAL = ALBEDO;
-	
+
 	#if defined(FORCED_TRANSPARENT)
 	ALPHA = ALPHA;
 	#endif

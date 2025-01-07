@@ -2,9 +2,11 @@
 
 // This file is generated!
 //
+// To create new instances of Ref<T> use std::make_shared<T>, e.g.:
+// auto cfg = std::make_shared<DebugDraw3DConfig>();
+//
 // TODO reverse:
 // Define DD3D_DISABLE_MISMATCH_CHECKS to disable signature mismatch checking and disable method existence checking.
-
 #include "c_api_shared.hpp"
 
 #if _MSC_VER
@@ -25,10 +27,8 @@ __pragma(warning(default : 4244 26451 26495));
 
 struct _DD3D_Loader_ {
 	static constexpr const char *log_prefix = "[DD3D] ";
-#ifndef DD3D_DISABLE_MISMATCH_CHECKS
 	static constexpr const char *get_funcs_hash_name = "_get_native_functions_hash";
 	static constexpr const char *get_funcs_name = "_get_native_functions";
-#endif
 
 	static godot::Object *&dd3d_cached() {
 		static godot::Object *dd3d = nullptr;
@@ -98,7 +98,8 @@ struct _DD3D_Loader_ {
 		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
 			return;                                         \
 		}                                                   \
-	} else {                                                \
+	}                                                       \
+	if (_name) {                                            \
 		_name(__VA_ARGS__);                                 \
 	}
 
@@ -108,7 +109,8 @@ struct _DD3D_Loader_ {
 		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
 			return this;                                    \
 		}                                                   \
-	} else {                                                \
+	}                                                       \
+	if (_name) {                                            \
 		_name(__VA_ARGS__);                                 \
 	}
 
@@ -118,7 +120,8 @@ struct _DD3D_Loader_ {
 		if (!_DD3D_Loader_::load_function(_name, #_name)) {      \
 			return _def_ret_val;                                 \
 		}                                                        \
-	} else {                                                     \
+	}                                                            \
+	if (_name) {                                                 \
 		return _name(__VA_ARGS__);                               \
 	}                                                            \
 	return _def_ret_val
@@ -129,7 +132,8 @@ struct _DD3D_Loader_ {
 		if (!_DD3D_Loader_::load_function(_name, #_name)) {                          \
 			return _def_ret_val;                                                     \
 		}                                                                            \
-	} else {                                                                         \
+	}                                                                                \
+	if (_name) {                                                                     \
 		return std::make_shared<_cls>(_name(__VA_ARGS__));                           \
 	}                                                                                \
 	return _def_ret_val

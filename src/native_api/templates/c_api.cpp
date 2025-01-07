@@ -5,10 +5,7 @@
 #include "native_api/c_api_shared.hpp"
 #include "utils/utils.h"
 
-#include "2d/debug_draw_2d.h"
-#include "3d/config_scope_3d.h"
-#include "3d/debug_draw_3d.h"
-#include "debug_draw_manager.h"
+// GENERATOR_DD3D_API_INCLUDES
 
 using namespace godot;
 
@@ -18,7 +15,7 @@ namespace NATIVE_API {
 
 Dictionary get_functions() {
 	ZoneScoped;
-	
+
 	static Dictionary result;
 	if (result.is_empty()) {
 		Dictionary functions;
@@ -32,6 +29,22 @@ Dictionary get_functions() {
 		result["functions"] = functions;
 	}
 	return result;
+}
+
+void clear_orphaned_refs() {
+	ZoneScoped;
+	
+#define CLEAR_REFS(_class, _name)                                                              \
+	if (!_name.empty())                                                                        \
+		WARN_PRINT(#_class ": Not all References were cleared before DebugDraw3D shut down."); \
+	for (const auto &i : _name) {                                                              \
+		delete i;                                                                              \
+	}                                                                                          \
+	_name.clear();
+
+	// GENERATOR_DD3D_REFS_CLEAR
+
+#undef CLEAR_REFS
 }
 } // namespace NATIVE_API
 

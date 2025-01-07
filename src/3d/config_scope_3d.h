@@ -56,7 +56,7 @@ using namespace godot;
  *     DebugDraw3D.DrawCameraFrustum(dCamera, Colors.DarkOrange);
  * ```
  */
-NAPI_CLASS_REF DebugDraw3DScopeConfig : public RefCounted {
+NAPI_CLASS_REF class DebugDraw3DScopeConfig : public RefCounted {
 	GDCLASS(DebugDraw3DScopeConfig, RefCounted)
 
 protected:
