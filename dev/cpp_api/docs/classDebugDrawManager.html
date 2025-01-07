@@ -130,7 +130,7 @@ $(function(){initNavTree('classDebugDrawManager.html',''); initResizable(); });
 </div><!--header-->
 <div class="contents">
 
-<p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and DebugDraw3D.  
+<p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a>.  
  <a href="#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="debug__draw__manager_8h_source.html">debug_draw_manager.h</a>&gt;</code></p>
@@ -156,13 +156,13 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:acad2fdc13f2c2f4c991bef6a58953345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and DebugDraw3D. </p>
+<div class="textblock"><p>The main singleton class that handles <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> and <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a>. </p>
 <p>Several additional settings can be found in the project settings.</p>
 <dl class="section note"><dt>Note</dt><dd>The following settings require a restart.</dd></dl>
 <p><code>debug_draw_3d/settings/initial_debug_state</code> sets the initial debugging state.</p>
 <p><code>debug_draw_3d/settings/common/DebugDrawManager_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDrawManager.html" title="The main singleton class that handles DebugDraw2D and DebugDraw3D.">DebugDrawManager</a> to be registered as additional singletons.</p>
 <p><code>debug_draw_3d/settings/common/DebugDraw2D_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDraw2D.html" title="Singleton class for calling debugging 2D methods.">DebugDraw2D</a> to be registered as additional singletons.</p>
-<p><code>debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases</code> sets aliases for DebugDraw3D to be registered as additional singletons.</p>
+<p><code>debug_draw_3d/settings/common/DebugDraw3D_singleton_aliases</code> sets aliases for <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a> to be registered as additional singletons.</p>
 <p>Using these aliases you can reference singletons with shorter words:</p>
 <div class="fragment"><div class="line">var _s = Dbg3.new_scoped_config().set_thickness(0.025).set_center_brightness(0.7)</div>
 <div class="line">Dbg3.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)</div>
