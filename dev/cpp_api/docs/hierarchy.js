@@ -12,9 +12,6 @@ var hierarchy =
     ] ],
     [ "RefCounted", null, [
       [ "DebugDraw2DConfig", "classDebugDraw2DConfig.html", null ],
-      [ "DebugDraw2DGraph", "classDebugDraw2DGraph.html", [
-        [ "DebugDraw2DFPSGraph", "classDebugDraw2DFPSGraph.html", null ]
-      ] ],
       [ "DebugDraw2DStats", "classDebugDraw2DStats.html", null ],
       [ "DebugDraw3DConfig", "classDebugDraw3DConfig.html", null ],
       [ "DebugDraw3DScopeConfig", "classDebugDraw3DScopeConfig.html", null ],

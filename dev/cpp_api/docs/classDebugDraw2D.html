@@ -171,20 +171,6 @@ Control *&#160;</td><td class="memItemRight" valign="bottom"><b>get_custom_canva
 <tr class="separator:abf06cb513639049d9097f4d08684c387"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aac2a6cee303adf72c169ea53c87438a6" id="r_aac2a6cee303adf72c169ea53c87438a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac2a6cee303adf72c169ea53c87438a6">clear_texts</a> ()</td></tr>
 <tr class="separator:aac2a6cee303adf72c169ea53c87438a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb3dc171efb9f476392bc56021b3a177" id="r_abb3dc171efb9f476392bc56021b3a177"><td class="memItemLeft" align="right" valign="top">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abb3dc171efb9f476392bc56021b3a177">create_graph</a> (const StringName &amp;title)</td></tr>
-<tr class="separator:abb3dc171efb9f476392bc56021b3a177"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a12fdea4358751151bc6ebb32003f417e" id="r_a12fdea4358751151bc6ebb32003f417e"><td class="memItemLeft" align="right" valign="top">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a12fdea4358751151bc6ebb32003f417e">create_fps_graph</a> (const StringName &amp;title)</td></tr>
-<tr class="separator:a12fdea4358751151bc6ebb32003f417e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa494f3f100af41ab0a66d8df3e777fef" id="r_aa494f3f100af41ab0a66d8df3e777fef"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa494f3f100af41ab0a66d8df3e777fef">graph_update_data</a> (const StringName &amp;title, real_t data)</td></tr>
-<tr class="separator:aa494f3f100af41ab0a66d8df3e777fef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa3fd46e6ca0ac70d0780878b27102ea4" id="r_aa3fd46e6ca0ac70d0780878b27102ea4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa3fd46e6ca0ac70d0780878b27102ea4">remove_graph</a> (const StringName &amp;title)</td></tr>
-<tr class="separator:aa3fd46e6ca0ac70d0780878b27102ea4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8207f139e78b221bd65316ff07d3d71f" id="r_a8207f139e78b221bd65316ff07d3d71f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8207f139e78b221bd65316ff07d3d71f">clear_graphs</a> ()</td></tr>
-<tr class="separator:a8207f139e78b221bd65316ff07d3d71f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8618e2dcf355bea9ab395ef8d0ce1fd5" id="r_a8618e2dcf355bea9ab395ef8d0ce1fd5"><td class="memItemLeft" align="right" valign="top">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8618e2dcf355bea9ab395ef8d0ce1fd5">get_graph</a> (const StringName &amp;title)</td></tr>
-<tr class="separator:a8618e2dcf355bea9ab395ef8d0ce1fd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae408480bba044e6ca890dc722924bf29" id="r_ae408480bba044e6ca890dc722924bf29"><td class="memItemLeft" align="right" valign="top">PackedStringArray&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae408480bba044e6ca890dc722924bf29">get_graph_names</a> ()</td></tr>
-<tr class="separator:ae408480bba044e6ca890dc722924bf29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -193,7 +179,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Singleton class for calling debugging 2D methods. </p>
-<p>Currently, this class supports drawing an overlay with text and graphs. </p>
+<p>Currently, this class supports drawing an overlay with text. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac428fc3907d0db39a3cfb4c24390040d" name="ac428fc3907d0db39a3cfb4c24390040d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac428fc3907d0db39a3cfb4c24390040d">&#9670;&#160;</a></span>get_singleton()</h2>
@@ -483,164 +469,6 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Clear all text </p>
-
-</div>
-</div>
-<a id="abb3dc171efb9f476392bc56021b3a177" name="abb3dc171efb9f476392bc56021b3a177"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb3dc171efb9f476392bc56021b3a177">&#9670;&#160;</a></span>create_graph()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt; DebugDraw2D::create_graph </td>
-          <td>(</td>
-          <td class="paramtype">const StringName &amp;</td>          <td class="paramname"><span class="paramname"><em>title</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Create a new graph for the custom data.</p>
-<p>Use <a class="el" href="#aa494f3f100af41ab0a66d8df3e777fef">DebugDraw2D.graph_update_data</a> to update the values.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">title</td><td>Title of the graph </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a12fdea4358751151bc6ebb32003f417e" name="a12fdea4358751151bc6ebb32003f417e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a12fdea4358751151bc6ebb32003f417e">&#9670;&#160;</a></span>create_fps_graph()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt; DebugDraw2D::create_fps_graph </td>
-          <td>(</td>
-          <td class="paramtype">const StringName &amp;</td>          <td class="paramname"><span class="paramname"><em>title</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Create a new graph with FPS that will be automatically updated. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">title</td><td>Title of the graph </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa494f3f100af41ab0a66d8df3e777fef" name="aa494f3f100af41ab0a66d8df3e777fef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa494f3f100af41ab0a66d8df3e777fef">&#9670;&#160;</a></span>graph_update_data()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void DebugDraw2D::graph_update_data </td>
-          <td>(</td>
-          <td class="paramtype">const StringName &amp;</td>          <td class="paramname"><span class="paramname"><em>title</em>, </span></td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real_t</td>          <td class="paramname"><span class="paramname"><em>data</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Update custom graph data </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">title</td><td>Title of the graph </td></tr>
-    <tr><td class="paramname">data</td><td>New data </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa3fd46e6ca0ac70d0780878b27102ea4" name="aa3fd46e6ca0ac70d0780878b27102ea4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa3fd46e6ca0ac70d0780878b27102ea4">&#9670;&#160;</a></span>remove_graph()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void DebugDraw2D::remove_graph </td>
-          <td>(</td>
-          <td class="paramtype">const StringName &amp;</td>          <td class="paramname"><span class="paramname"><em>title</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Delete a graph by its title </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">title</td><td>Title of the graph </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a8207f139e78b221bd65316ff07d3d71f" name="a8207f139e78b221bd65316ff07d3d71f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8207f139e78b221bd65316ff07d3d71f">&#9670;&#160;</a></span>clear_graphs()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void DebugDraw2D::clear_graphs </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Remove all graphs </p>
-
-</div>
-</div>
-<a id="a8618e2dcf355bea9ab395ef8d0ce1fd5" name="a8618e2dcf355bea9ab395ef8d0ce1fd5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8618e2dcf355bea9ab395ef8d0ce1fd5">&#9670;&#160;</a></span>get_graph()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">Ref&lt; <a class="el" href="classDebugDraw2DGraph.html">DebugDraw2DGraph</a> &gt; DebugDraw2D::get_graph </td>
-          <td>(</td>
-          <td class="paramtype">const StringName &amp;</td>          <td class="paramname"><span class="paramname"><em>title</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get the configuration for a graph. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">title</td><td>Title of the graph </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae408480bba044e6ca890dc722924bf29" name="ae408480bba044e6ca890dc722924bf29"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae408480bba044e6ca890dc722924bf29">&#9670;&#160;</a></span>get_graph_names()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">PackedStringArray DebugDraw2D::get_graph_names </td>
-          <td>(</td>
-          <td class="paramname"><span class="paramname"></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Get a list of titles of all existing graphs. </p>
 
 </div>
 </div>
