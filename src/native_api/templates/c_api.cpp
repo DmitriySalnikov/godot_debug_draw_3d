@@ -33,13 +33,13 @@ Dictionary get_functions() {
 
 void clear_orphaned_refs() {
 	ZoneScoped;
-	
-#define CLEAR_REFS(_class, _name)                                                              \
-	if (!_name.empty())                                                                        \
-		WARN_PRINT(#_class ": Not all References were cleared before DebugDraw3D shut down."); \
-	for (const auto &i : _name) {                                                              \
-		delete i;                                                                              \
-	}                                                                                          \
+
+#define CLEAR_REFS(_class, _name)                                                                               \
+	if (!_name.empty())                                                                                         \
+		WARN_PRINT(godot::String(#_class) + ": Not all References were cleared before DebugDraw3D shut down."); \
+	for (const auto &i : _name) {                                                                               \
+		delete i;                                                                                               \
+	}                                                                                                           \
 	_name.clear();
 
 	// GENERATOR_DD3D_REFS_CLEAR

@@ -138,6 +138,8 @@ struct _DD3D_Loader_ {
 	}                                                                                \
 	return _def_ret_val
 
+// GENERATOR_DD3D_API_FORWARD_DECLARATIONS
+
 // Start of the generated API
 // GENERATOR_DD3D_API_FUNCTIONS
 // End of the generated API

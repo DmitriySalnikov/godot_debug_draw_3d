@@ -310,14 +310,14 @@ public:
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw3DStats> get_render_stats();
+	NAPI Ref<DebugDraw3DStats> get_render_stats();
 
 	/**
 	 * Returns an instance of DebugDraw3DStats with the current statistics for the World3D of the Viewport.
 	 *
 	 * Some data can be delayed by 1 frame.
 	 */
-	Ref<DebugDraw3DStats> get_render_stats_for_world(godot::Viewport *viewport);
+	NAPI Ref<DebugDraw3DStats> get_render_stats_for_world(godot::Viewport *viewport);
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define FAKE_FUNC_IMPL

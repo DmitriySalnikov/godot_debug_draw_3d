@@ -144,7 +144,7 @@ def get_api_functions(headers: list) -> dict:
 def generate_native_api(c_api_template: str, out_folder: str, src_out: list) -> dict:
     # TODO load all headers
     # and better to load all processed headers
-    header_files = ["src/3d/config_3d.h", "src/3d/config_scope_3d.h", "src/3d/debug_draw_3d.h"]
+    header_files = ["src/3d/config_3d.h", "src/3d/config_scope_3d.h", "src/3d/debug_draw_3d.h", "src/3d/stats_3d.h",]
     classes = get_api_functions(header_files)
 
     new_funcs = []
@@ -301,6 +301,14 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
     classes = dict(api["classes"])
     is_namespace_a_class = {}
     namespaces = {}
+    fwd_decls = []
+
+
+    for cls in classes:
+        functions = classes[cls]["functions"]
+        cls_is_class = classes[cls]["type"] != "singleton"
+        if cls_is_class:
+            fwd_decls.append(f'class {cls};')
 
     for cls in classes:
         functions = classes[cls]["functions"]
@@ -312,21 +320,21 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             namespaces[cls] = []
 
         if cls_is_class:
-            new_lines = []
-            new_lines.append(f"{cls_indent}void *inst;")
-            new_lines.append("")
-            new_lines.append(f"public:")
-            new_lines.append(f"{cls_indent}{cls}(void *inst) :")
-            new_lines.append(f"{cls_indent}\t\tinst(inst) {{}}")
-            new_lines.append("")
-            new_lines.append(f"{cls_indent}{cls}(bool instantiate = true) :")
-            new_lines.append(f"{cls_indent}\t\tinst(instantiate ? create() : create_nullptr()) {{}}")
-            new_lines.append("")
-            new_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst); }}")
-            new_lines.append("")
-            new_lines.append(f"{cls_indent}operator void *() const {{ return inst; }}")
-            new_lines.append("")
-            namespaces[cls] += new_lines
+            con_lines = []
+            con_lines.append(f"{cls_indent}void *inst;")
+            con_lines.append("")
+            con_lines.append(f"public:")
+            con_lines.append(f"{cls_indent}{cls}(void *inst) :")
+            con_lines.append(f"{cls_indent}\t\tinst(inst) {{}}")
+            con_lines.append("")
+            con_lines.append(f"{cls_indent}{cls}(bool instantiate = true) :")
+            con_lines.append(f"{cls_indent}\t\tinst(instantiate ? create() : create_nullptr()) {{}}")
+            con_lines.append("")
+            con_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst); }}")
+            con_lines.append("")
+            con_lines.append(f"{cls_indent}operator void *() const {{ return inst; }}")
+            con_lines.append("")
+            namespaces[cls] += con_lines
 
             functions[f"{cls}_create"] = {
                 "return": "void *",
@@ -361,6 +369,8 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             }
 
         prev_private_state = False
+        new_lines = []
+
         for func_name in functions:
             func: dict = functions[func_name]
             func_orig_name = func["name"]
@@ -419,8 +429,6 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     return f"*{name}"
                 return f"{name}"
 
-            new_lines = []
-
             if prev_private_state != is_private:
                 prev_private_state = is_private
                 if is_private:
@@ -475,7 +483,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             new_lines.append("")
 
-            namespaces[cls] += new_lines
+        namespaces[cls] += new_lines
 
     shutil.copyfile("src/native_api/c_api_shared.hpp", os.path.join(out_folder, "c_api_shared.hpp"))
     text_data = lib_utils.read_all_text("src/native_api/templates/cpp/dd3d_cpp_api.hpp")
@@ -505,6 +513,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         "// GENERATOR_DD3D_API_INCLUDES",
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
+    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FORWARD_DECLARATIONS", fwd_decls)
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", result_arr)
     return lib_utils.write_all_text(os.path.join(out_folder, "dd3d_cpp_api.hpp"), "\n".join(lines))
 

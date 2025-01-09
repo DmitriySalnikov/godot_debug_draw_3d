@@ -90,8 +90,10 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 					// var size = Vector3(randf_range(0.1, 100), randf_range(0.1, 100), randf_range(0.1, 100))
 					DebugDraw3D::draw_box(Vector3(x * mul, (-4 - z) * mul, y * mul), Quaternion(), size, Color(0, 0, 0, 0), false, cubes_max_time);
 				}
-		UtilityFunctions::print("Draw Cubes C++: ", (Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0, "ms");
 		timer_cubes = cubes_max_time;
+
+		UtilityFunctions::print("Draw Cubes C++: ", (Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0, "ms",
+				"\nTotal Draw time C++: ", DebugDraw3D::get_render_stats()->get_total_time_spent_usec() / 1000.0, "ms");
 	}
 
 	timer_cubes -= p_delta;
