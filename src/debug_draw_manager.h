@@ -91,12 +91,9 @@ private:
 	void _register_singleton_aliases(const TypedArray<StringName> &p_names, Object *p_instance);
 	void _unregister_singleton_aliases(const TypedArray<StringName> &p_names);
 
-#ifdef TOOLS_ENABLED
-	void _try_to_update_cs_bindings();
-#endif
-
 	// TEST C# API GENERATOR
 #ifdef DEV_ENABLED
+	// TODO use NAPI_DEV for the dev build
 public:
 	enum DevTestEnum : int {
 		FIRST_VALUE = 0,

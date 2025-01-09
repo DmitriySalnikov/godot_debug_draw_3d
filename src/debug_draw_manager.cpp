@@ -6,10 +6,6 @@
 #include "native_api/c_api.h"
 #include "utils/utils.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/generate_csharp_bindings.h"
-#endif
-
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/file_access.hpp>
@@ -359,12 +355,6 @@ void DebugDrawManager::_integrate_into_engine() {
 	debug_draw_2d_singleton->set_custom_canvas(nullptr);
 	_connect_scene_changed();
 #endif
-
-#ifdef TOOLS_ENABLED
-	if (IS_EDITOR_HINT()) {
-		_try_to_update_cs_bindings();
-	}
-#endif
 }
 
 void DebugDrawManager::_process_start(double p_delta) {
@@ -423,15 +413,3 @@ void DebugDrawManager::_physics_process(double p_delta) {
 	}
 #endif
 }
-
-#ifdef TOOLS_ENABLED
-void DebugDrawManager::_try_to_update_cs_bindings() {
-	ZoneScoped;
-	auto g = GenerateCSharpBindingsPlugin();
-	if (g.is_need_to_update()) {
-		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");
-		g.generate();
-	}
-}
-
-#endif

@@ -2,7 +2,6 @@
 
 #include "config_2d.h"
 #include "debug_draw_manager.h"
-#include "graphs.h"
 #include "grouped_text.h"
 #include "stats_2d.h"
 #include "utils/utils.h"
@@ -39,14 +38,6 @@ void DebugDraw2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(set_text), "key", "value", "priority", "color_of_value", "duration"), &DebugDraw2D::set_text, Variant(), 0, Colors::empty_color, -1.0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_texts)), &DebugDraw2D::clear_texts);
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(create_graph), "title"), &DebugDraw2D::create_graph);
-	ClassDB::bind_method(D_METHOD(NAMEOF(create_fps_graph), "title"), &DebugDraw2D::create_fps_graph);
-	ClassDB::bind_method(D_METHOD(NAMEOF(graph_update_data), "title", "data"), &DebugDraw2D::graph_update_data);
-	ClassDB::bind_method(D_METHOD(NAMEOF(remove_graph), "title"), &DebugDraw2D::remove_graph);
-	ClassDB::bind_method(D_METHOD(NAMEOF(clear_graphs)), &DebugDraw2D::clear_graphs);
-	ClassDB::bind_method(D_METHOD(NAMEOF(get_graph), "title"), &DebugDraw2D::get_graph);
-	ClassDB::bind_method(D_METHOD(NAMEOF(get_graph_names)), &DebugDraw2D::get_graph_names);
-
 #pragma endregion // Draw Functions
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(get_render_stats)), &DebugDraw2D::get_render_stats);
@@ -68,7 +59,6 @@ void DebugDraw2D::init(DebugDrawManager *root) {
 #ifndef DISABLE_DEBUG_RENDERING
 	grouped_text = std::make_unique<GroupedText>();
 	grouped_text->init_group(this);
-	data_graphs = std::make_unique<DataGraphManager>(this);
 #endif
 }
 
@@ -77,7 +67,6 @@ DebugDraw2D::~DebugDraw2D() {
 	UNASSIGN_SINGLETON(DebugDraw2D);
 
 #ifndef DISABLE_DEBUG_RENDERING
-	data_graphs.reset();
 	grouped_text.reset();
 
 	Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id));
@@ -127,9 +116,6 @@ void DebugDraw2D::process_end(double delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	// Clean texts
 	grouped_text->cleanup_text(delta);
-
-	// FPS Graph
-	data_graphs->auto_update_graphs(delta);
 
 	// Update overlay
 	_finish_frame_and_update();
@@ -185,8 +171,6 @@ void DebugDraw2D::_finish_frame_and_update() {
 void DebugDraw2D::_clear_all_internal() {
 	if (grouped_text)
 		grouped_text->clear_groups();
-	if (data_graphs)
-		data_graphs->clear_graphs();
 	mark_canvas_dirty();
 	_finish_frame_and_update();
 
@@ -232,7 +216,6 @@ void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
-	data_graphs->draw(ci, _font, vp_size, ci->get_process_delta_time());
 #endif
 
 #ifdef TRACY_ENABLE
@@ -332,10 +315,7 @@ Ref<DebugDraw2DStats> DebugDraw2D::get_render_stats() {
 #ifndef DISABLE_DEBUG_RENDERING
 	stats_2d->setup(
 			grouped_text->get_text_group_count(),
-			grouped_text->get_text_line_total_count(),
-
-			data_graphs->get_graphs_enabled(),
-			data_graphs->get_graphs_total());
+			grouped_text->get_text_line_total_count());
 #endif
 
 	return stats_2d;
@@ -395,44 +375,6 @@ void DebugDraw2D::clear_texts() {
 }
 
 #pragma endregion // Text
-#pragma region Graphs
-
-Ref<DebugDraw2DGraph> DebugDraw2D::create_graph(const StringName &title) {
-	ZoneScoped;
-	CALL_TO_2D_RET(data_graphs, create_graph, Ref<DebugDraw2DGraph>(), title);
-}
-
-Ref<DebugDraw2DGraph> DebugDraw2D::create_fps_graph(const StringName &title) {
-	ZoneScoped;
-	CALL_TO_2D_RET(data_graphs, create_fps_graph, Ref<DebugDraw2DGraph>(), title);
-}
-
-void DebugDraw2D::graph_update_data(const StringName &title, real_t data) {
-	ZoneScoped;
-	CALL_TO_2D(data_graphs, graph_update_data, title, data);
-}
-
-void DebugDraw2D::remove_graph(const StringName &title) {
-	ZoneScoped;
-	FORCE_CALL_TO_2D(data_graphs, remove_graph, title);
-}
-
-void DebugDraw2D::clear_graphs() {
-	ZoneScoped;
-	FORCE_CALL_TO_2D(data_graphs, clear_graphs);
-}
-
-Ref<DebugDraw2DGraph> DebugDraw2D::get_graph(const StringName &title) {
-	ZoneScoped;
-	FORCE_CALL_TO_2D_RET(data_graphs, get_graph, Ref<DebugDraw2DGraph>(), title);
-}
-
-PackedStringArray DebugDraw2D::get_graph_names() {
-	ZoneScoped;
-	FORCE_CALL_TO_2D_RET(data_graphs, get_graph_names, PackedStringArray());
-}
-
-#pragma endregion // Graphs
 #pragma endregion // 2D
 
 #pragma endregion // Draw Functions

@@ -16,10 +16,10 @@ namespace NATIVE_API {
 Dictionary get_functions() {
 	ZoneScoped;
 
-	static Dictionary result;
+	static godot::Dictionary result;
 	if (result.is_empty()) {
 		Dictionary functions;
-#define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t) & _name, "signature", DD3DShared::get_function_signature(&_name))
+#define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t) & _name, "signature", DD3DShared::FunctionSignature<decltype(&_name)>::get())
 
 		// GENERATOR_DD3D_FUNCTIONS_REGISTERS
 

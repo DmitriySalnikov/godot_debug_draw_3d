@@ -68,22 +68,22 @@ struct _DD3D_Loader_ {
 
 			// TODO add an actual comparison with the previous hash. It is useful in case of library reloading, but is it really useful for users?..
 			if (api_hash != 0) {
-				Dictionary api = dd3d->call(get_funcs_name);
+				godot::Dictionary api = dd3d->call(get_funcs_name);
 				if (api.has(name)) {
-					Dictionary func_dict = api[name];
+					godot::Dictionary func_dict = api[name];
 
 #ifndef DD3D_DISABLE_MISMATCH_CHECKS
-					String sign1 = func_dict["signature"];
-					String sign2 = DD3DShared::get_function_signature(val);
+					godot::String sign1 = func_dict["signature"];
+					godot::String sign2 = DD3DShared::FunctionSignature<func>::get();
 					if (sign1 != sign2) {
-						UtilityFunctions::printerr(log_prefix, "!!! FUNCTION SIGNATURE MISMATCH !!!\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
+						godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION SIGNATURE MISMATCH !!!\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 						return false;
 					}
 #endif
 					val = (func)(int64_t)func_dict["ptr"];
 					return true;
 				} else {
-					UtilityFunctions::printerr(log_prefix, "!!! FUNCTION NOT FOUND !!! function name: ", name);
+					godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION NOT FOUND !!! function name: ", name);
 					return false;
 				}
 			}

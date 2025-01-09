@@ -41,9 +41,4 @@ private:
 		return oss.str();
 	}
 };
-
-template <typename Func>
-godot::String get_function_signature(Func func) {
-	return FunctionSignature<decltype(func)>::get();
-}
 } // namespace DD3DShared

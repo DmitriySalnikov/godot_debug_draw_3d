@@ -57,9 +57,6 @@
     <ClCompile Include="utils\utils.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="2d\graphs.cpp">
-      <Filter>2d</Filter>
-    </ClCompile>
     <ClCompile Include="2d\debug_draw_2d.cpp">
       <Filter>2d</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
     </ClInclude>
     <ClInclude Include="utils\compiler.h">
       <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="2d\graphs.h">
-      <Filter>2d</Filter>
     </ClInclude>
     <ClInclude Include="2d\debug_draw_2d.h">
       <Filter>2d</Filter>

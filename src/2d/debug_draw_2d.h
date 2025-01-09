@@ -11,10 +11,8 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-class DataGraphManager;
 class DebugDrawManager;
 class DebugDraw2DConfig;
-class DebugDraw2DGraph;
 class DebugDraw2DStats;
 class GroupedText;
 
@@ -22,7 +20,7 @@ class GroupedText;
  * @brief
  * Singleton class for calling debugging 2D methods.
  *
- * Currently, this class supports drawing an overlay with text and graphs.
+ * Currently, this class supports drawing an overlay with text.
  */
 class DebugDraw2D : public Object {
 	GDCLASS(DebugDraw2D, Object)
@@ -46,7 +44,6 @@ private:
 
 #ifndef DISABLE_DEBUG_RENDERING
 	std::unique_ptr<GroupedText> grouped_text;
-	std::unique_ptr<DataGraphManager> data_graphs;
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
@@ -179,52 +176,5 @@ public:
 	 */
 	void clear_texts();
 #pragma endregion // Text
-#pragma region Graphs
-
-	/**
-	 * Create a new graph for the custom data.
-	 *
-	 * Use DebugDraw2D.graph_update_data to update the values.
-	 *
-	 * @param title Title of the graph
-	 */
-	Ref<DebugDraw2DGraph> create_graph(const StringName &title);
-
-	/**
-	 * Create a new graph with FPS that will be automatically updated.
-	 * @param title Title of the graph
-	 */
-	Ref<DebugDraw2DGraph> create_fps_graph(const StringName &title);
-
-	/**
-	 * Update custom graph data
-	 * @param title Title of the graph
-	 * @param data New data
-	 */
-	void graph_update_data(const StringName &title, real_t data);
-
-	/**
-	 * Delete a graph by its title
-	 * @param title Title of the graph
-	 */
-	void remove_graph(const StringName &title);
-
-	/**
-	 * Remove all graphs
-	 */
-	void clear_graphs();
-
-	/**
-	 * Get the configuration for a graph.
-	 * @param title Title of the graph
-	 */
-	Ref<DebugDraw2DGraph> get_graph(const StringName &title);
-
-	/**
-	 * Get a list of titles of all existing graphs.
-	 */
-	PackedStringArray get_graph_names();
-
-#pragma endregion // Graphs
 #pragma endregion // Exposed Draw Functions
 };

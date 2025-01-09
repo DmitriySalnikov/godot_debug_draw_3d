@@ -1,7 +1,6 @@
 [
   "2d/config_2d.cpp",
   "2d/debug_draw_2d.cpp",
-  "2d/graphs.cpp",
   "2d/grouped_text.cpp",
   "2d/stats_2d.cpp",
   "3d/config_3d.cpp",
@@ -15,7 +14,6 @@
   "debug_draw_manager.cpp",
   "editor/asset_library_update_checker.cpp",
   "editor/editor_menu_extensions.cpp",
-  "editor/generate_csharp_bindings.cpp",
   "register_types.cpp",
   "utils/math_utils.cpp",
   "utils/utils.cpp"

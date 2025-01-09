@@ -1,7 +1,6 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor_menu_extensions.h"
-#include "generate_csharp_bindings.h"
 #include "utils/utils.h"
 #include "version.h"
 
@@ -65,7 +64,8 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(MenuItemId p_id) {
 			break;
 		}
 		case DebugDrawMenuExtensionPlugin::GENERATE_CSHARP_BINDING: {
-			GenerateCSharpBindingsPlugin().generate();
+			// TODO
+			UtilityFunctions::print("DEPRECATED");
 			break;
 		}
 		default:

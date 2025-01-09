@@ -37,9 +37,6 @@ private:
 	/// @private
 	void mark_canvas_dirty();
 
-	// Graphs
-	Vector2i graphs_base_offset = Vector2i(8, 8);
-
 	// TEXT
 	BlockPosition text_block_position = BlockPosition::POSITION_LEFT_TOP;
 	Vector2i text_block_offset = Vector2i(8, 8);
@@ -66,12 +63,6 @@ public:
 	void register_config(std::function<void()> p_mark_dirty);
 	/// @private
 	void unregister_config();
-
-	/**
-	 * Base offset for all graphs
-	 */
-	void set_graphs_base_offset(const Vector2i &_offset);
-	Vector2i get_graphs_base_offset() const;
 
 	/**
 	 * Position of the text block

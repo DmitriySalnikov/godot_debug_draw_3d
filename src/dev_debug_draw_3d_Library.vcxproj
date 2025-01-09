@@ -344,9 +344,6 @@
     <None Include="default_sources.json" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2d\graphs.cpp">
-      <DeploymentContent>false</DeploymentContent>
-    </ClCompile>
     <ClCompile Include="2d\debug_draw_2d.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
@@ -404,9 +401,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="2d\graphs.h">
-      <DeploymentContent>false</DeploymentContent>
-    </ClInclude>
     <ClInclude Include="2d\debug_draw_2d.h">
       <DeploymentContent>false</DeploymentContent>
     </ClInclude>

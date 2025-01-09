@@ -27,19 +27,11 @@ private:
 	int64_t overlay_text_groups = 0;
 	int64_t overlay_text_lines = 0;
 
-	int64_t overlay_graphs_enabled = 0;
-	int64_t overlay_graphs_total = 0;
-
 public:
 	NAPI int64_t get_overlay_text_groups() const { return overlay_text_groups; }
 	NAPI void set_overlay_text_groups(int64_t val) {};
 	NAPI int64_t get_overlay_text_lines() const { return overlay_text_lines; }
 	NAPI void set_overlay_text_lines(int64_t val) {};
-
-	NAPI int64_t get_overlay_graphs_enabled() const { return overlay_graphs_enabled; }
-	NAPI void set_overlay_graphs_enabled(int64_t val) {};
-	NAPI int64_t get_overlay_graphs_total() const { return overlay_graphs_total; }
-	NAPI void set_overlay_graphs_total(int64_t val) {};
 
 #undef DEFINE_DEFAULT_PROP
 
@@ -48,7 +40,5 @@ public:
 	/// @private
 	void setup(
 			const int64_t &p_overlay_text_groups,
-			const int64_t &p_overlay_text_lines,
-			const int64_t &p_overlay_graphs_enabled,
-			const int64_t &p_overlay_graphs_total);
+			const int64_t &p_overlay_text_lines);
 };

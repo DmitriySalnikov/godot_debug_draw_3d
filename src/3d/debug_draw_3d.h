@@ -21,7 +21,6 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class DebugDraw3D;
-class DataGraphManager;
 class DebugDrawManager;
 class DebugDraw3DConfig;
 class DebugDraw3DStats;
@@ -535,6 +534,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_lines(const godot::PackedVector3Array &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
@@ -548,6 +548,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_line_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Normal
@@ -601,6 +602,7 @@ public:
 	 * @param is_absolute_size Is the `arrow_size` absolute or relative to the length of the line?
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_arrow_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Arrows
@@ -620,6 +622,7 @@ public:
 	 * @param size Size of squares
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_point_path(const godot::PackedVector3Array &path, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &points_color = Colors::empty_color, const godot::Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Points
@@ -638,6 +641,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_points(const godot::PackedVector3Array &points, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
@@ -739,6 +743,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
+	// TODO
 	void draw_camera_frustum_planes(const godot::Array &camera_frustum, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Camera Frustum
