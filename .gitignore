@@ -44,7 +44,7 @@ bin/
 libs/
 cmake_build_out/*
 src/gen/*
-src/editor/my_telemetry_modules
+src/editor/dst_modules
 addons/debug_draw_3d/gen/
 clang_rt.asan_*
 docs/images/classes/temp/

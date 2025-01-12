@@ -29,11 +29,9 @@ inputs:
   use_cache:
     description: Use cache
     default: "true"
-  token:
-    description: Secrets token
   telemetry_version:
     description: Telemetry version
-    default: b8386398c134f3c7503139e84f952d62207e54ae
+    default: 42efc0d98c6a0e7a104c5a878005ca07d70ad031
 runs:
   using: composite
   steps:
@@ -49,10 +47,9 @@ runs:
       if: ${{env.PRODUCTION_BUILD == 'true' && contains(fromJSON('["template_debug", "editor"]'), inputs.target) && contains(fromJSON('["linux", "macos", "windows"]'), inputs.platform)}}
       continue-on-error: true
       with:
-        repository: ${{github.repository_owner}}/my_telemetry_modules
-        token: ${{inputs.token}}
+        repository: ${{github.repository_owner}}/dst_modules
         ref: ${{inputs.telemetry_version}}
-        path: src/editor/my_telemetry_modules
+        path: src/editor/dst_modules
 
     - name: Restore .scons_cache directory
       if: inputs.use_cache != 'false'

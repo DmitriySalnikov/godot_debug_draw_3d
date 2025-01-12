@@ -21,7 +21,7 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 #ifdef TELEMETRY_ENABLED
-#include "editor/my_telemetry_modules/GDExtension/usage_time_reporter.h"
+#include "editor/dst_modules/GDExtension/usage_time_reporter.h"
 DEFINE_TELEMETRY_OBJECT_ID(dd3d_usage_obj_id);
 #endif
 
@@ -77,7 +77,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		upd_checker.instantiate();
 
 #ifdef TELEMETRY_ENABLED
-		INIT_EDITOR_TELEMETRY_OBJECT(dd3d_usage_obj_id, DD3D_VERSION_STR, Utils::root_settings_section);
+		INIT_EDITOR_TELEMETRY_OBJECT(dd3d_usage_obj_id, "Debug Draw 3D", TELEMETRY_APP_ID, DD3D_VERSION_STR, Utils::root_settings_section, TELEMETRY_HOST, "telemetry_dd3d.json");
 #endif
 	}
 #endif
@@ -87,7 +87,6 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 /** GDExtension Uninitialize **/
 void uninitialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
-
 		// If this library is disabled manually before deleting the scene tree (hot-reload),
 		// then an attempt is made to delete this node manually.
 		DebugDrawManager *debug_draw_manager = Object::cast_to<DebugDrawManager>(ObjectDB::get_instance(debug_draw_manager_id));

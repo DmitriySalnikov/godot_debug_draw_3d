@@ -43,14 +43,19 @@ env:
   SCONS_CACHE: ${{github.workspace}}/.scons-cache/
   USE_CACHE: ${{!format('{0}', inputs.use_cache) && 'true' || format('{0}', inputs.use_cache)}} # Default true
   PRODUCTION_BUILD: ${{!format('{0}', inputs.production_build) && 'false' || format('{0}', inputs.production_build)}} # Default false
+  ENVIRONMENT_NAME: ${{inputs.production_build == 'true' && 'production' || ''}}
   OUTPUT_LIBS_PATH: bin
   FORCE_DISABLE_UNITY: yes
-  GH_TOKEN: ${{ github.token }}
 
 jobs:
   windows-gdextension:
     name: 🏁 Windows
     runs-on: windows-latest
+    environment: ${{inputs.production_build == true && 'production' || ''}}
+    env:
+      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
+      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
+      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
 
     strategy:
       fail-fast: false
@@ -74,13 +79,17 @@ jobs:
           additional: lto=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
   linux-gdextension:
     name: 🐧 Linux
     runs-on: ubuntu-20.04
+    environment: ${{inputs.production_build == true && 'production' || ''}}
+    env:
+      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
+      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
+      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
 
     strategy:
       fail-fast: false
@@ -104,13 +113,17 @@ jobs:
           additional: lto=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
   macos-gdextension:
     name: 🍏 MacOS
     runs-on: macos-latest
+    environment: ${{inputs.production_build == true && 'production' || ''}}
+    env:
+      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
+      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
+      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
 
     strategy:
       fail-fast: false
@@ -134,7 +147,6 @@ jobs:
           additional: lto=yes macos_deployment_target=10.14
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
@@ -164,7 +176,6 @@ jobs:
           additional: lto=yes
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 
@@ -284,6 +295,11 @@ jobs:
   double-debug-gdextension:
     name: "2️⃣ Double: ${{matrix.runner-os}}, Platform-${{matrix.platform}}"
     runs-on: ${{matrix.runner-os}}
+    environment: ${{inputs.production_build == true && 'production' || ''}}
+    env:
+      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
+      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
+      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
 
     strategy:
       fail-fast: false
@@ -317,7 +333,6 @@ jobs:
           additional: lto=yes precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
       - name: Compile GDExtension target=template_release
         uses: ./.github/actions/compile_gdextension
@@ -329,7 +344,6 @@ jobs:
           additional: lto=yes precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
-          token: ${{secrets.TELEMETRY_TOKEN}}
 
   # ============================================
 

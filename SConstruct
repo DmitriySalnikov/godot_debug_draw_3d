@@ -64,9 +64,17 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
         env.Append(CPPDEFINES=["DISABLE_DEBUG_RENDERING"])
 
     if env["telemetry_enabled"]:
-        tele_src = "editor/my_telemetry_modules/GDExtension/usage_time_reporter.cpp"
+        tele_src = "editor/dst_modules/GDExtension/usage_time_reporter.cpp"
         if os.path.exists(os.path.join(src_folder, tele_src)):
-            env.Append(CPPDEFINES=["TELEMETRY_ENABLED", "TELEMETRY_PROJECT_DD3D"])
+            env.Append(
+                CPPDEFINES=[
+                    "TELEMETRY_ENABLED",
+                    "UsageTimeReporterGodotObj=_UsageTimeReporterGodotObjDD3D",
+                    'TELEMETRY_DST_FILE_KEY=\\"' + os.environ.get("TELEMETRY_DST_FILE_KEY", '\\"') + '\\"',
+                    'TELEMETRY_APP_ID=\\"' + os.environ.get("TELEMETRY_DD3D_APP_ID", '\\"') + '\\"',
+                    'TELEMETRY_HOST=\\"' + os.environ.get("TELEMETRY_DD3D_HOST", '\\"') + '\\"',
+                ]
+            )
             src_out.append(tele_src)
             print("Compiling with telemetry support!")
         else:
