@@ -1,14 +1,14 @@
 diff --git a/tools/web.py b/tools/web.py
-index 79b4b24..075936e 100644
+index c8f07c5..010efac 100644
 --- a/tools/web.py
 +++ b/tools/web.py
-@@ -41,6 +41,9 @@ def generate(env):
-     env.Append(CPPFLAGS=["-s", "SIDE_MODULE=1"])
-     env.Append(LINKFLAGS=["-s", "SIDE_MODULE=1"])
- 
+@@ -45,6 +45,9 @@ def generate(env):
+     # Force wasm longjmp mode.
+     env.Append(CCFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
+     env.Append(LINKFLAGS=["-sSUPPORT_LONGJMP='wasm'"])
++
 +    # Use big int
 +    env.Append(LINKFLAGS=["-sWASM_BIGINT"])
-+
+ 
      env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED"])
  
-     common_compiler_flags.generate(env)

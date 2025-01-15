@@ -1,5 +1,5 @@
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index cc2b02f..b0d3017 100644
+index e16b17d..6873fb2 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
 @@ -12,6 +12,9 @@ from SCons.Variables.BoolVariable import _text2bool
@@ -12,7 +12,7 @@ index cc2b02f..b0d3017 100644
  
  def add_sources(sources, dir, extension):
      for f in os.listdir(dir):
-@@ -468,6 +471,9 @@ def _godot_cpp(env):
+@@ -475,6 +478,9 @@ def _godot_cpp(env):
              "binding_generator.py",
          ],
      )

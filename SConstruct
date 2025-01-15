@@ -21,7 +21,6 @@ src_folder = "src"
 patches_to_apply = [
     "patches/godot_cpp_exclude_unused_classes.patch",  # Removes unused godot-cpp classes from the build process
     "patches/unity_build.patch",  # Speeds up the build by merging the source files. It can increase the size of assemblies.
-    "patches/web_threads.patch",  # Adds the build flag that appeared in Godot 4.3. Required for a web build compatible with Godot 4.3.
     "patches/big_int_fix.patch",  # Fixes runtime link errors
 ]
 

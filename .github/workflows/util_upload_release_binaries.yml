@@ -11,7 +11,7 @@ concurrency:
 jobs:
   get_version:
     name: Get the current version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{steps.get_version.outputs.version}}
     steps:
@@ -28,7 +28,7 @@ jobs:
   create_release_artifact:
     name: Create release artifact
     needs: get_version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       zipname: ${{steps.zip.outputs.zipname}}
 
@@ -80,7 +80,7 @@ jobs:
     needs: 
       - get_version
       - create_release_artifact
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Download Binaries

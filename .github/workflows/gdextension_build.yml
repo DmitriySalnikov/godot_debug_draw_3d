@@ -181,7 +181,7 @@ jobs:
 
   android-gdextension:
     name: 🤖 Android
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -242,7 +242,7 @@ jobs:
 
   web-gdextension:
     name: 🕸 Web
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
@@ -349,7 +349,7 @@ jobs:
 
   check-python-version:
     name: 🐍 Check compatibility with python
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         PYTHON_VER: ["3.8"] # this is the minimum available version to install on ubuntu 22.04 and 24.04
@@ -388,7 +388,7 @@ jobs:
         ios-gdextension,
       ]
     name: 📦 Collect GDExtension binaries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       artifact_name: ${{steps.output_info.outputs.artifact_name}}
 
