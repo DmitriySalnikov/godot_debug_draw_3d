@@ -141,7 +141,7 @@ $(function(){initNavTree('stats__2d_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>using namespace godot;</div>
 <div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
 <div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classDebugDraw2DStats.html">   19</a></span>class <a class="code hl_class" href="classDebugDraw2DStats.html">DebugDraw2DStats</a> : public RefCounted {</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classDebugDraw2DStats.html">   19</a></span>NAPI_CLASS_REF class <a class="code hl_class" href="classDebugDraw2DStats.html">DebugDraw2DStats</a> : public RefCounted {</div>
 <div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    GDCLASS(<a class="code hl_class" href="classDebugDraw2DStats.html">DebugDraw2DStats</a>, RefCounted)</div>
 <div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">protected</span>:</div>
@@ -153,9 +153,9 @@ $(function(){initNavTree('stats__2d_8h_source.html',''); initResizable(); });
 <div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">public</span>:</div>
 <div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    NAPI int64_t get_overlay_text_groups()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> overlay_text_groups; }</div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    NAPI <span class="keywordtype">void</span> set_overlay_text_groups(int64_t val) {};</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <span class="keywordtype">void</span> set_overlay_text_groups(int64_t val) {};</div>
 <div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    NAPI int64_t get_overlay_text_lines()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> overlay_text_lines; }</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    NAPI <span class="keywordtype">void</span> set_overlay_text_lines(int64_t val) {};</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    <span class="keywordtype">void</span> set_overlay_text_lines(int64_t val) {};</div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#undef DEFINE_DEFAULT_PROP</span></div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>

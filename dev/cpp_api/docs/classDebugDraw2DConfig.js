@@ -6,12 +6,12 @@ var classDebugDraw2DConfig =
       [ "POSITION_LEFT_BOTTOM", "classDebugDraw2DConfig.html#acea0345f9df2cd597a495bac04466b10a032db7f92267b03c57320598a3092270", null ],
       [ "POSITION_RIGHT_BOTTOM", "classDebugDraw2DConfig.html#acea0345f9df2cd597a495bac04466b10a6dec4c5b8ddc2fdc755809c3a25d5887", null ]
     ] ],
-    [ "set_text_block_position", "classDebugDraw2DConfig.html#a0bc696a1874beb75aeab4a17cf1ac405", null ],
-    [ "set_text_block_offset", "classDebugDraw2DConfig.html#aeaac8c1f4c3bd0bec5be44a331f6f835", null ],
-    [ "set_text_padding", "classDebugDraw2DConfig.html#a121600533e7b4eefa18a6d51abb4d2d8", null ],
-    [ "set_text_default_duration", "classDebugDraw2DConfig.html#a0a8419bf704cac62201638d4bfe08d17", null ],
-    [ "set_text_default_size", "classDebugDraw2DConfig.html#aa85eebff3bc8279f06cb39fb0ed144f8", null ],
-    [ "set_text_foreground_color", "classDebugDraw2DConfig.html#a98a6fe2c34bd68aaf9b08029bb064fde", null ],
-    [ "set_text_background_color", "classDebugDraw2DConfig.html#a0456bb77679bc8759ce181986902c64d", null ],
-    [ "set_text_custom_font", "classDebugDraw2DConfig.html#ae675d6b57c5ac64f7fac17d75c2182e1", null ]
+    [ "set_text_block_position", "classDebugDraw2DConfig.html#a8d0864686f4578826061cdef3ec1b793", null ],
+    [ "set_text_block_offset", "classDebugDraw2DConfig.html#a53a8d42ca627707fa96331cfd3d97208", null ],
+    [ "set_text_padding", "classDebugDraw2DConfig.html#adb877a154ad6b511a90eb7872b580f27", null ],
+    [ "set_text_default_duration", "classDebugDraw2DConfig.html#acde3bc16a1ba9b2e6a148a73e686e677", null ],
+    [ "set_text_default_size", "classDebugDraw2DConfig.html#a386f53e7ec341a8e48e1280441f480d2", null ],
+    [ "set_text_foreground_color", "classDebugDraw2DConfig.html#a755bb819c70704c71ecb45ffc5960614", null ],
+    [ "set_text_background_color", "classDebugDraw2DConfig.html#a3f2091fb09164a52b9a5be37848c3651", null ],
+    [ "set_text_custom_font", "classDebugDraw2DConfig.html#a57a7f3a3425049c0dab421167a885eef", null ]
 ];

@@ -133,114 +133,114 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;utils/compiler.h&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span>GODOT_WARNING_DISABLE()</div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;godot_cpp/classes/canvas_layer.hpp&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>GODOT_WARNING_RESTORE()</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>using namespace godot;</div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>class <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>;</div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>class <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>;</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>class <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>;</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span> </div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span><span class="keyword">class </span>_DD3D_PhysicsWatcher : <span class="keyword">public</span> Node {</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    GDCLASS(_DD3D_PhysicsWatcher, Node)</div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *root_node;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods() {};</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keywordtype">void</span> init(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *p_root);</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>};</div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
-<div class="foldopen" id="foldopen00054" data-start="{" data-end="};">
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="classDebugDrawManager.html">   54</a></span><span class="keyword">class </span><a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> : <span class="keyword">public</span> CanvasLayer {</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    GDCLASS(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>, CanvasLayer)</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <span class="keyword">friend</span> _DD3D_PhysicsWatcher;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keyword">static</span> <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *singleton;</div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    String root_settings_section;</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_initial_state = <span class="stringliteral">&quot;initial_debug_state&quot;</span>;</div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_manager_aliases = NAMEOF(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>) <span class="stringliteral">&quot;_singleton_aliases &quot;</span>;</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_dd2d_aliases = NAMEOF(<a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>) <span class="stringliteral">&quot;_singleton_aliases&quot;</span>;</div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_dd3d_aliases = NAMEOF(<a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>) <span class="stringliteral">&quot;_singleton_aliases&quot;</span>;</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="keywordtype">double</span> log_flush_time = 0;</div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">bool</span> debug_enabled = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">bool</span> is_closing = <span class="keyword">false</span>;</div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordtype">bool</span> is_current_scene_is_null = <span class="keyword">true</span>;</div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a> *debug_draw_2d_singleton = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a> *debug_draw_3d_singleton = <span class="keyword">nullptr</span>;</div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>    TypedArray&lt;StringName&gt; manager_aliases;</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    TypedArray&lt;StringName&gt; dd2d_aliases;</div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    TypedArray&lt;StringName&gt; dd3d_aliases;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    Node *_get_current_scene();</div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">void</span> _connect_scene_changed();</div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> p_is_scene_null);</div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordtype">void</span> _integrate_into_engine();</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names, Object *p_instance);</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="comment">// TEST C# API GENERATOR</span></div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="preprocessor">#ifdef DEV_ENABLED</span></div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    <span class="comment">// TODO use NAPI_DEV for the dev build</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;utils/native_api_hooks.h&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>GODOT_WARNING_DISABLE()</div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;godot_cpp/classes/canvas_layer.hpp&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>GODOT_WARNING_RESTORE()</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>using namespace godot;</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span>class <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>;</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>class <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>;</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>class <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>;</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span> </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="keyword">class </span>_DD3D_PhysicsWatcher : <span class="keyword">public</span> Node {</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    GDCLASS(_DD3D_PhysicsWatcher, Node)</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *root_node;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods() {};</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keywordtype">void</span> init(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *p_root);</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> _physics_process(<span class="keywordtype">double</span> p_delta) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>};</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="foldopen" id="foldopen00055" data-start="{" data-end="};">
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno"><a class="line" href="classDebugDrawManager.html">   55</a></span>NAPI_CLASS_SINGLETON <span class="keyword">class </span><a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> : <span class="keyword">public</span> CanvasLayer {</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    GDCLASS(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>, CanvasLayer)</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span> </div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#ifndef DISABLE_DEBUG_RENDERING</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>    <span class="keyword">friend</span> _DD3D_PhysicsWatcher;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keyword">static</span> <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *singleton;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    String root_settings_section;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_initial_state = <span class="stringliteral">&quot;initial_debug_state&quot;</span>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_manager_aliases = NAMEOF(<a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>) <span class="stringliteral">&quot;_singleton_aliases &quot;</span>;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_dd2d_aliases = NAMEOF(<a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>) <span class="stringliteral">&quot;_singleton_aliases&quot;</span>;</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_dd3d_aliases = NAMEOF(<a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>) <span class="stringliteral">&quot;_singleton_aliases&quot;</span>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">double</span> log_flush_time = 0;</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">bool</span> debug_enabled = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="keywordtype">bool</span> is_closing = <span class="keyword">false</span>;</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="keywordtype">bool</span> is_current_scene_is_null = <span class="keyword">true</span>;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a> *debug_draw_2d_singleton = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a> *debug_draw_3d_singleton = <span class="keyword">nullptr</span>;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    TypedArray&lt;StringName&gt; manager_aliases;</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    TypedArray&lt;StringName&gt; dd2d_aliases;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    TypedArray&lt;StringName&gt; dd3d_aliases;</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    Node *_get_current_scene();</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    <span class="keywordtype">void</span> _connect_scene_changed();</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="keywordtype">void</span> _on_scene_changed(<span class="keywordtype">bool</span> p_is_scene_null);</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>    <span class="keywordtype">void</span> _integrate_into_engine();</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">void</span> _register_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names, Object *p_instance);</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">void</span> _unregister_singleton_aliases(<span class="keyword">const</span> TypedArray&lt;StringName&gt; &amp;p_names);</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <span class="comment">// TEST C# API GENERATOR</span></div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#ifdef DEV_ENABLED</span></div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keyword">enum</span> DevTestEnum : <span class="keywordtype">int</span> {</div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        FIRST_VALUE = 0,</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    NAPI_ENUM <span class="keyword">enum</span> DevTestEnum : <span class="keywordtype">int</span> {</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        FIRST_VALUE = 0, <span class="comment">// Test comment</span></div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        SECOND_VALUE = 1,</div>
 <div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    };</div>
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keyword">static</span> Object *default_arg_obj;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    <span class="comment">// Test regular arguments</span></div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    <span class="keywordtype">void</span> api_test1(Variant, Object *, <span class="keywordtype">bool</span>, <span class="keywordtype">int</span>, <span class="keywordtype">float</span>, String, StringName, NodePath) {};</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="keywordtype">void</span> api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    <span class="keywordtype">void</span> api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};</div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    <span class="keywordtype">void</span> api_test4(RID, Callable, Signal, Dictionary, Array){};</div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="keywordtype">void</span> api_test5(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};</div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="comment">// Test with default arguments</span></div>
-<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    Variant api_test6(Object *, Variant, Variant, <span class="keywordtype">bool</span>, <span class="keywordtype">int</span>, DevTestEnum, <span class="keywordtype">float</span>, String, StringName, NodePath) { <span class="keywordflow">return</span> <span class="stringliteral">&quot;test var&quot;</span>; };</div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    Color api_test7(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i) { <span class="keywordflow">return</span> Color(4, 3, 2, 1); };</div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    DevTestEnum api_test8(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection) { <span class="keywordflow">return</span> (DevTestEnum)1; };</div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    Object *api_test9(RID, Callable, Signal, Dictionary, Array) { <span class="keywordflow">return</span> <span class="keyword">this</span>; };</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="keywordtype">void</span> api_test10(PackedByteArray, PackedInt32Array, PackedInt64Array, PackedFloat32Array, PackedFloat64Array, PackedStringArray, PackedVector2Array, PackedVector3Array, PackedColorArray){};</div>
-<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span> </div>
-<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_extension_unloading = <span class="stringliteral">&quot;extension_unloading&quot;</span>;</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>();</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    <a class="code hl_class" href="classDebugDrawManager.html">~DebugDrawManager</a>();</div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span> </div>
-<div class="foldopen" id="foldopen00132" data-start="{" data-end="}">
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno"><a class="line" href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">  132</a></span>    <span class="keyword">static</span> <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *<a class="code hl_function" href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">get_singleton</a>() {</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>        <span class="keywordflow">return</span> singleton;</div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    };</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keyword">static</span> Object *default_arg_obj;</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    <span class="comment">// Test regular arguments</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    NAPI <span class="keywordtype">void</span> api_test1(godot::Variant arg1, godot::Object *arg2, <span class="keywordtype">bool</span> arg3, <span class="keywordtype">int</span> arg4, <span class="keywordtype">float</span> arg5, godot::String arg6, godot::StringName arg7, godot::NodePath arg8) {};</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    NAPI <span class="keywordtype">void</span> api_test2(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) {};</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    NAPI <span class="keywordtype">void</span> api_test3(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) {};</div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span>    NAPI <span class="keywordtype">void</span> api_test4(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) {};</div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>    NAPI <span class="keywordtype">void</span> api_test5(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {};</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span>    <span class="comment">// Test with default arguments</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    NAPI godot::Variant api_test6(godot::Object *arg1, godot::Variant arg2, <span class="keywordtype">bool</span> arg3, <span class="keywordtype">int</span> arg4, DebugDrawManager::DevTestEnum arg5, <span class="keywordtype">float</span> arg6, godot::String arg7, godot::StringName arg8, godot::NodePath arg9) { <span class="keywordflow">return</span> <span class="stringliteral">&quot;test var&quot;</span>; }</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    NAPI godot::Color api_test7(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) { <span class="keywordflow">return</span> godot::Color(4, 3, 2, 1); }</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    NAPI DebugDrawManager::DevTestEnum api_test8(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) { <span class="keywordflow">return</span> (DevTestEnum)1; }</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>    NAPI godot::Object *api_test9(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) { <span class="keywordflow">return</span> <span class="keyword">this</span>; }</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    NAPI <span class="keywordtype">void</span> api_test10(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {};</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    <span class="keyword">static</span> <span class="keyword">constexpr</span> <span class="keyword">const</span> <span class="keywordtype">char</span> *s_extension_unloading = <span class="stringliteral">&quot;extension_unloading&quot;</span>;</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span>    <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a>();</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span>    <a class="code hl_class" href="classDebugDrawManager.html">~DebugDrawManager</a>();</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
+<div class="foldopen" id="foldopen00131" data-start="{" data-end="}">
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno"><a class="line" href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">  131</a></span>    <span class="keyword">static</span> <a class="code hl_class" href="classDebugDrawManager.html">DebugDrawManager</a> *<a class="code hl_function" href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">get_singleton</a>() {</div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>        <span class="keywordflow">return</span> singleton;</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    }</div>
 </div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">#pragma region Exposed Methods</span></div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span><span class="preprocessor">#ifdef NATIVE_API_ENABLED</span></div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    Dictionary _get_native_functions();</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">#pragma region Exposed Methods</span></div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">#ifdef NATIVE_API_ENABLED</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>    Dictionary _get_native_functions();</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>    <span class="keywordtype">bool</span> _get_native_functions_is_double();</div>
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span>    int64_t _get_native_functions_hash();</div>
 <div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
@@ -262,13 +262,13 @@ $(function(){initNavTree('debug__draw__manager_8h_source.html',''); initResizabl
 <div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="preprocessor">#ifdef DEV_ENABLED</span></div>
 <div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span>VARIANT_ENUM_CAST(DebugDrawManager::DevTestEnum);</div>
 <div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span><span class="preprocessor">#endif</span></div>
-<div class="ttc" id="aclassDebugDraw2D_html"><div class="ttname"><a href="classDebugDraw2D.html">DebugDraw2D</a></div><div class="ttdoc">Singleton class for calling debugging 2D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_2d.h:25</div></div>
+<div class="ttc" id="aclassDebugDraw2D_html"><div class="ttname"><a href="classDebugDraw2D.html">DebugDraw2D</a></div><div class="ttdoc">Singleton class for calling debugging 2D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_2d.h:26</div></div>
 <div class="ttc" id="aclassDebugDraw3D_html"><div class="ttname"><a href="classDebugDraw3D.html">DebugDraw3D</a></div><div class="ttdoc">Singleton class for calling debugging 3D methods.</div><div class="ttdef"><b>Definition</b> debug_draw_3d.h:116</div></div>
-<div class="ttc" id="aclassDebugDrawManager_html"><div class="ttname"><a href="classDebugDrawManager.html">DebugDrawManager</a></div><div class="ttdoc">The main singleton class that handles DebugDraw2D and DebugDraw3D.</div><div class="ttdef"><b>Definition</b> debug_draw_manager.h:54</div></div>
+<div class="ttc" id="aclassDebugDrawManager_html"><div class="ttname"><a href="classDebugDrawManager.html">DebugDrawManager</a></div><div class="ttdoc">The main singleton class that handles DebugDraw2D and DebugDraw3D.</div><div class="ttdef"><b>Definition</b> debug_draw_manager.h:55</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html_a56da9c3e5a3b7a97083b48b85cc3737a"><div class="ttname"><a href="classDebugDrawManager.html#a56da9c3e5a3b7a97083b48b85cc3737a">DebugDrawManager::clear_all</a></div><div class="ttdeci">void clear_all()</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html_a5920f8f62eae11b5318843bfa668a6ef"><div class="ttname"><a href="classDebugDrawManager.html#a5920f8f62eae11b5318843bfa668a6ef">DebugDrawManager::is_debug_enabled</a></div><div class="ttdeci">bool is_debug_enabled() const</div></div>
 <div class="ttc" id="aclassDebugDrawManager_html_aa2a02002be21f77c31559926bd66bcbe"><div class="ttname"><a href="classDebugDrawManager.html#aa2a02002be21f77c31559926bd66bcbe">DebugDrawManager::set_debug_enabled</a></div><div class="ttdeci">void set_debug_enabled(bool value)</div></div>
-<div class="ttc" id="aclassDebugDrawManager_html_acad2fdc13f2c2f4c991bef6a58953345"><div class="ttname"><a href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">DebugDrawManager::get_singleton</a></div><div class="ttdeci">static DebugDrawManager * get_singleton()</div><div class="ttdef"><b>Definition</b> debug_draw_manager.h:132</div></div>
+<div class="ttc" id="aclassDebugDrawManager_html_acad2fdc13f2c2f4c991bef6a58953345"><div class="ttname"><a href="classDebugDrawManager.html#acad2fdc13f2c2f4c991bef6a58953345">DebugDrawManager::get_singleton</a></div><div class="ttdeci">static DebugDrawManager * get_singleton()</div><div class="ttdef"><b>Definition</b> debug_draw_manager.h:131</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- HTML footer for doxygen 1.10.0-->
