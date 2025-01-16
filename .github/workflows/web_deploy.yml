@@ -37,10 +37,10 @@ permissions:
   id-token: write
   actions: write
 
-# Stop the same workflow actions
+# Queue up the same workflow actions.
 concurrency:
-  group: ${{github.workflow}}-${{github.event.pull_request.number || github.ref}}
-  cancel-in-progress: true
+  group: web_deploy
+  cancel-in-progress: false
 
 env:
   PAGES_BRANCH: gh-pages
