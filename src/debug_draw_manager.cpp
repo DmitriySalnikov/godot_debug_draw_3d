@@ -256,8 +256,18 @@ void DebugDrawManager::_integrate_into_engine() {
 	set_process_priority(INT32_MAX);
 	set_physics_process_priority(INT32_MAX);
 
-	SCENE_ROOT()->add_child(this);
-	SCENE_ROOT()->move_child(this, 0);
+	if (IS_EDITOR_HINT()) {
+		// Moving the manager to position 0 in the editor makes it impossible to change the editor's theme.
+		// https://github.com/godotengine/godot/blob/d33da79d3f8fe84be2521d25b9ba8e440cf25a88/editor/editor_settings.cpp#L2052-L2057
+		if (Node *res = Utils::find_node_by_class(SCENE_ROOT(), "EditorNode"); res) {
+			res->add_child(this);
+		} else {
+			SCENE_ROOT()->add_child(this);
+		}
+	} else {
+		SCENE_ROOT()->add_child(this);
+		SCENE_ROOT()->move_child(this, 0);
+	}
 
 #ifndef DISABLE_DEBUG_RENDERING
 	{
@@ -285,9 +295,7 @@ void DebugDrawManager::_integrate_into_engine() {
 	debug_draw_2d_singleton->grouped_text->end_text_group();
 
 	if (IS_EDITOR_HINT()) {
-		String editor3d = "Node3DEditorViewportContainer";
-		String subviewport = SubViewport::get_class_static();
-		Node *res = Utils::find_node_by_class(SCENE_ROOT(), editor3d);
+		Node *res = Utils::find_node_by_class(SCENE_ROOT(), "Node3DEditorViewportContainer");
 
 		Node *n = res->get_child(0)->get_child(0);
 		n->set_meta("UseParentSize", true);
@@ -312,7 +320,7 @@ void DebugDrawManager::_integrate_into_engine() {
 		for (int i = 0; i < viewports_root.size(); i++) {
 			Node *node = cast_to<Node>(viewports_root[i]);
 			if (node) {
-				SubViewport *sub_view = cast_to<SubViewport>(Utils::find_node_by_class(node, subviewport));
+				SubViewport *sub_view = cast_to<SubViewport>(Utils::find_node_by_class(node, SubViewport::get_class_static()));
 				if (sub_view) {
 					editor_viewports.push_back(sub_view);
 				}

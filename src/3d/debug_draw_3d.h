@@ -184,6 +184,7 @@ private:
 	/// Store World3D id and debug container
 	struct ViewportToDebugContainerItem {
 		uint64_t world_id;
+		bool is_registered;
 		std::unique_ptr<DebugGeometryContainer> dgcs[(int)MeshMaterialVariant::MAX];
 
 		ViewportToDebugContainerItem();

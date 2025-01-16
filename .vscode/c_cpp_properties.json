@@ -19,8 +19,10 @@
         "HOT_RELOAD_ENABLED",
         "TOOLS_ENABLED",
         "TELEMETRY_ENABLED",
-        "TELEMETRY_PROJECT_DD3D"
-        //"REAL_T_IS_DOUBLE"
+        "TELEMETRY_APP_ID=\"\"",
+        "TELEMETRY_HOST=\"\"",
+        "TELEMETRY_DST_FILE_KEY=\"\"",
+        //"REAL_T_IS_DOUBLE",
       ],
       "windowsSdkVersion": "10.0.22000.0",
       "compilerPath": "cl.exe",

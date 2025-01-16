@@ -55,11 +55,12 @@ _DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id)
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
-		world_id(0), dgcs() {
+		world_id(0), is_registered(false), dgcs() {
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
-		: world_id(std::exchange(other.world_id, 0)) {
+		: world_id(std::exchange(other.world_id, 0)),
+		  is_registered(false) {
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
 	}
@@ -440,7 +441,10 @@ DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeC
 
 	viewport_to_world_cache[p_dgcd.viewport] = &debug_containers[vp_world_id];
 
-	call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id);
+	if (!c.is_registered) {
+		c.is_registered = true;
+		call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id);
+	}
 
 	return c.dgcs[dgc_depth].get();
 }

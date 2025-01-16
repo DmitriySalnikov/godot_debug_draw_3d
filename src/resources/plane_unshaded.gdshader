@@ -34,7 +34,7 @@ void fragment() {
 		ALPHA = custom.a;
 		#endif
 	}
-	
+
 	if (!OUTPUT_IS_SRGB)
 		ALBEDO = toLinearFast(ALBEDO);
 	NORMAL = ALBEDO;

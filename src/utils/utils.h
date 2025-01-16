@@ -223,10 +223,8 @@ public:
 	static void _logv(bool p_err, bool p_force_print, const char *p_format, ...);
 	static void print_logs();
 
-#ifndef DISABLE_DEBUG_RENDERING
 	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
 	static godot::String get_scene_tree_as_string(godot::Node *start);
-#endif
 
 	static void get_godot_version(int *major, int *minor, int *patch, int *version_sum);
 	/// Is the current version of godot within this range? [Inclusive]

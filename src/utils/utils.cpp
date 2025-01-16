@@ -93,7 +93,6 @@ void Utils::print_logs() {
 #endif
 }
 
-#ifndef DISABLE_DEBUG_RENDERING
 Node *Utils::find_node_by_class(Node *start_node, const String &class_name) {
 	ZoneScoped;
 	for (int i = 0; i < start_node->get_child_count(); i++) {
@@ -122,7 +121,6 @@ String Utils::get_scene_tree_as_string(Node *start) {
 	get_node_tree(start, 0);
 	return output;
 }
-#endif
 
 void Utils::get_godot_version(int *major, int *minor, int *patch, int *version_sum) {
 	if (major) {
