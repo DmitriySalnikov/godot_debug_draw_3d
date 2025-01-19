@@ -348,7 +348,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						cfg,
 						InstanceType::SPHERE,
 						0,
-						ProcessType::PROCESS,
 						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
 						Colors::debug_sphere_bounds,
 						SphereBounds(center, radius));
@@ -357,7 +356,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						cfg,
 						InstanceType::CUBE_CENTERED,
 						0,
-						ProcessType::PROCESS,
 						Transform3D(Basis().scaled(diag), center),
 						Colors::debug_rough_box_bounds,
 						SphereBounds(center, radius));
@@ -376,7 +374,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						cfg,
 						InstanceType::CUBE_CENTERED,
 						0,
-						ProcessType::PROCESS,
 						Transform3D(Basis().scaled(diag), center),
 						Colors::debug_box_bounds,
 						SphereBounds(center, radius),
@@ -386,7 +383,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						cfg,
 						InstanceType::SPHERE,
 						0,
-						ProcessType::PROCESS,
 						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
 						Colors::debug_sphere_bounds,
 						SphereBounds(center, radius));
@@ -401,7 +397,6 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					geometry_pool.add_or_update_line(
 							cfg,
 							0,
-							ProcessType::PROCESS,
 							std::move(l),
 							s,
 							Colors::red,

@@ -68,7 +68,7 @@ void DebugDraw2D::init(DebugDrawManager *root) {
 
 #ifndef DISABLE_DEBUG_RENDERING
 	grouped_text = std::make_unique<GroupedText>();
-	grouped_text->init_group(this);
+	grouped_text->init_text_groups(this);
 	data_graphs = std::make_unique<DataGraphManager>(this);
 #endif
 }

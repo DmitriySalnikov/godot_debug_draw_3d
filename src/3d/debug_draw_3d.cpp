@@ -718,7 +718,6 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
-#define GET_PROC_TYPE() (Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)
 #define CHECK_BEFORE_CALL() \
 	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
 
@@ -782,7 +781,6 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 		dgc->geometry_pool.add_or_update_line(
 				scfg,
 				p_exp_time,
-				GET_PROC_TYPE(),
 				std::move(p_lines),
 				p_line_count,
 				p_col,
@@ -798,7 +796,6 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
 					p_exp_time,
-					GET_PROC_TYPE(),
 					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), FIX_PRECISION_POSITION(a)), // slow
 					p_col,
 					SphereBounds(a + center, len * .5f));
@@ -819,7 +816,6 @@ void DebugDraw3D::draw_sphere_base(const Transform3D &transform, const Color &co
 			scfg,
 			ConvertableInstanceType::SPHERE,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(transform),
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
@@ -852,7 +848,6 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::CYLINDER,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(transform),
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CylinderRadiusForSphere));
@@ -876,7 +871,6 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 			scfg,
 			ConvertableInstanceType::CYLINDER_AB,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(t),
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(t.origin, MathUtils::get_max_basis_length(t.basis) * MathUtils::CylinderRadiusForSphere));
@@ -918,7 +912,6 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 				scfg,
 				ConvertableInstanceType::CUBE,
 				duration,
-				GET_PROC_TYPE(),
 				FIX_PRECISION_TRANSFORM(t),
 				IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 				sb);
@@ -950,7 +943,6 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 			scfg,
 			is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(transform),
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			sb);
@@ -991,7 +983,6 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				scfg,
 				InstanceType::BILLBOARD_SQUARE,
 				duration,
-				GET_PROC_TYPE(),
 				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), FIX_PRECISION_POSITION(hit)),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size),
@@ -1098,7 +1089,6 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			p_duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(t),
 			IS_DEFAULT_COLOR(p_color) ? Colors::light_green : p_color,
 			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
@@ -1115,7 +1105,6 @@ void DebugDraw3D::draw_arrowhead(const Transform3D &transform, const Color &colo
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(transform),
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			SphereBounds(transform.origin + transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
@@ -1180,7 +1169,6 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 			scfg,
 			InstanceType::BILLBOARD_SQUARE,
 			duration,
-			GET_PROC_TYPE(),
 			Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(position)),
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size),
@@ -1208,7 +1196,6 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 			scfg,
 			InstanceType::PLANE,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(t),
 			front_color,
 			SphereBounds(center_pos, MathUtils::CubeRadiusForSphere * plane_size),
@@ -1243,7 +1230,6 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::POSITION,
 			duration,
-			GET_PROC_TYPE(),
 			FIX_PRECISION_TRANSFORM(transform),
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
@@ -1359,7 +1345,6 @@ void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const 
 #endif
 
 #undef IS_DEFAULT_COLOR
-#undef GET_PROC_TYPE
 #undef CHECK_BEFORE_CALL
 #undef NEED_LEAVE
 #undef GET_SCOPED_CFG_AND_DGC

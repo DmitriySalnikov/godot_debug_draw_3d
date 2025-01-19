@@ -245,9 +245,9 @@ public:
 	void for_each_instance(const std::function<void(DelayedRendererInstance *)> &p_func);
 	void for_each_line(const std::function<void(DelayedRendererLine *)> &p_func);
 	void update_expiration_delta(const double &p_delta, const ProcessType &p_proc);
-	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
-	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const ProcessType &p_proc, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
-	void add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, const ProcessType &p_proc, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb);
+	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
+	void add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col = nullptr);
+	void add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb);
 };
 
 #endif

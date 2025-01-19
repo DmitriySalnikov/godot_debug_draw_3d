@@ -91,7 +91,7 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
 
     if env["tracy_enabled"]:
         env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
-        src_out.append("thirdparty/tracy/public/TracyClient.cpp")
+        src_out.append("utils/TracyClientCustom.cpp")
 
     if env["fix_precision_enabled"]:
         env.Append(CPPDEFINES=["FIX_PRECISION_ENABLED"])

@@ -125,7 +125,7 @@ void GroupedText::_create_new_default_group_if_needed() {
 	}
 }
 
-void GroupedText::init_group(DebugDraw2D *p_owner) {
+void GroupedText::init_text_groups(DebugDraw2D *p_owner) {
 	owner = p_owner;
 	_current_text_group = nullptr;
 	item_for_title_of_groups = std::make_shared<TextGroupItem>(0.0f, "", "", 0, Colors::empty_color);
