@@ -95,7 +95,7 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig() {
 	data = std::make_shared<Data>();
 }
 
-DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_parent, const unregister_func p_unreg) {
+DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopeConfig::Data *p_parent, const unregister_func p_unreg) {
 	unregister_action = p_unreg;
 
 	thread_id = p_thread_id;
@@ -116,7 +116,7 @@ DebugDraw3DScopeConfig::Data::Data() {
 	dcd = {};
 }
 
-DebugDraw3DScopeConfig::Data::Data(const std::shared_ptr<Data> &p_parent) {
+DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) {
 	thickness = p_parent->thickness;
 	center_brightness = p_parent->center_brightness;
 	hd_sphere = p_parent->hd_sphere;

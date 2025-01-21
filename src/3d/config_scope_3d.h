@@ -97,7 +97,7 @@ public:
 		DebugContainerDependent dcd;
 
 		Data();
-		Data(const std::shared_ptr<Data> &parent);
+		Data(const Data *parent);
 	};
 	/// @private
 	std::shared_ptr<Data> data = nullptr;
@@ -167,6 +167,6 @@ public:
 
 	// `DDScopedConfig3D` is passed as Ref to avoid a random unreference
 	/// @private
-	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_parent, const unregister_func p_unreg);
+	DebugDraw3DScopeConfig(const uint64_t &p_thread_id, const uint64_t &p_guard_id, const DebugDraw3DScopeConfig::Data *p_parent, const unregister_func p_unreg);
 	~DebugDraw3DScopeConfig();
 };

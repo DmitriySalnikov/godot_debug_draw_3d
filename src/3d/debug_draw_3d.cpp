@@ -271,28 +271,26 @@ void DebugDraw3D::physics_process_end(double p_delta) {
 }
 
 #ifndef DISABLE_DEBUG_RENDERING
-const std::shared_ptr<DebugDraw3DScopeConfig::Data> DebugDraw3D::scoped_config_for_current_thread() {
+const DebugDraw3DScopeConfig::Data *DebugDraw3D::scoped_config_for_current_thread() {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
 
-	const auto &it = cached_scoped_configs.find(thread);
-	if (it != cached_scoped_configs.cend()) {
-		return it->second;
+	if (const auto &it = cached_scoped_configs.find(thread); it != cached_scoped_configs.cend()) {
+		return it->second.get();
 	}
 
-	const auto &it_v = scoped_configs.find(thread);
-	if (it_v != scoped_configs.cend()) {
-		const auto &cfgs = it_v->second;
+	if (const auto &it = scoped_configs.find(thread); it != scoped_configs.cend()) {
+		const auto &cfgs = it->second;
 		if (!cfgs.empty()) {
 			DebugDraw3DScopeConfig *tmp = cfgs.back().scfg;
 			cached_scoped_configs[thread] = tmp->data;
-			return tmp->data;
+			return tmp->data.get();
 		}
 	}
 
 	cached_scoped_configs[thread] = default_scoped_config.ptr()->data;
-	return default_scoped_config.ptr()->data;
+	return default_scoped_config.ptr()->data.get();
 }
 
 void DebugDraw3D::_register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) {

@@ -327,7 +327,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		Viewport *vp;
 		if (available_viewports.size()) {
 			vp = *available_viewports.begin();
-			auto cfg = std::make_shared<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data);
+			auto cfg = std::make_unique<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data.get());
 			cfg->thickness = 0;
 
 			std::vector<AABBMinMax> new_instances;
@@ -345,7 +345,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 				real_t radius = i.radius;
 
 				geometry_pool.add_or_update_instance(
-						cfg,
+						cfg.get(),
 						InstanceType::SPHERE,
 						0,
 						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
@@ -353,7 +353,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						SphereBounds(center, radius));
 
 				geometry_pool.add_or_update_instance(
-						cfg,
+						cfg.get(),
 						InstanceType::CUBE_CENTERED,
 						0,
 						Transform3D(Basis().scaled(diag), center),
@@ -371,7 +371,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 				cfg->dcd.viewport = vp;
 				geometry_pool.add_or_update_instance(
-						cfg,
+						cfg.get(),
 						InstanceType::CUBE_CENTERED,
 						0,
 						Transform3D(Basis().scaled(diag), center),
@@ -380,7 +380,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						&Colors::empty_color);
 
 				geometry_pool.add_or_update_instance(
-						cfg,
+						cfg.get(),
 						InstanceType::SPHERE,
 						0,
 						Transform3D(Basis().scaled(VEC3_ONE(radius) * 2), center),
@@ -395,7 +395,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
 
 					geometry_pool.add_or_update_line(
-							cfg,
+							cfg.get(),
 							0,
 							std::move(l),
 							s,

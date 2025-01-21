@@ -53,7 +53,7 @@ class _DD3D_WorldWatcher : public Node3D {
 protected:
 	DebugDraw3D *m_owner = nullptr;
 	uint64_t m_world_id;
-	static void _bind_methods(){};
+	static void _bind_methods() {};
 
 public:
 	virtual void _process(double p_delta) override;
@@ -175,7 +175,7 @@ private:
 	} scoped_stats_3d = {};
 
 	// Inherited via IScopeStorage
-	const std::shared_ptr<DebugDraw3DScopeConfig::Data> scoped_config_for_current_thread() override;
+	const DebugDraw3DScopeConfig::Data *scoped_config_for_current_thread() override;
 
 	// Meshes
 	/// Store meshes shared between many debug containers
@@ -289,7 +289,7 @@ public:
 
 #pragma region Exposed Parameters
 	/// @private
-	void set_empty_color(const Color &col){};
+	void set_empty_color(const Color &col) {};
 	/**
 	 * Get the color that is used as the default parameter for `draw_*` calls.
 	 */

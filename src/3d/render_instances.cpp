@@ -464,11 +464,11 @@ std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	return res;
 }
 
-void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
+void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_cfg, ConvertableInstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	add_or_update_instance(p_cfg, _scoped_config_type_convert(p_type, p_cfg), p_exp_time, p_transform, p_col, p_bounds, p_custom_col);
 }
 
-void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, InstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
+void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_cfg, InstanceType p_type, const real_t &p_exp_time, const Transform3D &p_transform, const Color &p_col, const SphereBounds &p_bounds, const Color *p_custom_col) {
 	ZoneScoped;
 	auto &proc = pools[p_cfg->dcd.viewport][(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)];
 	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
@@ -478,13 +478,13 @@ void GeometryPool::add_or_update_instance(const std::shared_ptr<DebugDraw3DScope
 	}
 
 	inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
-	inst->bounds = SphereBounds {p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f};
+	inst->bounds = SphereBounds{ p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f };
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
 }
 
-void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg, const real_t &p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb) {
+void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg, const real_t &p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb) {
 	ZoneScoped;
 	auto &proc = pools[p_cfg->dcd.viewport][(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)];
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
@@ -502,7 +502,7 @@ void GeometryPool::add_or_update_line(const std::shared_ptr<DebugDraw3DScopeConf
 	inst->is_visible = true;
 }
 
-GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
+GeometryType GeometryPool::_scoped_config_get_geometry_type(const DebugDraw3DScopeConfig::Data *p_cfg) {
 	// ZoneScoped;
 	if (p_cfg->thickness != 0) {
 		return GeometryType::Volumetric;
@@ -511,7 +511,7 @@ GeometryType GeometryPool::_scoped_config_get_geometry_type(const std::shared_pt
 	return GeometryType::Wireframe;
 }
 
-Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
+Color GeometryPool::_scoped_config_to_custom(const DebugDraw3DScopeConfig::Data *p_cfg) {
 	// ZoneScoped;
 	if (_scoped_config_get_geometry_type(p_cfg) == GeometryType::Volumetric)
 		return Color((float)p_cfg->thickness, (float)p_cfg->center_brightness, (float)0, (float)0);
@@ -519,7 +519,7 @@ Color GeometryPool::_scoped_config_to_custom(const std::shared_ptr<DebugDraw3DSc
 	return Color();
 }
 
-InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p_type, const std::shared_ptr<DebugDraw3DScopeConfig::Data> &p_cfg) {
+InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p_type, const DebugDraw3DScopeConfig::Data *p_cfg) {
 	// ZoneScoped;
 	switch (_scoped_config_get_geometry_type(p_cfg)) {
 		case GeometryType::Wireframe: {
