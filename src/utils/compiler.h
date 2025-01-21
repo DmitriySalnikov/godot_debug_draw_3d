@@ -36,3 +36,12 @@
 #define MSVC_WARNING_DISABLE(n)
 #define MSVC_WARNING_RESTORE(n)
 #endif
+
+#if _MSC_VER
+#define DISABLE_OPTIMIZATIONS() _Pragma("optimize( \"\", off )")
+#define ENABLE_OPTIMIZATIONS() _Pragma("optimize( \"\", on )")
+#elif __GNUG__
+#define DISABLE_OPTIMIZATIONS() _Pragma("GCC push_options") \
+		_Pragma("GCC optimize (\"O0\")")
+#define ENABLE_OPTIMIZATIONS() _Pragma("GCC pop_options")
+#endif

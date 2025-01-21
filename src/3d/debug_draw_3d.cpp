@@ -55,12 +55,12 @@ _DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id)
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
-		world_id(0), is_registered(false), dgcs() {
+		world_id(0), world_watcher(nullptr), dgcs() {
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
 		: world_id(std::exchange(other.world_id, 0)),
-		  is_registered(false) {
+		  world_watcher(nullptr) {
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
 	}
@@ -402,7 +402,7 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 	return shared_generated_meshes.data();
 }
 
-DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container) {
+DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container) {
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
@@ -414,7 +414,7 @@ DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeC
 
 	if (const auto &cached_world = viewport_to_world_cache.find(p_dgcd.viewport);
 			cached_world != viewport_to_world_cache.end() && cached_world->second->dgcs[dgc_depth]) {
-		return cached_world->second->dgcs[dgc_depth].get();
+		return cached_world->second;
 	}
 
 	Ref<World3D> vp_world = p_dgcd.viewport->find_world_3d();
@@ -424,7 +424,7 @@ DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeC
 			dgc_pair != debug_containers.end() && dgc_pair->second.dgcs[dgc_depth]) {
 
 		viewport_to_world_cache[p_dgcd.viewport] = &dgc_pair->second;
-		return dgc_pair->second.dgcs[dgc_depth].get();
+		return &dgc_pair->second;
 	}
 
 	if (!p_generate_new_container) {
@@ -439,25 +439,27 @@ DebugGeometryContainer *DebugDraw3D::get_debug_container(const DebugDraw3DScopeC
 
 	viewport_to_world_cache[p_dgcd.viewport] = &debug_containers[vp_world_id];
 
-	if (!c.is_registered) {
-		c.is_registered = true;
-		call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id);
+	if (!c.world_watcher) {
+		c.world_watcher = memnew(_DD3D_WorldWatcher(this, vp_world_id));
+		call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id, c.world_watcher);
 	}
 
-	return c.dgcs[dgc_depth].get();
+	return &c;
 }
 
-void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ vp_id, const uint64_t p_world_id) {
+void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ vp_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher) {
 	ZoneScoped;
 
 	// something failed. need to remove container
 	Viewport *p_vp = cast_to<Viewport>(ObjectDB::get_instance(vp_id));
-	if (!p_vp || p_vp->is_queued_for_deletion()) {
+	if (!p_vp || p_vp->is_queued_for_deletion() || !watcher) {
 		_remove_debug_container(p_world_id);
+		if (watcher) {
+			watcher->queue_free();
+		}
 		return;
 	}
 
-	auto *watcher = memnew(_DD3D_WorldWatcher(this, p_world_id));
 	p_vp->add_child(watcher);
 	p_vp->move_child(watcher, 0);
 }
@@ -664,7 +666,11 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 	stats_3d.instantiate();
 
 	for (int i = 0; i < 2; i++) {
-		auto dgc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, i > 0), false);
+		auto vdc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, i > 0), false);
+		if (!vdc)
+			continue;
+
+		auto dgc = vdc->dgcs[!!(i > 0)].get();
 		if (dgc) {
 			dgc->get_render_stats(stats_3d);
 			res->combine_with(stats_3d);
@@ -719,10 +725,12 @@ void DebugDraw3D::clear_all() {
 #define CHECK_BEFORE_CALL() \
 	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
 
-#define GET_SCOPED_CFG_AND_DGC()                     \
-	auto scfg = scoped_config_for_current_thread();  \
-	auto dgc = get_debug_container(scfg->dcd, true); \
-	if (!dgc) return
+#define GET_SCOPED_CFG_AND_DGC()                           \
+	auto scfg = scoped_config_for_current_thread();        \
+	auto vdc = get_debug_container(scfg->dcd, true);       \
+	if (!vdc) return;                                      \
+	auto dgc = vdc->dgcs[!!scfg->dcd.no_depth_test].get(); \
+	if (!dgc) return;
 
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 #define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())

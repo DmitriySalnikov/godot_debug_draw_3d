@@ -184,7 +184,7 @@ private:
 	/// Store World3D id and debug container
 	struct ViewportToDebugContainerItem {
 		uint64_t world_id;
-		bool is_registered;
+		_DD3D_WorldWatcher *world_watcher;
 		std::unique_ptr<DebugGeometryContainer> dgcs[(int)MeshMaterialVariant::MAX];
 
 		ViewportToDebugContainerItem();
@@ -204,8 +204,8 @@ private:
 	void _clear_scoped_configs() override;
 
 	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
-	DebugGeometryContainer *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
-	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id);
+	DebugDraw3D::ViewportToDebugContainerItem *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
+	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id, _DD3D_WorldWatcher* watcher);
 	Viewport *_get_root_world_viewport(Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 
