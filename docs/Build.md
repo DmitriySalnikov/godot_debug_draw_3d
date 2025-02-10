@@ -16,8 +16,8 @@ git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude
 # Optional
 # #Faster builds and larger binaries
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
-# #Add build support With or Without thread support in the browser
-git apply --ignore-space-change --ignore-whitespace ../patches/web_threads.patch
+# #Fixes runtime link errors
+git apply --ignore-space-change --ignore-whitespace ../patches/big_int_fix.patch
 ```
 
 Then you can just run scons as usual:

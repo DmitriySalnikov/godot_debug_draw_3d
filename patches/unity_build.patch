@@ -1,22 +1,15 @@
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index e16b17d..6873fb2 100644
+index d80fafc..f896287 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
-@@ -12,6 +12,9 @@ from SCons.Variables.BoolVariable import _text2bool
- 
- from binding_generator import scons_emit_files, scons_generate_bindings
- 
-+sys.path.insert(0, "../patches")
-+import unity_tools
-+
- 
- def add_sources(sources, dir, extension):
-     for f in os.listdir(dir):
-@@ -475,6 +478,9 @@ def _godot_cpp(env):
+@@ -525,6 +525,12 @@ def _godot_cpp(env):
              "binding_generator.py",
          ],
      )
 +
++    sys.path.insert(0, "../patches")
++    import unity_tools
++    sys.path.pop(0)
 +    bindings = unity_tools.generate_unity_build(bindings, "godot-cpp_")
 +
      # Forces bindings regeneration.
