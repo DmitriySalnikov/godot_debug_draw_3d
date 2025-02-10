@@ -33,9 +33,6 @@ public:                                      \
 	DEFINE_DEFAULT_PROP(overlay_text_groups, int64_t, 0);
 	DEFINE_DEFAULT_PROP(overlay_text_lines, int64_t, 0);
 
-	DEFINE_DEFAULT_PROP(overlay_graphs_enabled, int64_t, 0);
-	DEFINE_DEFAULT_PROP(overlay_graphs_total, int64_t, 0);
-
 #undef DEFINE_DEFAULT_PROP
 
 	DebugDraw2DStats(){};
@@ -43,7 +40,5 @@ public:                                      \
 	/// @private
 	void setup(
 			const int64_t &p_overlay_text_groups,
-			const int64_t &p_overlay_text_lines,
-			const int64_t &p_overlay_graphs_enabled,
-			const int64_t &p_overlay_graphs_total);
+			const int64_t &p_overlay_text_lines);
 };

@@ -5,8 +5,6 @@ extends Node3D
 @export var zylann_example := false
 @export var update_in_physics := false
 @export var test_text := true
-@export var test_graphs := false
-@export var test_fps_graph := true
 @export var more_test_cases := true
 @export var draw_array_of_boxes := false
 @export var draw_1m_boxes := false
@@ -24,17 +22,6 @@ extends Node3D
 @export_range(1, 100) var text_groups_default_font_size := 15
 @export_range(1, 100) var text_groups_title_font_size := 20
 @export_range(1, 100) var text_groups_text_font_size := 17
-
-@export_group("Graphs", "graph")
-@export var graph_offset := Vector2i(8, 8)
-@export var graph_size := Vector2i(200, 80)
-@export_range(1, 100) var graph_title_font_size := 14
-@export_range(1, 100) var graph_text_font_size := 12
-@export_range(0, 64) var graph_text_precision := 1
-@export_range(1, 32) var graph_line_width := 1.0
-@export_range(1, 512) var graph_buffer_size := 128
-@export var graph_frame_time_mode := true
-@export var graph_is_enabled := true
 
 var button_presses := {}
 var frame_rendered := false
@@ -100,7 +87,6 @@ func main_update(delta: float) -> void:
 	
 	# Zylann's example :D
 	if zylann_example:
-		DebugDraw2D.clear_graphs()
 		var _time = Time.get_ticks_msec() / 1000.0
 		var box_pos = Vector3(0, sin(_time * 4), 0)
 		var line_begin = Vector3(-1, sin(_time * 4), 0)
@@ -298,20 +284,6 @@ func main_update(delta: float) -> void:
 	if test_text:
 		_text_tests()
 	
-	# Graphs
-	# Enable FPSGraph if not exists
-	_create_graph(&"FPS", true, false, DebugDraw2DGraph.TEXT_CURRENT | DebugDraw2DGraph.TEXT_AVG | DebugDraw2DGraph.TEXT_MAX | DebugDraw2DGraph.TEXT_MIN, &"", DebugDraw2DGraph.SIDE_BOTTOM, DebugDraw2DGraph.POSITION_LEFT_TOP if Engine.is_editor_hint() else DebugDraw2DGraph.POSITION_RIGHT_TOP, Vector2i(200, 80), custom_font)
-	if Engine.is_editor_hint():
-		if DebugDraw2D.get_graph(&"FPS"):
-			DebugDraw2D.get_graph(&"FPS").offset = Vector2i(0, 64)
-	
-	# Adding more graphs
-	if test_graphs and DebugDraw2D.debug_enabled:
-		_graph_test()
-	else:
-		_remove_graphs()
-	_upd_graph_params()
-	
 	# Lag Test
 	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
 	DebugDraw3D.draw_box($LagTest.global_position, Quaternion.IDENTITY, Vector3.ONE * 2.01, Color.CHOCOLATE, true)
@@ -375,8 +347,6 @@ func _text_tests():
 		if render_stats_2d && text_groups_show_stats_2d:
 			DebugDraw2D.set_text("Text groups", render_stats_2d.overlay_text_groups, 20)
 			DebugDraw2D.set_text("Text lines", render_stats_2d.overlay_text_lines, 21)
-			DebugDraw2D.set_text("Graphs total", render_stats_2d.overlay_graphs_total, 22)
-			DebugDraw2D.set_text("Graphs enabled", render_stats_2d.overlay_graphs_enabled, 23)
 			
 		DebugDraw2D.end_text_group()
 	
@@ -464,118 +434,6 @@ func _draw_array_of_boxes():
 					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul) + global_position, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
 		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
-
-
-func _graph_test():
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps", true, true, DebugDraw2DGraph.TEXT_CURRENT, &"", DebugDraw2DGraph.SIDE_LEFT, DebugDraw2DGraph.POSITION_RIGHT_TOP)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps2", true, false, DebugDraw2DGraph.TEXT_CURRENT, &"fps", DebugDraw2DGraph.SIDE_BOTTOM, 0, Vector2i(200, 100))
-# warning-ignore:return_value_discarded
-	_create_graph(&"Sin Wave!", false, true, DebugDraw2DGraph.TEXT_CURRENT, &"fps2", DebugDraw2DGraph.SIDE_BOTTOM)
-	
-# warning-ignore:return_value_discarded
-	_create_graph(&"randf", false, true, DebugDraw2DGraph.TEXT_AVG, &"", DebugDraw2DGraph.SIDE_LEFT, DebugDraw2DGraph.POSITION_RIGHT_BOTTOM, Vector2i(256, 60), custom_font)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps5", true, true, DebugDraw2DGraph.TEXT_ALL, &"randf", DebugDraw2DGraph.SIDE_TOP)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps6", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps5", DebugDraw2DGraph.SIDE_TOP)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps12", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps5", DebugDraw2DGraph.SIDE_LEFT)
-	
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps7", true, false, DebugDraw2DGraph.TEXT_ALL, &"FPS", DebugDraw2DGraph.SIDE_BOTTOM)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps8", true, true, DebugDraw2DGraph.TEXT_ALL, &"", DebugDraw2DGraph.SIDE_TOP, DebugDraw2DGraph.POSITION_LEFT_BOTTOM)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps9", true, false, DebugDraw2DGraph.TEXT_ALL, &"fps8", DebugDraw2DGraph.SIDE_RIGHT)
-# warning-ignore:return_value_discarded
-	_create_graph(&"fps10", true, false, DebugDraw2DGraph.TEXT_ALL, &"fps8", DebugDraw2DGraph.SIDE_TOP)
-	# warning-ignore:return_value_discarded
-	_create_graph(&"fps11", true, true, DebugDraw2DGraph.TEXT_ALL, &"fps9", DebugDraw2DGraph.SIDE_RIGHT)
-	# warning-ignore:return_value_discarded
-	_create_graph(&"fps13", true, true, DebugDraw2DGraph.TEXT_ALL, &"", DebugDraw2DGraph.SIDE_RIGHT)
-	if not DebugDraw2D.get_graph(&"fps13"):
-		return
-	
-	DebugDraw2D.get_graph(&"fps13").enabled = false
-	
-	# If graphs exists, then more tests are done
-	DebugDraw2D.get_graph(&"Sin Wave!").data_getter = Callable(self, &"_get_sin_wave_for_graph")
-	DebugDraw2D.get_graph(&"Sin Wave!").upside_down =false
-	
-	DebugDraw2D.get_graph(&"randf").text_suffix = "utf8 ноль zéro"
-	#DebugDraw2D.get_graph(&"fps9").line_position = DebugDraw2DGraph.LINE_TOP
-	DebugDraw2D.get_graph(&"fps9").offset = Vector2i(0, 0)
-	#DebugDraw2D.get_graph(&"fps11").line_position = DebugDraw2DGraph.LINE_BOTTOM
-	DebugDraw2D.get_graph(&"fps11").offset = Vector2i(16, 0)
-	DebugDraw2D.get_graph(&"fps6").offset = Vector2i(0, 32)
-	DebugDraw2D.get_graph(&"fps").offset = Vector2i(16, 72)
-	
-	DebugDraw2D.get_graph(&"fps9").enabled = graph_is_enabled
-	if !Engine.is_editor_hint():
-		DebugDraw2D.get_graph(&"fps").corner = DebugDraw2DGraph.POSITION_LEFT_TOP
-	
-	# Just sending random data to the graph
-	DebugDraw2D.graph_update_data(&"randf", randf())
-
-
-func _upd_graph_params():
-	DebugDraw2D.config.graphs_base_offset = graph_offset
-	for g in [&"FPS", &"fps5", &"fps8"]:
-		var graph := DebugDraw2D.get_graph(g) as DebugDraw2DFPSGraph
-		if graph:
-			graph.size = graph_size
-			graph.title_size = graph_title_font_size
-			graph.text_size = graph_text_font_size
-			graph.line_width = graph_line_width
-			graph.text_precision = graph_text_precision
-			graph.buffer_size = graph_buffer_size
-			if Engine.is_editor_hint() or g != &"FPS":
-				graph.frame_time_mode = graph_frame_time_mode
-
-
-func _get_sin_wave_for_graph() -> float:
-	var mul = 4 if Input.is_key_pressed(KEY_END) else 2
-	return sin(Engine.get_frames_drawn() * 0.5) * mul
-
-
-func _remove_graphs():
-	if not test_fps_graph:
-		DebugDraw2D.remove_graph(&"FPS")
-	DebugDraw2D.remove_graph(&"randf")
-	DebugDraw2D.remove_graph(&"fps")
-	DebugDraw2D.remove_graph(&"fps2")
-	DebugDraw2D.remove_graph(&"Sin Wave!")
-	DebugDraw2D.remove_graph(&"fps5")
-	DebugDraw2D.remove_graph(&"fps6")
-	DebugDraw2D.remove_graph(&"fps7")
-	DebugDraw2D.remove_graph(&"fps8")
-	DebugDraw2D.remove_graph(&"fps9")
-	DebugDraw2D.remove_graph(&"fps10")
-	DebugDraw2D.remove_graph(&"fps11")
-	DebugDraw2D.remove_graph(&"fps12")
-	DebugDraw2D.remove_graph(&"fps13")
-
-
-func _create_graph(title, is_fps, show_title, flags, parent := &"", parent_side := DebugDraw2DGraph.SIDE_BOTTOM, pos = DebugDraw2DGraph.POSITION_LEFT_BOTTOM, size := Vector2i(256, 60), font = null) -> DebugDraw2DGraph:
-	var graph := DebugDraw2D.get_graph(title)
-	if !graph:
-		if is_fps:
-			graph = DebugDraw2D.create_fps_graph(title)
-		else:
-			graph = DebugDraw2D.create_graph(title)
-		
-		if graph:
-			graph.size = size
-			graph.buffer_size = 50
-			graph.corner = pos
-			graph.show_title = show_title
-			graph.show_text_flags = flags
-			graph.custom_font = font
-			graph.set_parent(parent, parent_side)
-	
-	return graph
 
 
 func _ready() -> void:

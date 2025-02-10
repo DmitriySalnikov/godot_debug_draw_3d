@@ -13,13 +13,6 @@ func _ready():
 	
 	%SwitchLang.disabled = true
 	
-	var test := DebugDraw2D.get_graph(&"FPS")
-	if test:
-		%FPSEnabled.button_pressed = test.enabled
-		%FPSMS.button_pressed = test.frame_time_mode
-		%WidthSlider.value = test.size.x
-		%BufferSlider.value = test.buffer_size
-	
 	%ThicknessSlider.value = get_parent().debug_thickness
 	%FrustumScaleSlider.value = get_parent().camera_frustum_scale
 	%UpdateInPhysics.text = "Update in physics (%d Ticks) *" % ProjectSettings.get_setting("physics/common/physics_ticks_per_second")
@@ -34,22 +27,6 @@ func _ready():
 	
 	%SwitchLang.disabled = false
 	is_ready = true
-
-
-func _on_CheckBox_toggled(button_pressed: bool) -> void:
-	if not is_ready: return
-	
-	var cfg = DebugDraw2D.get_graph(&"FPS")
-	if cfg:
-		cfg.enabled = button_pressed
-
-
-func _on_FPSMS_toggled(button_pressed: bool) -> void:
-	if not is_ready: return
-	
-	var cfg = DebugDraw2D.get_graph(&"FPS")
-	if cfg:
-		cfg.frame_time_mode = button_pressed
 
 
 func _on_Button_pressed() -> void:

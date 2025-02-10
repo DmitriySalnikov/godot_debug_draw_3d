@@ -882,24 +882,6 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Update in physics (15 Ticks) *"
 
-[node name="Label2" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
-text = "FPS Graph:"
-
-[node name="FPSEnabled" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-button_pressed = true
-text = "FPS Graph enabled"
-
-[node name="FPSMS" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
-unique_name_in_owner = true
-layout_mode = 2
-button_pressed = true
-text = "FPS Graph ms or FPS"
-
 [node name="HBox" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 
@@ -968,8 +950,6 @@ text = "Switch to C#"
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox5/FrustumScaleSlider" to="Settings" method="_on_frustum_scale_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
-[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/FPSEnabled" to="Settings" method="_on_CheckBox_toggled"]
-[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/FPSMS" to="Settings" method="_on_FPSMS_toggled"]
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]

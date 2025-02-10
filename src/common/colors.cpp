@@ -18,7 +18,6 @@ const Color Colors::debug_rough_box_bounds = Color(0, 1, 0.55f, 1);
 const Color Colors::dodgerblue = Color(0.12f, 0.56f, 1, 1);
 const Color Colors::forest_green = Color(0.13f, 0.55f, 0.13f, 1);
 const Color Colors::gray_bg = Color(0.3f, 0.3f, 0.3f, 0.8f);
-const Color Colors::gray_graph_bg = Color(0.2f, 0.2f, 0.2f, 0.6f);
 const Color Colors::green = Color(0, 1, 0, 1);
 const Color Colors::light_sky_blue = Color(0.529412f, 0.807843f, 0.980392f, 1);
 const Color Colors::light_green = Color(0.56f, 0.93f, 0.56f, 1);

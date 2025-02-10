@@ -24,7 +24,6 @@ public:
 	const static godot::Color dodgerblue;
 	const static godot::Color forest_green;
 	const static godot::Color gray_bg;
-	const static godot::Color gray_graph_bg;
 	const static godot::Color green;
 	const static godot::Color light_sky_blue;
 	const static godot::Color light_green;

@@ -2,7 +2,6 @@
 
 #include "2d/config_2d.h"
 #include "2d/debug_draw_2d.h"
-#include "2d/graphs.h"
 #include "2d/stats_2d.h"
 #include "3d/config_3d.h"
 #include "3d/config_scope_3d.h"
@@ -50,8 +49,6 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDraw2D>();
 		ClassDB::register_class<DebugDraw2DStats>();
 		ClassDB::register_class<DebugDraw2DConfig>();
-		ClassDB::register_class<DebugDraw2DGraph>();
-		ClassDB::register_class<DebugDraw2DFPSGraph>();
 
 		ClassDB::register_class<DebugDraw3D>();
 		ClassDB::register_class<DebugDraw3DStats>();

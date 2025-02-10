@@ -12,8 +12,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool zylann_example = false;
     [Export] bool update_in_physics = false;
     [Export] bool test_text = true;
-    [Export] bool test_graphs = false;
-    [Export] bool test_fps_graph = true;
     [Export] bool more_test_cases = true;
     [Export] bool draw_array_of_boxes = false;
     [Export] bool draw_1m_boxes = false;
@@ -30,17 +28,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export(PropertyHint.Range, "1, 100")] int text_groups_default_font_size = 15;
     [Export(PropertyHint.Range, "1, 100")] int text_groups_title_font_size = 20;
     [Export(PropertyHint.Range, "1, 100")] int text_groups_text_font_size = 17;
-
-    [ExportGroup("Graphs", "graph")]
-    [Export] Vector2I graph_offset = new Vector2I(8, 8);
-    [Export] Vector2I graph_size = new Vector2I(200, 80);
-    [Export(PropertyHint.Range, "1, 100")] int graph_title_font_size = 14;
-    [Export(PropertyHint.Range, "1, 100")] int graph_text_font_size = 12;
-    [Export(PropertyHint.Range, "0, 64")] int graph_text_precision = 1;
-    [Export(PropertyHint.Range, "1, 32")] float graph_line_width = 1.0f;
-    [Export(PropertyHint.Range, "1, 512")] int graph_buffer_size = 128;
-    [Export] bool graph_frame_time_mode = true;
-    [Export] bool graph_is_enabled = true;
 
     Dictionary<Key, int> button_presses = new Dictionary<Key, int>() {
         { Key.Left, 0 },
@@ -291,7 +278,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
         // Zylann's example :D
         if (zylann_example)
         {
-            DebugDraw2D.ClearGraphs();
             var _time = Time.GetTicksMsec() / 1000.0f;
             var box_pos = new Vector3(0, Mathf.Sin(_time * 4f), 0);
             var line_begin = new Vector3(-1, Mathf.Sin(_time * 4f), 0);
@@ -519,28 +505,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
             _text_tests();
         }
 
-        // Graphs
-        // Enable FPSGraph if not exists
-        _create_graph("FPS", true, false, DebugDraw2DGraph.TextFlags.Current | DebugDraw2DGraph.TextFlags.Avg | DebugDraw2DGraph.TextFlags.Max | DebugDraw2DGraph.TextFlags.Min, "", DebugDraw2DGraph.GraphSide.Bottom, Engine.IsEditorHint() ? DebugDraw2DGraph.GraphPosition.LeftTop : DebugDraw2DGraph.GraphPosition.RightTop, new Vector2I(200, 80), custom_font);
-        if (Engine.IsEditorHint())
-        {
-            if (DebugDraw2D.GetGraph("FPS") != null)
-            {
-                DebugDraw2D.GetGraph("FPS").Offset = new Vector2I(0, 64);
-            }
-        }
-
-        // Adding more graphs
-        if (test_graphs)
-        {
-            _graph_test();
-        }
-        else
-        {
-            _remove_graphs();
-        }
-        _upd_graph_params();
-
         // Lag Test
         dLagTest.Position = ((Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0)) + new Vector3(Mathf.Sin(Time.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
         DebugDraw3D.DrawBox(dLagTest.GlobalPosition, Quaternion.Identity, Vector3.One * 2.01f, Colors.Chocolate, true);
@@ -626,8 +590,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
             {
                 DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 20);
                 DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 21);
-                DebugDraw2D.SetText("Graphs total", render_stats_2d.OverlayGraphsTotal, 22);
-                DebugDraw2D.SetText("Graphs enabled", render_stats_2d.OverlayGraphsEnabled, 23);
             }
             DebugDraw2D.EndTextGroup();
         }
@@ -751,121 +713,5 @@ public partial class DebugDrawDemoSceneCS : Node3D
             //GD.Print($"Draw Cubes: {((Time.GetTicksUsec() - start_time) / 1000.0):F2}ms");
             timer_cubes = cubes_max_time;
         }
-    }
-
-    void _graph_test()
-    {
-        _create_graph("fps", true, true, DebugDraw2DGraph.TextFlags.Current, "", DebugDraw2DGraph.GraphSide.Left, DebugDraw2DGraph.GraphPosition.RightTop);
-        _create_graph("fps2", true, false, DebugDraw2DGraph.TextFlags.Current, "fps", DebugDraw2DGraph.GraphSide.Bottom, 0, new Vector2I(200, 100));
-
-        _create_graph("Sin Wave!", false, true, DebugDraw2DGraph.TextFlags.Current, "fps2", DebugDraw2DGraph.GraphSide.Bottom);
-
-        _create_graph("randf", false, true, DebugDraw2DGraph.TextFlags.Avg, "", DebugDraw2DGraph.GraphSide.Left, DebugDraw2DGraph.GraphPosition.RightBottom, new Vector2I(256, 60), custom_font);
-
-        _create_graph("fps5", true, true, DebugDraw2DGraph.TextFlags.All, "randf", DebugDraw2DGraph.GraphSide.Top);
-        _create_graph("fps6", true, true, DebugDraw2DGraph.TextFlags.All, "fps5", DebugDraw2DGraph.GraphSide.Top);
-        _create_graph("fps12", true, true, DebugDraw2DGraph.TextFlags.All, "fps5", DebugDraw2DGraph.GraphSide.Left);
-
-        _create_graph("fps7", true, false, DebugDraw2DGraph.TextFlags.All, "FPS", DebugDraw2DGraph.GraphSide.Bottom);
-        _create_graph("fps8", true, true, DebugDraw2DGraph.TextFlags.All, "", DebugDraw2DGraph.GraphSide.Top, DebugDraw2DGraph.GraphPosition.LeftBottom);
-        _create_graph("fps9", true, false, DebugDraw2DGraph.TextFlags.All, "fps8", DebugDraw2DGraph.GraphSide.Right);
-        _create_graph("fps10", true, false, DebugDraw2DGraph.TextFlags.All, "fps8", DebugDraw2DGraph.GraphSide.Top);
-        _create_graph("fps11", true, true, DebugDraw2DGraph.TextFlags.All, "fps9", DebugDraw2DGraph.GraphSide.Right);
-
-        // If graphs exists, then more tests are done
-        DebugDraw2D.GetGraph("Sin Wave!").DataGetter = new Callable(this, "_get_sin_wave_for_graph");
-        DebugDraw2D.GetGraph("Sin Wave!").UpsideDown = false;
-
-        DebugDraw2D.GetGraph("randf").TextSuffix = "utf8 ноль zéro";
-        //DebugDraw2D.GetGraph("fps9").line_position = DebugDraw2DGraph.LINE_TOP
-        DebugDraw2D.GetGraph("fps9").Offset = new Vector2I(0, 0);
-        //DebugDraw2D.GetGraph("fps11").LlinePosition = DebugDraw2DGraph.LINE_BOTTOM
-        DebugDraw2D.GetGraph("fps11").Offset = new Vector2I(16, 0);
-        DebugDraw2D.GetGraph("fps6").Offset = new Vector2I(0, 32);
-        DebugDraw2D.GetGraph("fps").Offset = new Vector2I(16, 72);
-        DebugDraw2D.GetGraph("fps9").Enabled = graph_is_enabled;
-
-        if (!Engine.IsEditorHint())
-        {
-            DebugDraw2D.GetGraph("fps").Corner = DebugDraw2DGraph.GraphPosition.LeftTop;
-        }
-
-        // Just sending random data to the graph
-        DebugDraw2D.GraphUpdateData("randf", (float)random.NextDouble());
-    }
-
-    void _upd_graph_params()
-    {
-        DebugDraw2D.Config.GraphsBaseOffset = graph_offset;
-        foreach (var g in new string[] { "FPS", "fps5", "fps8" })
-        {
-            var graph = DebugDraw2D.GetGraph(g) as DebugDraw2DFPSGraph;
-            if (graph != null)
-            {
-
-                graph.Size = graph_size;
-                graph.TitleSize = graph_title_font_size;
-                graph.TextSize = graph_text_font_size;
-                graph.LineWidth = graph_line_width;
-                graph.TextPrecision = graph_text_precision;
-                graph.BufferSize = graph_buffer_size;
-                if (Engine.IsEditorHint() || g != "FPS")
-                {
-                    graph.FrameTimeMode = graph_frame_time_mode;
-                }
-            }
-        }
-    }
-
-    float _get_sin_wave_for_graph()
-    {
-        var mul = Input.IsKeyPressed(Key.End) ? 4 : 2;
-        return (float)Mathf.Sin(Engine.GetFramesDrawn() * 0.5) * mul;
-    }
-
-    void _remove_graphs()
-    {
-        if (!test_fps_graph)
-            DebugDraw2D.RemoveGraph("FPS");
-        DebugDraw2D.RemoveGraph("randf");
-        DebugDraw2D.RemoveGraph("fps");
-        DebugDraw2D.RemoveGraph("fps2");
-        DebugDraw2D.RemoveGraph("Sin Wave!");
-        DebugDraw2D.RemoveGraph("fps5");
-        DebugDraw2D.RemoveGraph("fps6");
-        DebugDraw2D.RemoveGraph("fps7");
-        DebugDraw2D.RemoveGraph("fps8");
-        DebugDraw2D.RemoveGraph("fps9");
-        DebugDraw2D.RemoveGraph("fps10");
-        DebugDraw2D.RemoveGraph("fps11");
-        DebugDraw2D.RemoveGraph("fps12");
-    }
-
-    DebugDraw2DGraph _create_graph(string title, bool is_fps, bool show_title, DebugDraw2DGraph.TextFlags flags, string parent = "", DebugDraw2DGraph.GraphSide parent_side = DebugDraw2DGraph.GraphSide.Bottom, DebugDraw2DGraph.GraphPosition pos = DebugDraw2DGraph.GraphPosition.LeftBottom, Vector2I? size = null, Font font = null)
-    {
-        var graph = DebugDraw2D.GetGraph(title);
-        if (graph == null)
-        {
-            if (is_fps)
-            {
-                graph = DebugDraw2D.CreateFpsGraph(title);
-            }
-            else
-            {
-                graph = DebugDraw2D.CreateGraph(title);
-            }
-
-            if (graph != null)
-            {
-                graph.Size = size ?? new Vector2I(256, 60);
-                graph.BufferSize = 50;
-                graph.Corner = pos;
-                graph.ShowTitle = show_title;
-                graph.ShowTextFlags = flags;
-                graph.CustomFont = font;
-                graph.SetParent(parent, parent_side);
-            }
-        }
-        return graph;
     }
 }

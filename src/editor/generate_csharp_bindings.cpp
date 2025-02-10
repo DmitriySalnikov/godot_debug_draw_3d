@@ -95,8 +95,6 @@ void GenerateCSharpBindingsPlugin::generate() {
 			"DebugDraw2D",
 			"DebugDraw2DStats",
 			"DebugDraw2DConfig",
-			"DebugDraw2DGraph",
-			"DebugDraw2DFPSGraph",
 			"DebugDraw3D",
 			"DebugDraw3DStats",
 			"DebugDraw3DConfig",

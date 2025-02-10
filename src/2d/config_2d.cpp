@@ -11,7 +11,6 @@ void DebugDraw2DConfig::_bind_methods() {
 	BIND_ENUM_CONSTANT(POSITION_LEFT_BOTTOM);
 	BIND_ENUM_CONSTANT(POSITION_RIGHT_BOTTOM);
 
-	REG_PROP(graphs_base_offset, Variant::VECTOR2I);
 	REG_PROP(text_block_position, Variant::INT);
 	REG_PROP(text_block_offset, Variant::VECTOR2I);
 	REG_PROP(text_padding, Variant::VECTOR2I);
@@ -40,23 +39,12 @@ DebugDraw2DConfig::DebugDraw2DConfig() {
 	if (IS_EDITOR_HINT()) {
 		text_block_position = BlockPosition::POSITION_LEFT_BOTTOM;
 		text_block_offset = Vector2(24, 24);
-		graphs_base_offset = Vector2(12, 72);
 	}
 }
 
 void DebugDraw2DConfig::mark_canvas_dirty() {
 	if (mark_dirty_func)
 		mark_dirty_func();
-}
-
-void DebugDraw2DConfig::set_graphs_base_offset(const Vector2i &_offset) {
-	if (graphs_base_offset != _offset)
-		mark_canvas_dirty();
-	graphs_base_offset = _offset;
-}
-
-Vector2i DebugDraw2DConfig::get_graphs_base_offset() const {
-	return graphs_base_offset;
 }
 
 void DebugDraw2DConfig::set_text_block_position(BlockPosition _position) {

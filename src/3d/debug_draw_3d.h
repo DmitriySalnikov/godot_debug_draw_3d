@@ -20,7 +20,6 @@ GODOT_WARNING_RESTORE()
 using namespace godot;
 
 class DebugDraw3D;
-class DataGraphManager;
 class DebugDrawManager;
 class DebugDraw3DConfig;
 class DebugDraw3DStats;
