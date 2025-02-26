@@ -748,7 +748,10 @@ public:
 
 #pragma region Text
 	/**
-	 * Draw text using Label3D
+	 * Draw text using Label3D.
+	 * 
+	 * @note
+	 * Outline can be changed using DebugDraw3DScopeConfig.set_text_outline_color and DebugDraw3DScopeConfig.set_text_outline_size.
 	 *
 	 * ![](docs/images/classes/DrawText.webp)
 	 *

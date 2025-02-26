@@ -84,7 +84,6 @@ INPUT                  = docs/Introduction.md \
                         src/debug_draw_manager.h \
                         src/2d/debug_draw_2d.h \
                         src/2d/config_2d.h \
-                        src/2d/graphs.h \
                         src/2d/stats_2d.h \
                         src/3d/debug_draw_3d.h \
                         src/3d/config_scope_3d.h \

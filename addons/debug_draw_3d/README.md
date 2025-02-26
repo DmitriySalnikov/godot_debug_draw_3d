@@ -52,7 +52,7 @@ Overlay:
 Precompiled for:
 
 * Windows
-* Linux (built on Ubuntu 20.04)
+* Linux (built on Ubuntu 22.04)
 * macOS (10.15+)
 * Android (5.0+)
 * iOS

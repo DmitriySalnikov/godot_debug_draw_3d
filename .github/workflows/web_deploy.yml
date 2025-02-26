@@ -140,7 +140,7 @@ jobs:
   web-gdextension:
     name: 🕸 Build a Web library
     needs: data_preparation
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -196,7 +196,8 @@ jobs:
   generate_docs:
     name: 📚 Generate Docs
     needs: data_preparation
-    runs-on: ubuntu-20.04
+    # 20.04: ./obj/doxygen-1.13.2/bin/doxygen: libstdc++.so.6: version `GLIBCXX_3.4.29' not found
+    runs-on: ubuntu-24.04
 
     env:
       DOXYGEN_VERSION: 1.13.2
@@ -267,7 +268,7 @@ jobs:
 
   export_demo_project:
     name: 🌐📦 Export Demo Project
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [data_preparation, generate_docs, web-gdextension]
 
     env:
