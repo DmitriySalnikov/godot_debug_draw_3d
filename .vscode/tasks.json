@@ -8,7 +8,7 @@
                 "target=editor",
                 "debug_symbols=yes",
                 //"dev_build=yes",
-                //"lto=yes",
+                //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
                 //"native_api_enabled=no"
@@ -32,7 +32,7 @@
                 "target=editor",
                 "debug_symbols=yes",
                 "dev_build=yes",
-                "lto=yes",
+                "lto=full",
                 //"telemetry_enabled=yes",
                 "precision=double",
                 //"tracy_enabled=yes",
@@ -59,7 +59,7 @@
                 "target=editor",
                 "debug_symbols=yes",
                 //"dev_build=yes",
-                //"lto=yes",
+                //"lto=full",
                 //"tracy_enabled=yes",
             ],
             "options": {

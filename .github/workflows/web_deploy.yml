@@ -150,13 +150,13 @@ jobs:
             target: template_release
             arch: wasm32
             artifact: web.demo_build
-            additional: lto=yes force_enabled_dd3d=yes threads=yes
+            additional: lto=full force_enabled_dd3d=yes threads=yes
 
           - platform: linux
             target: editor
             arch: x86_64
             artifact: linux.demo_build
-            additional: lto=yes
+            additional: lto=full
 
     env:
       EM_VERSION: 3.1.63
@@ -199,7 +199,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     env:
-      DOXYGEN_VERSION: 1.10.0
+      DOXYGEN_VERSION: 1.13.2
 
     steps:
       - name: Checkout
