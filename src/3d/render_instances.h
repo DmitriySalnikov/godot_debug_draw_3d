@@ -70,19 +70,13 @@ struct DelayedRenderer {
 	AABBMinMax bounds;
 
 	DelayedRenderer() :
-			expiration_time(0),
+			expiration_time(-1),
 			is_used_one_time(true),
 			is_visible(false),
 			bounds() {}
 
 	_FORCE_INLINE_ bool is_expired() const {
 		return expiration_time < 0 ? is_used_one_time : false;
-	}
-
-	_FORCE_INLINE_ void update_viewport_expiration(const double &p_delta) {
-		if (!is_expired()) {
-			expiration_time -= p_delta;
-		}
 	}
 
 	_FORCE_INLINE_ bool update_visibility(const std::shared_ptr<GeometryPoolCullingData> &p_culling_data);
@@ -120,34 +114,39 @@ private:
 		size_t used_delayed = 0;
 		size_t _prev_used_instant = 0;
 		size_t _prev_not_expired_delayed = 0;
-		double time_used_less_then_half_of_instant_pool = 0;
-		double time_used_less_then_quarter_of_delayed_pool = 0;
+		double time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
+		double time_used_less_then_half_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
-		ObjectsPool() {
-			time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
-			time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
-		}
-
-		TInst *get(bool is_delayed) {
-			ZoneScoped;
-			auto objs = is_delayed ? &delayed : &instant;
-			auto used = is_delayed ? &_prev_not_expired_delayed : &used_instant;
-
+	private:
+		_FORCE_INLINE_ TInst *get_internal(bool is_delayed, std::vector<TInst> &objs, size_t &used) {
 			if (is_delayed) {
-				while (objs->size() != (*used)) {
-					if (((*objs)[*used]).is_expired()) {
-						return &(*objs)[(*used)++];
+				while (objs.size() != used) {
+					if ((objs[used]).is_expired()) {
+						return &objs[used++];
 					}
-					(*used)++;
+					used++;
 				}
 			} else {
-				if (objs->size() != (*used)) {
-					return &(*objs)[(*used)++];
+				if (objs.size() != used) {
+					return &objs[used++];
 				}
 			}
 
-			objs->push_back(TInst());
-			return &(*objs)[(*used)++];
+			int to_create = Math::clamp((int)objs.size(), 2, 1024);
+			for (int i = 0; i < to_create; i++) {
+				objs.push_back(TInst());
+			}
+			return &objs[used++];
+		}
+
+	public:
+		TInst *get(bool is_delayed) {
+			ZoneScoped;
+			if (is_delayed) {
+				return get_internal(is_delayed, delayed, _prev_not_expired_delayed);
+			} else {
+				return get_internal(is_delayed, instant, used_instant);
+			}
 		}
 
 		void reset_counter(double delta, int custom_type_of_buffer = 0) {
@@ -157,7 +156,7 @@ private:
 				if (time_used_less_then_half_of_instant_pool <= 0) {
 					time_used_less_then_half_of_instant_pool = TIME_USED_TO_SHRINK_INSTANT;
 
-					DEV_PRINT_STD("Shrinking instant buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
+					DEV_PRINT_STD("Shrinking instant buffer for %s. From %" PRIu64 ", to %" PRIu64 ". Buffer type: %d\n", typeid(TInst).name(), instant.size(), used_instant, custom_type_of_buffer);
 
 					instant.resize(used_instant);
 				}
@@ -170,17 +169,18 @@ private:
 			_prev_not_expired_delayed = 0;
 
 			if (delayed.size() && used_delayed <= (delayed.size() * 0.5)) {
-				time_used_less_then_quarter_of_delayed_pool -= delta;
-				if (time_used_less_then_quarter_of_delayed_pool <= 0) {
-					time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
+				time_used_less_then_half_of_delayed_pool -= delta;
+				if (time_used_less_then_half_of_delayed_pool <= 0) {
+					time_used_less_then_half_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 
-					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %d, to %d. Buffer type: %d\n", typeid(TInst).name(), delayed.size(), used_delayed, custom_type_of_buffer);
+					size_t old_size = delayed.size();
+					delayed.erase(std::remove_if(delayed.begin(), delayed.end(), [this](auto &i) { return i.is_expired(); }),
+							delayed.end());
 
-					std::sort(delayed.begin(), delayed.end(), [](const TInst &a, const TInst &b) { return (int)a.is_expired() < (int)b.is_expired(); });
-					delayed.resize(used_delayed);
+					DEV_PRINT_STD("Shrinking _delayed_ buffer for %s. From %" PRIu64 ", to %" PRIu64 ". Buffer type: %d\n", typeid(TInst).name(), old_size, delayed.size(), custom_type_of_buffer);
 				}
 			} else {
-				time_used_less_then_quarter_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
+				time_used_less_then_half_of_delayed_pool = TIME_USED_TO_SHRINK_DELAYED;
 			}
 		}
 
@@ -192,6 +192,7 @@ private:
 			_prev_used_instant = 0;
 			_prev_not_expired_delayed = 0;
 			time_used_less_then_half_of_instant_pool = 0;
+			time_used_less_then_half_of_delayed_pool = 0;
 		}
 	};
 

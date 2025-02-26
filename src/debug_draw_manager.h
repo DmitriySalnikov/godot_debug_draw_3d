@@ -17,7 +17,7 @@ class _DD3D_PhysicsWatcher : public Node {
 	GDCLASS(_DD3D_PhysicsWatcher, Node)
 protected:
 	DebugDrawManager *root_node;
-	static void _bind_methods(){};
+	static void _bind_methods() {};
 
 public:
 	void init(DebugDrawManager *p_root);
@@ -82,7 +82,6 @@ private:
 	TypedArray<StringName> dd2d_aliases;
 	TypedArray<StringName> dd3d_aliases;
 
-	Node *_get_current_scene();
 	void _connect_scene_changed();
 	void _on_scene_changed(bool p_is_scene_null);
 
@@ -107,7 +106,7 @@ private:
 	static Object *default_arg_obj;
 
 	// Test regular arguments
-	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath){};
+	void api_test1(Variant, Object *, bool, int, float, String, StringName, NodePath) {};
 	void api_test2(Color, Vector2, Vector2i, Vector3, Vector3i, Vector4, Vector4i, Rect2, Rect2i){};
 	void api_test3(Transform2D, Transform3D, Plane, Quaternion, AABB, Basis, Projection){};
 	void api_test4(RID, Callable, Signal, Dictionary, Array){};
@@ -135,6 +134,9 @@ public:
 	static DebugDrawManager *get_singleton() {
 		return singleton;
 	};
+
+	/// @private
+	Node *get_current_scene();
 
 #pragma region Exposed Methods
 	/**

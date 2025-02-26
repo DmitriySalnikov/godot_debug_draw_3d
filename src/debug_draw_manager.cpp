@@ -65,10 +65,6 @@ void DebugDrawManager::_bind_methods() {
 
 #define REG_CLASS_NAME DebugDrawManager
 
-	// TODO use CALLABLE_MP in 4.2!
-	ClassDB::bind_method(D_METHOD(NAMEOF(_integrate_into_engine)), &DebugDrawManager::_integrate_into_engine);
-	ClassDB::bind_method(D_METHOD(NAMEOF(_on_scene_changed)), &DebugDrawManager::_on_scene_changed);
-
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
 
 	REG_PROP_BOOL(debug_enabled);
@@ -78,7 +74,7 @@ void DebugDrawManager::_bind_methods() {
 #undef REG_CLASS_NAME
 }
 
-Node *DebugDrawManager::_get_current_scene() {
+Node *DebugDrawManager::get_current_scene() {
 #ifndef DISABLE_DEBUG_RENDERING
 	auto ST = SCENE_TREE();
 	if (IS_EDITOR_HINT()) {
@@ -98,13 +94,13 @@ void DebugDrawManager::_connect_scene_changed() {
 		return;
 	}
 
-	Node *scene = _get_current_scene();
+	Node *scene = get_current_scene();
 	if (scene) {
-		scene->connect(StringName("tree_exiting"), Callable(this, NAMEOF(_on_scene_changed)).bindv(Array::make(false)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+		scene->connect(StringName("tree_exiting"), callable_mp(this, &DebugDrawManager::_on_scene_changed).bind(false), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 		return;
 	}
 
-	SCENE_TREE()->connect(StringName("tree_changed"), Callable(this, NAMEOF(_on_scene_changed)).bindv(Array::make(true)), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
+	SCENE_TREE()->connect(StringName("tree_changed"), callable_mp(this, &DebugDrawManager::_on_scene_changed).bind(true), CONNECT_ONE_SHOT | CONNECT_DEFERRED);
 #endif
 }
 
@@ -112,7 +108,7 @@ void DebugDrawManager::_on_scene_changed(bool p_is_scene_null) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	if (!is_current_scene_is_null || is_current_scene_is_null != p_is_scene_null) {
-		DEV_PRINT("Scene changed! clear_all()");
+		DEV_PRINT(NAMEOF(DebugDrawManager) ": Scene changed! clear_all()");
 		debug_draw_3d_singleton->clear_all();
 		debug_draw_2d_singleton->_clear_all_internal();
 	}
@@ -187,7 +183,7 @@ void DebugDrawManager::init() {
 	debug_draw_2d_singleton->init(this);
 	debug_draw_3d_singleton->init(this);
 
-	call_deferred(NAMEOF(_integrate_into_engine));
+	callable_mp(this, &DebugDrawManager::_integrate_into_engine).call_deferred();
 }
 
 void DebugDrawManager::deinit() {
@@ -364,6 +360,9 @@ void DebugDrawManager::_integrate_into_engine() {
 }
 
 void DebugDrawManager::_process_start(double p_delta) {
+	ZoneScoped;
+	FrameMark;
+
 	if (debug_enabled) {
 		debug_draw_3d_singleton->process_start(p_delta);
 		debug_draw_2d_singleton->process_start(p_delta);
@@ -384,10 +383,6 @@ void DebugDrawManager::_process(double p_delta) {
 	if (debug_enabled) {
 		debug_draw_3d_singleton->process_end(p_delta);
 		debug_draw_2d_singleton->process_end(p_delta);
-
-		if (!debug_draw_2d_singleton->is_drawing_frame()) {
-			FrameMark;
-		}
 	}
 #endif
 
@@ -396,12 +391,6 @@ void DebugDrawManager::_process(double p_delta) {
 		log_flush_time -= 0.25f;
 		Utils::print_logs();
 	}
-
-#ifdef TRACY_ENABLE
-	if (!debug_enabled || !debug_draw_2d_singleton->is_debug_enabled()) {
-		FrameMark;
-	}
-#endif
 }
 
 void DebugDrawManager::_physics_process_start(double p_delta) {

@@ -41,9 +41,8 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 #endif
 
 #ifndef DISABLE_DEBUG_RENDERING
-		// TODO register as unexposed
-		ClassDB::register_class<_DD3D_PhysicsWatcher>();
-		ClassDB::register_class<_DD3D_WorldWatcher>();
+		ClassDB::register_internal_class<_DD3D_PhysicsWatcher>();
+		ClassDB::register_internal_class<_DD3D_WorldWatcher>();
 #endif
 
 		ClassDB::register_class<DebugDraw2D>();
@@ -67,11 +66,10 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 #ifndef DISABLE_DEBUG_RENDERING
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		ClassDB::register_class<DebugDrawMenuExtensionPlugin>();
+		ClassDB::register_internal_class<DebugDrawMenuExtensionPlugin>();
 		EditorPlugins::add_by_type<DebugDrawMenuExtensionPlugin>();
 
-		// TODO register as unexposed
-		ClassDB::register_class<_DebugDraw3DAssetLibraryUpdateChecker>();
+		ClassDB::register_internal_class<_DebugDraw3DAssetLibraryUpdateChecker>();
 		upd_checker.instantiate();
 
 #ifdef TELEMETRY_ENABLED
@@ -127,8 +125,8 @@ GDExtensionBool GDE_EXPORT debug_draw_3d_library_init(GDExtensionInterfaceGetPro
 
 // Orphan StringName: Node (static: 7, total: 8)
 // StringName : 1 unclaimed string names at exit.
-// TODO https://github.com/godotengine/godot/pull/83619#:~:text=This%20still%20leaves%20one%20reported%20orphan%20string%3A
+// TODO: https://github.com/godotengine/godot/pull/83619#:~:text=This%20still%20leaves%20one%20reported%20orphan%20string%3A
 
-// TODO godot bug?
+// TODO: godot bug?
 // ERROR: Pages in use exist at exit in PagedAllocator: N7Variant5Pools12BucketMediumE
 //	at : ~PagedAllocator(./ core / templates / paged_allocator.h : 170)

@@ -5,6 +5,7 @@
 #include "debug_geometry_container.h"
 #include "gen/shared_resources.gen.h"
 #include "geometry_generators.h"
+#include "nodes_container.h"
 #include "stats_3d.h"
 #include "utils/utils.h"
 
@@ -37,6 +38,7 @@ void _DD3D_WorldWatcher::_process(double p_delta) {
 
 void _DD3D_WorldWatcher::_notification(int p_what) {
 	if ((p_what == NOTIFICATION_EXIT_WORLD || p_what == NOTIFICATION_EXIT_TREE) && m_owner) {
+		DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (notif): World3D (%" PRIu64 "), What: %s\n", m_world_id, p_what == NOTIFICATION_EXIT_WORLD ? NAMEOF(NOTIFICATION_EXIT_WORLD) : NAMEOF(NOTIFICATION_EXIT_TREE));
 		m_owner->_remove_debug_container(m_world_id);
 		m_owner = nullptr;
 
@@ -55,20 +57,25 @@ _DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id)
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
-		world_id(0), world_watcher(nullptr), dgcs() {
+		world_id(0), world_watcher(nullptr), dgcs(), ncs() {
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
 		: world_id(std::exchange(other.world_id, 0)),
 		  world_watcher(nullptr) {
+
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
+		ncs[i] = std::move(other.ncs[i]);
 	}
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::~ViewportToDebugContainerItem() {
 	for (auto &i : dgcs)
-		i = nullptr;
+		i.reset();
+
+	for (auto &i : ncs)
+		i.reset();
 }
 #endif
 
@@ -151,16 +158,14 @@ void DebugDraw3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_grid), "origin", "x_size", "y_size", "subdivision", "color", "is_centered", "duration"), &DebugDraw3D::draw_grid, Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_grid_xf), "transform", "subdivision", "color", "is_centered", "duration"), &DebugDraw3D::draw_grid_xf, Colors::empty_color, true, 0);
 
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_text), "position", "text", "size", "color", "duration"), &DebugDraw3D::draw_text, 32, Colors::empty_color, 0);
+
 #pragma endregion // Draw Functions
 
 	REG_METHOD(get_render_stats);
 	REG_METHOD(get_render_stats_for_world, "viewport");
 	REG_METHOD(new_scoped_config);
 	REG_METHOD(scoped_config);
-
-#ifndef DISABLE_DEBUG_RENDERING
-	REG_METHOD(_register_viewport_world_deferred);
-#endif
 
 #undef REG_CLASS_NAME
 
@@ -214,6 +219,7 @@ DebugDraw3D::~DebugDraw3D() {
 }
 
 void DebugDraw3D::process_start(double delta) {
+	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 
 #endif
@@ -229,6 +235,11 @@ void DebugDraw3D::process_end(double p_delta) {
 		for (const auto &dgc : p.second.dgcs) {
 			if (dgc) {
 				dgc->update_geometry(p_delta);
+			}
+		}
+		for (const auto &nc : p.second.ncs) {
+			if (nc) {
+				nc->update_geometry(p_delta);
 			}
 		}
 	}
@@ -251,6 +262,11 @@ void DebugDraw3D::physics_process_start(double p_delta) {
 				dgc->update_geometry_physics_start(p_delta);
 			}
 		}
+		for (const auto &nc : p.second.ncs) {
+			if (nc) {
+				nc->update_geometry_physics_start(p_delta);
+			}
+		}
 	}
 #endif
 }
@@ -262,6 +278,11 @@ void DebugDraw3D::physics_process_end(double p_delta) {
 		for (const auto &dgc : p.second.dgcs) {
 			if (dgc) {
 				dgc->update_geometry_physics_end(p_delta);
+			}
+		}
+		for (const auto &nc : p.second.ncs) {
+			if (nc) {
+				nc->update_geometry_physics_end(p_delta);
 			}
 		}
 	}
@@ -433,26 +454,34 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 	// create or update container storage
 	auto &c = debug_containers[vp_world_id];
+
+	if (!c.world_watcher) {
+		// Has to be cleared by the SceenTree or manually in case of an error.
+		c.world_watcher = memnew(_DD3D_WorldWatcher(this, vp_world_id));
+		Node *scene_root = root_node->get_current_scene();
+		callable_mp(this, &DebugDraw3D::_register_viewport_world_deferred)
+				.call_deferred(_get_root_world_node(scene_root, p_dgcd.viewport)->get_instance_id(), vp_world_id, c.world_watcher);
+	}
+
 	c.world_id = vp_world_id;
 	c.dgcs[dgc_depth] = std::make_unique<DebugGeometryContainer>(this, p_dgcd.no_depth_test);
 	c.dgcs[dgc_depth]->set_world(vp_world);
 
-	viewport_to_world_cache[p_dgcd.viewport] = &debug_containers[vp_world_id];
+	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher, p_dgcd.no_depth_test);
 
-	if (!c.world_watcher) {
-		c.world_watcher = memnew(_DD3D_WorldWatcher(this, vp_world_id));
-		call_deferred(NAMEOF(_register_viewport_world_deferred), _get_root_world_viewport(p_dgcd.viewport)->get_instance_id(), vp_world_id, c.world_watcher);
-	}
+	viewport_to_world_cache[p_dgcd.viewport] = &debug_containers[vp_world_id];
 
 	return &c;
 }
 
-void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ vp_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher) {
+void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Node * */ p_node_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher) {
 	ZoneScoped;
 
 	// something failed. need to remove container
-	Viewport *p_vp = cast_to<Viewport>(ObjectDB::get_instance(vp_id));
-	if (!p_vp || p_vp->is_queued_for_deletion() || !watcher) {
+	Node *parent_node = cast_to<Node>(ObjectDB::get_instance(p_node_id));
+
+	if (!parent_node || parent_node->is_queued_for_deletion() || !watcher) {
+		DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (register): Failed to register WorldWatcher for World3D (%" PRIu64 ").\n", p_world_id);
 		_remove_debug_container(p_world_id);
 		if (watcher) {
 			watcher->queue_free();
@@ -460,19 +489,52 @@ void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ vp_
 		return;
 	}
 
-	p_vp->add_child(watcher);
-	p_vp->move_child(watcher, 0);
+	DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (register): Registered WorldWatcher for World3D (%" PRIu64 ").\n", p_world_id);
+	parent_node->add_child(watcher);
+	parent_node->move_child(watcher, 0);
 }
 
-Viewport *DebugDraw3D::_get_root_world_viewport(Viewport *p_vp) {
-	Viewport *parent_vp = p_vp->get_viewport();
-	if (!parent_vp || parent_vp == p_vp)
-		return p_vp;
-
-	if (p_vp->find_world_3d() == parent_vp->find_world_3d()) {
-		return _get_root_world_viewport(parent_vp);
+Node *DebugDraw3D::_get_root_world_node(Node *p_scene_root, Viewport *p_vp) {
+	Node *parent = p_vp->get_parent();
+	if (!parent) {
+		goto end;
 	}
 
+	{
+		Viewport *parent_vp = parent->get_viewport();
+		if (!parent_vp) {
+			goto end;
+		}
+
+		if (p_vp->find_world_3d() == parent_vp->find_world_3d()) {
+			return _get_root_world_node(p_scene_root, parent_vp);
+		}
+	}
+
+end:
+	/*
+	 * Godot 4.3 in the editor will crash when you select an area with text in the viewport, if the node is added to the root of the editor.
+	 * Caused by [#92188](https://github.com/godotengine/godot/pull/92188) because it does not check whether the node has an owner.
+	 * Fixed by [#95420](https://github.com/godotengine/godot/pull/95420) in Godot 4.3.1
+	 *
+	 * But this code should fix the problem in any version of the engine by attaching WorldWatcher to the current scene.
+	 */
+
+#ifdef TOOLS_ENABLED
+	if (IS_EDITOR_HINT()) {
+		if (!p_scene_root->is_ancestor_of(p_vp)) {
+			DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (get_root): Viewport with World3D (%" PRIu64 ") does not belong to the current scene: %s\nUsing the root of the current scene: %s\n",
+					p_vp->find_world_3d()->get_instance_id(),
+					String("\n\t").join(String(p_vp->get_path()).split("/")).utf8().get_data(),
+					String("\n\t").join(String(p_scene_root->get_path()).split("/")).utf8().get_data());
+			return p_scene_root;
+		}
+	}
+#endif
+
+	DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (get_root): This Viewport with World3D (%" PRIu64 ") will be used as the parent for the WorldWatcher: %s\n",
+			p_vp->find_world_3d()->get_instance_id(),
+			String("\n\t").join(String(p_vp->get_path()).split("/")).utf8().get_data());
 	return p_vp;
 }
 
@@ -482,8 +544,8 @@ void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
 
 	if (const auto &dgc = debug_containers.find(p_world_id);
 			dgc != debug_containers.end()) {
+		DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (remove): World3D (%" PRIu64 ") is no longer in use, its storage will be deleted.\n", p_world_id);
 		debug_containers.erase(dgc);
-		DEV_PRINT_STD("World3D (%d) is no longer in use, its storage will be deleted.\n", p_world_id);
 
 		std::vector<const Viewport *> viewport_to_remove;
 
@@ -610,11 +672,11 @@ Color DebugDraw3D::get_empty_color() const {
 #pragma region Exposed Parameters
 
 void DebugDraw3D::set_debug_enabled(const bool &state) {
-	debug_enabled = state;
-
-	if (!state) {
+	if (debug_enabled != state && !state) {
 		clear_all();
 	}
+
+	debug_enabled = state;
 }
 
 bool DebugDraw3D::is_debug_enabled() const {
@@ -653,6 +715,16 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 			}
 		}
 	}
+
+	for (const auto &p : debug_containers) {
+		for (const auto &nc : p.second.ncs) {
+			if (nc) {
+				nc->get_render_stats(stats_3d);
+				res->combine_with(stats_3d);
+			}
+		}
+	}
+	
 	res->set_scoped_config_stats(scoped_stats_3d.created, scoped_stats_3d.orphans);
 #endif
 	return res;
@@ -666,7 +738,7 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 	stats_3d.instantiate();
 
 	for (int i = 0; i < 2; i++) {
-		auto vdc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent(viewport, i > 0), false);
+		auto vdc = get_debug_container(DebugDraw3DScopeConfig::DebugContainerDependent{ viewport, viewport ? viewport->get_instance_id() : 0, i > 0 }, false);
 		if (!vdc)
 			continue;
 
@@ -708,13 +780,21 @@ void DebugDraw3D::regenerate_geometry_meshes() {
 void DebugDraw3D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
 	for (auto &p : debug_containers) {
-		for (const auto &dgc : p.second.dgcs) {
-			if (dgc) {
-				dgc->clear_3d_objects();
+		if (!p.second.world_watcher->is_queued_for_deletion()) {
+			// must be freed in anyway
+			p.second.world_watcher->queue_free();
+
+			Node *parent = p.second.world_watcher->get_parent();
+			if (parent) {
+				// should be auto freed on exit_tree notif
+				parent->remove_child(p.second.world_watcher);
 			}
 		}
 	}
+	debug_containers.clear();
+	viewport_to_world_cache.clear();
 #else
 	return;
 #endif
@@ -725,12 +805,20 @@ void DebugDraw3D::clear_all() {
 #define CHECK_BEFORE_CALL() \
 	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
 
+#define GET_SCOPED_CFG_AND_VDC()                     \
+	auto scfg = scoped_config_for_current_thread();  \
+	auto vdc = get_debug_container(scfg->dcd, true); \
+	if (!vdc) return;
+
 #define GET_SCOPED_CFG_AND_DGC()                           \
-	auto scfg = scoped_config_for_current_thread();        \
-	auto vdc = get_debug_container(scfg->dcd, true);       \
-	if (!vdc) return;                                      \
+	GET_SCOPED_CFG_AND_VDC();                              \
 	auto dgc = vdc->dgcs[!!scfg->dcd.no_depth_test].get(); \
 	if (!dgc) return;
+
+#define GET_SCOPED_CFG_AND_NC()                          \
+	GET_SCOPED_CFG_AND_VDC();                            \
+	auto nc = vdc->ncs[!!scfg->dcd.no_depth_test].get(); \
+	if (!nc) return;
 
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 #define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())
@@ -863,7 +951,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	// TODO maybe someone knows a better way to solve it?
+	// TODO: maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
 	Vector3 half_center = diff.normalized() * len * .5f;
@@ -897,7 +985,7 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 
 	Vector3 diff = b - a;
 
-	// TODO maybe someone knows a better way to solve it?
+	// TODO: maybe someone knows a better way to solve it?
 	if (is_ab_diagonal) {
 		ZoneScopedN("From diagonals");
 		Vector3 up_n = up.normalized();
@@ -1347,10 +1435,30 @@ void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const 
 
 #pragma endregion // Camera Frustum
 
+#pragma region Text
+void DebugDraw3D::draw_text(const Vector3 &position, const String text, const int size, const Color &color, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	// LOCK_GUARD(datalock);
+	GET_SCOPED_CFG_AND_NC();
+
+	nc->add_or_update_text(
+			scfg,
+			position,
+			text,
+			size,
+			IS_DEFAULT_COLOR(color) ? Colors::white : color,
+			duration);
+}
+#pragma endregion // Text
+
 #pragma endregion // Misc
 #endif
 
 #undef IS_DEFAULT_COLOR
 #undef CHECK_BEFORE_CALL
 #undef NEED_LEAVE
+#undef GET_SCOPED_CFG_AND_VDC
 #undef GET_SCOPED_CFG_AND_DGC
+#undef GET_SCOPED_CFG_AND_NC

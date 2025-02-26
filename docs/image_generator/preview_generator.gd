@@ -42,6 +42,10 @@ enum PreviewCase {
 	DrawGrid,
 	DrawFrustum,
 	DrawPlane,
+	
+	DrawText,
+	DrawTextOutlineColor,
+	DrawTextOutlineSize,
 }
 
 class CaseData:
@@ -83,6 +87,10 @@ var case_maps = {
 	PreviewCase.DrawGrid : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawFrustum : CaseData.new("DrawMethods360Camera"),
 	PreviewCase.DrawPlane : CaseData.new(),
+	
+	PreviewCase.DrawText : CaseData.new("DrawMethods180"),
+	PreviewCase.DrawTextOutlineColor : CaseData.new("DrawMethods180"),
+	PreviewCase.DrawTextOutlineSize : CaseData.new("DrawMethods180"),
 }
 
 var changed_by_code := false
@@ -101,16 +109,13 @@ var changed_by_code := false
 @export var viewport_size: Vector2i = Vector2i(256, 256):
 	set(val):
 		viewport_size = val
-		changed_by_code = true
-		$Control.size = val
-		$GridRender.size = val * 2
-		
-		if not Engine.is_editor_hint():
-			$Control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			get_tree().root.size = viewport_size
-		changed_by_code = false
+		_update_viewport_size()
 
 @export var anim_value_1: float = 0
+@export var anim_color_1: Color = Color()
+
+@export var text_colors: Gradient = null
+@export var text_outline_colors: Gradient = null
 
 var is_exporting := false
 @export var export_all: bool = false:
@@ -133,8 +138,12 @@ var movie_FPS: int = 30
 var movie_compression: int = 4 # 0-6
 var movie_quality: int = 90 # 0-100
 
+var is_nodes_avail := false
 
 func _enter_tree():
+	is_nodes_avail = true
+	_update_viewport_size()
+	
 	var idx = OS.get_cmdline_user_args().find("--preview_case")
 	if not Engine.is_editor_hint() and idx >= 0:
 		preview_case = int(OS.get_cmdline_user_args()[idx + 1]) as PreviewCase
@@ -148,10 +157,26 @@ func _enter_tree():
 	movie_FPS = ProjectSettings.get_setting("editor/movie_writer/fps")
 	
 	if not Engine.is_editor_hint():
-		$Control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		%UI.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 		get_tree().root.size = viewport_size
 	else:
 		viewport_size = viewport_size
+
+
+func _update_viewport_size():
+	if not is_nodes_avail:
+		return
+	
+	changed_by_code = true
+	
+	%UI.size = viewport_size
+	$GridRender.size = viewport_size * 2
+	
+	if not Engine.is_editor_hint():
+		%UI.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		get_tree().root.size = viewport_size
+	
+	changed_by_code = false
 
 
 func _set_anim():
@@ -162,10 +187,7 @@ func _set_anim():
 	%AnimationPlayer.seek(0)
 	
 	if not Engine.is_editor_hint():
-		if Engine.get_version_info()["minor"] > 1:
-			%AnimationPlayer.callback_mode_process = 2
-		else:
-			%AnimationPlayer.playback_process_mode = 2
+		%AnimationPlayer.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 	
 	if not Engine.is_editor_hint() and OS.has_feature("movie"):
 		var anim: Animation = %AnimationPlayer.get_animation(%AnimationPlayer.current_animation)
@@ -262,6 +284,8 @@ func _export_all_images():
 
 
 func _process(delta):
+	#print("Label3Ds count: %d" % get_child(0).get_child_count() if Engine.is_editor_hint() else get_tree().root.get_child(0).get_child_count())
+	
 	if not Engine.is_editor_hint():
 		%AnimationPlayer.advance(delta)
 	
@@ -269,7 +293,7 @@ func _process(delta):
 	var _s_def = DebugDraw3D.new_scoped_config().set_thickness(0.05).set_viewport($GridRender)
 	
 	# Default 2D
-	DebugDraw2D.custom_canvas = $Control/PanelContainer
+	DebugDraw2D.custom_canvas = %UI/PanelContainer
 	DebugDraw2D.config.text_block_position = DebugDraw2DConfig.POSITION_RIGHT_TOP
 	DebugDraw2D.config.text_block_offset = Vector2(4,4)
 	DebugDraw2D.config.text_background_color = Color.TRANSPARENT
@@ -289,6 +313,7 @@ func _process(delta):
 		DebugDraw3D.draw_grid_xf(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)
 	
 	var up_vec = $OriginUpVector.global_position - $OriginUpVector/Up.global_position
+	var anim_pos = (%AnimationPlayer.current_animation_position / %AnimationPlayer.current_animation_length) if %AnimationPlayer.current_animation != "" else 0.0
 	
 	# Plane
 	var pxf: Transform3D = $OriginPlane.global_transform
@@ -336,7 +361,7 @@ func _process(delta):
 		PreviewCase.DrawCylinderAb:
 			DebugDraw3D.draw_square(%OriginInstances/A.global_position, 0.1, Color.RED)
 			DebugDraw3D.draw_square(%OriginInstances/B.global_position, 0.1, Color.GREEN)
-			DebugDraw3D.draw_cylinder_ab(%OriginInstances/A.global_position, %OriginInstances/B.global_position, 0.15)
+			DebugDraw3D.draw_cylinder_ab(%OriginInstances/A.global_position, %OriginInstances/B.global_position, 0.3)
 		PreviewCase.DrawBoxXf:
 			DebugDraw3D.draw_box_xf(%OriginInstances.global_transform, Color.GREEN)
 		PreviewCase.DrawBoxXfCorner:
@@ -379,7 +404,13 @@ func _process(delta):
 		PreviewCase.DrawPlane:
 			var _s = DebugDraw3D.new_scoped_config().set_plane_size(1)
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
-	
+		PreviewCase.DrawText:
+			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, sin(anim_pos * PI) * 0.25, 0), "Anim pos: %.2f%%" % anim_pos, sin(anim_pos * PI) * 20 + 20, text_colors.sample(anim_pos))
+		PreviewCase.DrawTextOutlineColor:
+			var _s = DebugDraw3D.new_scoped_config().set_text_outline_color(text_outline_colors.sample(anim_pos)).set_text_outline_size(24)
+			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
+		PreviewCase.DrawTextOutlineSize:
+			var _s = DebugDraw3D.new_scoped_config().set_text_outline_size(sin(anim_pos * PI) * 32 + 2)
+			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
 	
 	_end_of_frame(delta)
-

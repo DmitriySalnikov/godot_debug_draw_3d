@@ -26,6 +26,7 @@ class DebugDraw3DStats;
 
 #ifndef DISABLE_DEBUG_RENDERING
 class DebugGeometryContainer;
+class NodesContainer;
 struct DelayedRendererLine;
 #endif
 
@@ -119,6 +120,7 @@ class DebugDraw3D : public Object, public IScopeStorage<DebugDraw3DScopeConfig, 
 
 #ifndef DISABLE_DEBUG_RENDERING
 	friend DebugGeometryContainer;
+	friend NodesContainer;
 	friend _DD3D_WorldWatcher;
 #endif
 
@@ -185,6 +187,7 @@ private:
 		uint64_t world_id;
 		_DD3D_WorldWatcher *world_watcher;
 		std::unique_ptr<DebugGeometryContainer> dgcs[(int)MeshMaterialVariant::MAX];
+		std::unique_ptr<NodesContainer> ncs[(int)MeshMaterialVariant::MAX];
 
 		ViewportToDebugContainerItem();
 		ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept;
@@ -204,8 +207,8 @@ private:
 
 	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugDraw3D::ViewportToDebugContainerItem *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
-	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_vp, const uint64_t p_world_id, _DD3D_WorldWatcher* watcher);
-	Viewport *_get_root_world_viewport(Viewport *p_vp);
+	void _register_viewport_world_deferred(uint64_t /*Node * */ p_node_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher);
+	Node *_get_root_world_node(Node *p_scene_root, Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
@@ -322,7 +325,8 @@ public:
 #define FAKE_FUNC_IMPL
 #else
 #define FAKE_FUNC_IMPL \
-	{}
+	{                  \
+	}
 #endif
 
 	/**
@@ -741,6 +745,22 @@ public:
 	void draw_camera_frustum_planes(const Array &camera_frustum, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Camera Frustum
+
+#pragma region Text
+	/**
+	 * Draw text using Label3D
+	 *
+	 * ![](docs/images/classes/DrawText.webp)
+	 *
+	 * @param position Center position of Label
+	 * @param text Label's text
+	 * @param size Font size
+	 * @param color Primary color
+	 * @param duration The duration of how long the object will be visible
+	 */
+	void draw_text(const Vector3 &position, const String text, const int size = 32, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+#pragma endregion // Text
 
 #pragma endregion // Misc
 #pragma endregion // Exposed Draw Methods

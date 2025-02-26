@@ -13,12 +13,15 @@ public partial class DebugDrawDemoSceneCS : Node3D
     [Export] bool update_in_physics = false;
     [Export] bool test_text = true;
     [Export] bool more_test_cases = true;
+    [Export] bool draw_3d_text = true;
     [Export] bool draw_array_of_boxes = false;
+    [Export] bool draw_text_with_boxes = false;
     [Export] bool draw_1m_boxes = false;
     [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.1f;
     [Export(PropertyHint.Range, "0, 1")] float camera_frustum_scale = 0.9f;
 
     [ExportGroup("Text groups", "text_groups")]
+    [Export] bool text_groups_show_examples = true;
     [Export] bool text_groups_show_hints = true;
     [Export] bool text_groups_show_stats = true;
     [Export] bool text_groups_show_stats_2d = true;
@@ -150,7 +153,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         dOtherWorld = GetNode<MeshInstance3D>("OtherWorld");
         dOtherWorldViewport = GetNode<SubViewport>("OtherWorld/SubViewport");
-        dOtherWorldBox = GetNode<Node3D>("OtherWorld/SubViewport/OtherWorldBox");
+        dOtherWorldBox = GetNode<Node3D>("OtherWorld/SubViewport/SubViewportContainer/SubViewport/OtherWorldBox");
 
         dCustomCanvas = GetNode<Control>("CustomCanvas");
         dMisc_Arrow = GetNode<Node3D>("Misc/Arrow");
@@ -180,6 +183,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         if (!IsInsideTree())
             return;
 
+        DebugDraw2D.Config.TextBackgroundColor = new Color(0.3f, 0.3f, 0.3f, 0.8f);
     }
 
     bool _is_key_just_pressed(Key key)
@@ -447,14 +451,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
         using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
             DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
 
-        // Other world
-
-        using (var s = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport()))
-        {
-            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau)), Colors.SandyBrown);
-            DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(-1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau) - Mathf.Pi / 4), Colors.SandyBrown);
-        }
-
         // Misc
         if (Engine.IsEditorHint())
         {
@@ -501,7 +497,6 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         if (test_text)
         {
-            timer_text -= delta;
             _text_tests();
         }
 
@@ -528,6 +523,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
             }
         }
 
+        _draw_other_world();
+
         if (draw_array_of_boxes)
         {
             _draw_array_of_boxes();
@@ -537,21 +534,24 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
     void _text_tests()
     {
-
-        if (timer_text < 0)
-        {
-            DebugDraw2D.SetText("Some delayed text", "for 2.5s", -1, Colors.Black, 2.5f); // it's supposed to show text for 2.5 seconds
-            timer_text += 5;
-        }
-
         DebugDraw2D.SetText("FPS", $"{Engine.GetFramesPerSecond():F2}", 0, Colors.Gold);
-        DebugDraw2D.BeginTextGroup("-- First Group --", 2, Colors.LimeGreen, true, text_groups_title_font_size, text_groups_text_font_size);
-        DebugDraw2D.SetText("Simple text");
-        DebugDraw2D.SetText("Text", "Value", 0, Colors.Aquamarine);
-        DebugDraw2D.SetText("Text out of order", null, -1, Colors.Silver);
-        DebugDraw2D.BeginTextGroup("-- Second Group --", 1, Colors.Beige);
-        DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn());
-        DebugDraw2D.EndTextGroup();
+
+        if (text_groups_show_examples)
+        {
+            if (timer_text < 0)
+            {
+                DebugDraw2D.SetText("Some delayed text", "for 2.5s", -1, Colors.Black, 2.5f); // it's supposed to show text for 2.5 seconds
+                timer_text += 5;
+            }
+
+            DebugDraw2D.BeginTextGroup("-- First Group --", 2, Colors.LimeGreen, true, text_groups_title_font_size, text_groups_text_font_size);
+            DebugDraw2D.SetText("Simple text");
+            DebugDraw2D.SetText("Text", "Value", 0, Colors.Aquamarine);
+            DebugDraw2D.SetText("Text out of order", null, -1, Colors.Silver);
+            DebugDraw2D.BeginTextGroup("-- Second Group --", 1, Colors.Beige);
+            DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn());
+            DebugDraw2D.EndTextGroup();
+        }
 
         if (text_groups_show_stats)
         {
@@ -567,29 +567,34 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 DebugDraw2D.SetText("Visible Instances", render_stats.VisibleInstances, 4);
                 DebugDraw2D.SetText("Visible Lines", render_stats.VisibleLines, 5);
 
-                DebugDraw2D.SetText("---", "", 6);
+                DebugDraw2D.SetText("---", "", 12);
 
-                DebugDraw2D.SetText("Culling time", $"{(render_stats.TotalTimeCullingUsec / 1000.0):F2} ms", 7);
-                DebugDraw2D.SetText("Filling instances buffer", $"{(render_stats.TimeFillingBuffersInstancesUsec / 1000.0):F2} ms", 8);
-                DebugDraw2D.SetText("Filling lines buffer", $"{(render_stats.TimeFillingBuffersLinesUsec / 1000.0):F2} ms", 9);
-                DebugDraw2D.SetText("Filling time", $"{(render_stats.TotalTimeFillingBuffersUsec / 1000.0):F2} ms", 10);
-                DebugDraw2D.SetText("Total time", $"{(render_stats.TotalTimeSpentUsec / 1000.0):F2} ms", 11);
+                DebugDraw2D.SetText("Culling time", $"{(render_stats.TotalTimeCullingUsec / 1000.0):F2} ms", 13);
+                DebugDraw2D.SetText("Filling instances buffer", $"{(render_stats.TimeFillingBuffersInstancesUsec / 1000.0):F2} ms", 14);
+                DebugDraw2D.SetText("Filling lines buffer", $"{(render_stats.TimeFillingBuffersLinesUsec / 1000.0):F2} ms", 15);
+                DebugDraw2D.SetText("Filling time", $"{(render_stats.TotalTimeFillingBuffersUsec / 1000.0):F2} ms", 16);
+                DebugDraw2D.SetText("Total time", $"{(render_stats.TotalTimeSpentUsec / 1000.0):F2} ms", 17);
 
-                DebugDraw2D.SetText("---", null, 14);
+                DebugDraw2D.SetText("----", null, 32);
 
-                DebugDraw2D.SetText("Created scoped configs", $"{render_stats.CreatedScopedConfigs}", 15);
+                DebugDraw2D.SetText("Total Label3D", render_stats.NodesLabel3dExistsTotal, 33);
+                DebugDraw2D.SetText("Visible Label3D", render_stats.NodesLabel3dVisible + render_stats.NodesLabel3dVisiblePhysics, 34);
+
+                DebugDraw2D.SetText("-----", null, 48);
+
+                DebugDraw2D.SetText("Created scoped configs", $"{render_stats.CreatedScopedConfigs}", 49);
             }
 
             if (text_groups_show_stats && text_groups_show_stats_2d)
             {
-                DebugDraw2D.SetText("----", null, 19);
+                DebugDraw2D.SetText("------", null, 64);
             }
 
             var render_stats_2d = DebugDraw2D.GetRenderStats();
             if (render_stats_2d != null && text_groups_show_stats_2d)
             {
-                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 20);
-                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 21);
+                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 96);
+                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 97);
             }
             DebugDraw2D.EndTextGroup();
         }
@@ -617,6 +622,22 @@ public partial class DebugDrawDemoSceneCS : Node3D
         }
     }
 
+    void _draw_other_world()
+    {
+        using var s = DebugDraw3D.NewScopedConfig().SetViewport(dOtherWorldBox.GetViewport());
+        DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau)), Colors.SandyBrown);
+        DebugDraw3D.DrawBoxXf(dOtherWorldBox.GlobalTransform.RotatedLocal(new Vector3(-1, 1, -1).Normalized(), Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0f, Mathf.Tau) - Mathf.Pi / 4), Colors.SandyBrown);
+
+        if (draw_3d_text)
+        {
+            var angle = Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0, Mathf.Tau);
+            DebugDraw3D.DrawText(dOtherWorldBox.GlobalPosition + new Vector3(Mathf.Cos(angle), -0.25f, Mathf.Sin(angle)), "Hello world!", 32, Colors.Crimson, 0);
+
+            using var _w2 = DebugDraw3D.NewScopedConfig().SetNoDepthTest(true).SetTextOutlineColor(Colors.IndianRed).SetTextOutlineSize(6);
+            DebugDraw3D.DrawText(dOtherWorldBox.GlobalPosition + new Vector3(Mathf.Cos(angle), +0.25f, Mathf.Sin(-angle)), "World without depth", 20, Colors.Pink, 0);
+        }
+    }
+
     void _draw_rays_casts()
     {
         // Line hits render
@@ -635,7 +656,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
         // Delayed line render
         using (var s = DebugDraw3D.NewScopedConfig().SetThickness(0.035f))
         {
-            DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.5f);
+            DebugDraw3D.DrawLine(dLagTest.GlobalPosition + Vector3.Up, dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), null, 0.35f);
+
+            if (draw_3d_text)
+            {
+                DebugDraw3D.DrawText(dLagTest.GlobalPosition + new Vector3(0, 3, Mathf.Sin(Time.GetTicksMsec() / 50.0f)), $"{Mathf.Sin(Time.GetTicksMsec() / 50.0f):F1}", 16, null, 0.35f);
+            }
         }
 
         // Draw plane
@@ -683,6 +709,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
         var z_size = 3;
         var mul = 1.0f;
         var cubes_max_time = 1.25f;
+        var show_text = draw_text_with_boxes;
         using var cfg = DebugDraw3D.NewScopedConfig();
 
         if (draw_1m_boxes)
@@ -692,7 +719,11 @@ public partial class DebugDrawDemoSceneCS : Node3D
             z_size = 100;
             mul = 4.0f;
             cubes_max_time = 60f;
+            draw_text_with_boxes = false;
         }
+
+        var size = Vector3.One;
+        var half_size = size * 0.5f;
 
         if (timer_cubes <= 0)
         {
@@ -703,14 +734,18 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 {
                     for (int z = 0; z < z_size; z++)
                     {
-                        var size = Vector3.One;
                         cfg.SetThickness(Random.Shared.NextSingle() * 0.1f);
-                        //size = new Vector3(Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f, Random.Shared.NextSingle() * 100 + 0.1f);
-                        DebugDraw3D.DrawBox(new Vector3(x * mul, (-4 - z) * mul, y * mul) + GlobalPosition, Quaternion.Identity, size, null, false, cubes_max_time);
+                        var pos = new Vector3(x * mul, (-4 - z) * mul, y * mul) + GlobalPosition;
+                        DebugDraw3D.DrawBox(pos, Quaternion.Identity, size, null, false, cubes_max_time);
+
+                        if (show_text && z == 0)
+                        {
+                            DebugDraw3D.DrawText(pos + half_size, pos.ToString(), 32, null, cubes_max_time);
+                        }
                     }
                 }
             }
-            //GD.Print($"Draw Cubes: {((Time.GetTicksUsec() - start_time) / 1000.0):F2}ms");
+            //GD.Print($"Draw Cubes: {((Time.GetTicksUsec() - start_time) / 1000.0):F3}ms");
             timer_cubes = cubes_max_time;
         }
     }

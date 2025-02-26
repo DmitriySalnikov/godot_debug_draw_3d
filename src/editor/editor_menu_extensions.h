@@ -21,7 +21,7 @@ private:
 	String menu_item_name;
 
 protected:
-	static void _bind_methods();
+	static void _bind_methods() {};
 
 public:
 	String _get_plugin_name() const override;

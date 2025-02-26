@@ -17,8 +17,6 @@ const char *DebugDraw2D::s_marked_dirty = "marked_dirty";
 void DebugDraw2D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw2D
 
-	ClassDB::bind_method(D_METHOD(NAMEOF(_on_canvas_item_draw)), &DebugDraw2D::_on_canvas_item_draw);
-
 #pragma region Parameters
 
 	REG_PROP(empty_color, Variant::COLOR, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE);
@@ -53,7 +51,7 @@ DebugDraw2D::DebugDraw2D() {
 void DebugDraw2D::init(DebugDrawManager *root) {
 	ZoneScoped;
 	root_node = root;
-	call_canvas_item_draw_cache = Callable(this, NAMEOF(_on_canvas_item_draw));
+	call_canvas_item_draw_cache = callable_mp(this, &DebugDraw2D::_on_canvas_item_draw);
 	set_config(nullptr);
 	stats_2d.instantiate();
 
@@ -99,6 +97,7 @@ static bool DebugDraw2D_frame_mark_2d_started = false;
 #endif
 
 void DebugDraw2D::process_start(double delta) {
+	ZoneScoped;
 }
 
 void DebugDraw2D::process_end(double delta) {
@@ -107,7 +106,6 @@ void DebugDraw2D::process_end(double delta) {
 #ifdef TRACY_ENABLE
 	if (DebugDraw2D_frame_mark_2d_started) {
 		FrameMarkEnd("2D Draw");
-		FrameMark;
 	}
 	FrameMarkStart("2D Draw");
 
@@ -133,7 +131,6 @@ void DebugDraw2D::physics_process_start(double delta) {
 void DebugDraw2D::physics_process_end(double delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	// TODO implement
 	FrameMarkEnd("2D Physics Step");
 #endif
 }
@@ -170,6 +167,7 @@ void DebugDraw2D::_finish_frame_and_update() {
 }
 
 void DebugDraw2D::_clear_all_internal() {
+	ZoneScoped;
 	if (grouped_text)
 		grouped_text->clear_groups();
 
@@ -181,10 +179,10 @@ void DebugDraw2D::_clear_all_internal() {
 
 void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas) {
 	static std::function<Callable()> create_default = [this]() {
-		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(ObjectDB::get_instance(default_control_id)));
+		return callable_mp(this, &DebugDraw2D::_on_canvas_item_draw).bind(ObjectDB::get_instance(default_control_id));
 	};
 	static std::function<Callable()> create_custom = [this]() {
-		return Callable(this, NAMEOF(_on_canvas_item_draw)).bindv(Array::make(ObjectDB::get_instance(custom_control_id)));
+		return callable_mp(this, &DebugDraw2D::_on_canvas_item_draw).bind(ObjectDB::get_instance(custom_control_id));
 	};
 
 	Control *default_control = Object::cast_to<Control>(ObjectDB::get_instance(default_control_id));
@@ -226,7 +224,6 @@ void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
 		DebugDraw2D_frame_mark_2d_started = false;
 	}
 #endif
-	FrameMark;
 }
 
 bool DebugDraw2D::_is_enabled_override() const {
@@ -238,10 +235,6 @@ void DebugDraw2D::mark_canvas_dirty() {
 		emit_signal(s_marked_dirty);
 
 	_canvas_need_update = true;
-}
-
-bool DebugDraw2D::is_drawing_frame() const {
-	return _is_drawing_frame;
 }
 
 Node *DebugDraw2D::get_root_node() {

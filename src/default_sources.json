@@ -8,6 +8,7 @@
   "3d/debug_draw_3d.cpp",
   "3d/debug_geometry_container.cpp",
   "3d/geometry_generators.cpp",
+  "3d/nodes_container.cpp",
   "3d/render_instances.cpp",
   "3d/stats_3d.cpp",
   "common/colors.cpp",

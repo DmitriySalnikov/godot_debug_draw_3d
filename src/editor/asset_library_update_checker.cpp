@@ -12,15 +12,6 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-void _DebugDraw3DAssetLibraryUpdateChecker::_bind_methods() {
-#define REG_CLASS_NAME _DebugDraw3DAssetLibraryUpdateChecker
-
-	REG_METHOD(request_completed);
-	REG_METHOD(init);
-
-#undef REG_CLASS_NAME
-}
-
 void _DebugDraw3DAssetLibraryUpdateChecker::request_completed(String body) {
 	ZoneScoped;
 	if (http_thread.joinable()) {
@@ -191,7 +182,7 @@ void _DebugDraw3DAssetLibraryUpdateChecker::init() {
 					tmp = http->read_response_body_chunk();
 				}
 
-				call_deferred(NAMEOF(request_completed), res.get_string_from_utf8());
+				callable_mp(this, &_DebugDraw3DAssetLibraryUpdateChecker::request_completed).call_deferred(res.get_string_from_utf8());
 				return;
 			} else {
 				if (code != 0) {
@@ -223,7 +214,7 @@ _DebugDraw3DAssetLibraryUpdateChecker::_DebugDraw3DAssetLibraryUpdateChecker() {
 	DEFINE_SETTING_AND_GET(bool check_updates, root_settings_section + "check_for_updates", true, Variant::BOOL);
 
 	if (IS_EDITOR_HINT() && check_updates)
-		call_deferred(NAMEOF(init));
+		callable_mp(this, &_DebugDraw3DAssetLibraryUpdateChecker::init).call_deferred();
 }
 
 _DebugDraw3DAssetLibraryUpdateChecker::~_DebugDraw3DAssetLibraryUpdateChecker() {

@@ -13,12 +13,6 @@ GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/popup_menu.hpp>
 GODOT_WARNING_RESTORE()
 
-void DebugDrawMenuExtensionPlugin::_bind_methods() {
-#define REG_CLASS_NAME DebugDrawMenuExtensionPlugin
-	REG_METHOD(_on_id_pressed);
-#undef REG_CLASS_NAME
-}
-
 inline String DebugDrawMenuExtensionPlugin::_get_plugin_name() const {
 	return String("Generate C# Binding for DebugDraw");
 }
@@ -28,7 +22,7 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " _enter_tree\n");
 
 	PopupMenu *menu = memnew(PopupMenu);
-	menu->connect("id_pressed", Callable(this, NAMEOF(_on_id_pressed)));
+	menu->connect("id_pressed", callable_mp(this, &DebugDrawMenuExtensionPlugin::_on_id_pressed));
 	menu->add_item("Open the project page", OPEN_LIBRARY_SITE);
 	menu->add_item("Open the documentation", OPEN_DOCUMENTATION_SITE);
 	menu->add_item("Generate C# bindings", GENERATE_CSHARP_BINDING);

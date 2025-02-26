@@ -534,18 +534,32 @@ libraries = {
 
 [node name="SubViewport" type="SubViewport" parent="OtherWorld"]
 own_world_3d = true
+handle_input_locally = false
 render_target_update_mode = 4
 
-[node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="OtherWorld/SubViewport"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="OtherWorld/SubViewport/SubViewportContainer"]
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="OtherWorld/SubViewport/SubViewportContainer/SubViewport"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 7.25557)
 current = true
 far = 5.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="OtherWorld/SubViewport/SubViewportContainer/SubViewport"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 5.72253)
 mesh = SubResource("CapsuleMesh_tigpa")
+skeleton = NodePath("../../..")
 
-[node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport"]
+[node name="OtherWorldBox" type="Node3D" parent="OtherWorld/SubViewport/SubViewportContainer/SubViewport"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.57063, 0.6, 5.72253)
 
@@ -807,6 +821,7 @@ size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 13
 item_count = 1
 popup/item_0/text = "1.0.0"
+popup/item_0/id = 0
 
 [node name="Label" type="Label" parent="Settings/HBox/VBoxContainer"]
 layout_mode = 2
@@ -882,47 +897,40 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Update in physics (15 Ticks) *"
 
-[node name="HBox" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox"]
-layout_mode = 2
-text = "Width       "
-
-[node name="WidthSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-min_value = 50.0
-max_value = 1000.0
-value = 200.0
-
-[node name="HBox2" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox2"]
-layout_mode = 2
-text = "BufferSize"
-
-[node name="BufferSlider" type="HSlider" parent="Settings/HBox/VBox/SettingsPanel/VBox/HBox2"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-min_value = 50.0
-max_value = 1000.0
-value = 128.0
-
-[node name="Label3" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+[node name="Label4" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
-text = "Misc:"
+text = "Text:"
+
+[node name="ShowText" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Show text"
+
+[node name="ShowExamples" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Examples"
 
 [node name="ShowStats" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Show debug stats"
+text = "Debug stats"
+
+[node name="ShowHints" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Hints"
+
+[node name="Draw3DText" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "3D Text"
+
+[node name="Label3" type="Label" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.792157, 0.792157, 1)
+text = "Boxes:"
 
 [node name="HBox4" type="HBoxContainer" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 layout_mode = 2
@@ -938,6 +946,11 @@ layout_mode = 2
 tooltip_text = "Draw 1 Million boxes, otherwise 7500pcs."
 text = "1M"
 
+[node name="DrawBoxesAddText" type="CheckBox" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add text to boxes"
+
 [node name="SwitchLang" type="Button" parent="Settings/HBox/VBox/SettingsPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -950,9 +963,12 @@ text = "Switch to C#"
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox3/ThicknessSlider" to="Settings" method="_on_thickness_slider_value_changed"]
 [connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox5/FrustumScaleSlider" to="Settings" method="_on_frustum_scale_slider_value_changed"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/UpdateInPhysics" to="Settings" method="_on_update_in_physics_toggled"]
-[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox/WidthSlider" to="Settings" method="_on_width_slider_value_changed"]
-[connection signal="value_changed" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox2/BufferSlider" to="Settings" method="_on_buffer_slider_value_changed"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowText" to="Settings" method="_on_show_text_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowExamples" to="Settings" method="_on_show_examples_toggled"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowStats" to="Settings" method="_on_show_stats_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/ShowHints" to="Settings" method="_on_show_hints_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/Draw3DText" to="Settings" method="_on_draw_3d_text_toggled"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox4/DrawBoxes" to="Settings" method="_on_draw_boxes_toggled"]
 [connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/HBox4/Draw1MBoxes" to="Settings" method="_on_draw_1m_boxes_toggled"]
+[connection signal="toggled" from="Settings/HBox/VBox/SettingsPanel/VBox/DrawBoxesAddText" to="Settings" method="_on_add_text_to_boxes_toggled"]
 [connection signal="pressed" from="Settings/HBox/VBox/SettingsPanel/VBox/SwitchLang" to="Settings" method="_on_Button_pressed"]

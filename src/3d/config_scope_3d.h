@@ -72,19 +72,9 @@ private:
 public:
 	/// @private
 	struct DebugContainerDependent {
-		// TODO replace by instance_id
-		Viewport *viewport;
-		bool no_depth_test;
-
-		DebugContainerDependent() :
-				viewport(nullptr),
-				no_depth_test(false) {
-		}
-
-		DebugContainerDependent(Viewport *p_viewport, bool p_no_depth_test) :
-				viewport(p_viewport),
-				no_depth_test(p_no_depth_test) {
-		}
+		Viewport *viewport = nullptr;
+		uint64_t viewport_id = 0;
+		bool no_depth_test = false;
 	};
 
 	/// @private
@@ -94,6 +84,9 @@ public:
 		real_t center_brightness;
 		bool hd_sphere;
 		real_t plane_size;
+		Color text_outline_color;
+		uint32_t text_outline_color_hash;
+		int32_t text_outline_size;
 		DebugContainerDependent dcd;
 
 		Data();
@@ -137,6 +130,28 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
 	real_t get_plane_size() const;
+
+	/**
+	 * Set the `outline` color in DebugDraw3D.draw_text.
+	 *
+	 * ![](docs/images/classes/DrawTextOutlineColor.webp)
+	 *
+	 * @warning
+	 * Frequent unsystematic changes to this property can lead to significant performance degradation.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_text_outline_color(Color _value) const;
+	Color get_text_outline_color() const;
+
+	/**
+	 * Set the size of the `outline` in DebugDraw3D.draw_text.
+	 *
+	 * ![](docs/images/classes/DrawTextOutlineSize.webp)
+	 *
+	 * @warning
+	 * Frequent unsystematic changes to this property can lead to significant performance degradation.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_text_outline_size(int32_t _value) const;
+	int32_t get_text_outline_size() const;
 
 	/**
 	 * Set which Viewport will be used to get World3D.

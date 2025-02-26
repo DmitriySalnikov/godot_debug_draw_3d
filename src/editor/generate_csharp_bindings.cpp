@@ -378,7 +378,7 @@ void GenerateCSharpBindingsPlugin::generate_class_utilities(const remap_data &re
 			line();
 		}
 
-		// TODO if merged https://github.com/godotengine/godot/pull/53920, replace by only conditional compilation
+		// TODO: if merged https://github.com/godotengine/godot/pull/53920, replace by only conditional compilation
 		// Runtime check with disabled debug is 2-3 times slower than conditional compilation
 		// Iterations = 10000
 		// Call IF: 0,083 ms

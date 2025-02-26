@@ -63,7 +63,7 @@ struct AABBMinMax {
 	}
 };
 
-void MathUtils::get_diagonal_vectors(const Vector3 &p_a, const Vector3 &p_b, Vector3 &r_bottom, Vector3 &r_top, Vector3 &r_diag) {
+_FORCE_INLINE_ void MathUtils::get_diagonal_vectors(const Vector3 &p_a, const Vector3 &p_b, Vector3 &r_bottom, Vector3 &r_top, Vector3 &r_diag) {
 	r_bottom = Vector3();
 	r_top = Vector3();
 
@@ -94,7 +94,7 @@ void MathUtils::get_diagonal_vectors(const Vector3 &p_a, const Vector3 &p_b, Vec
 	r_diag = r_top - r_bottom;
 }
 
-bool MathUtils::is_bounds_partially_inside_convex_shape(const AABBMinMax &p_sphere, const std::array<Plane, 6> &p_planes) {
+_FORCE_INLINE_ bool MathUtils::is_bounds_partially_inside_convex_shape(const AABBMinMax &p_sphere, const std::array<Plane, 6> &p_planes) {
 	for (int i = 0; i < 6; i++) {
 		if (p_sphere.radius < p_planes[i].distance_to(p_sphere.center))
 			return false;
@@ -103,25 +103,25 @@ bool MathUtils::is_bounds_partially_inside_convex_shape(const AABBMinMax &p_sphe
 	return true;
 }
 
-real_t MathUtils::get_max_value(const Vector3 &p_value) {
+_FORCE_INLINE_ real_t MathUtils::get_max_value(const Vector3 &p_value) {
 	return Math::max(abs(p_value.x), Math::max(abs(p_value.y), abs(p_value.z)));
 }
 
-real_t MathUtils::get_max_vector_length(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c) {
+_FORCE_INLINE_ real_t MathUtils::get_max_vector_length(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c) {
 	real_t a_l = p_a.length();
 	real_t b_l = p_b.length();
 	real_t c_l = p_c.length();
 	return Math::max(a_l, Math::max(b_l, c_l));
 }
 
-real_t MathUtils::get_max_basis_length(const Basis &p_b) {
+_FORCE_INLINE_ real_t MathUtils::get_max_basis_length(const Basis &p_b) {
 	real_t a_l = p_b.get_column(0).length();
 	real_t b_l = p_b.get_column(1).length();
 	real_t c_l = p_b.get_column(2).length();
 	return Math::max(a_l, Math::max(b_l, c_l));
 }
 
-AABB MathUtils::calculate_vertex_bounds(const Vector3 *p_lines, size_t p_count) {
+_FORCE_INLINE_ AABB MathUtils::calculate_vertex_bounds(const Vector3 *p_lines, size_t p_count) {
 	if (p_count > 0) {
 		// Using the original Godot expand_to code to avoid creating new AABB instances
 		Vector3 min = p_lines[0];
@@ -156,7 +156,7 @@ AABB MathUtils::calculate_vertex_bounds(const Vector3 *p_lines, size_t p_count) 
 	}
 }
 
-std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::array<Plane, 6> p_frustum) {
+_FORCE_INLINE_ std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::array<Plane, 6> p_frustum) {
 	std::function<Vector3(const Plane &, const Plane &, const Plane &)> intersect_planes = [&](const Plane &a, const Plane &b, const Plane &c) {
 		Vector3 intersec_result;
 		a.intersect_3(b, c, &intersec_result);
@@ -192,7 +192,7 @@ _FORCE_INLINE_ void MathUtils::scale_frustum_far_plane_distance(std::array<Plane
 	}
 }
 
-bool AABBMinMax::intersects(const AABBMinMax &p_aabb) const {
+_FORCE_INLINE_ bool AABBMinMax::intersects(const AABBMinMax &p_aabb) const {
 	return min.x < p_aabb.max.x &&
 		   max.x > p_aabb.min.x &&
 		   min.y < p_aabb.max.y &&

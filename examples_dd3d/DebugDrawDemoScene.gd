@@ -6,13 +6,16 @@ extends Node3D
 @export var update_in_physics := false
 @export var test_text := true
 @export var more_test_cases := true
+@export var draw_3d_text := true
 @export var draw_array_of_boxes := false
+@export var draw_text_with_boxes := false
 @export var draw_1m_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
 @export_range(0, 1, 0.001) var debug_center_brightness := 0.8
 @export_range(0, 1) var camera_frustum_scale := 0.9
 
 @export_group("Text groups", "text_groups")
+@export var text_groups_show_examples := true
 @export var text_groups_show_hints := true
 @export var text_groups_show_stats := false
 @export var text_groups_show_stats_2d := false
@@ -37,6 +40,8 @@ var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_ve
 
 
 func _process(delta) -> void:
+	#print("Label3Ds count: %d" % get_child(0).get_child_count() if Engine.is_editor_hint() else get_tree().root.get_child(0).get_child_count())
+
 	$OtherWorld.mesh.material.set_shader_parameter("albedo_texture", $OtherWorld/SubViewport.get_texture())
 	
 	physics_tick_processed = false
@@ -235,13 +240,6 @@ func main_update(delta: float) -> void:
 		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
 		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 	
-	# Other world
-	
-	if true:
-		var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
-		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
-		DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(-1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / -1000.0, 0, TAU) - PI/4), Color.SANDY_BROWN)
-	
 	# Misc
 	if Engine.is_editor_hint():
 		#for i in 1000:
@@ -297,24 +295,27 @@ func main_update(delta: float) -> void:
 		for ray in $HitTest/RayEmitter.get_children():
 			ray.set_physics_process_internal(false)
 	
+	_draw_other_world()
+	
 	if draw_array_of_boxes:
 		_draw_array_of_boxes()
 
 
 func _text_tests():
-	if timer_text < 0:
-		DebugDraw2D.set_text("Some delayed text", "for 2.5s", -1, Color.BLACK, 2.5) # it's supposed to show text for 2.5 seconds
-		timer_text = 5
-	
 	DebugDraw2D.set_text("FPS", "%.2f" % Engine.get_frames_per_second(), 0, Color.GOLD)
 	
-	DebugDraw2D.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, text_groups_title_font_size, text_groups_text_font_size)
-	DebugDraw2D.set_text("Simple text")
-	DebugDraw2D.set_text("Text", "Value", 0, Color.AQUAMARINE)
-	DebugDraw2D.set_text("Text out of order", null, -1, Color.SILVER)
-	DebugDraw2D.begin_text_group("-- Second Group --", 1, Color.BEIGE)
-	DebugDraw2D.set_text("Rendered frames", Engine.get_frames_drawn())
-	DebugDraw2D.end_text_group()
+	if text_groups_show_examples:
+		if timer_text < 0:
+			DebugDraw2D.set_text("Some delayed text", "for 2.5s", -1, Color.BLACK, 2.5) # it's supposed to show text for 2.5 seconds
+			timer_text = 5
+		
+		DebugDraw2D.begin_text_group("-- First Group --", 2, Color.LIME_GREEN, true, text_groups_title_font_size, text_groups_text_font_size)
+		DebugDraw2D.set_text("Simple text")
+		DebugDraw2D.set_text("Text", "Value", 0, Color.AQUAMARINE)
+		DebugDraw2D.set_text("Text out of order", null, -1, Color.SILVER)
+		DebugDraw2D.begin_text_group("-- Second Group --", 1, Color.BEIGE)
+		DebugDraw2D.set_text("Rendered frames", Engine.get_frames_drawn())
+		DebugDraw2D.end_text_group()
 	
 	if text_groups_show_stats or text_groups_show_stats_2d:
 		DebugDraw2D.begin_text_group("-- Stats --", 3, Color.WHEAT)
@@ -328,25 +329,30 @@ func _text_tests():
 			DebugDraw2D.set_text("Visible Instances", render_stats.visible_instances, 4)
 			DebugDraw2D.set_text("Visible Lines", render_stats.visible_lines, 5)
 			
-			DebugDraw2D.set_text("---", null, 6)
+			DebugDraw2D.set_text("---", null, 12)
 			
-			DebugDraw2D.set_text("Culling time", "%.2f ms" % (render_stats.total_time_culling_usec / 1000.0), 7)
-			DebugDraw2D.set_text("Filling instances buffer", "%.2f ms" % (render_stats.time_filling_buffers_instances_usec / 1000.0), 8)
-			DebugDraw2D.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 9)
-			DebugDraw2D.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 10)
-			DebugDraw2D.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 11)
+			DebugDraw2D.set_text("Culling time", "%.2f ms" % (render_stats.total_time_culling_usec / 1000.0), 13)
+			DebugDraw2D.set_text("Filling instances buffer", "%.2f ms" % (render_stats.time_filling_buffers_instances_usec / 1000.0), 14)
+			DebugDraw2D.set_text("Filling lines buffer", "%.2f ms" % (render_stats.time_filling_buffers_lines_usec / 1000.0), 15)
+			DebugDraw2D.set_text("Filling time", "%.2f ms" % (render_stats.total_time_filling_buffers_usec / 1000.0), 16)
+			DebugDraw2D.set_text("Total time", "%.2f ms" % (render_stats.total_time_spent_usec / 1000.0), 17)
 			
-			DebugDraw2D.set_text("---", null, 14)
+			DebugDraw2D.set_text("----", null, 32)
 			
-			DebugDraw2D.set_text("Created scoped configs", "%d" % render_stats.created_scoped_configs, 15)
+			DebugDraw2D.set_text("Total Label3D", render_stats.nodes_label3d_exists_total, 33)
+			DebugDraw2D.set_text("Visible Label3D", render_stats.nodes_label3d_visible + render_stats.nodes_label3d_visible_physics, 34)
+			
+			DebugDraw2D.set_text("-----", null, 48)
+			
+			DebugDraw2D.set_text("Created scoped configs", "%d" % render_stats.created_scoped_configs, 49)
 		
 		if text_groups_show_stats && text_groups_show_stats_2d:
-			DebugDraw2D.set_text("----", null, 19)
+			DebugDraw2D.set_text("------", null, 64)
 		
 		var render_stats_2d := DebugDraw2D.get_render_stats()
 		if render_stats_2d && text_groups_show_stats_2d:
-			DebugDraw2D.set_text("Text groups", render_stats_2d.overlay_text_groups, 20)
-			DebugDraw2D.set_text("Text lines", render_stats_2d.overlay_text_lines, 21)
+			DebugDraw2D.set_text("Text groups", render_stats_2d.overlay_text_groups, 96)
+			DebugDraw2D.set_text("Text lines", render_stats_2d.overlay_text_lines, 97)
 			
 		DebugDraw2D.end_text_group()
 	
@@ -366,6 +372,19 @@ func _text_tests():
 		DebugDraw2D.end_text_group()
 
 
+func _draw_other_world():
+	var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
+	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
+	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(-1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / -1000.0, 0, TAU) - PI/4), Color.SANDY_BROWN)
+	
+	if draw_3d_text:
+		var angle = wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)
+		DebugDraw3D.draw_text(%OtherWorldBox.global_position + Vector3(cos(angle), -0.25, sin(angle)), "Hello world!", 32, Color.CRIMSON, 0)
+		
+		var _w2 = DebugDraw3D.new_scoped_config().set_no_depth_test(true).set_text_outline_color(Color.INDIAN_RED).set_text_outline_size(6)
+		DebugDraw3D.draw_text(%OtherWorldBox.global_position + Vector3(cos(angle), +0.25, sin(-angle)), "World without depth", 20, Color.PINK, 0)
+
+
 func _draw_rays_casts():
 	# Line hits render
 	for ray in $HitTest/RayEmitter.get_children():
@@ -378,7 +397,10 @@ func _more_tests():
 	# Delayed line render
 	if true:
 		var _a12 = DebugDraw3D.new_scoped_config().set_thickness(0.035)
-		DebugDraw3D.draw_line($LagTest.global_position + Vector3.UP, $LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.5)
+		DebugDraw3D.draw_line($LagTest.global_position + Vector3.UP, $LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), DebugDraw3D.empty_color, 0.35)
+		
+		if draw_3d_text:
+			DebugDraw3D.draw_text($LagTest.global_position + Vector3(0,3,sin(Time.get_ticks_msec() / 50.0)), "%.1f" % sin(Time.get_ticks_msec() / 50.0), 16, DebugDraw3D.empty_color, 0.35)
 	
 	# Draw plane
 	if true:
@@ -414,6 +436,7 @@ func _draw_array_of_boxes():
 	var z_size := 3
 	var mul := 1
 	var cubes_max_time := 1.25
+	var show_text := draw_text_with_boxes
 	var cfg = DebugDraw3D.new_scoped_config()
 	
 	if draw_1m_boxes:
@@ -422,17 +445,23 @@ func _draw_array_of_boxes():
 		z_size = 100
 		mul = 4
 		cubes_max_time = 60
+		show_text = false
+	
+	var size := Vector3.ONE
+	var half_size := size * 0.5
 	
 	if timer_cubes < 0:
 		var _start_time = Time.get_ticks_usec()
 		for x in x_size:
 			for y in y_size:
 				for z in z_size:
-					var size = Vector3.ONE
 					cfg.set_thickness(randf_range(0, 0.1))
-					#var size = Vector3(randf_range(0.1, 100),randf_range(0.1, 100),randf_range(0.1, 100))
-					DebugDraw3D.draw_box(Vector3(x * mul, (-4-z) * mul, y * mul) + global_position, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
-		#print("Draw Cubes: %fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
+					var pos := Vector3(x * mul, (-4-z) * mul, y * mul) + global_position
+					DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+					
+					if show_text and z == 0:
+						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_max_time)
+		#print("Draw Cubes: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
 
 
@@ -445,6 +474,8 @@ func _ready() -> void:
 	# script is created first, and then overridden by another
 	if !is_inside_tree():
 		return
+	
+	DebugDraw2D.config.text_background_color = Color(0.3, 0.3, 0.3, 0.8)
 
 
 func _is_key_just_pressed(key):

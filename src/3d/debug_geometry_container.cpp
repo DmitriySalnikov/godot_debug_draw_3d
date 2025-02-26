@@ -16,10 +16,10 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p_no_depth_test) {
+DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_depth_test) {
 	ZoneScoped;
 	DEV_PRINT_STD("New " NAMEOF(DebugGeometryContainer) " created: %s\n", p_no_depth_test ? "NoDepth" : "Normal");
-	owner = p_root;
+	owner = p_owner;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	no_depth_test = p_no_depth_test;
 	geometry_pool.set_no_depth_test_info(no_depth_test);
@@ -80,7 +80,7 @@ DebugGeometryContainer::DebugGeometryContainer(class DebugDraw3D *p_root, bool p
 
 DebugGeometryContainer::~DebugGeometryContainer() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " destroyed: %s, World3D (%" PRIu64 ")\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
 	LOCK_GUARD(owner->datalock);
 
 	geometry_pool.clear_pool();
@@ -146,7 +146,7 @@ void DebugGeometryContainer::update_center_positions() {
 	if (center_position.distance_to(new_center_position) < 8192)
 		return;
 
-	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " Updated instance positions: %s, World3D (%d)\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
+	DEV_PRINT_STD(NAMEOF(DebugGeometryContainer) " Updated instance positions: %s, World3D (%" PRIu64 ")\n", no_depth_test ? "NoDepth" : "Normal", viewport_world.is_valid() ? viewport_world->get_instance_id() : 0);
 
 	Vector3 pos_diff = center_position - new_center_position;
 	center_position = new_center_position;
@@ -325,8 +325,10 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 		};
 
 		Viewport *vp;
+		uint64_t vp_id;
 		if (available_viewports.size()) {
 			vp = *available_viewports.begin();
+			vp_id = vp->get_instance_id();
 			auto cfg = std::make_unique<DebugDraw3DScopeConfig::Data>(owner->scoped_config()->data.get());
 			cfg->thickness = 0;
 
@@ -340,6 +342,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			// Draw custom sphere for 1 frame
 			for (auto &i : new_instances) {
 				cfg->dcd.viewport = vp;
+				cfg->dcd.viewport_id = vp_id;
 				Vector3 diag = i.max - i.min;
 				Vector3 center = i.center;
 				real_t radius = i.radius;
@@ -361,7 +364,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 						SphereBounds(center, radius));
 			}
 
-			geometry_pool.for_each_line([this, &cfg, &vp](DelayedRendererLine *o) {
+			geometry_pool.for_each_line([this, &cfg, &vp, &vp_id](DelayedRendererLine *o) {
 				if (!o->is_visible || o->is_expired())
 					return;
 
@@ -370,6 +373,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 				real_t radius = o->bounds.radius;
 
 				cfg->dcd.viewport = vp;
+				cfg->dcd.viewport_id = vp_id;
 				geometry_pool.add_or_update_instance(
 						cfg.get(),
 						InstanceType::CUBE_CENTERED,

@@ -61,9 +61,22 @@ public:                                      \
 	DEFINE_DEFAULT_PROP(created_scoped_configs, int64_t, 0);
 	DEFINE_DEFAULT_PROP(orphan_scoped_configs, int64_t, 0);
 
+	DEFINE_DEFAULT_PROP(nodes_label3d_visible, int64_t, 0);
+	DEFINE_DEFAULT_PROP(nodes_label3d_visible_physics, int64_t, 0);
+	DEFINE_DEFAULT_PROP(nodes_label3d_exists, int64_t, 0);
+	DEFINE_DEFAULT_PROP(nodes_label3d_exists_physics, int64_t, 0);
+	DEFINE_DEFAULT_PROP(nodes_label3d_exists_total, int64_t, 0);
+
 #undef DEFINE_DEFAULT_PROP
 
 	DebugDraw3DStats(){};
+
+	/// @private
+	void set_nodes_stats(
+			const int64_t &p_nodes_label3d_visible,
+			const int64_t &p_nodes_label3d_visible_physics,
+			const int64_t &p_nodes_label3d_exists,
+			const int64_t &p_nodes_label3d_exists_physics);
 
 	/// @private
 	void set_scoped_config_stats(
@@ -77,8 +90,8 @@ public:                                      \
 			const int64_t &p_visible_instances,
 			const int64_t &p_visible_lines,
 
-			const int64_t &p_instances_phys,
-			const int64_t &p_lines_phys,
+			const int64_t &p_instances_physics,
+			const int64_t &p_lines_physics,
 
 			const int64_t &p_time_filling_buffers_instances_usec,
 			const int64_t &p_time_filling_buffers_lines_usec,

@@ -34,7 +34,6 @@ private:
 	// 2d
 	const static char *s_marked_dirty;
 
-	bool _is_drawing_frame = true;
 	bool _canvas_need_update = true;
 	Ref<Font> _font;
 	Ref<DebugDraw2DStats> stats_2d;
@@ -90,8 +89,6 @@ public:
 	};
 	/// @private
 	void mark_canvas_dirty();
-	/// @private
-	bool is_drawing_frame() const;
 
 	/// @private
 	Node *get_root_node();

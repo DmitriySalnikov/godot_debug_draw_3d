@@ -2,6 +2,10 @@
 
 #include "utils/utils.h"
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/templates/hashfuncs.hpp>
+GODOT_WARNING_RESTORE()
+
 void DebugDraw3DScopeConfig::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3DScopeConfig
 	REG_METHOD(_manual_unregister);
@@ -23,6 +27,12 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_no_depth_test, "value");
 	REG_METHOD(is_no_depth_test);
+
+	REG_METHOD(set_text_outline_color, "value");
+	REG_METHOD(get_text_outline_color);
+
+	REG_METHOD(set_text_outline_size, "value");
+	REG_METHOD(get_text_outline_size);
 #undef REG_CLASS_NAME
 }
 
@@ -69,8 +79,32 @@ real_t DebugDraw3DScopeConfig::get_plane_size() const {
 	return data->plane_size;
 }
 
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_color(Color _value) const {
+	data->text_outline_color = _value;
+	uint32_t hash = hash_murmur3_one_float(_value.r);
+	hash = hash_murmur3_one_float(_value.g, hash);
+	hash = hash_murmur3_one_float(_value.b, hash);
+	data->text_outline_color_hash = hash_murmur3_one_float(_value.a, hash);
+
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+Color DebugDraw3DScopeConfig::get_text_outline_color() const {
+	return data->text_outline_color;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_size(int32_t _value) const {
+	data->text_outline_size = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+int32_t DebugDraw3DScopeConfig::get_text_outline_size() const {
+	return data->text_outline_size;
+}
+
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
 	data->dcd.viewport = _value;
+	data->dcd.viewport_id = _value ? _value->get_instance_id() : 0;
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
@@ -108,20 +142,27 @@ DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
 	_manual_unregister();
 }
 
-DebugDraw3DScopeConfig::Data::Data() {
-	thickness = 0;
-	center_brightness = 0;
-	hd_sphere = false;
-	plane_size = INFINITY;
-	dcd = {};
+DebugDraw3DScopeConfig::Data::Data() :
+		thickness(0),
+		center_brightness(0),
+		hd_sphere(false),
+		plane_size(INFINITY),
+		text_outline_color(Color(0, 0, 0, 1)),
+		text_outline_size(12),
+		dcd({}) {
+	uint32_t hash = hash_murmur3_one_float(text_outline_color.r);
+	hash = hash_murmur3_one_float(text_outline_color.g, hash);
+	hash = hash_murmur3_one_float(text_outline_color.b, hash);
+	text_outline_color_hash = hash_murmur3_one_float(text_outline_color.a, hash);
 }
 
-DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) {
-	thickness = p_parent->thickness;
-	center_brightness = p_parent->center_brightness;
-	hd_sphere = p_parent->hd_sphere;
-	plane_size = p_parent->plane_size;
-
-	dcd.viewport = p_parent->dcd.viewport;
-	dcd.no_depth_test = p_parent->dcd.no_depth_test;
+DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) :
+		thickness(p_parent->thickness),
+		center_brightness(p_parent->center_brightness),
+		hd_sphere(p_parent->hd_sphere),
+		plane_size(p_parent->plane_size),
+		text_outline_color(p_parent->text_outline_color),
+		text_outline_color_hash(p_parent->text_outline_color_hash),
+		text_outline_size(p_parent->text_outline_size),
+		dcd(p_parent->dcd) {
 }

@@ -56,7 +56,7 @@ class DebugGeometryContainer {
 	void CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mesh);
 
 public:
-	DebugGeometryContainer(class DebugDraw3D *p_root, bool p_no_depth_test);
+	DebugGeometryContainer(class DebugDraw3D *p_owner, bool p_no_depth_test);
 	~DebugGeometryContainer();
 
 	bool is_no_depth_test() const;

@@ -48,6 +48,10 @@ public:
 
 	/**
 	 * Set whether frustum culling is used.
+	 * 
+	 * @note
+	 * Enabling or disabling this option does not affect the rough culling based on the camera's AABB of frustum.
+	 * This option enables more accurate culling based on the camera's frustum planes.
 	 */
 	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling() const;

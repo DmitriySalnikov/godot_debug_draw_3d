@@ -3,7 +3,10 @@
 #include "compiler.h"
 #include "profiler.h"
 
+#include <inttypes.h>
 #include <algorithm>
+#include <cfloat>
+#include <climits>
 #include <functional>
 #include <map>
 #include <memory>
@@ -293,7 +296,7 @@ public:
 
 	static godot::PackedFloat32Array convert_packed_vector3_to_packed_float(godot::PackedVector3Array &arr);
 
-	// TODO need to use make from API when it becomes possible
+	// TODO: need to use `make` from API when it becomes possible
 #pragma region HACK_FOR_DICTIONARIES
 	template <class... Args>
 	static godot::Dictionary make_dict(Args... args) {
@@ -344,7 +347,7 @@ public:
 	}
 };
 #else
-// TODO delete when the minimum version is upgraded.
+// TODO: delete when the minimum version is upgraded.
 // cannot be deleted due to a mismatch in the Emscripten version.
 // 4.2.3 or 4.3
 GODOT_WARNING_DISABLE()

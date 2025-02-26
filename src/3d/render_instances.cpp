@@ -351,19 +351,19 @@ void GeometryPool::set_stats(Ref<DebugDraw3DStats> &p_stats) const {
 	const int py = (int)ProcessType::PHYSICS_PROCESS;
 
 	p_stats->set_render_stats(
-			/* t_instances */ counts[p].used_instances,
-			/* t_lines */ counts[p].used_lines,
-			/* t_visible_instances */ stat_visible_instances,
-			/* t_visible_lines */ stat_visible_lines,
+			/* p_instances */ counts[p].used_instances,
+			/* p_lines */ counts[p].used_lines,
+			/* p_visible_instances */ stat_visible_instances,
+			/* p_visible_lines */ stat_visible_lines,
 
-			/* t_instances_phys */ counts[py].used_instances,
-			/* t_lines_phys */ counts[py].used_lines,
+			/* p_instances_phys */ counts[py].used_instances,
+			/* p_lines_phys */ counts[py].used_lines,
 
-			/* t_time_filling_buffers_instances_usec */ time_spent_to_fill_buffers_of_instances,
-			/* t_time_filling_buffers_lines_usec */ time_spent_to_fill_buffers_of_lines,
+			/* p_time_filling_buffers_instances_usec */ time_spent_to_fill_buffers_of_instances,
+			/* p_time_filling_buffers_lines_usec */ time_spent_to_fill_buffers_of_lines,
 
-			/* t_time_culling_instances_usec */ time_spent_to_cull_instances,
-			/* t_time_culling_lines_usec */ time_spent_to_cull_lines);
+			/* p_time_culling_instances_usec */ time_spent_to_cull_instances,
+			/* p_time_culling_lines_usec */ time_spent_to_cull_lines);
 }
 
 void GeometryPool::clear_pool() {
@@ -474,7 +474,7 @@ void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_
 	DelayedRendererInstance *inst = proc.instances[(int)p_type].get(p_exp_time > 0);
 
 	if (viewport_ids.count(p_cfg->dcd.viewport) == 0) {
-		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport->get_instance_id();
+		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport_id;
 	}
 
 	inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
@@ -490,7 +490,7 @@ void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg,
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
 
 	if (viewport_ids.count(p_cfg->dcd.viewport) == 0) {
-		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport->get_instance_id();
+		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport_id;
 	}
 
 	inst->lines = std::move(p_lines);
@@ -507,7 +507,7 @@ GeometryType GeometryPool::_scoped_config_get_geometry_type(const DebugDraw3DSco
 	if (p_cfg->thickness != 0) {
 		return GeometryType::Volumetric;
 	}
-	// TODO solid
+	// TODO: solid (or not..)
 	return GeometryType::Wireframe;
 }
 

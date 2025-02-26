@@ -32,11 +32,33 @@ void DebugDraw3DStats::_bind_methods() {
 	REG_PROPERTY_NO_SET(created_scoped_configs, Variant::INT);
 	REG_PROPERTY_NO_SET(orphan_scoped_configs, Variant::INT);
 
+	REG_PROPERTY_NO_SET(nodes_label3d_visible, Variant::INT);
+	REG_PROPERTY_NO_SET(nodes_label3d_visible_physics, Variant::INT);
+	REG_PROPERTY_NO_SET(nodes_label3d_exists, Variant::INT);
+	REG_PROPERTY_NO_SET(nodes_label3d_exists_physics, Variant::INT);
+	REG_PROPERTY_NO_SET(nodes_label3d_exists_total, Variant::INT);
+
 #undef REG_PROPERTY_NO_SET
 #pragma endregion
 }
 
-void DebugDraw3DStats::set_scoped_config_stats(const int64_t &p_created_scoped_configs, const int64_t &p_orphan_scoped_configs) {
+void DebugDraw3DStats::set_nodes_stats(
+		const int64_t &p_nodes_label3d_visible,
+		const int64_t &p_nodes_label3d_visible_physics,
+		const int64_t &p_nodes_label3d_exists,
+		const int64_t &p_nodes_label3d_exists_physics) {
+
+	nodes_label3d_visible = p_nodes_label3d_visible;
+	nodes_label3d_visible_physics = p_nodes_label3d_visible_physics;
+	nodes_label3d_exists = p_nodes_label3d_exists;
+	nodes_label3d_exists_physics = p_nodes_label3d_exists_physics;
+	nodes_label3d_exists_total = nodes_label3d_exists + nodes_label3d_exists_physics;
+}
+
+void DebugDraw3DStats::set_scoped_config_stats(
+		const int64_t &p_created_scoped_configs,
+		const int64_t &p_orphan_scoped_configs) {
+
 	created_scoped_configs = p_created_scoped_configs;
 	orphan_scoped_configs = p_orphan_scoped_configs;
 }
@@ -47,8 +69,8 @@ void DebugDraw3DStats::set_render_stats(
 		const int64_t &p_visible_instances,
 		const int64_t &p_visible_lines,
 
-		const int64_t &p_instances_phys,
-		const int64_t &p_lines_phys,
+		const int64_t &p_instances_physics,
+		const int64_t &p_lines_physics,
 
 		const int64_t &p_time_filling_buffers_instances_usec,
 		const int64_t &p_time_filling_buffers_lines_usec,
@@ -57,8 +79,8 @@ void DebugDraw3DStats::set_render_stats(
 
 	instances = p_instances;
 	lines = p_lines;
-	instances_physics = p_instances_phys;
-	lines_physics = p_lines_phys;
+	instances_physics = p_instances_physics;
+	lines_physics = p_lines_physics;
 	total_geometry = instances +
 					 lines +
 					 instances_physics +
@@ -102,4 +124,13 @@ void DebugDraw3DStats::combine_with(const Ref<DebugDraw3DStats> p_other) {
 	total_time_culling_usec += p_other->total_time_culling_usec;
 
 	total_time_spent_usec += p_other->total_time_spent_usec;
+
+	created_scoped_configs += p_other->created_scoped_configs;
+	orphan_scoped_configs += p_other->orphan_scoped_configs;
+
+	nodes_label3d_visible += p_other->nodes_label3d_visible;
+	nodes_label3d_visible_physics += p_other->nodes_label3d_visible_physics;
+	nodes_label3d_exists += p_other->nodes_label3d_exists;
+	nodes_label3d_exists_physics += p_other->nodes_label3d_exists_physics;
+	nodes_label3d_exists_total += p_other->nodes_label3d_exists_total;
 }

@@ -1,6 +1,16 @@
-[gd_scene load_steps=35 format=3 uid="uid://davayb2hh6h3u"]
+[gd_scene load_steps=39 format=3 uid="uid://davayb2hh6h3u"]
 
 [ext_resource type="Script" path="res://image_generator/preview_generator.gd" id="1_1iqys"]
+
+[sub_resource type="Gradient" id="Gradient_pik8h"]
+offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
+colors = PackedColorArray(1, 0.0122345, 0.349594, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.0122345, 0.349594, 1)
+metadata/_snap_enabled = true
+
+[sub_resource type="Gradient" id="Gradient_2vnpq"]
+offsets = PackedFloat32Array(0, 0.5, 1)
+colors = PackedColorArray(0.71, 0, 0, 1, 0, 0.71, 0.473333, 1, 0.71, 0, 0.0118332, 1)
+metadata/_snap_enabled = true
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ykfor"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -2619,6 +2629,18 @@ tracks/17/keys = {
 "update": 1,
 "values": [false]
 }
+tracks/18/type = "value"
+tracks/18/imported = false
+tracks/18/enabled = true
+tracks/18/path = NodePath(".:anim_color_1")
+tracks/18/interp = 1
+tracks/18/loop_wrap = true
+tracks/18/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 1)]
+}
 
 [sub_resource type="Animation" id="Animation_2pssc"]
 resource_name = "SphereDensity"
@@ -2794,6 +2816,27 @@ _data = {
 "SphereDensity": SubResource("Animation_2pssc")
 }
 
+[sub_resource type="Animation" id="Animation_mivuv"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimationPlayer:current_animation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [&"[stop]"]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_yqswg"]
+_data = {
+"RESET": SubResource("Animation_mivuv")
+}
+
 [sub_resource type="Shader" id="Shader_t34go"]
 code = "shader_type spatial;
 render_mode unshaded;
@@ -2818,8 +2861,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1iqys")
-preview_case = 6
+preview_case = 29
+lossless = true
+viewport_size = Vector2i(256, 128)
 anim_value_1 = 0.1
+text_colors = SubResource("Gradient_pik8h")
+text_outline_colors = SubResource("Gradient_2vnpq")
 metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 
 [node name="FakeCamera" type="Camera3D" parent="."]
@@ -2834,46 +2881,56 @@ transparent_bg = true
 handle_input_locally = false
 msaa_3d = 3
 scaling_3d_scale = 2.0
+size = Vector2i(512, 256)
 render_target_update_mode = 4
 
 [node name="CameraOrigin" type="Node3D" parent="GridRender"]
-transform = Transform3D(1, 0, 0, 0, 0.906308, 0.422618, 0, -0.422618, 0.906308, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="GridRender/CameraOrigin"]
-transform = Transform3D(1, 0, 0, 0, 0.948323, -0.317305, 0, 0.317305, 0.948323, 0, 0, 1.29)
+transform = Transform3D(1, 0, 0, 0, 0.936672, -0.350207, 0, 0.350207, 0.936672, 0, -0.150017, 1.72116)
 keep_aspect = 0
 current = true
 fov = 66.6
 
-[node name="Control" type="PanelContainer" parent="."]
+[node name="UI" type="PanelContainer" parent="."]
+unique_name_in_owner = true
 layout_mode = 1
 offset_right = 256.0
-offset_bottom = 256.0
+offset_bottom = 128.0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_x7pwt")
 
-[node name="ShadowPanel" type="PanelContainer" parent="Control"]
+[node name="ShadowPanel" type="PanelContainer" parent="UI"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_otr13")
 
-[node name="PanelContainer" type="PanelContainer" parent="Control"]
+[node name="PanelContainer" type="PanelContainer" parent="UI"]
 clip_children = 2
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lq6n3")
 
-[node name="Renderer" type="TextureRect" parent="Control/PanelContainer"]
+[node name="Renderer" type="TextureRect" parent="UI/PanelContainer"]
 material = SubResource("CanvasItemMaterial_kbyai")
 layout_mode = 2
 texture = SubResource("ViewportTexture_asjiu")
 expand_mode = 2
 
-[node name="BorderPanel" type="PanelContainer" parent="Control"]
+[node name="BorderPanel" type="PanelContainer" parent="UI"]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_qjyty")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true
+deterministic = true
+callback_mode_method = 1
 libraries = {
 "": SubResource("AnimationLibrary_ce374")
+}
+
+[node name="ResetPlay" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+libraries = {
+"": SubResource("AnimationLibrary_yqswg")
 }
 
 [node name="Grid" type="Node3D" parent="."]
@@ -2904,7 +2961,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="OriginInstances" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.48, 0)
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.44, 0)
 
 [node name="A" type="Node3D" parent="OriginInstances"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0)
@@ -2913,7 +2970,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.5, 0)
 
 [node name="OriginLinesPath" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.46, 0)
+transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 [node name="1" type="Node3D" parent="OriginLinesPath"]
 transform = Transform3D(1, 3.12924e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-07, 2.98023e-08, 2.98023e-07, 1, -0.388976, -0.601312, 0.205627)
@@ -2925,7 +2982,7 @@ transform = Transform3D(1, 6.25849e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-0
 transform = Transform3D(1, 3.12924e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-07, 2.98023e-08, 2.98023e-07, 1, 0.308753, 0.314478, -0.54646)
 
 [node name="OriginCameraFrustum" type="Node3D" parent="."]
-transform = Transform3D(0.65, 0, 0, 0, 0.65, 0, 0, 0, 0.65, 0, 0.44, 0)
+transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="OriginCameraFrustum"]
 transform = Transform3D(-6.72483e-08, 0, 1.53846, 0, 1.53846, 0, -1.53846, 0, -6.72483e-08, 1.71191, 0, 0)
@@ -2934,6 +2991,6 @@ near = 0.321
 far = 0.96
 
 [node name="OriginPlane" type="Node3D" parent="."]
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.44, 0)
+transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
