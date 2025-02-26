@@ -42,5 +42,6 @@ var classDebugDraw3D =
     [ "draw_grid", "classDebugDraw3D.html#a8ce9cb415745ca416330b15d829ed57e", null ],
     [ "draw_grid_xf", "classDebugDraw3D.html#a13bb05c98a7a7ee84eeb51762e894581", null ],
     [ "draw_camera_frustum", "classDebugDraw3D.html#a19aa42f0b5636585e248887a48659a31", null ],
-    [ "draw_camera_frustum_planes", "classDebugDraw3D.html#a0e6b921d1b031771c1a8c92b0f7ad952", null ]
+    [ "draw_camera_frustum_planes", "classDebugDraw3D.html#a0e6b921d1b031771c1a8c92b0f7ad952", null ],
+    [ "draw_text", "classDebugDraw3D.html#a151fc4fd35ac70c22ccd7ac22bfdd8c4", null ]
 ];

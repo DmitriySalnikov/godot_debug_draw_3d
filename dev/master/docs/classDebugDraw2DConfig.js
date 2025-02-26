@@ -6,7 +6,6 @@ var classDebugDraw2DConfig =
       [ "POSITION_LEFT_BOTTOM", "classDebugDraw2DConfig.html#acea0345f9df2cd597a495bac04466b10a032db7f92267b03c57320598a3092270", null ],
       [ "POSITION_RIGHT_BOTTOM", "classDebugDraw2DConfig.html#acea0345f9df2cd597a495bac04466b10a6dec4c5b8ddc2fdc755809c3a25d5887", null ]
     ] ],
-    [ "set_graphs_base_offset", "classDebugDraw2DConfig.html#a82d637188cff51f8814ad848f8a94584", null ],
     [ "set_text_block_position", "classDebugDraw2DConfig.html#a0bc696a1874beb75aeab4a17cf1ac405", null ],
     [ "set_text_block_offset", "classDebugDraw2DConfig.html#aeaac8c1f4c3bd0bec5be44a331f6f835", null ],
     [ "set_text_padding", "classDebugDraw2DConfig.html#a121600533e7b4eefa18a6d51abb4d2d8", null ],

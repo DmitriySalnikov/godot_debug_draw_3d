@@ -28,5 +28,6 @@ var searchData=
   ['draw_5fray_25',['draw_ray',['../classDebugDraw3D.html#a435011c02959e69ab416574c10d36199',1,'DebugDraw3D']]],
   ['draw_5fsphere_26',['draw_sphere',['../classDebugDraw3D.html#a4f5c5e4f2e51d193e07a21d621c52652',1,'DebugDraw3D']]],
   ['draw_5fsphere_5fxf_27',['draw_sphere_xf',['../classDebugDraw3D.html#ab3d534d2d10d5c164e94a2534677dbfa',1,'DebugDraw3D']]],
-  ['draw_5fsquare_28',['draw_square',['../classDebugDraw3D.html#a0ec17b0d31940170414e1e6d68e8d003',1,'DebugDraw3D']]]
+  ['draw_5fsquare_28',['draw_square',['../classDebugDraw3D.html#a0ec17b0d31940170414e1e6d68e8d003',1,'DebugDraw3D']]],
+  ['draw_5ftext_29',['draw_text',['../classDebugDraw3D.html#a151fc4fd35ac70c22ccd7ac22bfdd8c4',1,'DebugDraw3D']]]
 ];
