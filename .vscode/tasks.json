@@ -72,7 +72,31 @@
                 "kind": "build",
                 "isDefault": true
             }
-        }
+        },
+        {
+            "type": "cppbuild",
+            "label": "editor_build_linux",
+            "command": "scons",
+            "args": [
+                "target=editor",
+                "debug_symbols=yes",
+                //"dev_build=yes",
+                //"lto=full",
+                //"telemetry_enabled=yes",
+                //"tracy_enabled=yes",
+                //"native_api_enabled=no"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
     ],
     "version": "2.0.0"
 }

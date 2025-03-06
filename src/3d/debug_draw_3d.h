@@ -195,6 +195,7 @@ private:
 	};
 
 	std::unordered_map<uint64_t, ViewportToDebugContainerItem> debug_containers;
+	// invalidate on add/remove operations or use ptrs
 	std::unordered_map<const Viewport *, ViewportToDebugContainerItem *> viewport_to_world_cache;
 
 	// Default materials and shaders
@@ -749,7 +750,7 @@ public:
 #pragma region Text
 	/**
 	 * Draw text using Label3D.
-	 * 
+	 *
 	 * @note
 	 * Outline can be changed using DebugDraw3DScopeConfig.set_text_outline_color and DebugDraw3DScopeConfig.set_text_outline_size.
 	 *

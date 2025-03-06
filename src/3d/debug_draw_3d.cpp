@@ -43,8 +43,8 @@ void _DD3D_WorldWatcher::_notification(int p_what) {
 		m_owner = nullptr;
 
 		if (!is_queued_for_deletion()) {
-			if (get_parent()) {
-				get_parent()->call_deferred(NAMEOF(remove_child), this);
+			if (auto *p = get_parent(); p) {
+				p->call_deferred(NAMEOF(remove_child), this);
 			}
 			queue_free();
 		}
@@ -221,6 +221,7 @@ DebugDraw3D::~DebugDraw3D() {
 void DebugDraw3D::process_start(double delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
 
 #endif
 }
@@ -229,6 +230,7 @@ void DebugDraw3D::process_end(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	FrameMarkStart("3D Update");
+	LOCK_GUARD(datalock);
 
 	// Update 3D debug
 	for (const auto &p : debug_containers) {
@@ -256,6 +258,7 @@ void DebugDraw3D::physics_process_start(double p_delta) {
 #ifndef DISABLE_DEBUG_RENDERING
 	FrameMarkStart("3D Physics Step");
 
+	LOCK_GUARD(datalock);
 	for (const auto &p : debug_containers) {
 		for (const auto &dgc : p.second.dgcs) {
 			if (dgc) {
@@ -274,6 +277,8 @@ void DebugDraw3D::physics_process_start(double p_delta) {
 void DebugDraw3D::physics_process_end(double p_delta) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
+
 	for (const auto &p : debug_containers) {
 		for (const auto &dgc : p.second.dgcs) {
 			if (dgc) {
@@ -455,8 +460,12 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 	// create or update container storage
 	auto &c = debug_containers[vp_world_id];
 
+	// on new storage created
 	if (!c.world_watcher) {
-		// Has to be cleared by the SceenTree or manually in case of an error.
+		// remove cached references to avoid crashes in case of invalidation of `debug_containers`
+		viewport_to_world_cache.clear();
+
+		// _DD3D_WorldWatcher has to be cleared by the SceenTree or manually in case of an error.
 		c.world_watcher = memnew(_DD3D_WorldWatcher(this, vp_world_id));
 		Node *scene_root = root_node->get_current_scene();
 		callable_mp(this, &DebugDraw3D::_register_viewport_world_deferred)
@@ -469,7 +478,7 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher, p_dgcd.no_depth_test);
 
-	viewport_to_world_cache[p_dgcd.viewport] = &debug_containers[vp_world_id];
+	viewport_to_world_cache[p_dgcd.viewport] = &c;
 
 	return &c;
 }
@@ -547,17 +556,8 @@ void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
 		DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (remove): World3D (%" PRIu64 ") is no longer in use, its storage will be deleted.\n", p_world_id);
 		debug_containers.erase(dgc);
 
-		std::vector<const Viewport *> viewport_to_remove;
-
-		for (const auto &p : viewport_to_world_cache) {
-			if (p.second->world_id == p_world_id) {
-				viewport_to_remove.push_back(p.first);
-			}
-		}
-
-		for (const auto &p : viewport_to_remove) {
-			viewport_to_world_cache.erase(p);
-		}
+		// remove cached references to avoid crashes in case of invalidation of `debug_containers`
+		viewport_to_world_cache.clear();
 	}
 }
 
@@ -704,6 +704,8 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 	Ref<DebugDraw3DStats> res;
 	res.instantiate();
 #ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
+
 	Ref<DebugDraw3DStats> stats_3d;
 	stats_3d.instantiate();
 
@@ -724,7 +726,7 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats() {
 			}
 		}
 	}
-	
+
 	res->set_scoped_config_stats(scoped_stats_3d.created, scoped_stats_3d.orphans);
 #endif
 	return res;
@@ -734,6 +736,8 @@ Ref<DebugDraw3DStats> DebugDraw3D::get_render_stats_for_world(Viewport *viewport
 	Ref<DebugDraw3DStats> res;
 	res.instantiate();
 #ifndef DISABLE_DEBUG_RENDERING
+	LOCK_GUARD(datalock);
+
 	Ref<DebugDraw3DStats> stats_3d;
 	stats_3d.instantiate();
 
@@ -781,18 +785,21 @@ void DebugDraw3D::clear_all() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
+
 	for (auto &p : debug_containers) {
+		// p.second.world_watcher &&
 		if (!p.second.world_watcher->is_queued_for_deletion()) {
 			// must be freed in anyway
 			p.second.world_watcher->queue_free();
 
-			Node *parent = p.second.world_watcher->get_parent();
-			if (parent) {
+			if (Node *parent = p.second.world_watcher->get_parent(); parent) {
 				// should be auto freed on exit_tree notif
-				parent->remove_child(p.second.world_watcher);
+				// must be deferred to avoid `debug_containers` invalidation
+				parent->call_deferred(NAMEOF(remove_child), p.second.world_watcher);
 			}
 		}
 	}
+
 	debug_containers.clear();
 	viewport_to_world_cache.clear();
 #else
