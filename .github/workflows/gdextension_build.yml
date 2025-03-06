@@ -454,8 +454,6 @@ jobs:
             file_suffix: "stable_win64.exe.zip"
 
     env:
-      # Sync with container: image:
-      GODOT_VERSION: 4.2.2-stable
       ADDON_DIR: debug_draw_3d
       PROJECT_PATH: dd3d_web_build
       TESTS_PATH: examples_dd3d
@@ -496,6 +494,15 @@ jobs:
         id: setup_godot_4_3
         with:
           tag: 4.3-stable
+          file_suffix: ${{matrix.file_suffix}}
+          download_export_templates: false
+          is_mono: false
+
+      - name: Setup Godot 4.4
+        uses: ./.github/actions/setup_godot
+        id: setup_godot_4_4
+        with:
+          tag: 4.4-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
           is_mono: false
@@ -559,4 +566,6 @@ jobs:
           run_tests "${{steps.setup_godot_4_2.outputs.godot}}"
           echo "::endgroup::"
           run_tests "${{steps.setup_godot_4_3.outputs.godot}}"
+          echo "::endgroup::"
+          run_tests "${{steps.setup_godot_4_4.outputs.godot}}"
           echo "::endgroup::"
