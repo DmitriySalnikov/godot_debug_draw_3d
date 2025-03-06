@@ -11,7 +11,7 @@ func _process(delta: float) -> void:
     var line_begin = Vector3(-1, sin(_time * 4), 0)
     var line_end = Vector3(1, cos(_time * 4), 0)
 
-    DebugDraw3D.draw_box(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))
+    DebugDraw3D.draw_box(box_pos, Quaternion.IDENTITY, Vector3(1, 2, 1), Color(0, 1, 0))
     DebugDraw3D.draw_line(line_begin, line_end, Color(1, 1, 0))
     DebugDraw2D.set_text("Time", _time)
     DebugDraw2D.set_text("Frames drawn", Engine.get_frames_drawn())
@@ -61,7 +61,7 @@ public override void _Process(float delta)
     var line_begin = new Vector3(-1, Mathf.Sin(_time * 4f), 0);
     var line_end = new Vector3(1, Mathf.Cos(_time * 4f), 0);
 
-    DebugDraw3D.DrawBox(box_pos, new Vector3(1, 2, 1), new Color(0, 1, 0));
+    DebugDraw3D.DrawBox(box_pos, Quaternion.Identity, new Vector3(1, 2, 1), new Color(0, 1, 0));
     DebugDraw3D.DrawLine(line_begin, line_end, new Color(1, 1, 0));
     DebugDraw2D.SetText("Time", _time);
     DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
