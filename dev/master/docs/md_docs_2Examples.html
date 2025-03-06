@@ -140,7 +140,7 @@ $(function(){initNavTree('md_docs_2Examples.html',''); initResizable(true); });
 <div class="line">    var line_begin = Vector3(-1, sin(_time * 4), 0)</div>
 <div class="line">    var line_end = Vector3(1, cos(_time * 4), 0)</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(box_pos, Vector3(1, 2, 1), Color(0, 1, 0))</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(box_pos, Quaternion.IDENTITY, Vector3(1, 2, 1), Color(0, 1, 0))</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a086bea6fe552b96f6f8e2a062ad3ec82">DebugDraw3D.draw_line</a>(line_begin, line_end, Color(1, 1, 0))</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Time&quot;</span>, _time)</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Frames drawn&quot;</span>, Engine.get_frames_drawn())</div>
@@ -186,7 +186,7 @@ CSharp</h1>
 <div class="line">    var line_begin = <span class="keyword">new</span> Vector3(-1, Mathf.Sin(_time * 4f), 0);</div>
 <div class="line">    var line_end = <span class="keyword">new</span> Vector3(1, Mathf.Cos(_time * 4f), 0);</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.DrawBox(box_pos, <span class="keyword">new</span> Vector3(1, 2, 1), <span class="keyword">new</span> Color(0, 1, 0));</div>
+<div class="line">    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.DrawBox(box_pos, Quaternion.Identity, <span class="keyword">new</span> Vector3(1, 2, 1), <span class="keyword">new</span> Color(0, 1, 0));</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw3D.html">DebugDraw3D</a>.DrawLine(line_begin, line_end, <span class="keyword">new</span> Color(1, 1, 0));</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;Time&quot;</span>, _time);</div>
 <div class="line">    <a class="code hl_class" href="classDebugDraw2D.html">DebugDraw2D</a>.SetText(<span class="stringliteral">&quot;Frames drawn&quot;</span>, Engine.GetFramesDrawn());</div>
