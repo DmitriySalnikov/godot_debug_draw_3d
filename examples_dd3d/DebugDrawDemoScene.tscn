@@ -375,35 +375,29 @@ far = 52.5
 
 [node name="Zones" type="Node3D" parent="."]
 
-[node name="Spheres" type="Node3D" parent="Zones"]
+[node name="SpheresBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
 transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -11.1864, 0.645876, -7.86506)
 
-[node name="Path" type="Node3D" parent="Zones"]
-transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1.12881, -7.18731)
-
-[node name="Boxes" type="Node3D" parent="Zones"]
-transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -16.0257, -0.206735, 6.27643)
-
-[node name="Misc" type="Node3D" parent="Zones"]
-transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -5.69728, -0.206735, 4.4244)
-
-[node name="Cylinders" type="Node3D" parent="Zones"]
+[node name="CylindersBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
 transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0.015712, -6.19233)
 
-[node name="Lines" type="Node3D" parent="Zones"]
+[node name="BoxesBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
+transform = Transform3D(10.0513, 0, 0, 0, 5.99877, 0, 0, 0, 12.1174, -16.0257, -0.206735, 6.27643)
+
+[node name="LinesBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
 transform = Transform3D(10.7186, 0, 0, 0, 3.9777, 0, 0, 0, 7.05487, 10.6302, 1.91174, -7.11416)
 
-[node name="Label3D" type="Label3D" parent="."]
-transform = Transform3D(1, -1.93359e-07, -8.48396e-08, -1.17881e-07, 1, 5.96046e-08, 6.22839e-09, 0, 1, 0, 0, 0)
-visible = false
-pixel_size = 0.0025
-billboard = 1
-double_sided = false
-modulate = Color(0, 0, 0, 1)
-outline_modulate = Color(1, 1, 1, 1)
-text = "TestTestTestTest
-TestTestTest"
-font_size = 80
+[node name="PathsBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
+transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1.12881, -7.18731)
+
+[node name="MiscBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
+transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -5.69728, -0.206735, 4.4244)
 
 [node name="LinesAnim" type="AnimationPlayer" parent="."]
 root_node = NodePath("../LinePath")
@@ -597,7 +591,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.724359, -1.03227, 7.85404)
 [node name="CollisionShape" type="CollisionShape3D" parent="HitTest/StaticBody"]
 shape = SubResource("4")
 
-[node name="CSGSphere" type="CSGSphere3D" parent="HitTest/StaticBody"]
+[node name="HitTestSphere" type="CSGSphere3D" parent="HitTest/StaticBody"]
+unique_name_in_owner = true
 radius = 1.0
 radial_segments = 16
 rings = 10
@@ -654,7 +649,7 @@ rotation_edit_mode = 2
 transform = Transform3D(1, -6.03961e-14, -2.68221e-07, 3.55271e-13, 1, 1.42109e-14, -1.19209e-07, 1.1724e-13, 1, -0.2, 4.76837e-07, 0.4)
 
 [node name="Grid" type="Node3D" parent="Grids"]
-transform = Transform3D(5, 0, 2.38419e-07, 0, 1, 0, -2.38419e-07, 0, 5, 0, 0, 0)
+transform = Transform3D(5, 0, 4.76837e-07, 0, 1, 0, -4.76837e-07, 0, 5, 0, 0, 0)
 
 [node name="Subdivision" type="Node3D" parent="Grids/Grid"]
 transform = Transform3D(1, 0, -2.98023e-08, 0, 0.999999, 1.90735e-05, 0, 4.65661e-10, 0.999999, 1, 0, 1)
@@ -821,7 +816,6 @@ size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 13
 item_count = 1
 popup/item_0/text = "1.0.0"
-popup/item_0/id = 0
 
 [node name="Label" type="Label" parent="Settings/HBox/VBoxContainer"]
 layout_mode = 2

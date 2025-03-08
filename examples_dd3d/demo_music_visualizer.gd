@@ -23,9 +23,6 @@ var color_offset := 0.0
 
 var _on_data_loaded_callback = null
 
-# TODO remove after moving to 4.2
-var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_version_info()["minor"] >= 2
-
 
 func _ready():
 	var bus = AudioServer.get_bus_index(MusicAnalyzerBus)
@@ -58,9 +55,8 @@ func _pressed():
 		var data = file.get_buffer(file.get_length())
 		open_stream(filepath.get_extension(), data)
 	
-	if is_4_2_and_higher and DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
-		# TODO remove call() and get() after moving to 4.2
-		DisplayServer.call("file_dialog_show", "Select audio file", "", "", true, DisplayServer.get("FILE_DIALOG_MODE_OPEN_FILE"), ["*.mp3"], 
+	if DisplayServer.has_feature(DisplayServer.FEATURE_NATIVE_DIALOG):
+		DisplayServer.file_dialog_show("Select audio file", "", "", true, DisplayServer.FILE_DIALOG_MODE_OPEN_FILE, ["*.mp3"], 
 			func (status: bool, selected: PackedStringArray, _fileter: int):
 				if status and selected.size():
 					open_file.call(selected[0])

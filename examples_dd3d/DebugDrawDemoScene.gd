@@ -35,9 +35,6 @@ var timer_cubes := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
-# TODO remove after moving to 4.2
-var is_4_2_and_higher = Engine.get_version_info()["major"] >= 4 && Engine.get_version_info()["minor"] >= 2
-
 
 func _process(delta) -> void:
 	#print("Label3Ds count: %d" % get_child(0).get_child_count() if Engine.is_editor_hint() else get_tree().root.get_child(0).get_child_count())
@@ -78,12 +75,6 @@ func _physics_process(delta: float) -> void:
 
 func main_update(delta: float) -> void:
 	DebugDraw3D.scoped_config().set_thickness(debug_thickness).set_center_brightness(debug_center_brightness)
-	if false: #test
-		var _s11 = DebugDraw3D.new_scoped_config().set_thickness(1)
-		if true:
-			pass
-			var _s13 = DebugDraw3D.new_scoped_config()
-			_s13.set_thickness(3)
 	
 	_update_keys_just_press()
 	
@@ -155,12 +146,14 @@ func main_update(delta: float) -> void:
 		DebugDraw3D.draw_box_xf(z.global_transform, Color.BLACK)
 	
 	# Spheres
+	_draw_zone_title(%SpheresBox, "Spheres")
+	
 	DebugDraw3D.draw_sphere_xf($Spheres/SphereTransform.global_transform, Color.CRIMSON)
 	if true:
 		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
 		DebugDraw3D.draw_sphere_xf($Spheres/SphereHDTransform.global_transform, Color.ORANGE_RED)
 	
-	# Delayed spheres
+	## Delayed spheres
 	if timer_1 < 0:
 		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position, 2.0, Color.BLUE_VIOLET, 2.0)
 		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
@@ -168,11 +161,15 @@ func main_update(delta: float) -> void:
 		timer_1 = 2
 	
 	# Cylinders
+	_draw_zone_title(%CylindersBox, "Cylinders")
+	
 	DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
 	DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY.scaled(Vector3(1,2,1)), $Cylinders/Cylinder2.global_position), Color.RED)
 	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.7)
 	
 	# Boxes
+	_draw_zone_title(%BoxesBox, "Boxes")
+	
 	DebugDraw3D.draw_box_xf($Boxes/Box1.global_transform, Color.MEDIUM_PURPLE)
 	DebugDraw3D.draw_box($Boxes/Box2.global_position, Quaternion.from_euler(Vector3(0, deg_to_rad(45), deg_to_rad(45))), Vector3.ONE, Color.REBECCA_PURPLE)
 	DebugDraw3D.draw_box_xf(Transform3D(Basis(Vector3.UP, PI * 0.25).scaled(Vector3.ONE * 2), $Boxes/Box3.global_position), Color.ROSY_BROWN)
@@ -188,6 +185,8 @@ func main_update(delta: float) -> void:
 	DebugDraw3D.draw_box_ab($Boxes/BoxABEdge/a.global_position, $Boxes/BoxABEdge/b.global_position, $Boxes/BoxABEdge/o/up.global_position - $Boxes/BoxABEdge.global_position, Color.DARK_OLIVE_GREEN, false)
 	
 	# Lines
+	_draw_zone_title(%LinesBox, "Lines")
+	
 	var target = $Lines/Target
 	DebugDraw3D.draw_square(target.global_position, 0.5, Color.RED)
 	
@@ -207,7 +206,8 @@ func main_update(delta: float) -> void:
 	
 	DebugDraw3D.draw_line_hit_offset($"Lines/5".global_position, target.global_position, true, abs(sin(Time.get_ticks_msec() / 1000.0)), 0.25, Color.AQUA)
 	
-	# Path
+	# Paths
+	_draw_zone_title(%PathsBox, "Paths")
 	
 	## preparing data
 	var points: PackedVector3Array = []
@@ -241,6 +241,8 @@ func main_update(delta: float) -> void:
 		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 	
 	# Misc
+	_draw_zone_title(%MiscBox, "Misc")
+	
 	if Engine.is_editor_hint():
 		#for i in 1000:
 		var _a11 = DebugDraw3D.new_scoped_config().set_thickness(0)
@@ -259,6 +261,9 @@ func main_update(delta: float) -> void:
 	if true:
 		var _s123 = DebugDraw3D.new_scoped_config().set_center_brightness(0.5).set_no_depth_test(true)
 		DebugDraw3D.draw_gizmo($Misc/GizmoNormal.global_transform.orthonormalized(), DebugDraw3D.empty_color, false)
+	
+	# Grids
+	_draw_zone_title_pos($Grids/GridCentered.global_position + Vector3(0, 1.5, 0), "Grids", 96, 36)
 	
 	var tg : Transform3D = $Grids/Grid.global_transform
 	var tn : Vector3 = $Grids/Grid/Subdivision.transform.origin
@@ -283,7 +288,10 @@ func main_update(delta: float) -> void:
 		_text_tests()
 	
 	# Lag Test
-	$LagTest.position = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0) + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
+	var lag_test_pos = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0)
+	_draw_zone_title_pos(lag_test_pos, "Lag test")
+	
+	$LagTest.position = lag_test_pos + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
 	DebugDraw3D.draw_box($LagTest.global_position, Quaternion.IDENTITY, Vector3.ONE * 2.01, Color.CHOCOLATE, true)
 	
 	if more_test_cases:
@@ -372,6 +380,18 @@ func _text_tests():
 		DebugDraw2D.end_text_group()
 
 
+func _draw_zone_title(node: Node3D, title: String):
+	if draw_3d_text:
+		var _s1 = DebugDraw3D.new_scoped_config().set_text_outline_size(72)
+		DebugDraw3D.draw_text(node.global_position + node.global_basis.y * 0.85, title, 128)
+
+
+func _draw_zone_title_pos(pos: Vector3, title: String, font_size: int = 128, outline: int = 72):
+	if draw_3d_text:
+		var _s1 = DebugDraw3D.new_scoped_config().set_text_outline_size(outline)
+		DebugDraw3D.draw_text(pos, title, font_size)
+
+
 func _draw_other_world():
 	var _w1 = DebugDraw3D.new_scoped_config().set_viewport(%OtherWorldBox.get_viewport())
 	DebugDraw3D.draw_box_xf(%OtherWorldBox.global_transform.rotated_local(Vector3(1,1,-1).normalized(), wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)), Color.SANDY_BROWN)
@@ -387,6 +407,8 @@ func _draw_other_world():
 
 func _draw_rays_casts():
 	# Line hits render
+	_draw_zone_title_pos(%HitTestSphere.global_position, "Line hits", 96, 36)
+	
 	for ray in $HitTest/RayEmitter.get_children():
 		if ray is RayCast3D:
 			ray.force_raycast_update()
@@ -412,9 +434,8 @@ func _more_tests():
 		var plane = Plane(normal, xf.origin.dot(normal))
 		
 		var vp: Viewport = get_viewport()
-		if is_4_2_and_higher:
-			if Engine.is_editor_hint() and Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0):
-				vp = Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0)
+		if Engine.is_editor_hint() and Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0):
+			vp = Engine.get_singleton(&"EditorInterface").get_editor_viewport_3d(0)
 		
 		var cam = vp.get_camera_3d()
 		if cam:
@@ -422,11 +443,10 @@ func _more_tests():
 			var intersect = plane.intersects_ray(cam.global_position, dir)
 			
 			DebugDraw3D.draw_plane(plane, Color.CORAL * Color(1,1,1, 0.4), pl_node.global_position)
-			if is_4_2_and_higher:
-				if intersect and intersect.distance_to(pl_node.global_position) < _s11.get_plane_size() * 0.5:
-					# Need to test different colors on both sides of the plane
-					var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
-					DebugDraw3D.draw_sphere(intersect, 0.3, col)
+			if intersect and intersect.distance_to(pl_node.global_position) < _s11.get_plane_size() * 0.5:
+				# Need to test different colors on both sides of the plane
+				var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
+				DebugDraw3D.draw_sphere(intersect, 0.3, col)
 
 
 func _draw_array_of_boxes():

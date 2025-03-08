@@ -195,9 +195,7 @@ void DebugDraw3D::init(DebugDrawManager *p_root) {
 
 	DEFINE_SETTING(root_settings_section + s_render_priority, 0, Variant::INT);
 	DEFINE_SETTING_HINT(root_settings_section + s_render_mode, 0, Variant::INT, PROPERTY_HINT_ENUM, "Default,Forced Transparent,Forced Opaque");
-	if (Utils::is_current_godot_version_in_range(4, 2)) {
-		DEFINE_SETTING(root_settings_section + s_render_fog_disabled, true, Variant::BOOL);
-	}
+	DEFINE_SETTING(root_settings_section + s_render_fog_disabled, true, Variant::BOOL);
 
 	default_scoped_config.instantiate();
 
@@ -608,7 +606,7 @@ void DebugDraw3D::_load_materials() {
 
 	int render_priority = PS()->get_setting(root_settings_section + s_render_priority);
 	int render_mode = PS()->get_setting(root_settings_section + s_render_mode); // default, transparent, opaque
-	bool fog_disabled = Utils::is_current_godot_version_in_range(4, 2) ? (bool)PS()->get_setting(root_settings_section + s_render_fog_disabled) : false;
+	bool fog_disabled = (bool)PS()->get_setting(root_settings_section + s_render_fog_disabled);
 
 	for (int variant = 0; variant < (int)MeshMaterialVariant::MAX; variant++) {
 		String prefix = "";
@@ -626,10 +624,8 @@ void DebugDraw3D::_load_materials() {
 				break;
 		}
 
-		if (Utils::is_current_godot_version_in_range(4, 2)) {
-			if (fog_disabled) {
-				prefix += "#define FOG_DISABLED\n";
-			}
+		if (fog_disabled) {
+			prefix += "#define FOG_DISABLED\n";
 		}
 
 #ifdef DISABLE_SHADER_WORLD_COORDS
