@@ -46,6 +46,7 @@ enum PreviewCase {
 	DrawText,
 	DrawTextOutlineColor,
 	DrawTextOutlineSize,
+	DrawTextFont,
 }
 
 class CaseData:
@@ -91,6 +92,7 @@ var case_maps = {
 	PreviewCase.DrawText : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawTextOutlineColor : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawTextOutlineSize : CaseData.new("DrawMethods180"),
+	PreviewCase.DrawTextFont : CaseData.new("DrawMethods180"),
 }
 
 var changed_by_code := false
@@ -116,6 +118,7 @@ var changed_by_code := false
 
 @export var text_colors: Gradient = null
 @export var text_outline_colors: Gradient = null
+@export var text_font: Font = null
 
 var is_exporting := false
 @export var export_all: bool = false:
@@ -139,6 +142,7 @@ var movie_compression: int = 4 # 0-6
 var movie_quality: int = 90 # 0-100
 
 var is_nodes_avail := false
+
 
 func _enter_tree():
 	is_nodes_avail = true
@@ -404,6 +408,7 @@ func _process(delta):
 		PreviewCase.DrawPlane:
 			var _s = DebugDraw3D.new_scoped_config().set_plane_size(1)
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
+		
 		PreviewCase.DrawText:
 			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, sin(anim_pos * PI) * 0.25, 0), "Anim pos: %.2f%%" % anim_pos, sin(anim_pos * PI) * 20 + 20, text_colors.sample(anim_pos))
 		PreviewCase.DrawTextOutlineColor:
@@ -412,5 +417,8 @@ func _process(delta):
 		PreviewCase.DrawTextOutlineSize:
 			var _s = DebugDraw3D.new_scoped_config().set_text_outline_size(sin(anim_pos * PI) * 32 + 2)
 			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
-	
+		PreviewCase.DrawTextFont:
+			var _s = DebugDraw3D.new_scoped_config().set_text_font(text_font if anim_pos >= 0.5 else null)
+			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
+
 	_end_of_frame(delta)

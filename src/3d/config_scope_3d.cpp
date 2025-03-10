@@ -33,6 +33,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_text_outline_size, "value");
 	REG_METHOD(get_text_outline_size);
+
+	REG_METHOD(set_text_font, "value");
+	REG_METHOD(get_text_font);
 #undef REG_CLASS_NAME
 }
 
@@ -102,6 +105,15 @@ int32_t DebugDraw3DScopeConfig::get_text_outline_size() const {
 	return data->text_outline_size;
 }
 
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(Ref<Font> _value) const {
+	data->text_font = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
+	return data->text_font;
+}
+
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
 	data->dcd.viewport = _value;
 	data->dcd.viewport_id = _value ? _value->get_instance_id() : 0;
@@ -149,6 +161,7 @@ DebugDraw3DScopeConfig::Data::Data() :
 		plane_size(INFINITY),
 		text_outline_color(Color(0, 0, 0, 1)),
 		text_outline_size(12),
+		text_font(nullptr),
 		dcd({}) {
 	uint32_t hash = hash_murmur3_one_float(text_outline_color.r);
 	hash = hash_murmur3_one_float(text_outline_color.g, hash);
@@ -164,5 +177,6 @@ DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) :
 		text_outline_color(p_parent->text_outline_color),
 		text_outline_color_hash(p_parent->text_outline_color_hash),
 		text_outline_size(p_parent->text_outline_size),
+		text_font(p_parent->text_font),
 		dcd(p_parent->dcd) {
 }

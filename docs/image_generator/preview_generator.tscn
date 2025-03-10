@@ -1,6 +1,7 @@
-[gd_scene load_steps=39 format=3 uid="uid://davayb2hh6h3u"]
+[gd_scene load_steps=40 format=3 uid="uid://davayb2hh6h3u"]
 
 [ext_resource type="Script" path="res://image_generator/preview_generator.gd" id="1_1iqys"]
+[ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="2_040oe"]
 
 [sub_resource type="Gradient" id="Gradient_pik8h"]
 offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
@@ -2861,12 +2862,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1iqys")
-preview_case = 29
+preview_case = 32
 lossless = true
 viewport_size = Vector2i(256, 128)
 anim_value_1 = 0.1
 text_colors = SubResource("Gradient_pik8h")
 text_outline_colors = SubResource("Gradient_2vnpq")
+text_font = ExtResource("2_040oe")
 metadata/movie_file = "C:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 
 [node name="FakeCamera" type="Camera3D" parent="."]

@@ -8,6 +8,7 @@
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/font.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -87,6 +88,7 @@ public:
 		Color text_outline_color;
 		uint32_t text_outline_color_hash;
 		int32_t text_outline_size;
+		Ref<Font> text_font;
 		DebugContainerDependent dcd;
 
 		Data();
@@ -152,6 +154,17 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_outline_size(int32_t _value) const;
 	int32_t get_text_outline_size() const;
+
+	/**
+	 * Set the font of the text in DebugDraw3D.draw_text.
+	 *
+	 * ![](docs/images/classes/DrawTextFont.webp)
+	 *
+	 * @warning
+	 * Frequent unsystematic changes to this property can lead to significant performance degradation.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_text_font(Ref<Font> _value) const;
+	Ref<Font> get_text_font() const;
 
 	/**
 	 * Set which Viewport will be used to get World3D.

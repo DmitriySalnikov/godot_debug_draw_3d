@@ -307,6 +307,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 	ZoneScoped;
 
 	uint32_t opts_hash = hash_murmur3_one_32(size);
+	opts_hash = hash_murmur3_one_64((uint64_t)p_cfg->text_font.ptr(), opts_hash);
 	opts_hash = hash_murmur3_one_float(color.r, opts_hash);
 	opts_hash = hash_murmur3_one_float(color.g, opts_hash);
 	opts_hash = hash_murmur3_one_float(color.b, opts_hash);
@@ -328,6 +329,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 	lbl3d->set_position(position);
 	lbl3d->set_visible(true);
 	lbl3d->set_text(text);
+	lbl3d->set_font(p_cfg->text_font);
 	lbl3d->set_font_size(size);
 	lbl3d->set_modulate(color);
 	lbl3d->set_outline_modulate(p_cfg->text_outline_color);

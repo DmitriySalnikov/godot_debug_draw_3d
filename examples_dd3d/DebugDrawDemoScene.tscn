@@ -1,8 +1,9 @@
-[gd_scene load_steps=39 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=40 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
+[ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="3_tkhi8"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
@@ -329,6 +330,7 @@ corner_radius_bottom_left = 4
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
+custom_3d_font = ExtResource("3_tkhi8")
 text_groups_position = 2
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
