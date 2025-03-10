@@ -21,12 +21,13 @@ var searchData=
   ['set_5ftext_5fcustom_5ffont_18',['set_text_custom_font',['../classDebugDraw2DConfig.html#ae675d6b57c5ac64f7fac17d75c2182e1',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fdefault_5fduration_19',['set_text_default_duration',['../classDebugDraw2DConfig.html#a0a8419bf704cac62201638d4bfe08d17',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fdefault_5fsize_20',['set_text_default_size',['../classDebugDraw2DConfig.html#aa85eebff3bc8279f06cb39fb0ed144f8',1,'DebugDraw2DConfig']]],
-  ['set_5ftext_5fforeground_5fcolor_21',['set_text_foreground_color',['../classDebugDraw2DConfig.html#a98a6fe2c34bd68aaf9b08029bb064fde',1,'DebugDraw2DConfig']]],
-  ['set_5ftext_5foutline_5fcolor_22',['set_text_outline_color',['../classDebugDraw3DScopeConfig.html#a8de91165b92ef5c7309f9d8e06f7f98c',1,'DebugDraw3DScopeConfig']]],
-  ['set_5ftext_5foutline_5fsize_23',['set_text_outline_size',['../classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d',1,'DebugDraw3DScopeConfig']]],
-  ['set_5ftext_5fpadding_24',['set_text_padding',['../classDebugDraw2DConfig.html#a121600533e7b4eefa18a6d51abb4d2d8',1,'DebugDraw2DConfig']]],
-  ['set_5fthickness_25',['set_thickness',['../classDebugDraw3DScopeConfig.html#a37ecc60971b0abb942be6ac2de3ca815',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fuse_5ffrustum_5fculling_26',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#ae23fa4d7dae08914f3b7a65d0d026bb0',1,'DebugDraw3DConfig']]],
-  ['set_5fviewport_27',['set_viewport',['../classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fvisible_5finstance_5fbounds_28',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]]
+  ['set_5ftext_5ffont_21',['set_text_font',['../classDebugDraw3DScopeConfig.html#a4cc5d864f79dfe3d27c112d2af00e541',1,'DebugDraw3DScopeConfig']]],
+  ['set_5ftext_5fforeground_5fcolor_22',['set_text_foreground_color',['../classDebugDraw2DConfig.html#a98a6fe2c34bd68aaf9b08029bb064fde',1,'DebugDraw2DConfig']]],
+  ['set_5ftext_5foutline_5fcolor_23',['set_text_outline_color',['../classDebugDraw3DScopeConfig.html#a8de91165b92ef5c7309f9d8e06f7f98c',1,'DebugDraw3DScopeConfig']]],
+  ['set_5ftext_5foutline_5fsize_24',['set_text_outline_size',['../classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d',1,'DebugDraw3DScopeConfig']]],
+  ['set_5ftext_5fpadding_25',['set_text_padding',['../classDebugDraw2DConfig.html#a121600533e7b4eefa18a6d51abb4d2d8',1,'DebugDraw2DConfig']]],
+  ['set_5fthickness_26',['set_thickness',['../classDebugDraw3DScopeConfig.html#a37ecc60971b0abb942be6ac2de3ca815',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fuse_5ffrustum_5fculling_27',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#ae23fa4d7dae08914f3b7a65d0d026bb0',1,'DebugDraw3DConfig']]],
+  ['set_5fviewport_28',['set_viewport',['../classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fvisible_5finstance_5fbounds_29',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]]
 ];
