@@ -9,6 +9,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/templates/hashfuncs.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
@@ -194,6 +195,7 @@ NodesContainer::TextNodeItem NodesContainer::_create_text_node_item(uint32_t opt
 	lbl->set_layer_mask(render_layers);
 	lbl->set_visible(false);
 	lbl->set_draw_flag(Label3D::DrawFlags::FLAG_DISABLE_DEPTH_TEST, no_depth_test);
+	lbl->set_billboard_mode(BaseMaterial3D::BillboardMode::BILLBOARD_ENABLED);
 	root->add_child(lbl);
 	return TextNodeItem(lbl, opts_hash, text_hash);
 }
@@ -234,6 +236,9 @@ void NodesContainer::update_expiration_delta(const double &p_delta, const Proces
 
 void NodesContainer::update_geometry(double p_delta) {
 	ZoneScoped;
+	LOCK_GUARD(owner->datalock);
+
+	_render_queued_nodes();
 
 	// accumulate a time delta to delete objects in any case after their timers expire.
 	update_expiration_delta(p_delta, ProcessType::PROCESS);
@@ -317,24 +322,73 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 
 	uint32_t text_hash = text.hash();
 
-	auto *lblit = text_pools[(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)].get(opts_hash, text_hash);
+	// if called from the main thread, just add/update
+	if (auto *os = OS::get_singleton(); os->get_thread_caller_id() == os->get_main_thread_id()) {
+		auto *lblit = text_pools[(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)].get(opts_hash, text_hash);
 
-	lblit->expiration_time = duration;
-	lblit->is_used_one_time = false;
-	lblit->opts_hash = opts_hash;
-	lblit->text_hash = text_hash;
-	lblit->unused_time = Math::clamp((double)duration * 2, (double)1, DBL_MAX);
+		lblit->expiration_time = duration;
+		lblit->is_used_one_time = false;
+		lblit->opts_hash = opts_hash;
+		lblit->text_hash = text_hash;
+		lblit->unused_time = Math::clamp((double)duration * 2, (double)1, DBL_MAX);
 
-	Label3D *lbl3d = lblit->node;
-	lbl3d->set_position(position);
-	lbl3d->set_visible(true);
-	lbl3d->set_text(text);
-	lbl3d->set_font(p_cfg->text_font);
-	lbl3d->set_font_size(size);
-	lbl3d->set_modulate(color);
-	lbl3d->set_outline_modulate(p_cfg->text_outline_color);
-	lbl3d->set_outline_size(p_cfg->text_outline_size);
-	lbl3d->set_billboard_mode(BaseMaterial3D::BillboardMode::BILLBOARD_ENABLED);
+		Label3D *lbl3d = lblit->node;
+		lbl3d->set_position(position);
+		lbl3d->set_visible(true);
+		lbl3d->set_text(text);
+		lbl3d->set_font(p_cfg->text_font);
+		lbl3d->set_font_size(size);
+		lbl3d->set_modulate(color);
+		lbl3d->set_outline_modulate(p_cfg->text_outline_color);
+		lbl3d->set_outline_size(p_cfg->text_outline_size);
+	} else {
+		// wait for the end of the frame to display anything from the user thread
+		deferred_text_queue.emplace(
+				/* real_t duration */ duration,
+				/* uint64_t opts_hash */ opts_hash,
+				/* uint64_t text_hash */ text_hash,
+				/* Vector3 position */ position,
+				/* String text */ text,
+				/* Ref<Font> font */ p_cfg->text_font,
+				/* int font_size */ size,
+				/* Color color */ color,
+				/* Color outline_color */ p_cfg->text_outline_color,
+				/* int outline_size */ p_cfg->text_outline_size);
+	}
+}
+
+void NodesContainer::_render_queued_nodes() {
+	ZoneScoped;
+	LOCK_GUARD(owner->datalock);
+
+	while (!deferred_text_queue.empty()) {
+		ZoneScopedN("Updating item");
+		const auto &i = deferred_text_queue.front();
+
+		// Use ProcessType::PROCESS as the default value for user threads
+		auto *lblit = text_pools[(int)ProcessType::PROCESS].get(i.opts_hash, i.text_hash);
+
+		lblit->expiration_time = i.duration;
+		lblit->is_used_one_time = false;
+		lblit->opts_hash = i.opts_hash;
+		lblit->text_hash = i.text_hash;
+		lblit->unused_time = Math::clamp((double)i.duration * 2, (double)1, DBL_MAX);
+
+		{
+			ZoneScopedN("Setting node properties");
+			Label3D *lbl3d = lblit->node;
+			lbl3d->set_position(i.position);
+			lbl3d->set_visible(true);
+			lbl3d->set_text(i.text);
+			lbl3d->set_font(i.font);
+			lbl3d->set_font_size(i.font_size);
+			lbl3d->set_modulate(i.color);
+			lbl3d->set_outline_modulate(i.outline_color);
+			lbl3d->set_outline_size(i.outline_size);
+		}
+
+		deferred_text_queue.pop();
+	}
 }
 
 void NodesContainer::get_render_stats(Ref<DebugDraw3DStats> &p_stats) const {

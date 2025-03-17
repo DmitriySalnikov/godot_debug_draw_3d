@@ -27,6 +27,11 @@ extends Node3D
 @export_range(1, 100) var text_groups_title_font_size := 20
 @export_range(1, 100) var text_groups_text_font_size := 17
 
+@export_group("Tests", "tests")
+@export var tests_use_threads := false
+var test_thread : Thread = null
+var test_thread_closing := false
+
 var button_presses := {}
 var frame_rendered := false
 var physics_tick_processed := false
@@ -43,15 +48,17 @@ func _process(delta) -> void:
 	$OtherWorld.mesh.material.set_shader_parameter("albedo_texture", $OtherWorld/SubViewport.get_texture())
 	
 	physics_tick_processed = false
-	if !update_in_physics:
-		main_update(delta)
-		_update_timers(delta)
+	if not update_in_physics:
+			main_update(delta)
+			_update_timers(delta)
+	
+	_call_from_thread()
 
 
 ## Since physics frames may not be called every frame or may be called multiple times in one frame,
 ## there is an additional check to ensure that a new frame has been drawn before updating the data.
 func _physics_process(delta: float) -> void:
-	if !physics_tick_processed:
+	if not physics_tick_processed:
 		physics_tick_processed = true
 		if update_in_physics:
 			main_update(delta)
@@ -110,7 +117,7 @@ func main_update(delta: float) -> void:
 	%ZDepthTestCube.visible = true
 	
 	# Testing the rendering layers by showing the image from the second camera inside the 2D panel
-	DebugDraw3D.config.geometry_render_layers = 1 if !Input.is_key_pressed(KEY_ALT) else 0b10010
+	DebugDraw3D.config.geometry_render_layers = 1 if not Input.is_key_pressed(KEY_ALT) else 0b10010
 	$Panel.visible = Input.is_key_pressed(KEY_ALT)
 	DebugDraw2D.custom_canvas = %CustomCanvas if Input.is_key_pressed(KEY_ALT) else null
 	
@@ -128,10 +135,10 @@ func main_update(delta: float) -> void:
 	if _is_key_just_pressed(KEY_UP):
 		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
 	if _is_key_just_pressed(KEY_CTRL):
-		if !Engine.is_editor_hint():
+		if not Engine.is_editor_hint():
 			get_viewport().msaa_3d = Viewport.MSAA_DISABLED if get_viewport().msaa_3d == Viewport.MSAA_4X else Viewport.MSAA_4X
 	
-	if !Engine.is_editor_hint():
+	if not Engine.is_editor_hint():
 		if _is_key_just_pressed(KEY_1):
 			DebugDraw3D.debug_enabled = !DebugDraw3D.debug_enabled
 		if _is_key_just_pressed(KEY_2):
@@ -496,7 +503,7 @@ func _ready() -> void:
 	
 	# this check is required for inherited scenes, because an instance of this 
 	# script is created first, and then overridden by another
-	if !is_inside_tree():
+	if not is_inside_tree():
 		return
 	
 	DebugDraw2D.config.text_background_color = Color(0.3, 0.3, 0.3, 0.8)
@@ -532,3 +539,43 @@ func _update_timers(delta : float):
 	timer_cubes -= delta
 	timer_3 -= delta
 	timer_text -= delta
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_EDITOR_PRE_SAVE or what == NOTIFICATION_EXIT_TREE:
+		_thread_stop()
+
+
+func _call_from_thread():
+	if tests_use_threads and (not test_thread or not test_thread.is_alive()):
+		test_thread_closing = false
+		test_thread = Thread.new()
+		test_thread.start(_thread_body)
+	elif not tests_use_threads and (test_thread and test_thread.is_alive()):
+		_thread_stop()
+
+
+func _thread_stop():
+	if test_thread and test_thread.is_alive():
+		tests_use_threads = false
+		test_thread_closing = true
+		test_thread.wait_to_finish()
+
+
+func _thread_body():
+	print("Thread started!")
+	while not test_thread_closing:
+		DebugDraw3D.draw_box(Vector3(0,-1,0), Quaternion.IDENTITY, Vector3.ONE, Color.BROWN, true, 0.016)
+		
+		var boxes = 10
+		for y in boxes:
+			var offset := sin(TAU/boxes * y + wrapf(Time.get_ticks_msec() / 100.0, 0, TAU))
+			var pos := Vector3(offset, y, 0)
+			DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, Vector3.ONE, Color.GREEN_YELLOW, true, 0.016)
+			DebugDraw3D.draw_text(pos, str(y), 64, Color.WHITE , 0.016)
+			
+			if y == 0:
+				DebugDraw2D.set_text("thread. sin", offset)
+		
+		OS.delay_msec(16)
+	print("Thread finished!")

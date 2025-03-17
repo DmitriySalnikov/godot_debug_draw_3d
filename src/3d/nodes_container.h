@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <list>
+#include <queue>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/label3d.hpp>
@@ -113,6 +114,44 @@ class NodesContainer {
 	TextNodeItem _create_text_node_item(uint32_t opts_hash, uint32_t text_hash);
 	void _destroy_text_node_item(TextNodeItem &item);
 	LabelsPool text_pools[(int)ProcessType::MAX];
+
+	struct TextNodeDeferredQueueItem {
+		real_t duration;
+		uint64_t opts_hash;
+		uint64_t text_hash;
+		Vector3 position;
+		String text;
+		Ref<Font> font;
+		int font_size;
+		Color color;
+		Color outline_color;
+		int outline_size;
+
+		TextNodeDeferredQueueItem(
+				const real_t &duration,
+				const uint64_t &opts_hash,
+				const uint64_t &text_hash,
+				const Vector3 &position,
+				const String &text,
+				const Ref<Font> &font,
+				const int &font_size,
+				const Color &color,
+				const Color &outline_color,
+				const int &outline_size) :
+
+				duration(duration),
+				opts_hash(opts_hash),
+				text_hash(text_hash),
+				position(position),
+				text(text),
+				font(font),
+				font_size(font_size),
+				color(color),
+				outline_color(outline_color),
+				outline_size(outline_size) {}
+	};
+	std::queue<TextNodeDeferredQueueItem> deferred_text_queue;
+	void _render_queued_nodes();
 
 public:
 	NodesContainer(class DebugDraw3D *p_owner, Node *p_root, bool p_no_depth_test);

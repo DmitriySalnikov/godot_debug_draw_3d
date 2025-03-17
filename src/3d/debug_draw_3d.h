@@ -194,9 +194,10 @@ private:
 		~ViewportToDebugContainerItem();
 	};
 
-	std::unordered_map<uint64_t, ViewportToDebugContainerItem> debug_containers;
+	std::unordered_map<uint64_t /* World3D */, ViewportToDebugContainerItem> debug_containers;
 	// invalidate on add/remove operations or use ptrs
 	std::unordered_map<const Viewport *, ViewportToDebugContainerItem *> viewport_to_world_cache;
+	std::unordered_map<uint64_t /*Viewport * */, Ref<World3D> > world3ds_found_for_threads_сache;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
@@ -208,7 +209,8 @@ private:
 
 	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugDraw3D::ViewportToDebugContainerItem *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
-	void _register_viewport_world_deferred(uint64_t /*Node * */ p_node_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher);
+	void _deferred_find_world_in_viewport(uint64_t p_viewport_id);
+	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_viewport_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher);
 	Node *_get_root_world_node(Node *p_scene_root, Viewport *p_vp);
 	void _remove_debug_container(const uint64_t &p_world_id);
 

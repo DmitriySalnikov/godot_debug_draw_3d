@@ -441,7 +441,32 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 		return cached_world->second;
 	}
 
-	Ref<World3D> vp_world = p_dgcd.viewport->find_world_3d();
+	Ref<World3D> vp_world;
+
+	// find_world_3d is not available from user threads. Make a deferred request and just wait.
+	if (auto *os = OS::get_singleton(); os->get_thread_caller_id() != os->get_main_thread_id()) {
+		const auto &p = world3ds_found_for_threads_сache.find(p_dgcd.viewport_id);
+		if (p == world3ds_found_for_threads_сache.end()) {
+			// PRINT_WARNING("DebugDraw3D cannot search for World3D outside of the main thread.\nAn attempt will be made to search for World3D using deferred call.");
+			world3ds_found_for_threads_сache[p_dgcd.viewport_id] = Ref<World3D>();
+			callable_mp(this, &DebugDraw3D::_deferred_find_world_in_viewport).call_deferred(p_dgcd.viewport->get_instance_id());
+			return nullptr;
+		} else {
+			if (p->second.is_null()) {
+				return nullptr;
+			} else {
+				vp_world = p->second;
+			}
+		}
+	} else {
+		vp_world = p_dgcd.viewport->find_world_3d();
+	}
+
+	if (vp_world.is_null()) {
+		PRINT_WARNING("DebugDraw3D cannot find World3D. It is not possible to draw a debugging geometry.");
+		return nullptr;
+	}
+
 	uint64_t vp_world_id = vp_world->get_instance_id();
 
 	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
@@ -465,9 +490,9 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 		// _DD3D_WorldWatcher has to be cleared by the SceenTree or manually in case of an error.
 		c.world_watcher = memnew(_DD3D_WorldWatcher(this, vp_world_id));
-		Node *scene_root = root_node->get_current_scene();
+
 		callable_mp(this, &DebugDraw3D::_register_viewport_world_deferred)
-				.call_deferred(_get_root_world_node(scene_root, p_dgcd.viewport)->get_instance_id(), vp_world_id, c.world_watcher);
+				.call_deferred(p_dgcd.viewport_id, vp_world_id, c.world_watcher);
 	}
 
 	c.world_id = vp_world_id;
@@ -481,12 +506,21 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 	return &c;
 }
 
-void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Node * */ p_node_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher) {
+void DebugDraw3D::_deferred_find_world_in_viewport(uint64_t p_viewport_id) {
+	const Viewport *vp = Object::cast_to<Viewport>(ObjectDB::get_instance(p_viewport_id));
+	if (vp) {
+		world3ds_found_for_threads_сache[p_viewport_id] = vp->find_world_3d();
+	}
+}
+
+void DebugDraw3D::_register_viewport_world_deferred(uint64_t /*Viewport * */ p_viewport_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher) {
 	ZoneScoped;
 
-	// something failed. need to remove container
-	Node *parent_node = cast_to<Node>(ObjectDB::get_instance(p_node_id));
+	Node *scene_root = root_node->get_current_scene();
+	Viewport *viewport = cast_to<Viewport>(ObjectDB::get_instance(p_viewport_id));
+	Node *parent_node = _get_root_world_node(scene_root, viewport);
 
+	// something failed. need to remove container
 	if (!parent_node || parent_node->is_queued_for_deletion() || !watcher) {
 		DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (register): Failed to register WorldWatcher for World3D (%" PRIu64 ").\n", p_world_id);
 		_remove_debug_container(p_world_id);
@@ -529,6 +563,10 @@ end:
 
 #ifdef TOOLS_ENABLED
 	if (IS_EDITOR_HINT()) {
+		if (!p_scene_root) {
+			return nullptr;
+		}
+
 		if (!p_scene_root->is_ancestor_of(p_vp)) {
 			DEV_PRINT_STD_F(NAMEOF(_DD3D_WorldWatcher) " (get_root): Viewport with World3D (%" PRIu64 ") does not belong to the current scene: %s\nUsing the root of the current scene: %s\n",
 					p_vp->find_world_3d()->get_instance_id(),
@@ -556,6 +594,8 @@ void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
 
 		// remove cached references to avoid crashes in case of invalidation of `debug_containers`
 		viewport_to_world_cache.clear();
+		// also clear the world3d cache for threads
+		world3ds_found_for_threads_сache.clear();
 	}
 }
 
@@ -798,6 +838,7 @@ void DebugDraw3D::clear_all() {
 
 	debug_containers.clear();
 	viewport_to_world_cache.clear();
+	world3ds_found_for_threads_сache.clear();
 #else
 	return;
 #endif
@@ -888,7 +929,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 			Vector3 a = p_lines.get()[i];
 			Vector3 diff = p_lines.get()[i + 1] - a;
 			real_t len = diff.length();
-			Vector3 center = diff.normalized() * len * .5f;
+			Vector3 center = diff * .5f;
 			dgc->geometry_pool.add_or_update_instance(
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
@@ -957,9 +998,9 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	// TODO: maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
-	Vector3 half_center = diff.normalized() * len * .5f;
-	Vector3 up = get_up_vector(half_center);
-	Transform3D t = Transform3D(Basis().looking_at(half_center, up).scaled_local(Vector3(radius, radius, len)), a + half_center);
+	Vector3 center = diff * .5f;
+	Vector3 up = get_up_vector(center);
+	Transform3D t = Transform3D(Basis().looking_at(center, up).scaled_local(Vector3(radius, radius, len)), a + center);
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
@@ -992,15 +1033,15 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 	if (is_ab_diagonal) {
 		ZoneScopedN("From diagonals");
 		Vector3 up_n = up.normalized();
-		Vector3 half_center_orig = diff.normalized() * diff.length() * .5f;
-		Vector3 half_center = half_center_orig.rotated(up_n, Math::deg_to_rad(45.f));
-		Vector3 half_center_side = half_center / MathUtils::Sqrt2;
-		Vector3 front = half_center_side.cross(up_n);
+		Vector3 center_orig = diff * .5f;
+		Vector3 center = center_orig.rotated(up_n, Math::deg_to_rad(45.f));
+		Vector3 center_side = center / MathUtils::Sqrt2;
+		Vector3 front = center_side.cross(up_n);
 
-		Transform3D t(half_center.project(up_n) * 2, half_center_side.project(front.cross(up_n)) * 2, front * 2, a);
+		Transform3D t(center.project(up_n) * 2, center_side.project(front.cross(up_n)) * 2, front * 2, a);
 
 		// copied from draw_box_xf
-		SphereBounds sb(t.origin + half_center_orig, MathUtils::get_max_basis_length(t.basis) * MathUtils::CubeRadiusForSphere);
+		SphereBounds sb(t.origin + center_orig, MathUtils::get_max_basis_length(t.basis) * MathUtils::CubeRadiusForSphere);
 
 		LOCK_GUARD(datalock);
 		GET_SCOPED_CFG_AND_DGC();
@@ -1014,10 +1055,10 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 				sb);
 	} else {
 		ZoneScopedN("From edges");
-		Vector3 half_center = diff.normalized() * diff.length() * .5f;
+		Vector3 center = diff * .5f;
 		Vector3 front = diff.cross(up.normalized());
 
-		Transform3D t(half_center.project(up) * 2, half_center.project(front.cross(up)) * 2, front, a + half_center);
+		Transform3D t(center.project(up) * 2, center.project(front.cross(up)) * 2, front, a + center);
 		draw_box_xf(t, color, true, duration);
 	}
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=41 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -7,6 +7,27 @@
 [ext_resource type="Script" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
 [ext_resource type="Script" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
+
+[sub_resource type="Animation" id="Animation_ucqh5"]
+resource_name = "RESET"
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:tests_use_threads")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cq37i"]
+_data = {
+"RESET": SubResource("Animation_ucqh5")
+}
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_87638"]
 sky_horizon_color = Color(0.64625, 0.65575, 0.67075, 1)
@@ -144,34 +165,17 @@ void fragment() {
 }
 "
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_vpw84"]
+viewport_path = NodePath("OtherWorld/SubViewport")
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ho0aq"]
 render_priority = 0
 shader = SubResource("Shader_621vv")
+shader_parameter/albedo_texture = SubResource("ViewportTexture_vpw84")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_c6mie"]
 material = SubResource("ShaderMaterial_ho0aq")
 size = Vector2(4, 4)
-
-[sub_resource type="Animation" id="Animation_ucqh5"]
-resource_name = "RESET"
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:mesh:material:shader_parameter/albedo_texture")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [null]
-}
-
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_cq37i"]
-_data = {
-"RESET": SubResource("Animation_ucqh5")
-}
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_tigpa"]
 radius = 0.395
@@ -332,6 +336,12 @@ script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
 custom_3d_font = ExtResource("3_tkhi8")
 text_groups_position = 2
+
+[node name="RESET" type="AnimationPlayer" parent="."]
+root_node = NodePath("../OtherWorld")
+libraries = {
+"": SubResource("AnimationLibrary_cq37i")
+}
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
@@ -818,6 +828,7 @@ size_flags_horizontal = 8
 theme_override_font_sizes/font_size = 13
 item_count = 1
 popup/item_0/text = "1.0.0"
+popup/item_0/id = 0
 
 [node name="Label" type="Label" parent="Settings/HBox/VBoxContainer"]
 layout_mode = 2
