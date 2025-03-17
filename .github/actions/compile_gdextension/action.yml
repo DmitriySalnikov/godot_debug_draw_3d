@@ -31,7 +31,7 @@ inputs:
     default: "true"
   telemetry_version:
     description: Telemetry version
-    default: 42efc0d98c6a0e7a104c5a878005ca07d70ad031
+    default: 153bdd6e06870581968c11c4790eece04dc2bd22
 runs:
   using: composite
   steps:

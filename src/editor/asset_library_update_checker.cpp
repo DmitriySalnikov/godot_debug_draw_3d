@@ -81,7 +81,6 @@ void _DebugDraw3DAssetLibraryUpdateChecker::request_completed(String body) {
 		if (is_godot_version_incompatible) {
 			warning += "This version of Godot ([i]" + godot_ver_str + "[/i]) is not compatible with the new version of the addon (requires [i]" + addon_godot_version + "+[/i])!\n";
 		} else {
-			warning += "It will not be possible to update the addon through the editor, since its files are currently locked.\n";
 			warning += "You need to download the archive from this link:\n[url]" + download_url + "[/url]\n";
 			warning += "Then close the editor and replace the files in your project with new ones from the archive ";
 			warning += "(extract the content of the [i]" + repository_name + "-*****[/i] folder).\n";
