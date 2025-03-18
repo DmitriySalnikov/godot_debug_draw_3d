@@ -36,8 +36,6 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 Overlay:
 
 * Text (with grouping and coloring)
-* FPS Graph
-* Custom Graphs
 
 Precompiled for:
 

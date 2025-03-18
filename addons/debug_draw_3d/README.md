@@ -46,8 +46,6 @@ Your support adds motivation to develop my public projects.
 Overlay:
 
 * Text (with grouping and coloring)
-* FPS Graph
-* Custom Graphs
 
 Precompiled for:
 
