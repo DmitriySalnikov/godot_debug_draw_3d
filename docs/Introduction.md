@@ -42,10 +42,11 @@ Overlay:
 Precompiled for:
 
 * Windows
-* Linux
-* macOS
-* Android
-* Web (WebAssembly)
+* Linux (built on Ubuntu 22.04)
+* macOS (10.15+)
+* Android (5.0+)
+* iOS
+* Web (Firefox is supported by Godot 4.3+)
 
 This addon supports working with several World3D and different Viewports.
 There is also a no depth test mode and other settings that can be changed for each instance.

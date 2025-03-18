@@ -127,6 +127,9 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
                 "log",
             ]
         )
+    if env["platform"] == "web":
+        if env["dev_build"]:
+            env.Append(LINKFLAGS=["-sASSERTIONS=1", "-gsource-map"])
     print()
 
 

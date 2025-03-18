@@ -56,7 +56,7 @@ Precompiled for:
 * macOS (10.15+)
 * Android (5.0+)
 * iOS
-* Web (Firefox not supported)
+* Web (Firefox is supported by Godot 4.3+)
 
 This addon supports working with several World3D and different Viewports.
 There is also a no depth test mode and other settings that can be changed for each instance.
@@ -145,7 +145,7 @@ Also, a list of all functions is available in the documentation inside the edito
 
 The text in the keys and values of a text group cannot contain multi-line strings.
 
-The entire text overlay can only be placed in one corner, unlike `DataGraphs`.
+The entire text overlay can only be placed in one corner.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
 

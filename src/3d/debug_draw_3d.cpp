@@ -1484,7 +1484,7 @@ void DebugDraw3D::draw_text(const Vector3 &position, const String text, const in
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	// LOCK_GUARD(datalock);
+	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_NC();
 
 	nc->add_or_update_text(
