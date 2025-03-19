@@ -16,6 +16,7 @@
 #include <string_view>
 #include <unordered_set>
 #include <vector>
+#include <utility>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>

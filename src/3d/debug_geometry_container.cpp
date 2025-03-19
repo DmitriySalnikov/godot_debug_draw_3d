@@ -8,6 +8,7 @@
 #include "stats_3d.h"
 
 #include <array>
+#include <utility>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
@@ -213,15 +214,15 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 #define FIX_DOUBLE_PRECISION_ERRORS
 #endif
 
-	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
+	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData>> culling_data;
 	{
 		ZoneScopedN("Get frustums");
 
 		for (const auto &vp_p : available_viewports) {
-			std::vector<std::array<Plane, 6> > frustum_planes;
+			std::vector<std::array<Plane, 6>> frustum_planes;
 			std::vector<AABBMinMax> frustum_boxes;
 
-			std::vector<std::pair<Array, Camera3D *> > frustum_arrays;
+			std::vector<std::pair<Array, Camera3D *>> frustum_arrays;
 			frustum_arrays.reserve(1);
 
 #ifdef DEBUG_ENABLED
