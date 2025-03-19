@@ -9,7 +9,7 @@ var searchData=
   ['debugdraw3dscopeconfig_6',['DebugDraw3DScopeConfig',['../classDebugDraw3DScopeConfig.html',1,'']]],
   ['debugdraw3dstats_7',['DebugDraw3DStats',['../classDebugDraw3DStats.html',1,'']]],
   ['debugdrawmanager_8',['DebugDrawManager',['../classDebugDrawManager.html',1,'']]],
-  ['default_3a_20yes_9',['Default: yes',['../md_docs_2DoublePrecision.html#autotoc_md17',1,'&lt;tt&gt;fix_precision_enabled=yes|no&lt;/tt&gt; (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md18',1,'&lt;tt&gt;shader_world_coords_enabled=yes|no&lt;/tt&gt; (default: yes)']]],
+  ['default_3a_20yes_9',['default: yes',['../md_docs_2DoublePrecision.html#autotoc_md17',1,'&lt;tt&gt;fix_precision_enabled=yes|no&lt;/tt&gt; (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md18',1,'&lt;tt&gt;shader_world_coords_enabled=yes|no&lt;/tt&gt; (default: yes)']]],
   ['double_20precision_10',['Double Precision',['../md_docs_2DoublePrecision.html',1,'']]],
   ['download_11',['Download',['../index.html#autotoc_md3',1,'']]],
   ['draw_203d_20and_202d_12',['Debug Draw 3D (and 2D)',['../index.html',1,'']]],
@@ -41,5 +41,6 @@ var searchData=
   ['draw_5fray_38',['draw_ray',['../classDebugDraw3D.html#a034d616056c7614cf6a2222dcc4e184b',1,'DebugDraw3D']]],
   ['draw_5fsphere_39',['draw_sphere',['../classDebugDraw3D.html#af8fd7ef43bf28d06450d089955f3e7fa',1,'DebugDraw3D']]],
   ['draw_5fsphere_5fxf_40',['draw_sphere_xf',['../classDebugDraw3D.html#a6b57b7f408995e38bb348ef6c98fa460',1,'DebugDraw3D']]],
-  ['draw_5fsquare_41',['draw_square',['../classDebugDraw3D.html#a8ce1722eeffcaebb4dcd476324111758',1,'DebugDraw3D']]]
+  ['draw_5fsquare_41',['draw_square',['../classDebugDraw3D.html#a8ce1722eeffcaebb4dcd476324111758',1,'DebugDraw3D']]],
+  ['draw_5ftext_42',['draw_text',['../classDebugDraw3D.html#a151fc4fd35ac70c22ccd7ac22bfdd8c4',1,'DebugDraw3D']]]
 ];
