@@ -12,8 +12,8 @@ import lib_utils, lib_utils_external, lib_utils_gen_dd3d_api
 if platform.system() == "Windows":
     os.system("chcp 65001")
 
-SConsEnvironment.EnsureSConsVersion(4, 0)
-SConsEnvironment.EnsurePythonVersion(3, 8)
+EnsureSConsVersion(4, 0) # type: ignore
+EnsurePythonVersion(3, 8) # type: ignore
 
 # Project config
 project_name = "Debug Draw 3D"
@@ -188,7 +188,7 @@ def gen_apis(target, source, env: SConsEnvironment, src_out: list = []):
 
 def get_android_toolchain() -> str:
     sys.path.insert(0, "godot-cpp/tools")
-    import android
+    import android # type: ignore
 
     sys.path.pop(0)
     return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")

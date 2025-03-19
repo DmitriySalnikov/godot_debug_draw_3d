@@ -495,6 +495,10 @@ func _draw_array_of_boxes():
 						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_max_time)
 		print("Draw Cubes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_max_time
+	
+	if timer_cubes > cubes_max_time:
+		DebugDraw3D.clear_all();
+		timer_cubes = 0;
 
 
 func _ready() -> void:
