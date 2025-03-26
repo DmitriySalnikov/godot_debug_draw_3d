@@ -2,6 +2,10 @@
 
 #include <stdarg.h>
 
+GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/dir_access.hpp>
+GODOT_WARNING_RESTORE()
+
 using namespace godot;
 
 const godot::Vector3 Vector3_ZERO = godot::Vector3(0, 0, 0);
@@ -21,7 +25,6 @@ const godot::Quaternion Quaternion_IDENTITY = godot::Quaternion();
 #if DEBUG_ENABLED
 std::queue<Utils::LogData> Utils::log_buffer;
 #endif
-const char *Utils::root_settings_section = "debug_draw_3d/settings/";
 
 void Utils::_logv(bool p_err, bool p_force_print, const char *p_format, ...) {
 	ZoneScoped;
@@ -120,6 +123,30 @@ String Utils::get_scene_tree_as_string(Node *start) {
 
 	get_node_tree(start, 0);
 	return output;
+}
+
+godot::String Utils::search_file(const godot::String start_path, const godot::String &file_name) {
+	auto dir = DirAccess::open(start_path);
+	if (dir.is_valid()) {
+		dir->list_dir_begin();
+		String name = dir->get_next();
+		while (name != "") {
+			if (dir->current_is_dir()) {
+				String res = search_file(start_path.path_join(name), file_name);
+				if (!res.is_empty()) {
+					return res;
+				}
+			} else {
+				if (name == file_name) {
+					return start_path.path_join(name);
+				}
+			}
+			name = dir->get_next();
+		}
+	} else {
+		PRINT_ERROR("An error occurred when trying to access the path '{0}'.", start_path);
+	}
+	return godot::String();
 }
 
 void Utils::get_godot_version(int *major, int *minor, int *patch, int *version_sum) {

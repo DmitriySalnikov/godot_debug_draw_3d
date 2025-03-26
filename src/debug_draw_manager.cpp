@@ -149,12 +149,34 @@ bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
 }
 
+void DebugDrawManager::_define_and_update_addon_root_folder() {
+	DEFINE_SETTING_AND_GET_HINT(String root_folder, String(Utils::root_settings_section) + Utils::addon_root_folder, "", Variant::STRING, PropertyHint::PROPERTY_HINT_DIR, "");
+
+	if (IS_EDITOR_HINT()) {
+		if (root_folder.is_empty()) {
+			root_folder = Utils::search_file("res://", "debug_draw_3d.gdextension");
+
+			if (root_folder.is_empty()) {
+				root_folder = "res://addons/debug_draw_3d";
+				PRINT_WARNING("DD3D: 'debug_draw_3d.gdextension' was not found. The default path will be used: {0}", root_folder);
+			} else {
+				root_folder = root_folder.get_base_dir();
+				PRINT("DD3D: 'debug_draw_3d.gdextension' is found in the folder '{0}'. This folder will be used later.", root_folder);
+			}
+
+			PS()->set_setting(String(Utils::root_settings_section) + Utils::addon_root_folder, root_folder);
+		}
+	}
+}
+
 void DebugDrawManager::init() {
 	ZoneScoped;
 	ASSIGN_SINGLETON(DebugDrawManager);
 
 	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + s_initial_state, true, Variant::BOOL);
 	set_debug_enabled(initial_debug_state);
+
+	_define_and_update_addon_root_folder();
 
 	// manager_aliases.push_back(StringName("Dmgr"));
 	// dd2d_aliases.push_back(StringName("Dbg2"));

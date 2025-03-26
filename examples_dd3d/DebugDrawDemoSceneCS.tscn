@@ -12,5 +12,5 @@ switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
 [node name="Label" parent="Settings/HBox/VBoxContainer" index="1"]
 text = "C# example"
 
-[node name="SwitchLang" parent="Settings/HBox/VBox/SettingsPanel/VBox" index="12"]
+[node name="SwitchLang" parent="Settings/HBox/VBox/SettingsPanel/VBox" index="13"]
 text = "Switch to GDScript"

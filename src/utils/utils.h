@@ -221,13 +221,16 @@ class Utils {
 #endif
 
 public:
-	static const char *root_settings_section;
+	static constexpr char *root_settings_section = "debug_draw_3d/settings/";
+	static constexpr char *addon_root_folder = "addon_root_folder";
 
 	static void _logv(bool p_err, bool p_force_print, const char *p_format, ...);
 	static void print_logs();
 
 	static godot::Node *find_node_by_class(godot::Node *start_node, const godot::String &class_name);
 	static godot::String get_scene_tree_as_string(godot::Node *start);
+
+	static godot::String search_file(const godot::String start_path, const godot::String& file_name);
 
 	static void get_godot_version(int *major, int *minor, int *patch, int *version_sum);
 	/// Is the current version of godot within this range? [Inclusive]

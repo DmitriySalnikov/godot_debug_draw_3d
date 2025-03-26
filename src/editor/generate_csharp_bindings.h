@@ -79,7 +79,7 @@ class GenerateCSharpBindingsPlugin {
 		}
 	};
 
-	String output_directory = "res://addons/debug_draw_3d/gen/csharp";
+	String output_subdirectory = "gen/csharp";
 	String api_file_name = "DebugDrawGeneratedAPI.generated.cs";
 	String log_file_name = "log.txt";
 	String indent_template = "    ";

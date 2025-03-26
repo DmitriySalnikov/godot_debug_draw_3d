@@ -30,13 +30,15 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 	if (!ClassDB::class_exists("CSharpScript"))
 		return false;
 
+	const String addon_folder = PS()->get_setting(String(Utils::root_settings_section) + Utils::addon_root_folder);
+
 	// Old file name
-	const String old_api_path = output_directory.path_join("DebugDrawGeneratedAPI.cs");
+	const String old_api_path = addon_folder.path_join(output_subdirectory).path_join("DebugDrawGeneratedAPI.cs");
 	if (FileAccess::file_exists(old_api_path)) {
 		return true;
 	}
 
-	const String api_path = output_directory.path_join(api_file_name);
+	const String api_path = addon_folder.path_join(output_subdirectory).path_join(api_file_name);
 	if (FileAccess::file_exists(api_path)) {
 		auto file = FileAccess::open(api_path, FileAccess::READ);
 		ERR_FAIL_COND_V(FileAccess::get_open_error() != Error::OK, false);
@@ -52,11 +54,15 @@ bool GenerateCSharpBindingsPlugin::is_need_to_update() {
 
 void GenerateCSharpBindingsPlugin::generate() {
 	ZoneScoped;
-	const String out_path = output_directory.path_join(api_file_name);
-	const String out_log_path = output_directory.path_join(log_file_name);
 
-	ERR_FAIL_COND(DirAccess::make_dir_recursive_absolute(output_directory) != Error::OK);
-	auto dir = DirAccess::open(output_directory);
+	const String addon_folder = PS()->get_setting(String(Utils::root_settings_section) + Utils::addon_root_folder);
+	const String gen_dir = addon_folder.path_join(output_subdirectory);
+
+	const String out_path = gen_dir.path_join(api_file_name);
+	const String out_log_path = gen_dir.path_join(log_file_name);
+
+	ERR_FAIL_COND(DirAccess::make_dir_recursive_absolute(gen_dir) != Error::OK);
+	auto dir = DirAccess::open(gen_dir);
 
 	// Clear tmp files
 	PackedStringArray files = dir->get_files();
@@ -68,7 +74,7 @@ void GenerateCSharpBindingsPlugin::generate() {
 	}
 
 	// Delete the file with the older naming convention
-	const String old_api_path = output_directory.path_join("DebugDrawGeneratedAPI.cs");
+	const String old_api_path = gen_dir.path_join("DebugDrawGeneratedAPI.cs");
 	if (FileAccess::file_exists(old_api_path)) {
 		PRINT("Attempt to delete API file with older naming convention: " + old_api_path);
 		ERR_FAIL_COND(dir->remove(old_api_path) != Error::OK);
