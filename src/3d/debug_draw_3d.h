@@ -197,7 +197,7 @@ private:
 	std::unordered_map<uint64_t /* World3D */, ViewportToDebugContainerItem> debug_containers;
 	// invalidate on add/remove operations or use ptrs
 	std::unordered_map<const Viewport *, ViewportToDebugContainerItem *> viewport_to_world_cache;
-	std::unordered_map<uint64_t /*Viewport * */, Ref<World3D> > world3ds_found_for_threads_сache;
+	std::unordered_map<uint64_t /*Viewport * */, Ref<World3D> > world3ds_found_for_threads_cache;
 
 	// Default materials and shaders
 	Ref<ShaderMaterial> mesh_shaders[(int)MeshMaterialType::MAX][(int)MeshMaterialVariant::MAX];
