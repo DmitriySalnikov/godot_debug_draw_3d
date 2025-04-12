@@ -445,10 +445,10 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 	// find_world_3d is not available from user threads. Make a deferred request and just wait.
 	if (auto *os = OS::get_singleton(); os->get_thread_caller_id() != os->get_main_thread_id()) {
-		const auto &p = world3ds_found_for_threads_сache.find(p_dgcd.viewport_id);
-		if (p == world3ds_found_for_threads_сache.end()) {
+		const auto &p = world3ds_found_for_threads_cache.find(p_dgcd.viewport_id);
+		if (p == world3ds_found_for_threads_cache.end()) {
 			// PRINT_WARNING("DebugDraw3D cannot search for World3D outside of the main thread.\nAn attempt will be made to search for World3D using deferred call.");
-			world3ds_found_for_threads_сache[p_dgcd.viewport_id] = Ref<World3D>();
+			world3ds_found_for_threads_cache[p_dgcd.viewport_id] = Ref<World3D>();
 			callable_mp(this, &DebugDraw3D::_deferred_find_world_in_viewport).call_deferred(p_dgcd.viewport->get_instance_id());
 			return nullptr;
 		} else {
@@ -509,7 +509,7 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 void DebugDraw3D::_deferred_find_world_in_viewport(uint64_t p_viewport_id) {
 	const Viewport *vp = Object::cast_to<Viewport>(ObjectDB::get_instance(p_viewport_id));
 	if (vp) {
-		world3ds_found_for_threads_сache[p_viewport_id] = vp->find_world_3d();
+		world3ds_found_for_threads_cache[p_viewport_id] = vp->find_world_3d();
 	}
 }
 
@@ -595,7 +595,7 @@ void DebugDraw3D::_remove_debug_container(const uint64_t &p_world_id) {
 		// remove cached references to avoid crashes in case of invalidation of `debug_containers`
 		viewport_to_world_cache.clear();
 		// also clear the world3d cache for threads
-		world3ds_found_for_threads_сache.clear();
+		world3ds_found_for_threads_cache.clear();
 	}
 }
 
@@ -838,7 +838,7 @@ void DebugDraw3D::clear_all() {
 
 	debug_containers.clear();
 	viewport_to_world_cache.clear();
-	world3ds_found_for_threads_сache.clear();
+	world3ds_found_for_threads_cache.clear();
 #else
 	return;
 #endif
