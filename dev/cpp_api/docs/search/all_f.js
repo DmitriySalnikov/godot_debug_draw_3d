@@ -20,7 +20,7 @@ var searchData=
   ['set_5ftext_5fbackground_5fcolor_17',['set_text_background_color',['../classDebugDraw2DConfig.html#a3f2091fb09164a52b9a5be37848c3651',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fblock_5foffset_18',['set_text_block_offset',['../classDebugDraw2DConfig.html#a53a8d42ca627707fa96331cfd3d97208',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fblock_5fposition_19',['set_text_block_position',['../classDebugDraw2DConfig.html#a8d0864686f4578826061cdef3ec1b793',1,'DebugDraw2DConfig']]],
-  ['set_5ftext_5fcustom_5ffont_20',['set_text_custom_font',['../classDebugDraw2DConfig.html#a57a7f3a3425049c0dab421167a885eef',1,'DebugDraw2DConfig']]],
+  ['set_5ftext_5fcustom_5ffont_20',['set_text_custom_font',['../classDebugDraw2DConfig.html#aaa586b5183b8b5324867e418e1afcf78',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fdefault_5fduration_21',['set_text_default_duration',['../classDebugDraw2DConfig.html#acde3bc16a1ba9b2e6a148a73e686e677',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5fdefault_5fsize_22',['set_text_default_size',['../classDebugDraw2DConfig.html#a386f53e7ec341a8e48e1280441f480d2',1,'DebugDraw2DConfig']]],
   ['set_5ftext_5ffont_23',['set_text_font',['../classDebugDraw3DScopeConfig.html#a4cc5d864f79dfe3d27c112d2af00e541',1,'DebugDraw3DScopeConfig']]],

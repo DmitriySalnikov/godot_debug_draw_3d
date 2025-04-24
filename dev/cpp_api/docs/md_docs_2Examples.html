@@ -140,14 +140,14 @@ $(function(){initNavTree('md_docs_2Examples.html',''); initResizable(true); });
 <div class="line">    var line_begin = Vector3(-1, sin(_time * 4), 0)</div>
 <div class="line">    var line_end = Vector3(1, cos(_time * 4), 0)</div>
 <div class="line"> </div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(box_pos, Quaternion.IDENTITY, Vector3(1, 2, 1), Color(0, 1, 0))</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(box_pos, Quaternion.IDENTITY, Vector3(1, 2, 1), Color(0, 1, 0))</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a9230d54569201a01dcfdf2a1fcf0bb9d">DebugDraw3D.draw_line</a>(line_begin, line_end, Color(1, 1, 0))</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Time&quot;</span>, _time)</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;Frames drawn&quot;</span>, Engine.get_frames_drawn())</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;FPS&quot;</span>, Engine.get_frames_per_second())</div>
 <div class="line">    <a class="code hl_function" href="classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106">DebugDraw2D.set_text</a>(<span class="stringliteral">&quot;delta&quot;</span>, delta)</div>
 <div class="ttc" id="aclassDebugDraw2D_html_adf92c3713973db11108c8b7c876af106"><div class="ttname"><a href="classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106">DebugDraw2D::set_text</a></div><div class="ttdeci">NAPI void set_text(godot::String key, godot::Variant value=godot::Variant(), int priority=0, godot::Color color_of_value=Colors::empty_color, real_t duration=-1)</div></div>
-<div class="ttc" id="aclassDebugDraw3D_html_a091f66d5b0035f9b2e9060128648ae47"><div class="ttname"><a href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D::draw_box</a></div><div class="ttdeci">NAPI void draw_box(const godot::Vector3 &amp;position, const Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
+<div class="ttc" id="aclassDebugDraw3D_html_a7547793282ac71a0d4267b320db858ce"><div class="ttname"><a href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D::draw_box</a></div><div class="ttdeci">NAPI void draw_box(const godot::Vector3 &amp;position, const godot::Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 <div class="ttc" id="aclassDebugDraw3D_html_a9230d54569201a01dcfdf2a1fcf0bb9d"><div class="ttname"><a href="classDebugDraw3D.html#a9230d54569201a01dcfdf2a1fcf0bb9d">DebugDraw3D::draw_line</a></div><div class="ttdeci">NAPI void draw_line(const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 </div><!-- fragment --><p>An example of using scoped configs:</p>
 <div class="fragment"><div class="line"><span class="preprocessor">@tool</span></div>
@@ -160,16 +160,16 @@ $(function(){initNavTree('md_docs_2Examples.html',''); initResizable(true); });
 <div class="line"> </div>
 <div class="line">func _process(delta):</div>
 <div class="line">    <span class="comment"># Draw using the base scoped config.</span></div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE * 2, Color.CORNFLOWER_BLUE)</div>
 <div class="line">    <span class="keywordflow">if</span> true:</div>
 <div class="line">        <span class="comment"># Create a scoped config that will exist until exiting this if.</span></div>
 <div class="line">        var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0).set_center_brightness(0.1)</div>
 <div class="line">        <span class="comment"># Draw with a thickness of 0</span></div>
-<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)</div>
+<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)</div>
 <div class="line">        <span class="comment"># If necessary, the values inside this scope can be changed</span></div>
 <div class="line">        <span class="comment"># even before each call to draw_*.</span></div>
 <div class="line">        _s.set_thickness(0.05)</div>
-<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)</div>
+<div class="line">        <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3(1,0,1), Quaternion.IDENTITY, Vector3.ONE * 1, Color.BLUE_VIOLET)</div>
 <div class="ttc" id="aclassDebugDraw3D_html_a1bb432e76acc3316ce2307386b21c1e6"><div class="ttname"><a href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D::new_scoped_config</a></div><div class="ttdeci">NAPI Ref&lt; DebugDraw3DScopeConfig &gt; new_scoped_config()</div></div>
 <div class="ttc" id="aclassDebugDraw3D_html_ab24e67a580b97fdd07338431b205aa84"><div class="ttname"><a href="classDebugDraw3D.html#ab24e67a580b97fdd07338431b205aa84">DebugDraw3D::scoped_config</a></div><div class="ttdeci">NAPI Ref&lt; DebugDraw3DScopeConfig &gt; scoped_config() override</div></div>
 </div><!-- fragment --><dl class="section note"><dt>Note</dt><dd>If you want to use a non-standard Viewport for rendering a 3d scene, then do not forget to specify it in the scoped config!</dd></dl>

@@ -202,18 +202,18 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_no_depth_test
 <hr  />
  <dl class="section warning"><dt>Warning</dt><dd>Also, you can't use scope config between <code>await</code>s unless this object is freed before <code>await</code>. So, narrow the scope if you want to use <code>await</code> and <a class="el" href="classDebugDraw3DScopeConfig.html" title="This class is used to override scope parameters for DebugDraw3D.">DebugDraw3DScopeConfig</a> in the same method. Or set the value of the variable to <code>null</code> so that the object is cleared due to lack of references. <div class="fragment"><div class="line"><span class="comment"># Bad example</span></div>
 <div class="line">var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0.3)</div>
-<div class="line"><a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
+<div class="line"><a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
 <div class="line">await get_tree().process_frame</div>
 <div class="line"><span class="comment"># your code...</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment"># Good example</span></div>
 <div class="line"><span class="keywordflow">if</span> true:</div>
 <div class="line">    var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0.3)</div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
 <div class="line">await get_tree().process_frame</div>
 <div class="line"><span class="comment"># your code...</span></div>
-<div class="ttc" id="aclassDebugDraw3D_html_a091f66d5b0035f9b2e9060128648ae47"><div class="ttname"><a href="classDebugDraw3D.html#a091f66d5b0035f9b2e9060128648ae47">DebugDraw3D::draw_box</a></div><div class="ttdeci">NAPI void draw_box(const godot::Vector3 &amp;position, const Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 <div class="ttc" id="aclassDebugDraw3D_html_a1bb432e76acc3316ce2307386b21c1e6"><div class="ttname"><a href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D::new_scoped_config</a></div><div class="ttdeci">NAPI Ref&lt; DebugDraw3DScopeConfig &gt; new_scoped_config()</div></div>
+<div class="ttc" id="aclassDebugDraw3D_html_a7547793282ac71a0d4267b320db858ce"><div class="ttname"><a href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D::draw_box</a></div><div class="ttdeci">NAPI void draw_box(const godot::Vector3 &amp;position, const godot::Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 </div><!-- fragment --></dd></dl>
 <h3><a class="anchor" id="autotoc_md24"></a>
 Examples:</h3>

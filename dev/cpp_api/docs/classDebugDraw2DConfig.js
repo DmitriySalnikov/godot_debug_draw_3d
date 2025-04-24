@@ -13,5 +13,5 @@ var classDebugDraw2DConfig =
     [ "set_text_default_size", "classDebugDraw2DConfig.html#a386f53e7ec341a8e48e1280441f480d2", null ],
     [ "set_text_foreground_color", "classDebugDraw2DConfig.html#a755bb819c70704c71ecb45ffc5960614", null ],
     [ "set_text_background_color", "classDebugDraw2DConfig.html#a3f2091fb09164a52b9a5be37848c3651", null ],
-    [ "set_text_custom_font", "classDebugDraw2DConfig.html#a57a7f3a3425049c0dab421167a885eef", null ]
+    [ "set_text_custom_font", "classDebugDraw2DConfig.html#aaa586b5183b8b5324867e418e1afcf78", null ]
 ];
