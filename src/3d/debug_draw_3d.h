@@ -417,7 +417,7 @@ public:
 	 * @param is_box_centered Set where the center of the box will be. In the center or in the bottom corner
 	 * @param duration The duration of how long the object will be visible
 	 */
-	NAPI void draw_box(const godot::Vector3 &position, const Quaternion &rotation, const godot::Vector3 &size, const godot::Color &color = Colors::empty_color, const bool &is_box_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_box(const godot::Vector3 &position, const godot::Quaternion &rotation, const godot::Vector3 &size, const godot::Color &color = Colors::empty_color, const bool &is_box_centered = false, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a box between points A and B by rotating and scaling based on the up vector
@@ -452,7 +452,7 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	NAPI void draw_aabb(const AABB &aabb, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_aabb(const godot::AABB &aabb, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw the box as in DebugDraw3D.draw_aabb, but AABB is defined by the diagonal AB
