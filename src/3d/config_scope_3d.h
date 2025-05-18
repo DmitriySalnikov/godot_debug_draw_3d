@@ -6,9 +6,9 @@
 #include <memory>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/font.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
@@ -83,13 +83,15 @@ public:
 		// Update the constructor if changes are made!
 		real_t thickness;
 		real_t center_brightness;
-		bool hd_sphere;
 		real_t plane_size;
+		Transform3D transform;
 		Color text_outline_color;
 		uint32_t text_outline_color_hash;
 		int32_t text_outline_size;
 		Ref<Font> text_font;
 		DebugContainerDependent dcd;
+		bool hd_sphere;
+		bool custom_xform;
 
 		Data();
 		Data(const Data *parent);
@@ -132,6 +134,12 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
 	real_t get_plane_size() const;
+
+	/**
+	 * Set the base/local `transform` relative to which the shapes will be drawn.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_transform(Transform3D _value) const;
+	Transform3D get_transform() const;
 
 	/**
 	 * Set the `outline` color in DebugDraw3D.draw_text.

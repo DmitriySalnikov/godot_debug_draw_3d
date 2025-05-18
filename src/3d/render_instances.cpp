@@ -477,8 +477,17 @@ void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_
 		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport_id;
 	}
 
-	inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
-	inst->bounds = SphereBounds{ p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f };
+	if (p_cfg->custom_xform) {
+		ZoneScopedN("Transform");
+		Transform3D xf = p_cfg->transform * p_transform;
+		auto len_old = MathUtils::get_max_basis_length(p_transform.basis);
+		auto len_new = MathUtils::get_max_basis_length(xf.basis);
+		inst->data = GeometryPoolData3DInstance(xf, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
+		inst->bounds = SphereBounds(p_cfg->transform.xform(p_bounds.position), (len_new / len_old * p_bounds.radius) + p_cfg->thickness * 0.5f);
+	} else {
+		inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
+		inst->bounds = SphereBounds(p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f);
+	}
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
@@ -496,10 +505,21 @@ void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg,
 	inst->lines = std::move(p_lines);
 	inst->lines_count = p_line_count;
 	inst->color = p_col;
-	inst->bounds = p_aabb;
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
+
+	if (p_cfg->custom_xform) {
+		ZoneScopedN("Transform");
+		inst->bounds = p_cfg->transform.xform(p_aabb);
+
+		for (size_t i = 0; i < inst->lines_count; i++) {
+			auto &v = inst->lines[i];
+			v = p_cfg->transform.xform(v);
+		}
+	} else {
+		inst->bounds = p_aabb;
+	}
 }
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const DebugDraw3DScopeConfig::Data *p_cfg) {

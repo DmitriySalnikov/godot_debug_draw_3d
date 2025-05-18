@@ -284,6 +284,9 @@ func main_update(delta: float) -> void:
 		var _s32 = DebugDraw3D.new_scoped_config().set_thickness(0.05)
 		DebugDraw3D.draw_box_xf($PostProcess.global_transform, Color.SEA_GREEN)
 	
+	# Local transform
+	_draw_local_xf_box(%LocalTransformRecursiveOrigin.global_transform, 0.05, 10)
+	
 	# 2D
 	DebugDraw2D.config.text_default_size = text_groups_default_font_size
 	DebugDraw2D.config.text_block_offset = text_groups_offset
@@ -398,6 +401,42 @@ func _draw_zone_title_pos(pos: Vector3, title: String, font_size: int = 128, out
 	if draw_3d_text:
 		var _s1 = DebugDraw3D.new_scoped_config().set_text_outline_size(outline)
 		DebugDraw3D.draw_text(pos, title, font_size)
+
+
+const _local_mul := 0.45
+var __local_lines_cross_recursive = PackedVector3Array([Vector3(-0.5, -0.5, -0.5), Vector3(0.5, -0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, -0.5)])
+var __local_box_recursive = Transform3D.IDENTITY.rotated_local(Vector3.UP, deg_to_rad(30)).translated(Vector3(-0.25, -0.55, 0.25)) * _local_mul
+var __local_sphere_recursive = Transform3D.IDENTITY.translated(Vector3(0.5, 0.55, -0.5)) * _local_mul
+
+func _draw_local_xf_box(xf: Transform3D, thickness: float, max_depth: int, depth: int = 0):
+	if depth >= max_depth:
+		return
+	
+	var _s1 = DebugDraw3D.new_scoped_config().set_thickness(thickness).set_transform(xf)
+	
+	# a box with a small offset
+	DebugDraw3D.draw_box_xf(Transform3D(Basis(), Vector3(0, 0.001, 0)), Color.BROWN)
+	# a box and a stand for the next depth
+	DebugDraw3D.draw_box_xf(__local_box_recursive, Color.CHARTREUSE)
+	# just a sphere and lines
+	DebugDraw3D.draw_sphere_xf(__local_sphere_recursive, Color.DARK_ORANGE)
+	_s1.set_thickness(0)
+	DebugDraw3D.draw_lines(__local_lines_cross_recursive, Color.CRIMSON)
+	
+	# A simple animation generator with descent into the depth of the scene
+	if false:
+		var anim: Animation = %RecursiveTransformTest.get_animation("recursive")
+		# clear keys
+		if depth == 0: for i in anim.track_get_key_count(0): anim.track_remove_key(0, 0); anim.track_remove_key(1, 0)
+		
+		var time = depth * 2
+		var s_xf = xf * __local_sphere_recursive
+		var next_s_xf = (xf * __local_box_recursive.translated(__local_box_recursive.basis.y)) * __local_sphere_recursive
+		var get_sphere_pos = func(l_xf): return l_xf.origin + (l_xf).basis.y
+		anim.position_track_insert_key(0, time, get_sphere_pos.call(s_xf))
+		anim.rotation_track_insert_key(1, time, Transform3D(Basis(), get_sphere_pos.call(s_xf)).looking_at(get_sphere_pos.call(next_s_xf), xf.basis.y).basis.get_rotation_quaternion())
+	
+	_draw_local_xf_box(xf * __local_box_recursive.translated(__local_box_recursive.basis.y), thickness * _local_mul, max_depth, depth + 1)
 
 
 func _draw_other_world():

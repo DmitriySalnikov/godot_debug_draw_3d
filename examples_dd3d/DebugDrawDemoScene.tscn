@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://c3sccy6x0ht5j"]
+[gd_scene load_steps=43 format=3 uid="uid://c3sccy6x0ht5j"]
 
 [ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
@@ -191,6 +191,47 @@ height = 1.825
 
 [sub_resource type="BoxMesh" id="BoxMesh_b14rm"]
 
+[sub_resource type="Animation" id="Animation_w1m7s"]
+length = 0.001
+tracks/0/type = "position_3d"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, -6.988, 10.986, 29.206)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, -0.16935, 0, 0, 0.985556)
+
+[sub_resource type="Animation" id="Animation_h4e34"]
+resource_name = "recursive"
+length = 18.0
+tracks/0/type = "position_3d"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = PackedFloat32Array(0, 1, -4.43594, -0.0101277, 8.56634, 2, 1, -4.63897, -0.279309, 8.78785, 4, 1, -4.65315, -0.433226, 8.88306, 6, 1, -4.6267, -0.506496, 8.90766, 8, 1, -4.60482, -0.535954, 8.90541, 10, 1, -4.59385, -0.545658, 8.89771, 12, 1, -4.59006, -0.547969, 8.89174, 14, 1, -4.58948, -0.548125, 8.88844, 16, 1, -4.58985, -0.547923, 8.887, 18, 1, -4.5903, -0.547799, 8.8865)
+tracks/1/type = "rotation_3d"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = PackedFloat32Array(0, 1, 0.190215, 0.859282, 0.43192, 0.197228, 2, 1, 0.183697, 0.853511, 0.484111, -0.0584063, 4, 1, 0.164659, 0.789579, 0.503307, -0.310057, 6, 1, -0.134401, -0.671836, -0.48821, 0.540577, 8, 1, -0.0949895, -0.508291, -0.439844, 0.734271, 10, 1, -0.0490975, -0.310157, -0.361506, 0.877898, 12, 1, 0.000153813, -0.090853, -0.258524, 0.961723, 14, 1, 0.0493618, 0.134434, -0.138051, 0.980017, 16, 1, 0.0953059, 0.351263, -0.00774742, 0.931381, 18, 1, 0.13493, 0.543814, 0.122741, 0.819143)
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_rcwnp"]
+_data = {
+"RESET": SubResource("Animation_w1m7s"),
+"recursive": SubResource("Animation_h4e34")
+}
+
 [sub_resource type="SphereShape3D" id="4"]
 radius = 1.0
 
@@ -360,10 +401,11 @@ directional_shadow_max_distance = 200.0
 environment = SubResource("Environment_38m85")
 
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.953191, 0.30237, 0, -0.30237, 0.953191, -6.988, 10.986, 29.2059)
+transform = Transform3D(1, 0, 0, 0, 0.942642, 0.333808, 0, -0.333808, 0.942642, -6.988, 10.986, 29.206)
 cull_mask = 1
 current = true
 fov = 53.0
+near = 0.001
 far = 100.0
 script = ExtResource("3_3m1mp")
 
@@ -417,7 +459,7 @@ transform = Transform3D(5.95153, 0, 0, 0, 7.71864, 0, 0, 0, 6.31617, 0.184938, 1
 
 [node name="MiscBox" type="Node3D" parent="Zones"]
 unique_name_in_owner = true
-transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 7.17107, -5.69728, -0.206735, 4.4244)
+transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 8.81683, -5.69728, -0.206735, 5.58232)
 
 [node name="LinesAnim" type="AnimationPlayer" parent="."]
 root_node = NodePath("../LinePath")
@@ -602,6 +644,17 @@ transform = Transform3D(0.879881, 0.248446, -0.405072, -0.346604, 0.918688, -0.1
 
 [node name="GizmoOneColor" type="Node3D" parent="Misc"]
 transform = Transform3D(0.385568, 0.0415614, 0.921743, 0.082879, 0.993386, -0.0794599, -0.91895, 0.107031, 0.379573, -0.838587, -0.139425, -1.93055)
+
+[node name="LocalTransformRecursiveOrigin" type="Node3D" parent="Misc"]
+unique_name_in_owner = true
+transform = Transform3D(0.785829, 0.365814, 0.498651, 0.0146361, 0.795073, -0.606337, -0.618271, 0.483775, 0.619438, 0.92688, -0.70441, 4.03998)
+
+[node name="RecursiveTransformTest" type="AnimationPlayer" parent="Misc/LocalTransformRecursiveOrigin"]
+unique_name_in_owner = true
+root_node = NodePath("../../..")
+libraries = {
+"": SubResource("AnimationLibrary_rcwnp")
+}
 
 [node name="HitTest" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.724359, -1.03227, 7.85404)

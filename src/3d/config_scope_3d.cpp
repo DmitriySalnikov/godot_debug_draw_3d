@@ -22,6 +22,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 	REG_METHOD(set_plane_size, "value");
 	REG_METHOD(get_plane_size);
 
+	REG_METHOD(set_transform, "value");
+	REG_METHOD(get_transform);
+
 	REG_METHOD(set_viewport, "value");
 	REG_METHOD(get_viewport);
 
@@ -80,6 +83,18 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value
 
 real_t DebugDraw3DScopeConfig::get_plane_size() const {
 	return data->plane_size;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_transform(Transform3D _value) const {
+	const static Transform3D identity = Transform3D();
+
+	data->transform = _value;
+	data->custom_xform = _value != identity;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+Transform3D DebugDraw3DScopeConfig::get_transform() const {
+	return data->transform;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_color(Color _value) const {
@@ -157,12 +172,14 @@ DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
 DebugDraw3DScopeConfig::Data::Data() :
 		thickness(0),
 		center_brightness(0),
-		hd_sphere(false),
 		plane_size(INFINITY),
+		transform(Transform3D()),
 		text_outline_color(Color(0, 0, 0, 1)),
 		text_outline_size(12),
 		text_font(nullptr),
-		dcd({}) {
+		dcd({}),
+		hd_sphere(false),
+		custom_xform(false) {
 	uint32_t hash = hash_murmur3_one_float(text_outline_color.r);
 	hash = hash_murmur3_one_float(text_outline_color.g, hash);
 	hash = hash_murmur3_one_float(text_outline_color.b, hash);
@@ -172,11 +189,13 @@ DebugDraw3DScopeConfig::Data::Data() :
 DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) :
 		thickness(p_parent->thickness),
 		center_brightness(p_parent->center_brightness),
-		hd_sphere(p_parent->hd_sphere),
 		plane_size(p_parent->plane_size),
+		transform(p_parent->transform),
 		text_outline_color(p_parent->text_outline_color),
 		text_outline_color_hash(p_parent->text_outline_color_hash),
 		text_outline_size(p_parent->text_outline_size),
 		text_font(p_parent->text_font),
-		dcd(p_parent->dcd) {
+		dcd(p_parent->dcd),
+		hd_sphere(p_parent->hd_sphere),
+		custom_xform(p_parent->custom_xform) {
 }
