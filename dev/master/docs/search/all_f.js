@@ -29,11 +29,12 @@ var searchData=
   ['set_5ftext_5foutline_5fsize_26',['set_text_outline_size',['../classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d',1,'DebugDraw3DScopeConfig']]],
   ['set_5ftext_5fpadding_27',['set_text_padding',['../classDebugDraw2DConfig.html#a121600533e7b4eefa18a6d51abb4d2d8',1,'DebugDraw2DConfig']]],
   ['set_5fthickness_28',['set_thickness',['../classDebugDraw3DScopeConfig.html#a37ecc60971b0abb942be6ac2de3ca815',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fuse_5ffrustum_5fculling_29',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#ae23fa4d7dae08914f3b7a65d0d026bb0',1,'DebugDraw3DConfig']]],
-  ['set_5fviewport_30',['set_viewport',['../classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fvisible_5finstance_5fbounds_31',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]],
-  ['settings_32',['Project Settings',['../md_docs_2Examples.html#autotoc_md11',1,'']]],
-  ['shader_5fworld_5fcoords_5fenabled_20yes_20no_20tt_20default_3a_20yes_33',['&lt;tt&gt;shader_world_coords_enabled=yes|no&lt;/tt&gt; (default: yes)',['../md_docs_2DoublePrecision.html#autotoc_md18',1,'']]],
-  ['steps_34',['Next steps',['../index.html#autotoc_md6',1,'']]],
-  ['support_20me_35',['Support me',['../index.html#autotoc_md5',1,'']]]
+  ['set_5ftransform_29',['set_transform',['../classDebugDraw3DScopeConfig.html#af0fcc1be195159161dec13ad3e258a23',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fuse_5ffrustum_5fculling_30',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#ae23fa4d7dae08914f3b7a65d0d026bb0',1,'DebugDraw3DConfig']]],
+  ['set_5fviewport_31',['set_viewport',['../classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fvisible_5finstance_5fbounds_32',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#aae4228f838678bab0710cd39bc3cc738',1,'DebugDraw3DConfig']]],
+  ['settings_33',['Project Settings',['../md_docs_2Examples.html#autotoc_md11',1,'']]],
+  ['shader_5fworld_5fcoords_5fenabled_20yes_20no_20tt_20default_3a_20yes_34',['&lt;tt&gt;shader_world_coords_enabled=yes|no&lt;/tt&gt; (default: yes)',['../md_docs_2DoublePrecision.html#autotoc_md18',1,'']]],
+  ['steps_35',['Next steps',['../index.html#autotoc_md6',1,'']]],
+  ['support_20me_36',['Support me',['../index.html#autotoc_md5',1,'']]]
 ];
