@@ -103,6 +103,15 @@ def generate_framework_folder(
     lib_version = get_library_version()
     lib_filename_noext = os.path.splitext(lib_filename)[0]
 
+    # Godot has a list of required properties:
+    # platform/macos/export/export_plugin.cpp: EditorExportPlatformMacOS::_copy_and_sign_files
+    # "CFBundleExecutable"
+    # "CFBundleIdentifier"
+    # "CFBundlePackageType"
+    # "CFBundleInfoDictionaryVersion"
+    # "CFBundleName"
+    # "CFBundleSupportedPlatforms"
+
     info_plist = f"""<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -133,6 +142,10 @@ def generate_framework_folder(
 	<string>macosx</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>{min_version}</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
 </dict>
 </plist>
     """
