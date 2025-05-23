@@ -369,6 +369,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
             DebugDraw3D.DrawBoxXf(dPostProcess.GlobalTransform, Colors.SeaGreen);
         }
 
+        // Local transform
+        _draw_local_xf_box(pLocalTransformRecursiveOrigin.GlobalTransform, 0.05f, 10);
+
         // 2D
         DebugDraw2D.Config.TextDefaultSize = text_groups_default_font_size;
         DebugDraw2D.Config.TextBlockOffset = text_groups_offset;
@@ -525,6 +528,56 @@ public partial class DebugDrawDemoSceneCS : Node3D
             DebugDraw3D.DrawText(pos, title, font_size);
         }
     }
+
+    const float _local_mul = 0.45f;
+    static readonly Vector3 _local_mul_vec = new(_local_mul, _local_mul, _local_mul);
+    Vector3[] __local_lines_cross_recursive = [new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, -0.5f, 0.5f), new Vector3(-0.5f, -0.5f, 0.5f), new Vector3(0.5f, -0.5f, -0.5f)];
+    Transform3D __local_box_recursive = Transform3D.Identity.RotatedLocal(Vector3.Up, Mathf.DegToRad(30)).Translated(new Vector3(-0.25f, -0.55f, 0.25f)).Scaled(_local_mul_vec);
+    Transform3D __local_sphere_recursive = Transform3D.Identity.Translated(new Vector3(0.5f, 0.55f, -0.5f)).Scaled(_local_mul_vec);
+
+    void _draw_local_xf_box(Transform3D xf, float thickness, int max_depth, int depth = 0)
+    {
+        if (depth >= max_depth)
+            return;
+
+        using var _s1 = DebugDraw3D.NewScopedConfig().SetThickness(thickness).SetTransform(xf);
+
+        // a box with a small offset
+        DebugDraw3D.DrawBoxXf(new Transform3D(Basis.Identity, new Vector3(0, 0.001f, 0)), Colors.Brown);
+        // a box and a stand for the next depth
+        DebugDraw3D.DrawBoxXf(__local_box_recursive, Colors.Chartreuse);
+        // just a sphere and lines
+        DebugDraw3D.DrawSphereXf(__local_sphere_recursive, Colors.DarkOrange);
+
+        _s1.SetThickness(0);
+
+        DebugDraw3D.DrawLines(__local_lines_cross_recursive, Colors.Crimson);
+
+        // A simple animation generator with descent into the depth of the scene
+#if false
+        {
+            Animation anim = pRecursiveTransformTest.GetAnimation("recursive");
+            // clear keys
+            if (depth == 0)
+                for (var i = 0; i < anim.TrackGetKeyCount(0); i++)
+                {
+                    anim.TrackRemoveKey(0, 0);
+                    anim.TrackRemoveKey(1, 0);
+                }
+
+            var time = depth * 2;
+            var s_xf = xf * __local_sphere_recursive;
+            var next_s_xf = (xf * __local_box_recursive.Translated(__local_box_recursive.Basis.Y)) * __local_sphere_recursive;
+            var get_sphere_pos = (Transform3D l_xf) => l_xf.Origin + (l_xf).Basis.Y;
+
+            anim.PositionTrackInsertKey(0, time, get_sphere_pos(s_xf));
+            anim.RotationTrackInsertKey(1, time, new Transform3D(Basis.Identity, get_sphere_pos(s_xf)).LookingAt(get_sphere_pos(next_s_xf), xf.Basis.Y).Basis.GetRotationQuaternion());
+        }
+#endif
+
+        _draw_local_xf_box(xf * __local_box_recursive.Translated(__local_box_recursive.Basis.Y), thickness * _local_mul, max_depth, depth + 1);
+    }
+
 
     void _draw_other_world()
     {
@@ -712,6 +765,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
     Node3D dMisc_GizmoTransform;
     Node3D dMisc_GizmoNormal;
     Node3D dMisc_GizmoOneColor;
+    Node3D pLocalTransformRecursiveOrigin;
+    AnimationPlayer pRecursiveTransformTest;
 
     Node3D dGrids_Grid;
     Node3D dGrids_Grid_Subdivision;
@@ -782,6 +837,8 @@ public partial class DebugDrawDemoSceneCS : Node3D
         dMisc_GizmoTransform = GetNode<Node3D>("Misc/GizmoTransform");
         dMisc_GizmoNormal = GetNode<Node3D>("Misc/GizmoNormal");
         dMisc_GizmoOneColor = GetNode<Node3D>("Misc/GizmoOneColor");
+        pLocalTransformRecursiveOrigin = GetNode<Node3D>("%LocalTransformRecursiveOrigin");
+        pRecursiveTransformTest = GetNode<AnimationPlayer>("%RecursiveTransformTest");
 
         dGrids_Grid = GetNode<Node3D>("Grids/Grid");
         dGrids_Grid_Subdivision = GetNode<Node3D>("Grids/Grid/Subdivision");

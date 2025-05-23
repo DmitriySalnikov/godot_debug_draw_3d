@@ -404,9 +404,10 @@ func _draw_zone_title_pos(pos: Vector3, title: String, font_size: int = 128, out
 
 
 const _local_mul := 0.45
+const _local_mul_vec := Vector3(_local_mul, _local_mul, _local_mul)
 var __local_lines_cross_recursive = PackedVector3Array([Vector3(-0.5, -0.5, -0.5), Vector3(0.5, -0.5, 0.5), Vector3(-0.5, -0.5, 0.5), Vector3(0.5, -0.5, -0.5)])
-var __local_box_recursive = Transform3D.IDENTITY.rotated_local(Vector3.UP, deg_to_rad(30)).translated(Vector3(-0.25, -0.55, 0.25)) * _local_mul
-var __local_sphere_recursive = Transform3D.IDENTITY.translated(Vector3(0.5, 0.55, -0.5)) * _local_mul
+var __local_box_recursive = Transform3D.IDENTITY.rotated_local(Vector3.UP, deg_to_rad(30)).translated(Vector3(-0.25, -0.55, 0.25)).scaled(_local_mul_vec)
+var __local_sphere_recursive = Transform3D.IDENTITY.translated(Vector3(0.5, 0.55, -0.5)).scaled(_local_mul_vec)
 
 func _draw_local_xf_box(xf: Transform3D, thickness: float, max_depth: int, depth: int = 0):
 	if depth >= max_depth:

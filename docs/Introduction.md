@@ -28,6 +28,7 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 * Points
 * Position 3D (3 crossing axes)
 * Sphere
+* 3D Text
 
 2D:
 

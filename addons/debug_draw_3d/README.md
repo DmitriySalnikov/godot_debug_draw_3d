@@ -38,6 +38,7 @@ Your support adds motivation to develop my public projects.
 * Points
 * Position 3D (3 crossing axes)
 * Sphere
+* 3D Text
 
 2D:
 
