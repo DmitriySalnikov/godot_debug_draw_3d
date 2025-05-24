@@ -88,6 +88,7 @@ public:
 		Color text_outline_color;
 		uint32_t text_outline_color_hash;
 		int32_t text_outline_size;
+		bool text_fixed_size;
 		Ref<Font> text_font;
 		DebugContainerDependent dcd;
 		bool hd_sphere;
@@ -162,6 +163,17 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_outline_size(int32_t _value) const;
 	int32_t get_text_outline_size() const;
+
+	/**
+	 * Makes the text in DebugDraw3D.draw_text the same size regardless of distance.
+	 *
+	 * ![](docs/images/classes/DrawTextFixedSize.webp)
+	 *
+	 * @warning
+	 * Frequent unsystematic changes to this property can lead to significant performance degradation.
+	 */
+	Ref<DebugDraw3DScopeConfig> set_text_fixed_size(bool _value) const;
+	bool get_text_fixed_size() const;
 
 	/**
 	 * Set the font of the text in DebugDraw3D.draw_text.

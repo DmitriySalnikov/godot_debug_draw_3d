@@ -319,6 +319,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 	opts_hash = hash_murmur3_one_float(color.a, opts_hash);
 	opts_hash = hash_murmur3_one_32(p_cfg->text_outline_color_hash, opts_hash);
 	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_outline_size, opts_hash);
+	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_fixed_size, opts_hash);
 
 	uint32_t text_hash = text.hash();
 
@@ -341,6 +342,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 		lbl3d->set_modulate(color);
 		lbl3d->set_outline_modulate(p_cfg->text_outline_color);
 		lbl3d->set_outline_size(p_cfg->text_outline_size);
+		lbl3d->set_draw_flag(Label3D::DrawFlags::FLAG_FIXED_SIZE, p_cfg->text_fixed_size);
 	} else {
 		// wait for the end of the frame to display anything from the user thread
 		deferred_text_queue.emplace(
@@ -353,7 +355,8 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 				/* int font_size */ size,
 				/* Color color */ color,
 				/* Color outline_color */ p_cfg->text_outline_color,
-				/* int outline_size */ p_cfg->text_outline_size);
+				/* int outline_size */ p_cfg->text_outline_size,
+				/* bool fixed_size */ p_cfg->text_fixed_size)
 	}
 }
 
@@ -385,6 +388,7 @@ void NodesContainer::_render_queued_nodes() {
 			lbl3d->set_modulate(i.color);
 			lbl3d->set_outline_modulate(i.outline_color);
 			lbl3d->set_outline_size(i.outline_size);
+			lbl3d->set_draw_flag(Label3D::DrawFlags::FLAG_FIXED_SIZE, i.fixed_size);
 		}
 
 		deferred_text_queue.pop();
