@@ -279,7 +279,7 @@ $(function(){initNavTree('debug__draw__3d_8h_source.html',''); initResizable(tru
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    std::unordered_map&lt;uint64_t <span class="comment">/* World3D */</span>, ViewportToDebugContainerItem&gt; debug_containers;</div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    <span class="comment">// invalidate on add/remove operations or use ptrs</span></div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    std::unordered_map&lt;const Viewport *, ViewportToDebugContainerItem *&gt; viewport_to_world_cache;</div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    std::unordered_map&lt;uint64_t <span class="comment">/*Viewport * */</span>, Ref&lt;World3D&gt; &gt; world3ds_found_for_threads_сache;</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    std::unordered_map&lt;uint64_t <span class="comment">/*Viewport * */</span>, Ref&lt;World3D&gt; &gt; world3ds_found_for_threads_cache;</div>
 <div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span> </div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <span class="comment">// Default materials and shaders</span></div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    Ref&lt;ShaderMaterial&gt; mesh_shaders[(int)MeshMaterialType::MAX][(<span class="keywordtype">int</span>)MeshMaterialVariant::MAX];</div>

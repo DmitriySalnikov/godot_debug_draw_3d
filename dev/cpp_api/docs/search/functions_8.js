@@ -27,7 +27,8 @@ var searchData=
   ['set_5ftext_5foutline_5fsize_24',['set_text_outline_size',['../classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d',1,'DebugDraw3DScopeConfig']]],
   ['set_5ftext_5fpadding_25',['set_text_padding',['../classDebugDraw2DConfig.html#adb877a154ad6b511a90eb7872b580f27',1,'DebugDraw2DConfig']]],
   ['set_5fthickness_26',['set_thickness',['../classDebugDraw3DScopeConfig.html#a37ecc60971b0abb942be6ac2de3ca815',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fuse_5ffrustum_5fculling_27',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#a59b69e6562d4e54cf5ded0cfe7e53bcb',1,'DebugDraw3DConfig']]],
-  ['set_5fviewport_28',['set_viewport',['../classDebugDraw3DScopeConfig.html#a7bdeebf7a858a688aee78976bbe98f41',1,'DebugDraw3DScopeConfig']]],
-  ['set_5fvisible_5finstance_5fbounds_29',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#a9e0efe27a7975eb6bef6d9d5b25b8bea',1,'DebugDraw3DConfig']]]
+  ['set_5ftransform_27',['set_transform',['../classDebugDraw3DScopeConfig.html#af0fcc1be195159161dec13ad3e258a23',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fuse_5ffrustum_5fculling_28',['set_use_frustum_culling',['../classDebugDraw3DConfig.html#a59b69e6562d4e54cf5ded0cfe7e53bcb',1,'DebugDraw3DConfig']]],
+  ['set_5fviewport_29',['set_viewport',['../classDebugDraw3DScopeConfig.html#a7bdeebf7a858a688aee78976bbe98f41',1,'DebugDraw3DScopeConfig']]],
+  ['set_5fvisible_5finstance_5fbounds_30',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#a9e0efe27a7975eb6bef6d9d5b25b8bea',1,'DebugDraw3DConfig']]]
 ];
