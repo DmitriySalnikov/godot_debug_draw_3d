@@ -14,8 +14,6 @@ __pragma(warning(disable : 4244 26451 26495));
 #endif
 // GENERATOR_DD3D_API_INCLUDES
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/variant/variant.hpp>
 #if _MSC_VER
@@ -90,6 +88,7 @@ struct _DD3D_Loader_ {
 #ifndef DD3D_DISABLE_MISMATCH_CHECKS
 					godot::String sign1 = func_dict["signature"];
 					godot::String sign2 = DD3DShared::FunctionSignature<func>::get();
+
 					if (sign1 != sign2) {
 						godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION SIGNATURE MISMATCH !!!\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 						return false;
@@ -122,7 +121,7 @@ struct _DD3D_Loader_ {
 	ZoneScoped;                                             \
 	if (!_name) {                                           \
 		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
-			return this;                                    \
+			return shared_from_this();                      \
 		}                                                   \
 	}                                                       \
 	if (_name) {                                            \

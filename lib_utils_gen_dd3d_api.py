@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO: add tests to CI
+
 from SCons.Script.SConscript import SConsEnvironment
 
 import os, shutil, json, re, hashlib
@@ -11,6 +13,12 @@ def dev_print(line: str):
         print(line)
 
 
+default_colors_map = {
+    "Colors::empty_color": "godot::Color(0, 0, 0, 0)",
+    "Colors::white_smoke": "godot::Color(0.96f, 0.96f, 0.96f, 1.0f)",
+}
+
+
 class DefineContext:
     default_defines: set = []
     active_defines: set = []
@@ -18,7 +26,9 @@ class DefineContext:
 
     def __init__(self, env: SConsEnvironment):
         # use only defines, not macros
-        self.default_defines = [d for d in env["CPPDEFINES"] if (re.search(r"\w+", d)[0] == d if type(d) is not tuple else False)]
+        self.default_defines = [
+            d for d in env["CPPDEFINES"] if (re.search(r"\w+", d)[0] == d if type(d) is not tuple else False)
+        ]
         self.active_defines = set(self.default_defines)
         dev_print(f"Global defines: {self.default_defines}")
 
@@ -263,8 +273,12 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                             "type": a[: a.index(arg_name_match.group(1))].strip(),
                             "default": a[a.find("=") + 1 :].strip(),
                         }
+
+                        tmp_default = new_dict["default"]
+                        if tmp_default.startswith("Colors::"):
+                            new_dict["default"] = default_colors_map[tmp_default]
+
                         new_dict["c_type"] = new_dict["type"].replace("&", "").strip()
-                        args_dict.append(new_dict)
                     else:
                         arg_name_match = re.search(r"\b(\w+)$", a)
                         if arg_name_match:
@@ -278,7 +292,16 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                                 "type": a.strip(),
                             }
                         new_dict["c_type"] = new_dict["type"].replace("&", "").strip()
-                        args_dict.append(new_dict)
+
+                    tmp_type = new_dict["type"]
+                    if new_dict["name"] != "inst" and tmp_type != "void *" and tmp_type.endswith("*"):
+                        new_dict["type"] = "const uint64_t"
+                        new_dict["c_type"] = "const uint64_t"
+                        new_dict["object_class"] = (
+                            tmp_type.replace("const ", "").replace("class ", "").replace("*", "").strip()
+                        )
+
+                    args_dict.append(new_dict)
 
                 fun_dict = {
                     "return": ret_type,
@@ -293,8 +316,14 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
     return classes
 
 
+## gen/c_api.gen.cpp
 def generate_native_api(
-    env: SConsEnvironment, header_files: list, c_api_template: str, out_folder: str, src_out: list
+    env: SConsEnvironment,
+    header_files: list,
+    c_api_template: str,
+    out_folder: str,
+    src_out: list,
+    additional_include_classes: list = [],
 ) -> dict:
     classes = get_api_functions(env, header_files)
 
@@ -381,10 +410,9 @@ def generate_native_api(
 
             args = func["args"]
 
-            # TODO: convert godot::Object's to uint64_t with get_instance_id
             # TODO: convert godot::Variant's to void* with _native_ptr
             def process_arg_defines(arg: dict):
-                type = arg["type"]
+                type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"void *{name}"
@@ -395,6 +423,8 @@ def generate_native_api(
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"static_cast<{get_ref_class_name(type)}_NAPIWrapper*>({name})->ref"
+                if "object_class" in arg:
+                    return f"godot::Object::cast_to<{arg['object_class']}>(godot::ObjectDB::get_instance({name}))"
                 return f"{name}"
 
             # func define
@@ -438,6 +468,11 @@ def generate_native_api(
         "// GENERATOR_DD3D_API_INCLUDES",
         [f'#include "{file.replace("src/","")}"' for file in header_files],
     )
+    insert_lines_at_mark(
+        c_api_lines,
+        "// GENERATOR_DD3D_GODOT_API_INCLUDES",
+        [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
+    )
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_DEFINES", new_funcs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTERS", new_func_regs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
@@ -453,10 +488,12 @@ def generate_native_api(
     return api_dict
 
 
+# addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp
 def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_include_classes: list = []) -> bool:
     os.makedirs(out_folder, exist_ok=True)
     classes = dict(api["classes"])
     is_namespace_a_class = {}
+    is_class_has_selfreturn = {}
     namespaces = {}
     fwd_decls = []
 
@@ -536,6 +573,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     {
                         "name": "inst",
                         "type": "void *",
+                        "c_type": "void *",
                     },
                 ],
                 "name": "destroy",
@@ -554,8 +592,11 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             self_ret = func["self_return"]
             is_private = func.get("private", False)
 
-            if self_ret and ret == "void":
-                ret = f"{cls} *"
+            if self_ret:
+                if ret == "void":
+                    ret = f"std::shared_ptr<{cls}>"
+
+                is_class_has_selfreturn[cls] = True
 
             def get_default_ret_val(ret_type: str):
                 if ret_type.endswith("*") or ret_type.startswith("Ref<"):
@@ -586,12 +627,19 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             def process_arg_defines(arg: dict):
                 type = arg["type"]
                 name = arg["name"]
+                res = f"{type} {name}"
+
                 if is_ref_in_api(type):
-                    return f"std::shared_ptr<{get_ref_class_name(type)}>({name})"
-                return f"{type} {name}"
+                    res = f"std::shared_ptr<{get_ref_class_name(type)}> {name}"
+                if "object_class" in arg:
+                    res = f"const {arg['object_class']} * {name}"
+
+                if "default" in arg:
+                    res += f" = {arg['default']}"
+                return res
 
             def process_arg_ptr_defines(arg: dict):
-                type = arg["type"]
+                type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"void *"
@@ -602,6 +650,8 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"*{name}"
+                if "object_class" in arg:
+                    return f"{name} ? {name}->get_instance_id() : 0"
                 return f"{name}"
 
             if prev_private_state != is_private:
@@ -651,7 +701,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             else:
                 if self_ret:
                     new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}, {call_args});")
-                    new_lines.append(f"{cls_indent}\treturn this;")
+                    new_lines.append(f"{cls_indent}\treturn shared_from_this();")
                 else:
                     new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER({func_name}, {call_args});")
             new_lines.append(f"{cls_indent}}}")
@@ -674,7 +724,12 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         result_arr = result_arr + docs
 
         if is_namespace_a_class[key]:
-            result_arr.append(f"class {key} {{")
+            if key in is_class_has_selfreturn:
+                # class has self return functions
+                result_arr.append(f"class {key} : public std::enable_shared_from_this<{key}> {{")
+            else:
+                # regular class
+                result_arr.append(f"class {key} {{")
             result_arr += namespaces[key]
             result_arr.append(f"}}; // class {key}")
         else:
@@ -701,12 +756,14 @@ def gen_apis(env: SConsEnvironment, c_api_template: str, out_folder: str, src_fo
     header_files = [os.path.join(src_folder, f.replace(".cpp", ".h")).replace("\\", "/") for f in src]
     header_files = [h for h in header_files if os.path.exists(h)]
 
-    api = generate_native_api(env, header_files, c_api_template, out_folder, src_out)
+    api = generate_native_api(
+        env, header_files, c_api_template, out_folder, src_out, ["camera3d", "control", "font", "viewport"]
+    )
     if api == None:
         print("Couldn't get the Native API")
         return 110
 
-    if not gen_cpp_api(env, api, os.path.join(out_folder, "cpp"), ["camera3d"]):
+    if not gen_cpp_api(env, api, os.path.join(out_folder, "cpp"), ["camera3d", "control", "font", "viewport"]):
         return 111
     print("The generation is finished!")
     return 0

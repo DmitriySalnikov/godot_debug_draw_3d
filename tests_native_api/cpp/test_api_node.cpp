@@ -25,6 +25,7 @@ using namespace godot;
 
 void DD3DTestCppApiNode::_bind_methods() {
 	REG_PROP_BOOL(one_million_boxes);
+	REG_PROP_BOOL(many_camera_frustums);
 }
 
 DD3DTestCppApiNode::DD3DTestCppApiNode() {
@@ -104,5 +105,28 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	if (timer_cubes > cubes_max_time) {
 		DebugDraw3D::clear_all();
 		timer_cubes = 0;
+	}
+
+	{
+		uint64_t _start_time = Time::get_singleton()->get_ticks_usec();
+
+		auto *cam = get_viewport()->get_camera_3d();
+		if (cam) {
+			Basis cam_basis = cam->get_global_transform().basis;
+			auto _s1 = DebugDraw3D::new_scoped_config()->set_thickness(0);
+
+			int n = many_camera_frustums ? 1000 : 1;
+			for (int i = 0; i < n; i++) {
+				DebugDraw3D::draw_camera_frustum(cam, Color::from_hsv(i / float(n), 0.5f, 0.9f));
+
+				// small forward movement
+				Transform3D xf = _s1->get_transform();
+				xf.origin -= cam_basis.get_column(2) * 0.001f;
+				_s1->set_transform(xf);
+			}
+		}
+
+		if (many_camera_frustums)
+			UtilityFunctions::print("Draw Cameras C++: ", (Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0, "ms");
 	}
 }

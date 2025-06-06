@@ -13,12 +13,15 @@ protected:
 	static void _bind_methods();
 
 	bool one_million_boxes = false;
+	bool many_camera_frustums = false;
 
 public:
 	DD3DTestCppApiNode();
 	virtual void _ready() override;
 	virtual void _process(double p_delta) override;
 
-	void set_one_million_boxes(bool val) { one_million_boxes = val; };
-	bool is_one_million_boxes() { return one_million_boxes; };
+	void set_one_million_boxes(bool val) { one_million_boxes = val; }
+	bool is_one_million_boxes() { return one_million_boxes; }
+	void set_many_camera_frustums(bool val) { many_camera_frustums = val; }
+	bool is_many_camera_frustums() { return many_camera_frustums; }
 };
