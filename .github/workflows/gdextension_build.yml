@@ -84,7 +84,7 @@ jobs:
 
   linux-gdextension:
     name: 🐧 Linux
-    runs-on: ubuntu-22.04
+    runs-on: ${{matrix.runner-os}}
     environment: ${{inputs.production_build == true && 'production' || ''}}
     env:
       TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
@@ -94,8 +94,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64]
+        arch: [x86_64, arm64]
         target: [editor, template_release]
+        include:
+          - arch: x86_64
+            runner-os: ubuntu-22.04
+          - arch: arm64
+            runner-os: ubuntu-22.04-arm
 
     steps:
       - name: Checkout
@@ -305,11 +310,14 @@ jobs:
       fail-fast: false
       matrix:
         # sync with other jobs
-        runner-os: [ubuntu-22.04, macos-latest, windows-latest]
+        runner-os: [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
           - runner-os: ubuntu-22.04
             platform: "linux"
             arch: "x86_64"
+          - runner-os: ubuntu-22.04-arm
+            platform: "linux"
+            arch: "arm64"
           - runner-os: macos-latest
             platform: "macos"
             arch: "universal"
@@ -444,10 +452,12 @@ jobs:
       fail-fast: false
       matrix:
         # sync with other jobs
-        runner-os: [ubuntu-22.04, macos-latest, windows-latest]
+        runner-os: [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
           - runner-os: ubuntu-22.04
             file_suffix: "stable_linux.x86_64.zip"
+          - runner-os: ubuntu-22.04-arm
+            file_suffix: "stable_linux.arm64.zip"
           - runner-os: macos-latest
             file_suffix: "stable_macos.universal.zip"
           - runner-os: windows-latest
