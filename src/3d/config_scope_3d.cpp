@@ -39,6 +39,9 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 
 	REG_METHOD(set_text_font, "value");
 	REG_METHOD(get_text_font);
+
+	REG_METHOD(set_text_fixed_size, "value");
+	REG_METHOD(get_text_fixed_size);
 #undef REG_CLASS_NAME
 }
 
@@ -129,6 +132,15 @@ Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
 	return data->text_font;
 }
 
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool value) const {
+	data->text_fixed_size = value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+bool DebugDraw3DScopeConfig::get_text_fixed_size() const {
+	return data->text_fixed_size;
+}
+
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {
 	data->dcd.viewport = _value;
 	data->dcd.viewport_id = _value ? _value->get_instance_id() : 0;
@@ -176,6 +188,7 @@ DebugDraw3DScopeConfig::Data::Data() :
 		transform(Transform3D()),
 		text_outline_color(Color(0, 0, 0, 1)),
 		text_outline_size(12),
+		text_fixed_size(false),
 		text_font(nullptr),
 		dcd({}),
 		hd_sphere(false),
@@ -194,6 +207,7 @@ DebugDraw3DScopeConfig::Data::Data(const Data *p_parent) :
 		text_outline_color(p_parent->text_outline_color),
 		text_outline_color_hash(p_parent->text_outline_color_hash),
 		text_outline_size(p_parent->text_outline_size),
+		text_fixed_size(p_parent->text_fixed_size),
 		text_font(p_parent->text_font),
 		dcd(p_parent->dcd),
 		hd_sphere(p_parent->hd_sphere),
