@@ -155,8 +155,6 @@ static String get_file_name_in_repository(const String &name) {
 		Dictionary info;                           \
 		info["name"] = path;                       \
 		info["type"] = type;                       \
-		/* Does not work in the ProjectSettings */ \
-		info["usage"] = PROPERTY_USAGE_READ_ONLY;  \
 		PS()->add_property_info(info);             \
 		PS()->set_initial_value(path, def);        \
 	}
