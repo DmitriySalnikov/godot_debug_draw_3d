@@ -128,7 +128,7 @@ android.arm64.double = "libs/libdd3d.android.template_debug.arm64.double.so"
 android.x86_32.double = "libs/libdd3d.android.template_debug.x86_32.double.so"
 android.x86_64.double = "libs/libdd3d.android.template_debug.x86_64.double.so"
 
-ios.double = "libs/libdd3d.ios.template_debug.universal.dylib"
+ios.double = "libs/libdd3d.ios.template_debug.universal.double.dylib"
 
 ; -------------------------------------
 ; release no debug draw
