@@ -51,6 +51,7 @@ var NAVTREE =
       ] ],
       [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md19", null ]
     ] ],
+    [ "Deprecated List", "deprecated.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],

@@ -129,6 +129,7 @@ $(function(){initNavTree('classDebugDraw3DConfig.html',''); initResizable(true);
 
 <div class="header">
   <div class="summary">
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classDebugDraw3DConfig-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">DebugDraw3DConfig Class Reference</div></div>
@@ -146,6 +147,18 @@ Inheritance diagram for DebugDraw3DConfig:</div>
   <img src="classDebugDraw3DConfig.png" alt=""/>
  </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a83368b79aff191dc08e5eda8e9f559c2" id="r_a83368b79aff191dc08e5eda8e9f559c2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a83368b79aff191dc08e5eda8e9f559c2">FrustumCullingMode</a> : int { <br />
+&#160;&#160;<b>FRUSTUM_DISABLED</b>
+, <br />
+&#160;&#160;<b>FRUSTUM_ROUGH</b>
+, <br />
+&#160;&#160;<b>FRUSTUM_PRECISE</b>
+<br />
+ }</td></tr>
+<tr class="separator:a83368b79aff191dc08e5eda8e9f559c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a9517942f5459ed94c279dd80b83cb206" id="r_a9517942f5459ed94c279dd80b83cb206"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9517942f5459ed94c279dd80b83cb206">set_freeze_3d_render</a> (const bool &amp;_state)</td></tr>
@@ -163,6 +176,11 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_visible_instance_b
 <tr class="memitem:a3836684e14265c7c9ca7cec23626c514" id="r_a3836684e14265c7c9ca7cec23626c514"><td class="memItemLeft" align="right" valign="top"><a id="a3836684e14265c7c9ca7cec23626c514" name="a3836684e14265c7c9ca7cec23626c514"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_use_frustum_culling</b> () const</td></tr>
 <tr class="separator:a3836684e14265c7c9ca7cec23626c514"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c4140ed879dadf09101ab36705253d7" id="r_a1c4140ed879dadf09101ab36705253d7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1c4140ed879dadf09101ab36705253d7">set_frustum_culling_mode</a> (const <a class="el" href="#a83368b79aff191dc08e5eda8e9f559c2">FrustumCullingMode</a> _mode)</td></tr>
+<tr class="separator:a1c4140ed879dadf09101ab36705253d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24ccf37514c33a37e72102e0f187447a" id="r_a24ccf37514c33a37e72102e0f187447a"><td class="memItemLeft" align="right" valign="top"><a id="a24ccf37514c33a37e72102e0f187447a" name="a24ccf37514c33a37e72102e0f187447a"></a>
+<a class="el" href="#a83368b79aff191dc08e5eda8e9f559c2">FrustumCullingMode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_frustum_culling_mode</b> () const</td></tr>
+<tr class="separator:a24ccf37514c33a37e72102e0f187447a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d7c0467c57762f6a797caaef1c3005c" id="r_a0d7c0467c57762f6a797caaef1c3005c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d7c0467c57762f6a797caaef1c3005c">set_frustum_length_scale</a> (const real_t &amp;_distance)</td></tr>
 <tr class="separator:a0d7c0467c57762f6a797caaef1c3005c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a460bff27a84cac224ea3cf02255401d6" id="r_a460bff27a84cac224ea3cf02255401d6"><td class="memItemLeft" align="right" valign="top"><a id="a460bff27a84cac224ea3cf02255401d6" name="a460bff27a84cac224ea3cf02255401d6"></a>
@@ -192,7 +210,23 @@ Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line_after_hit_c
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This is a class for storing part of the <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a> configuration. </p>
 <p>You can use <a class="el" href="classDebugDraw3D.html#a4b2ef750a2bb59079045ff48d719ed0b">DebugDraw3D.get_config</a> to get the current instance of the configuration. </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="a83368b79aff191dc08e5eda8e9f559c2" name="a83368b79aff191dc08e5eda8e9f559c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83368b79aff191dc08e5eda8e9f559c2">&#9670;&#160;</a></span>FrustumCullingMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a83368b79aff191dc08e5eda8e9f559c2">DebugDraw3DConfig::FrustumCullingMode</a> : int</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Frustum culling mode. You can disable it completely or select the culling accuracy. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
 <a id="a9517942f5459ed94c279dd80b83cb206" name="a9517942f5459ed94c279dd80b83cb206"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9517942f5459ed94c279dd80b83cb206">&#9670;&#160;</a></span>set_freeze_3d_render()</h2>
 
@@ -243,8 +277,26 @@ Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line_after_hit_c
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set whether frustum culling is used.</p>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated</a></b></dt><dd>Set whether frustum culling is used. This is a wrapper over <a class="el" href="#a1c4140ed879dadf09101ab36705253d7">DebugDraw3DConfig.set_frustum_culling_mode</a> and exists for compatibility with older versions.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Enabling or disabling this option does not affect the rough culling based on the camera's AABB of frustum. This option enables more accurate culling based on the camera's frustum planes. </dd></dl>
+
+</div>
+</div>
+<a id="a1c4140ed879dadf09101ab36705253d7" name="a1c4140ed879dadf09101ab36705253d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c4140ed879dadf09101ab36705253d7">&#9670;&#160;</a></span>set_frustum_culling_mode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void DebugDraw3DConfig::set_frustum_culling_mode </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#a83368b79aff191dc08e5eda8e9f559c2">FrustumCullingMode</a></td>          <td class="paramname"><span class="paramname"><em>_mode</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set frustum culling mode. </p>
 
 </div>
 </div>
