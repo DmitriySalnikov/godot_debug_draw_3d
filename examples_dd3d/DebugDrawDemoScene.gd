@@ -131,7 +131,7 @@ func main_update(delta: float) -> void:
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_LEFT):
-		DebugDraw3D.config.use_frustum_culling = !DebugDraw3D.config.use_frustum_culling
+		DebugDraw3D.config.frustum_culling_mode = wrapi(DebugDraw3D.config.frustum_culling_mode+1, 0, 3) as DebugDraw3DConfig.FrustumCullingMode
 	if _is_key_just_pressed(KEY_UP):
 		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
 	if _is_key_just_pressed(KEY_CTRL):
@@ -386,7 +386,7 @@ func _text_tests():
 		if Engine.is_editor_hint():
 			DebugDraw2D.set_text("Up: use scene camera", DebugDraw3D.config.force_use_camera_from_scene, 4)
 		DebugDraw2D.set_text("1,2,3: toggle debug", "%s, %s 😐, %s 😏" % [DebugDraw3D.debug_enabled, DebugDraw2D.debug_enabled, DebugDrawManager.debug_enabled], 5)
-		DebugDraw2D.set_text("Left: toggle frustum culling", DebugDraw3D.config.use_frustum_culling, 6)
+		DebugDraw2D.set_text("Left: frustum culling mode", ["Disabled", "Rough", "Precise"][DebugDraw3D.config.frustum_culling_mode], 6)
 		DebugDraw2D.set_text("Right: draw bounds for culling", DebugDraw3D.config.visible_instance_bounds, 7)
 		DebugDraw2D.end_text_group()
 

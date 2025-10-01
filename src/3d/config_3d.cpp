@@ -11,6 +11,7 @@ void DebugDraw3DConfig::_bind_methods() {
 	REG_PROP_BOOL(freeze_3d_render);
 	REG_PROP_BOOL(visible_instance_bounds);
 	REG_PROP_BOOL(use_frustum_culling);
+	REG_PROP(frustum_culling_mode, Variant::INT);
 	REG_PROP(frustum_length_scale, Variant::FLOAT);
 	REG_PROP_BOOL(force_use_camera_from_scene);
 	REG_PROP(geometry_render_layers, Variant::INT);
@@ -19,6 +20,10 @@ void DebugDraw3DConfig::_bind_methods() {
 
 #pragma endregion
 #undef REG_CLASS_NAME
+
+	BIND_ENUM_CONSTANT(FRUSTUM_DISABLED);
+	BIND_ENUM_CONSTANT(FRUSTUM_ROUGH);
+	BIND_ENUM_CONSTANT(FRUSTUM_PRECISE);
 }
 
 void DebugDraw3DConfig::set_freeze_3d_render(const bool &_state) {
@@ -38,11 +43,19 @@ bool DebugDraw3DConfig::is_visible_instance_bounds() const {
 }
 
 void DebugDraw3DConfig::set_use_frustum_culling(const bool &_state) {
-	use_frustum_culling = _state;
+	frustum_culling_mode = _state ? FrustumCullingMode::FRUSTUM_PRECISE : FrustumCullingMode::FRUSTUM_ROUGH;
 }
 
 bool DebugDraw3DConfig::is_use_frustum_culling() const {
-	return use_frustum_culling;
+	return frustum_culling_mode != FrustumCullingMode::FRUSTUM_DISABLED;
+}
+
+void DebugDraw3DConfig::set_frustum_culling_mode(const FrustumCullingMode _mode) {
+	frustum_culling_mode = _mode;
+}
+
+DebugDraw3DConfig::FrustumCullingMode DebugDraw3DConfig::get_frustum_culling_mode() const {
+	return frustum_culling_mode;
 }
 
 void DebugDraw3DConfig::set_frustum_length_scale(const real_t &_distance) {

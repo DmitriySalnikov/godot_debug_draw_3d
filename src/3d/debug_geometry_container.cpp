@@ -276,33 +276,35 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			}
 #endif
 
-			// Convert Array to vector
-			if (frustum_arrays.size()) {
-				for (auto &pair : frustum_arrays) {
-					Array &arr = pair.first;
-					if (arr.size() == 6) {
-						std::array<Plane, 6> a;
-						for (int i = 0; i < arr.size(); i++)
-							a[i] = (Plane)arr[i];
+			if (owner->get_config()->get_frustum_culling_mode() != DebugDraw3DConfig::FrustumCullingMode::FRUSTUM_DISABLED) {
+				// Convert Array to vector
+				if (frustum_arrays.size()) {
+					for (auto &pair : frustum_arrays) {
+						Array &arr = pair.first;
+						if (arr.size() == 6) {
+							std::array<Plane, 6> a;
+							for (int i = 0; i < arr.size(); i++)
+								a[i] = (Plane)arr[i];
 
-						MathUtils::scale_frustum_far_plane_distance(a, pair.second->get_global_transform(), owner->get_config()->get_frustum_length_scale());
+							MathUtils::scale_frustum_far_plane_distance(a, pair.second->get_global_transform(), owner->get_config()->get_frustum_length_scale());
 
-						if (owner->get_config()->is_use_frustum_culling())
-							frustum_planes.push_back(a);
+							if (owner->get_config()->get_frustum_culling_mode() == DebugDraw3DConfig::FrustumCullingMode::FRUSTUM_PRECISE)
+								frustum_planes.push_back(a);
 
-						auto cube = MathUtils::get_frustum_cube(a);
-						AABB aabb = MathUtils::calculate_vertex_bounds(cube.data(), cube.size());
-						frustum_boxes.push_back(aabb);
+							auto cube = MathUtils::get_frustum_cube(a);
+							AABB aabb = MathUtils::calculate_vertex_bounds(cube.data(), cube.size());
+							frustum_boxes.push_back(aabb);
 
 #if false
-						// Debug camera bounds
-						{
-							SphereBounds sb = aabb;
-							auto cfg = owner->new_scoped_config()->set_thickness(0.1f)->set_hd_sphere(true); //->set_viewport(vp_p);
-							owner->draw_sphere(sb.position, sb.radius, Colors::crimson);
-							owner->draw_aabb(aabb, Colors::yellow);
-						}
+							// Debug camera bounds
+							{
+								SphereBounds sb = aabb;
+								auto cfg = owner->new_scoped_config()->set_thickness(0.1f)->set_hd_sphere(true); //->set_viewport(vp_p);
+								owner->draw_sphere(sb.position, sb.radius, Colors::crimson);
+								owner->draw_aabb(aabb, Colors::yellow);
+							}
 #endif
+						}
 					}
 				}
 			}

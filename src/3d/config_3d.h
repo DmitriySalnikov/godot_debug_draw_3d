@@ -17,11 +17,21 @@ using namespace godot;
 class DebugDraw3DConfig : public RefCounted {
 	GDCLASS(DebugDraw3DConfig, RefCounted)
 
+public:
+	/**
+	 * Frustum culling mode. You can disable it completely or select the culling accuracy.
+	 */
+	enum FrustumCullingMode : int {
+		FRUSTUM_DISABLED,
+		FRUSTUM_ROUGH,
+		FRUSTUM_PRECISE,
+	};
+
 private:
 	int32_t geometry_render_layers = 1;
 	bool freeze_3d_render = false;
 	bool visible_instance_bounds = false;
-	bool use_frustum_culling = true;
+	FrustumCullingMode frustum_culling_mode = FrustumCullingMode::FRUSTUM_PRECISE;
 	real_t frustum_length_scale = 0;
 	bool force_use_camera_from_scene = false;
 	Color line_hit_color = Colors::red;
@@ -47,14 +57,22 @@ public:
 	bool is_visible_instance_bounds() const;
 
 	/**
+	 * @deprecated
 	 * Set whether frustum culling is used.
-	 * 
+	 * This is a wrapper over DebugDraw3DConfig.set_frustum_culling_mode and exists for compatibility with older versions.
+	 *
 	 * @note
 	 * Enabling or disabling this option does not affect the rough culling based on the camera's AABB of frustum.
 	 * This option enables more accurate culling based on the camera's frustum planes.
 	 */
 	void set_use_frustum_culling(const bool &_state);
 	bool is_use_frustum_culling() const;
+
+	/**
+	 * Set frustum culling mode.
+	 */
+	void set_frustum_culling_mode(const FrustumCullingMode _mode);
+	FrustumCullingMode get_frustum_culling_mode() const;
 
 	/**
 	 * Change the distance between the Far and Near Planes of the Viewport's Camera3D.
@@ -87,3 +105,5 @@ public:
 	void set_line_after_hit_color(const Color &_new_color);
 	Color get_line_after_hit_color() const;
 };
+
+VARIANT_ENUM_CAST(DebugDraw3DConfig::FrustumCullingMode);

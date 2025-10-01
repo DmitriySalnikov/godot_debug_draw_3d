@@ -1,12 +1,12 @@
 [gd_scene load_steps=43 format=3 uid="uid://c3sccy6x0ht5j"]
 
-[ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
+[ext_resource type="Script" uid="uid://ba2ie81p2x3x7" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
-[ext_resource type="Script" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
+[ext_resource type="Script" uid="uid://b5mdrjubj0lg5" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
 [ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="3_tkhi8"]
-[ext_resource type="Script" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
-[ext_resource type="Script" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
-[ext_resource type="Script" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
+[ext_resource type="Script" uid="uid://bebbekatkxaoe" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
+[ext_resource type="Script" uid="uid://83dhsep7l725" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
+[ext_resource type="Script" uid="uid://hvx3t70syvkm" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
 
 [sub_resource type="Animation" id="Animation_ucqh5"]
 resource_name = "RESET"
@@ -38,7 +38,7 @@ tracks/1/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_cq37i"]
 _data = {
-"RESET": SubResource("Animation_ucqh5")
+&"RESET": SubResource("Animation_ucqh5")
 }
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_87638"]
@@ -162,8 +162,8 @@ tracks/3/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_nj4nv"]
 _data = {
-"New Anim": SubResource("9"),
-"RESET": SubResource("10")
+&"New Anim": SubResource("9"),
+&"RESET": SubResource("10")
 }
 
 [sub_resource type="Shader" id="Shader_621vv"]
@@ -228,8 +228,8 @@ tracks/1/keys = PackedFloat32Array(0, 1, 0.190215, 0.859282, 0.43192, 0.197228, 
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_rcwnp"]
 _data = {
-"RESET": SubResource("Animation_w1m7s"),
-"recursive": SubResource("Animation_h4e34")
+&"RESET": SubResource("Animation_w1m7s"),
+&"recursive": SubResource("Animation_h4e34")
 }
 
 [sub_resource type="SphereShape3D" id="4"]
@@ -279,8 +279,8 @@ tracks/1/keys = PackedFloat32Array(0, 1, 0, 0, 0, 1)
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_vh8ml"]
 _data = {
-"New Anim": SubResource("6"),
-"RESET": SubResource("7")
+&"New Anim": SubResource("6"),
+&"RESET": SubResource("7")
 }
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rbfyn"]
@@ -315,7 +315,7 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_a7f1a"]
 _data = {
-"RESET": SubResource("8")
+&"RESET": SubResource("8")
 }
 
 [sub_resource type="Shader" id="Shader_3cmiq"]
@@ -359,7 +359,7 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_0ity1"]
 _data = {
-"RESET": SubResource("Animation_n750a")
+&"RESET": SubResource("Animation_n750a")
 }
 
 [sub_resource type="Theme" id="3"]
@@ -389,7 +389,7 @@ text_groups_position = 2
 [node name="RESET" type="AnimationPlayer" parent="."]
 root_node = NodePath("../OtherWorld")
 libraries = {
-"": SubResource("AnimationLibrary_cq37i")
+&"": SubResource("AnimationLibrary_cq37i")
 }
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
@@ -401,7 +401,7 @@ directional_shadow_max_distance = 200.0
 environment = SubResource("Environment_38m85")
 
 [node name="Camera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.942642, 0.333808, 0, -0.333808, 0.942642, -6.988, 10.986, 29.206)
+transform = Transform3D(1, 0, 0, 0, 0.9426419, 0.3338081, 0, -0.3338081, 0.9426419, -6.988, 10.986, 29.206)
 cull_mask = 1
 current = true
 fov = 53.0
@@ -464,7 +464,7 @@ transform = Transform3D(4.38886, 0, 0, 0, 2.72083, 0, 0, 0, 8.81683, -5.69728, -
 [node name="LinesAnim" type="AnimationPlayer" parent="."]
 root_node = NodePath("../LinePath")
 libraries = {
-"": SubResource("AnimationLibrary_nj4nv")
+&"": SubResource("AnimationLibrary_nj4nv")
 }
 autoplay = "New Anim"
 
@@ -585,7 +585,7 @@ skeleton = NodePath("")
 
 [node name="RESET" type="AnimationPlayer" parent="OtherWorld"]
 libraries = {
-"": SubResource("AnimationLibrary_cq37i")
+&"": SubResource("AnimationLibrary_cq37i")
 }
 
 [node name="SubViewport" type="SubViewport" parent="OtherWorld"]
@@ -653,7 +653,7 @@ transform = Transform3D(0.785829, 0.365814, 0.498651, 0.0146361, 0.795073, -0.60
 unique_name_in_owner = true
 root_node = NodePath("../../..")
 libraries = {
-"": SubResource("AnimationLibrary_rcwnp")
+&"": SubResource("AnimationLibrary_rcwnp")
 }
 
 [node name="HitTest" type="Node3D" parent="."]
@@ -707,7 +707,7 @@ target_position = Vector3(0, -3.464, 0)
 [node name="RayEmitterAnimationPlayer" type="AnimationPlayer" parent="HitTest"]
 unique_name_in_owner = true
 libraries = {
-"": SubResource("AnimationLibrary_vh8ml")
+&"": SubResource("AnimationLibrary_vh8ml")
 }
 autoplay = "New Anim"
 
@@ -768,7 +768,7 @@ material = SubResource("1")
 
 [node name="RESET" type="AnimationPlayer" parent="LagTest"]
 libraries = {
-"": SubResource("AnimationLibrary_a7f1a")
+&"": SubResource("AnimationLibrary_a7f1a")
 }
 
 [node name="PostProcess" type="MeshInstance3D" parent="."]
@@ -792,7 +792,7 @@ text = "Open music"
 [node name="RESET" type="AnimationPlayer" parent="MusicVisualizer"]
 root_node = NodePath("../OpenFile")
 libraries = {
-"": SubResource("AnimationLibrary_0ity1")
+&"": SubResource("AnimationLibrary_0ity1")
 }
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="MusicVisualizer"]

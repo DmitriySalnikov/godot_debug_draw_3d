@@ -10,6 +10,10 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 
 bool DelayedRenderer::update_visibility(const std::shared_ptr<GeometryPoolCullingData> &p_culling_data) {
+	if (p_culling_data->m_frustum_boxes.size() == 0) {
+		return is_visible = true;
+	}
+
 	is_visible = false;
 	for (auto &box : p_culling_data->m_frustum_boxes) {
 		if (box.intersects(bounds)) {
