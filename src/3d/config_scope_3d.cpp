@@ -123,15 +123,6 @@ int32_t DebugDraw3DScopeConfig::get_text_outline_size() const {
 	return data->text_outline_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(Ref<Font> _value) const {
-	data->text_font = _value;
-	return Ref<DebugDraw3DScopeConfig>(this);
-}
-
-Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
-	return data->text_font;
-}
-
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool value) const {
 	data->text_fixed_size = value;
 	return Ref<DebugDraw3DScopeConfig>(this);
@@ -139,6 +130,15 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool val
 
 bool DebugDraw3DScopeConfig::get_text_fixed_size() const {
 	return data->text_fixed_size;
+}
+
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(Ref<Font> _value) const {
+	data->text_font = _value;
+	return Ref<DebugDraw3DScopeConfig>(this);
+}
+
+Ref<Font> DebugDraw3DScopeConfig::get_text_font() const {
+	return data->text_font;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_viewport(Viewport *_value) const {

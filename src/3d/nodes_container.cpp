@@ -8,6 +8,7 @@
 #include <array>
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/engine.hpp>
 #include <godot_cpp/classes/os.hpp>
 #include <godot_cpp/templates/hashfuncs.hpp>
