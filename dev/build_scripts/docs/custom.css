@@ -1,0 +1,168 @@
+html {
+    --top-height: 120px;
+    --side-nav_offset: 20px;
+}
+
+@media screen and (min-width: 768px) {
+    #top {
+        height: calc(var(--top-height) + var(--side-nav_offset));
+    }
+
+    #nav-tree,
+    #side-nav {
+        height: calc(100vh - var(--top-height) - var(--side-nav_offset)) !important;
+    }
+
+    #side-nav {
+        top: calc(var(--top-height) + var(--side-nav_offset));
+    }
+
+    #doc-content {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+        left: 0px;
+    }
+}
+
+
+#projectname {
+    font-size: calc(var(--title-font-size) * 0.8);
+    font-weight: 600;
+}
+
+html {
+    /* primary theme color. This will affect the entire websites color scheme: links, arrows, labels, ... */
+    --primary-color: #ff810b;
+    --primary-dark-color: #d56f15;
+    --primary-light-color: #dd9921;
+
+    --page-background-color: #ffffff;
+    --page-foreground-color: #1b1e21;
+    --page-secondary-foreground-color: #6f7e8e;
+
+    --side-nav-background: #f3f3f3;
+}
+
+.paramname em {
+    color: var(--primary-light-color);
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not(.light-mode) {
+        --primary-color: #f59031;
+        --primary-dark-color: #dd7d22;
+        --primary-light-color: #d9c775;
+
+        --page-background-color: #21232b;
+        --page-foreground-color: #ebf0f1;
+        --separator-color: #121212;
+
+        --side-nav-background: #282b35;
+    }
+
+    .paramname em {
+        color: var(--primary-light-color);
+    }
+}
+
+html.dark-mode {
+    color-scheme: dark;
+
+    --primary-color: #f59031;
+    --primary-dark-color: #dd7d22;
+    --primary-light-color: #d9c775;
+
+    --page-background-color: #21232b;
+    --page-foreground-color: #ebf0f1;
+    --separator-color: #121212;
+
+    --side-nav-background: #282b35;
+}
+
+#nav-tree .selected .arrow {
+    color: var(--primary-color);
+    text-shadow: none;
+}
+
+a:hover {
+    text-decoration: underline;
+    background: none;
+}
+
+#nav-tree .label a:hover {
+    background: linear-gradient(to bottom, transparent 0, transparent calc(100% - 1px), currentColor 100%);
+}
+
+a:hover>span.arrow {
+    text-decoration: none;
+    background: transparent;
+}
+
+span.mlabel {
+    background: var(--primary-color);
+    border-radius: 5px;
+    color: rgb(20, 20, 20);
+    font-weight: 800;
+}
+
+/* Version select */
+
+select#dd3d_version_select {
+    color: var(--primary-color);
+    font-weight: 600;
+    background-color: var(--code-background);
+    border-color: var(--separator-color);
+    border-radius: var(--border-radius-small);
+}
+
+select#dd3d_version_select option {
+    color: var(--page-foreground-color);
+}
+
+/* !Version select */
+
+/* Octocat corner */
+
+a.github-corner:hover .octo-arm {
+    animation: octocat-wave 560ms ease-in-out
+}
+
+@keyframes octocat-wave {
+
+    0%,
+    100% {
+        transform: rotate(0)
+    }
+
+    20%,
+    60% {
+        transform: rotate(-25deg)
+    }
+
+    40%,
+    80% {
+        transform: rotate(10deg)
+    }
+}
+
+@media (max-width:500px) {
+    a.github-corner:hover .octo-arm {
+        animation: none
+    }
+
+    a.github-corner .octo-arm {
+        animation: octocat-wave 560ms ease-in-out
+    }
+}
+
+a.github-corner {
+    position: absolute;
+    top: 0;
+    border: 0;
+    right: 0;
+    z-index: 1;
+}
+
+/* !Octocat corner */
