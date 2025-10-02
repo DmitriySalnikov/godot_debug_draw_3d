@@ -1,7 +1,7 @@
 name: 🚀 Deploy content to Github Pages
 on:
   push:
-    branches-ignore: gh-pages
+    branches-ignore: [gh-pages]
     # Must not overlap with conditions in `gdextension_build.yml`
     paths:
       [
@@ -172,9 +172,7 @@ jobs:
 
       - name: Download Emscripten
         if: ${{matrix.platform == 'web'}}
-        uses: mymindstorm/setup-emsdk@v14
-        # Continue if failed to cache
-        # https://github.com/mymindstorm/setup-emsdk/issues/20
+        uses: pyodide/setup-emsdk@v15
         continue-on-error: true
         with:
           version: ${{env.EM_VERSION}}
@@ -200,7 +198,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      DOXYGEN_VERSION: 1.13.2
+      DOXYGEN_VERSION: 1.14.0
 
     steps:
       - name: Checkout

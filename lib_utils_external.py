@@ -28,7 +28,14 @@ def get_cmake_build_dir(env: SConsEnvironment, lib_path: str) -> str:
 
 # Get a path to the output folder of the cmake library
 def get_cmake_output_lib_dir(env: SConsEnvironment, lib_path: str) -> str:
-    return os.path.join(get_cmake_build_dir(env, lib_path), "Debug" if env["dev_build"] else "Release")
+    return os.path.join(get_cmake_build_dir(env, lib_path), "RelWithDebInfo" if env["dev_build"] else "Release")
+
+
+def contains_flag(list: list, flag_name: str) -> bool:
+    if any((flag_name in x for x in list)):
+        return True
+    else:
+        return False
 
 
 def print_subprocess_result(result, prefix: str):
@@ -91,13 +98,19 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
     linker_flags = extra_c_compiler_flags.get("linker_flags", []).copy()
 
     if platform == "windows":
+        msvc_runtime_type = "/MT" if env["use_static_cpp"] else "/MD"
         arch_map = {"arm32": "ARM", "arm64": "ARM64", "x86_32": "Win32", "x86_64": "x64"}
         platform_args += [
             "-G",
             "Visual Studio 17 2022",
             "-A",
             arch_map[arch],
-            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" + ("" if env["use_static_cpp"] else "DLL"),
+            # CMAKE_MSVC_RUNTIME_LIBRARY does not work with the Visual Studio project
+            # "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded" + ("" if env["use_static_cpp"] else "DLL")]
+            f"-DCMAKE_C_FLAGS_DEBUG={msvc_runtime_type} /Zi /Ob0 /Od /RTC1",
+            f"-DCMAKE_C_FLAGS_MINSIZEREL={msvc_runtime_type} /O1 /Ob1 /DNDEBUG",
+            f"-DCMAKE_C_FLAGS_RELEASE={msvc_runtime_type} /O2 /Ob2 /DNDEBUG",
+            f"-DCMAKE_C_FLAGS_RELWITHDEBINFO={msvc_runtime_type} /Zi /O2 /Ob1 /DNDEBUG",
         ]
     elif platform == "linux":
         platform_args += [
@@ -121,10 +134,15 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
         platform_args += [
             "-G",
             "Ninja Multi-Config",
-            f'-DCMAKE_TOOLCHAIN_FILE={os.getenv("ANDROID_HOME")}/ndk/25.2.9519653/build/cmake/android.toolchain.cmake',
             f"-DANDROID_ABI={arch_map[arch]}",
-            f'-DANDROID_PLATFORM={env.get("android_api_level", 21)}',
         ]
+        if not contains_flag(extra_args, "-DCMAKE_TOOLCHAIN_FILE"):
+            platform_args += [
+                f'-DCMAKE_TOOLCHAIN_FILE={os.getenv("ANDROID_HOME")}/ndk/28.1.13356709/build/cmake/android.toolchain.cmake'
+            ]
+        if not contains_flag(extra_args, "-DANDROID_PLATFORM"):
+            platform_args += [f'-DANDROID_PLATFORM={env.get("android_api_level", 21)}']
+
     elif platform == "web":
         platform_args += [
             "-G",
@@ -135,7 +153,7 @@ def cmake_build_project(env: SConsEnvironment, lib_path: str, extra_args: list, 
             compiler_flags += ["-sUSE_PTHREADS=1"]
             linker_flags += ["-sUSE_PTHREADS=1"]
 
-    build_args += ["--config", "Debug" if env["dev_build"] else "Release"]
+    build_args += ["--config", "RelWithDebInfo" if env["dev_build"] else "Release"]
 
     if len(compiler_flags):
         platform_args += [

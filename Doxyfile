@@ -42,7 +42,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "Debug Draw 3D (and 2D)"
+PROJECT_NAME           = "Debug Draw 3D"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -112,6 +112,8 @@ HTML_EXTRA_FILES       = docs/doxygen_resources/doxygen-awesome-css/doxygen-awes
                         images/icon_3d_32.png \
                         docs/images/fix_precision_enabled.webm \
                         docs/images/shader_world_coords_enabled.webm 
+
+PAGE_OUTLINE_PANEL=NO
 
 # The HTML_EXTRA_STYLESHEET tag can be used to specify additional user-defined
 # cascading style sheets that are included after the standard style sheets
