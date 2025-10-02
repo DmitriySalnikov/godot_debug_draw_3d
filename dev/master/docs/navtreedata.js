@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "Debug Draw 3D (and 2D)", "index.html", [
+  [ "Debug Draw 3D", "index.html", [
     [ "Introduction", "index.html#autotoc_md0", [
       [ "Screenshots", "index.html#autotoc_md1", null ],
       [ "Features", "index.html#autotoc_md2", null ],
@@ -46,8 +46,8 @@ var NAVTREE =
     ] ],
     [ "Double Precision", "md_docs_2DoublePrecision.html", [
       [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md16", [
-        [ "fix_precision_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md17", null ],
-        [ "shader_world_coords_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md18", null ]
+        [ "<span class=\"tt\">fix_precision_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md17", null ],
+        [ "<span class=\"tt\">shader_world_coords_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md18", null ]
       ] ],
       [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md19", null ]
     ] ],
@@ -74,3 +74,4 @@ var NAVTREEINDEX =
 
 var SYNCONMSG = 'click to disable panel synchronization';
 var SYNCOFFMSG = 'click to enable panel synchronization';
+var LISTOFALLMEMBERS = 'List of all members';

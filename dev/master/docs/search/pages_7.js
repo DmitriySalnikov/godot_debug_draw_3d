@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['precision_0',['Double Precision',['../md_docs_2DoublePrecision.html',1,'']]],
-  ['project_1',['Exporting a project',['../md_docs_2Export.html',1,'']]]
+  ['installation_0',['Installation',['../index.html#autotoc_md4',1,'']]],
+  ['introduction_1',['Introduction',['../index.html#autotoc_md0',1,'']]]
 ];
