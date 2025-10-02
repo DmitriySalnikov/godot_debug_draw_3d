@@ -126,6 +126,8 @@ class NodesContainer {
 		Color color;
 		Color outline_color;
 		int outline_size;
+		bool fixed_size;
+		real_t pixel_size;
 
 		TextNodeDeferredQueueItem(
 				const real_t &duration,
@@ -137,7 +139,9 @@ class NodesContainer {
 				const int &font_size,
 				const Color &color,
 				const Color &outline_color,
-				const int &outline_size) :
+				const int &outline_size,
+				const bool &fixed_size,
+				const real_t &pixel_size) :
 
 				duration(duration),
 				opts_hash(opts_hash),
@@ -148,7 +152,9 @@ class NodesContainer {
 				font_size(font_size),
 				color(color),
 				outline_color(outline_color),
-				outline_size(outline_size) {}
+				outline_size(outline_size),
+				fixed_size(fixed_size),
+				pixel_size(pixel_size) {}
 	};
 	std::queue<TextNodeDeferredQueueItem> deferred_text_queue;
 	void _render_queued_nodes();

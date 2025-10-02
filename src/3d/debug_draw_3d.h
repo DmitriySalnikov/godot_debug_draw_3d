@@ -755,7 +755,8 @@ public:
 	 *
 	 * @note
 	 * Outline can be changed using DebugDraw3DScopeConfig.set_text_outline_color and DebugDraw3DScopeConfig.set_text_outline_size.
-	 * And the font can be changed using DebugDraw3DScopeConfig.set_text_font.
+	 * The font can be changed using DebugDraw3DScopeConfig.set_text_font.
+	 * The text can be made to stay the same size regardless of distance using DebugDraw3DScopeConfig.set_text_fixed_size.
 	 *
 	 * ![](docs/images/classes/DrawText.webp)
 	 *

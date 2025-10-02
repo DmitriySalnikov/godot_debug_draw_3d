@@ -319,9 +319,20 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 	opts_hash = hash_murmur3_one_float(color.a, opts_hash);
 	opts_hash = hash_murmur3_one_32(p_cfg->text_outline_color_hash, opts_hash);
 	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_outline_size, opts_hash);
+	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_fixed_size, opts_hash);
 
 	uint32_t text_hash = text.hash();
-
+	real_t pixel_size = 0.005f; // godot default
+	if (p_cfg->text_fixed_size) {
+		Vector2 viewport_size = p_cfg->dcd.viewport ? p_cfg->dcd.viewport->get_visible_rect().size : Vector2(1.f, 1.f);
+		Camera3D *cam = p_cfg->dcd.viewport ? p_cfg->dcd.viewport->get_camera_3d() : nullptr;
+		if (cam) {
+			bool keep_height = cam->get_keep_aspect_mode();
+			real_t aspect_ratio = 1.0f / (keep_height ? viewport_size.y : viewport_size.x);
+			real_t fov = (cam->get_projection() == godot::Camera3D::ProjectionType::PROJECTION_PERSPECTIVE ? cam->get_fov() : 90.0f);
+			pixel_size = godot::Math::atan(fov * 0.5f) * aspect_ratio;
+		}
+	}
 	// if called from the main thread, just add/update
 	if (auto *os = OS::get_singleton(); os->get_thread_caller_id() == os->get_main_thread_id()) {
 		auto *lblit = text_pools[(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)].get(opts_hash, text_hash);
@@ -341,6 +352,8 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 		lbl3d->set_modulate(color);
 		lbl3d->set_outline_modulate(p_cfg->text_outline_color);
 		lbl3d->set_outline_size(p_cfg->text_outline_size);
+		lbl3d->set_draw_flag(Label3D::DrawFlags::FLAG_FIXED_SIZE, p_cfg->text_fixed_size);
+		lbl3d->set_pixel_size(pixel_size);
 	} else {
 		// wait for the end of the frame to display anything from the user thread
 		deferred_text_queue.emplace(
@@ -353,7 +366,9 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 				/* int font_size */ size,
 				/* Color color */ color,
 				/* Color outline_color */ p_cfg->text_outline_color,
-				/* int outline_size */ p_cfg->text_outline_size);
+				/* int outline_size */ p_cfg->text_outline_size,
+				/* bool fixed_size */ p_cfg->text_fixed_size,
+				/* real_t pixel_size */ pixel_size);
 	}
 }
 
@@ -385,6 +400,8 @@ void NodesContainer::_render_queued_nodes() {
 			lbl3d->set_modulate(i.color);
 			lbl3d->set_outline_modulate(i.outline_color);
 			lbl3d->set_outline_size(i.outline_size);
+			lbl3d->set_draw_flag(Label3D::DrawFlags::FLAG_FIXED_SIZE, i.fixed_size);
+			lbl3d->set_pixel_size(i.pixel_size);
 		}
 
 		deferred_text_queue.pop();
