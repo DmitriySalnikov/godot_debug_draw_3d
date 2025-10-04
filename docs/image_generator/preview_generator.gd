@@ -1,4 +1,5 @@
-## Please define "editor/movie_writer/base_folder" with output path
+## Please specify "editor/movie_writer/movie_file" with the path to "_.png".
+## This path will be used to create a "temp" subfolder in it, in which animation frames will be created.
 ## Also specify movie FPS "editor/movie_writer/fps" (default 30)
 ## It is advisable to override this setting for .movie: "rendering/viewport/transparent_background"
 ## Override "rendering/anti_aliasing/quality/msaa_2d" for better quality
@@ -47,6 +48,7 @@ enum PreviewCase {
 	DrawTextOutlineColor,
 	DrawTextOutlineSize,
 	DrawTextFont,
+	DrawTextFixedSize,
 }
 
 class CaseData:
@@ -93,6 +95,7 @@ var case_maps = {
 	PreviewCase.DrawTextOutlineColor : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawTextOutlineSize : CaseData.new("DrawMethods180"),
 	PreviewCase.DrawTextFont : CaseData.new("DrawMethods180"),
+	PreviewCase.DrawTextFixedSize : CaseData.new("DrawTextFixedSize"),
 }
 
 var changed_by_code := false
@@ -132,9 +135,10 @@ var is_exporting := false
 		else:
 			_stop_export()
 
-var movie_base_path: String = ProjectSettings.get_setting("editor/movie_writer/base_folder")
+var movie_file: String = ProjectSettings.get_setting("editor/movie_writer/movie_file")
+var movie_base_path: String = movie_file.get_base_dir()
 var movie_temp_path: String = movie_base_path.path_join("temp")
-var movie_input_template: String = "_%08d.png"
+var movie_input_template: String = movie_file.get_file().get_basename() + "%08d." + movie_file.get_extension()
 var movie_output_ext: String = ".webp"
 var movie_name: String = "output"
 var movie_FPS: int = 30
@@ -145,6 +149,11 @@ var is_nodes_avail := false
 
 
 func _enter_tree():
+	if movie_file.is_empty() or movie_file.get_extension() != "png":
+		OS.alert("The 'editor/movie_writer/movie_file' must be set to any valid path up to '_.png'.")
+		Engine.get_main_loop().quit()
+		return
+	
 	is_nodes_avail = true
 	_update_viewport_size()
 	
@@ -410,15 +419,20 @@ func _process(delta):
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
 		
 		PreviewCase.DrawText:
-			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, sin(anim_pos * PI) * 0.25, 0), "Anim pos: %.2f%%" % anim_pos, sin(anim_pos * PI) * 20 + 20, text_colors.sample(anim_pos))
+			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, int(sin(anim_pos * PI) * 0.25), 0), "Anim pos: %.2f%%" % anim_pos, int(sin(anim_pos * PI) * 20 + 20), text_colors.sample(anim_pos))
 		PreviewCase.DrawTextOutlineColor:
 			var _s = DebugDraw3D.new_scoped_config().set_text_outline_color(text_outline_colors.sample(anim_pos)).set_text_outline_size(24)
 			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
 		PreviewCase.DrawTextOutlineSize:
-			var _s = DebugDraw3D.new_scoped_config().set_text_outline_size(sin(anim_pos * PI) * 32 + 2)
+			var _s = DebugDraw3D.new_scoped_config().set_text_outline_size(int(sin(anim_pos * PI) * 32 + 2))
 			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
 		PreviewCase.DrawTextFont:
 			var _s = DebugDraw3D.new_scoped_config().set_text_font(text_font if anim_pos >= 0.5 else null)
 			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
+		PreviewCase.DrawTextFixedSize:
+			var is_on = anim_pos >= 0.5
+			var _s = DebugDraw3D.new_scoped_config().set_text_fixed_size(is_on)
+			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim: %.1f%%\n%s" % [anim_pos, "ON" if is_on else "OFF"], 40)
+			DebugDraw3D.draw_box(%OriginInstances.global_position, Quaternion(), Vector3(1.8, 0.5, 0.2), Color.FIREBRICK, true)
 
 	_end_of_frame(delta)

@@ -590,9 +590,9 @@ public partial class DebugDrawDemoSceneCS : Node3D
         if (draw_3d_text)
         {
             var angle = Mathf.Wrap(Time.GetTicksMsec() / 1000.0f, 0, Mathf.Tau);
-            using (var _w2 = DebugDraw3D.NewScopedConfig().SetTextFont(custom_3d_font))
+            using (var _w2 = DebugDraw3D.NewScopedConfig().SetTextFont(custom_3d_font).SetTextFixedSize(true))
             {
-                DebugDraw3D.DrawText(dOtherWorldBox.GlobalPosition + new Vector3(Mathf.Cos(angle), -0.25f, Mathf.Sin(angle)), "Hello world!", 32, Colors.Crimson, 0);
+                DebugDraw3D.DrawText(dOtherWorldBox.GlobalPosition + new Vector3(Mathf.Cos(angle), -0.25f, Mathf.Sin(angle)), "Hello world!", 40, Colors.Crimson, 0);
             }
 
             using (var _w3 = DebugDraw3D.NewScopedConfig().SetNoDepthTest(true).SetTextOutlineColor(Colors.IndianRed).SetTextOutlineSize(6))

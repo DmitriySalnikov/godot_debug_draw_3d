@@ -448,11 +448,16 @@ func _draw_other_world():
 	if draw_3d_text:
 		var angle = wrapf(Time.get_ticks_msec() / 1000.0, 0, TAU)
 		if true:
-			var _w2 = DebugDraw3D.new_scoped_config().set_text_font(custom_3d_font)
-			DebugDraw3D.draw_text(%OtherWorldBox.global_position + Vector3(cos(angle), -0.25, sin(angle)), "Hello world!", 32, Color.CRIMSON, 0)
+			var _w2 = DebugDraw3D.new_scoped_config() \
+				.set_text_font(custom_3d_font) \
+				.set_text_fixed_size(true)
+			DebugDraw3D.draw_text(%OtherWorldBox.global_position + Vector3(cos(angle), -0.25, sin(angle)), "Hello world!", 40, Color.CRIMSON, 0)
 		
 		if true:
-			var _w3 = DebugDraw3D.new_scoped_config().set_no_depth_test(true).set_text_outline_color(Color.INDIAN_RED).set_text_outline_size(6)
+			var _w3 = DebugDraw3D.new_scoped_config() \
+				.set_no_depth_test(true) \
+				.set_text_outline_color(Color.INDIAN_RED) \
+				.set_text_outline_size(6)
 			DebugDraw3D.draw_text(%OtherWorldBox.global_position + Vector3(cos(angle), +0.25, sin(-angle)), "World without depth", 20, Color.PINK, 0)
 
 
