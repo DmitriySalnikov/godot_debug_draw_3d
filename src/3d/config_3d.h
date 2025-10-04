@@ -21,7 +21,7 @@ public:
 	/**
 	 * Frustum culling mode. You can disable it completely or select the culling accuracy.
 	 */
-	enum FrustumCullingMode : int {
+	enum CullingMode : int {
 		FRUSTUM_DISABLED,
 		FRUSTUM_ROUGH,
 		FRUSTUM_PRECISE,
@@ -31,7 +31,7 @@ private:
 	int32_t geometry_render_layers = 1;
 	bool freeze_3d_render = false;
 	bool visible_instance_bounds = false;
-	FrustumCullingMode frustum_culling_mode = FrustumCullingMode::FRUSTUM_PRECISE;
+	CullingMode frustum_culling_mode = CullingMode::FRUSTUM_PRECISE;
 	real_t frustum_length_scale = 0;
 	bool force_use_camera_from_scene = false;
 	Color line_hit_color = Colors::red;
@@ -71,8 +71,8 @@ public:
 	/**
 	 * Set frustum culling mode.
 	 */
-	void set_frustum_culling_mode(const FrustumCullingMode _mode);
-	FrustumCullingMode get_frustum_culling_mode() const;
+	void set_frustum_culling_mode(const CullingMode _mode);
+	CullingMode get_frustum_culling_mode() const;
 
 	/**
 	 * Change the distance between the Far and Near Planes of the Viewport's Camera3D.
@@ -106,4 +106,4 @@ public:
 	Color get_line_after_hit_color() const;
 };
 
-VARIANT_ENUM_CAST(DebugDraw3DConfig::FrustumCullingMode);
+VARIANT_ENUM_CAST(DebugDraw3DConfig::CullingMode);

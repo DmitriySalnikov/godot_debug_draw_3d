@@ -276,7 +276,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 			}
 #endif
 
-			if (owner->get_config()->get_frustum_culling_mode() != DebugDraw3DConfig::FrustumCullingMode::FRUSTUM_DISABLED) {
+			if (owner->get_config()->get_frustum_culling_mode() != DebugDraw3DConfig::CullingMode::FRUSTUM_DISABLED) {
 				// Convert Array to vector
 				if (frustum_arrays.size()) {
 					for (auto &pair : frustum_arrays) {
@@ -288,7 +288,7 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 							MathUtils::scale_frustum_far_plane_distance(a, pair.second->get_global_transform(), owner->get_config()->get_frustum_length_scale());
 
-							if (owner->get_config()->get_frustum_culling_mode() == DebugDraw3DConfig::FrustumCullingMode::FRUSTUM_PRECISE)
+							if (owner->get_config()->get_frustum_culling_mode() == DebugDraw3DConfig::CullingMode::FRUSTUM_PRECISE)
 								frustum_planes.push_back(a);
 
 							auto cube = MathUtils::get_frustum_cube(a);

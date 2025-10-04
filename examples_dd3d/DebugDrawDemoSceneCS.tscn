@@ -1,12 +1,12 @@
 [gd_scene load_steps=3 format=3 uid="uid://sxtw8fme7g63"]
 
 [ext_resource type="PackedScene" uid="uid://c3sccy6x0ht5j" path="res://examples_dd3d/DebugDrawDemoScene.tscn" id="2"]
-[ext_resource type="Script" path="res://examples_dd3d/DebugDrawDemoSceneCS.cs" id="2_ipqea"]
+[ext_resource type="Script" uid="uid://dnf8ejsrnlvxb" path="res://examples_dd3d/DebugDrawDemoSceneCS.cs" id="2_ipqea"]
 
 [node name="DebugDrawDemoSceneCS" instance=ExtResource("2")]
 script = ExtResource("2_ipqea")
 
-[node name="Settings" parent="." index="23"]
+[node name="Settings" parent="." index="22"]
 switch_to_scene = "res://examples_dd3d/DebugDrawDemoScene.tscn"
 
 [node name="Label" parent="Settings/HBox/VBoxContainer" index="1"]

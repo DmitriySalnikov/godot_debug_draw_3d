@@ -131,7 +131,7 @@ func main_update(delta: float) -> void:
 	
 	# Some property toggles
 	if _is_key_just_pressed(KEY_LEFT):
-		DebugDraw3D.config.frustum_culling_mode = wrapi(DebugDraw3D.config.frustum_culling_mode+1, 0, 3) as DebugDraw3DConfig.FrustumCullingMode
+		DebugDraw3D.config.frustum_culling_mode = wrapi(DebugDraw3D.config.frustum_culling_mode + 1, 0, 3) as DebugDraw3DConfig.CullingMode
 	if _is_key_just_pressed(KEY_UP):
 		DebugDraw3D.config.force_use_camera_from_scene = !DebugDraw3D.config.force_use_camera_from_scene
 	if _is_key_just_pressed(KEY_CTRL):

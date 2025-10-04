@@ -191,7 +191,7 @@ public partial class DebugDrawDemoSceneCS : Node3D
 
         // Some property toggles
         if (_is_key_just_pressed(Key.Left))
-            DebugDraw3D.Config.UseFrustumCulling = !DebugDraw3D.Config.UseFrustumCulling;
+            DebugDraw3D.Config.FrustumCullingMode = (DebugDraw3DConfig.CullingMode)Mathf.Wrap((int)DebugDraw3D.Config.FrustumCullingMode + 1, 0, 3);
 
         if (_is_key_just_pressed(Key.Up))
             DebugDraw3D.Config.ForceUseCameraFromScene = !DebugDraw3D.Config.ForceUseCameraFromScene;
@@ -506,10 +506,12 @@ public partial class DebugDrawDemoSceneCS : Node3D
                 DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
             }
             DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
-            DebugDraw2D.SetText("Left: toggle frustum culling", DebugDraw3D.Config.UseFrustumCulling, 6);
+            DebugDraw2D.SetText("Left: frustum culling mode", frustum_culling_mode_names[(int)DebugDraw3D.Config.FrustumCullingMode], 6);
             DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 7);
         }
     }
+
+    readonly string[] frustum_culling_mode_names = ["Disabled", "Rough", "Precise"];
 
     void _draw_zone_title(Node3D node, string title)
     {

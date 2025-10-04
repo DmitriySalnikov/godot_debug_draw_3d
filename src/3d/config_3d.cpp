@@ -43,18 +43,18 @@ bool DebugDraw3DConfig::is_visible_instance_bounds() const {
 }
 
 void DebugDraw3DConfig::set_use_frustum_culling(const bool &_state) {
-	frustum_culling_mode = _state ? FrustumCullingMode::FRUSTUM_PRECISE : FrustumCullingMode::FRUSTUM_ROUGH;
+	frustum_culling_mode = _state ? CullingMode::FRUSTUM_PRECISE : CullingMode::FRUSTUM_ROUGH;
 }
 
 bool DebugDraw3DConfig::is_use_frustum_culling() const {
-	return frustum_culling_mode != FrustumCullingMode::FRUSTUM_DISABLED;
+	return frustum_culling_mode != CullingMode::FRUSTUM_DISABLED;
 }
 
-void DebugDraw3DConfig::set_frustum_culling_mode(const FrustumCullingMode _mode) {
+void DebugDraw3DConfig::set_frustum_culling_mode(const CullingMode _mode) {
 	frustum_culling_mode = _mode;
 }
 
-DebugDraw3DConfig::FrustumCullingMode DebugDraw3DConfig::get_frustum_culling_mode() const {
+DebugDraw3DConfig::CullingMode DebugDraw3DConfig::get_frustum_culling_mode() const {
 	return frustum_culling_mode;
 }
 
