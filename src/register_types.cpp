@@ -57,7 +57,7 @@ void initialize_debug_draw_3d_module(ModuleInitializationLevel p_level) {
 		ClassDB::register_class<DebugDrawManager>();
 
 		// Since this manager is a node in the scene tree,
-		// it will already be destroyed at the time of cleaning this library.
+		// it will be destroyed at the time of cleaning this library.
 		DebugDrawManager *debug_draw_manager = memnew(DebugDrawManager);
 		debug_draw_manager->init();
 		debug_draw_manager_id = debug_draw_manager->get_instance_id();

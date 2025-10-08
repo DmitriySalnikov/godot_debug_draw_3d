@@ -1,8 +1,8 @@
 diff --git a/binding_generator.py b/binding_generator.py
-index 8442153..c31e40e 100644
+index 765691e..dd21ae9 100644
 --- a/binding_generator.py
 +++ b/binding_generator.py
-@@ -75,6 +75,11 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False, profil
+@@ -202,6 +202,11 @@ def get_file_list(api_filepath, output_dir, headers=False, sources=False):
      with open(api_filepath, encoding="utf-8") as api_file:
          api = json.load(api_file)
  
@@ -15,10 +15,10 @@ index 8442153..c31e40e 100644
  
  
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index d80fafc..91edb81 100644
+index cad14c8..26f500b 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
-@@ -131,6 +131,12 @@ def no_verbose(env):
+@@ -132,6 +132,12 @@ def no_verbose(env):
  
  
  def scons_emit_files(target, source, env):
@@ -31,7 +31,7 @@ index d80fafc..91edb81 100644
      profile_filepath = env.get("build_profile", "")
      if profile_filepath:
          profile_filepath = normalize_path(profile_filepath, env)
-@@ -139,7 +145,7 @@ def scons_emit_files(target, source, env):
+@@ -140,7 +146,7 @@ def scons_emit_files(target, source, env):
      env.Clean(target, [env.File(f) for f in get_file_list(str(source[0]), target[0].abspath, True, True)])
  
      api = generate_trimmed_api(str(source[0]), profile_filepath)
@@ -40,7 +40,7 @@ index d80fafc..91edb81 100644
      env["godot_cpp_gen_dir"] = target[0].abspath
      return files, source
  
-@@ -370,6 +376,10 @@ def options(opts, env):
+@@ -372,6 +378,10 @@ def options(opts, env):
      opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
      opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
  
@@ -51,7 +51,7 @@ index d80fafc..91edb81 100644
      # Add platform options (custom tools can override platforms)
      for pl in sorted(set(platforms + custom_platforms)):
          tool = Tool(pl, toolpath=get_platform_tools_paths(env))
-@@ -494,7 +504,7 @@ def generate(env):
+@@ -554,7 +564,7 @@ def generate(env):
      if not env["threads"]:
          suffix += ".nothreads"
  

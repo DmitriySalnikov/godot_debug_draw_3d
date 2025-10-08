@@ -4,6 +4,7 @@
 #include "common/i_scope_storage.h"
 #include "config_scope_3d.h"
 #include "render_instances_enums.h"
+#include "utils/compiler.h"
 #include "utils/profiler.h"
 
 #include <map>

@@ -21,7 +21,6 @@ src_folder = "src"
 patches_to_apply = [
     "patches/godot_cpp_exclude_unused_classes.patch",  # Removes unused godot-cpp classes from the build process
     "patches/unity_build.patch",  # Speeds up the build by merging the source files. It can increase the size of assemblies.
-    "patches/big_int_fix.patch",  # Fixes runtime link errors
 ]
 
 print(
@@ -182,7 +181,7 @@ def get_android_toolchain() -> str:
 env: SConsEnvironment = SConscript("godot-cpp/SConstruct")
 env = env.Clone()
 
-args = ARGUMENTS
+args = SCons.Script.ARGUMENTS
 additional_src = []
 setup_options(env, args)
 setup_defines_and_flags(env, additional_src)
