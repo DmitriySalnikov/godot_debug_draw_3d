@@ -498,15 +498,6 @@ jobs:
           cp -r ${{env.TESTS_PATH}} ${{env.PROJECT_PATH}}/${{env.TESTS_PATH}}
           find ${{env.PROJECT_PATH}} -mindepth 1
 
-      - name: Setup Godot 4.2
-        uses: ./.github/actions/setup_godot
-        id: setup_godot_4_2
-        with:
-          tag: 4.2.2-stable
-          file_suffix: ${{matrix.file_suffix}}
-          download_export_templates: false
-          is_mono: false
-
       - name: Setup Godot 4.3
         uses: ./.github/actions/setup_godot
         id: setup_godot_4_3
@@ -521,6 +512,15 @@ jobs:
         id: setup_godot_4_4
         with:
           tag: 4.4-stable
+          file_suffix: ${{matrix.file_suffix}}
+          download_export_templates: false
+          is_mono: false
+
+      - name: Setup Godot 4.5
+        uses: ./.github/actions/setup_godot
+        id: setup_godot_4_5
+        with:
+          tag: 4.5-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
           is_mono: false
@@ -581,9 +581,9 @@ jobs:
             exit $last_exit_code
           }
 
-          run_tests "${{steps.setup_godot_4_2.outputs.godot}}"
-          echo "::endgroup::"
           run_tests "${{steps.setup_godot_4_3.outputs.godot}}"
           echo "::endgroup::"
           run_tests "${{steps.setup_godot_4_4.outputs.godot}}"
+          echo "::endgroup::"
+          run_tests "${{steps.setup_godot_4_5.outputs.godot}}"
           echo "::endgroup::"
