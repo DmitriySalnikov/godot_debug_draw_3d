@@ -227,3 +227,38 @@ def generate_resources_cpp_h_files(
 
         h_file.write("}\n")
         cpp_file.write("}\n")
+
+
+def generate_docs_cpp_file(text: str, src_folder: str, out_file: str, src_out: list):
+    import zlib
+
+    print(f"Generating docs source '{out_file}':")
+
+    buf = text.encode("utf-8")
+    decomp_size = len(buf)
+    buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+    buf_hash = zlib.crc32(buf)  # hash(buf) is random
+
+    cpp_text = '#include "utils/compiler.h"\n'
+    cpp_text += "GODOT_WARNING_DISABLE()\n"
+    cpp_text += "#include <godot_cpp/godot.hpp>\n"
+    cpp_text += "GODOT_WARNING_RESTORE()\n"
+    cpp_text += "\n"
+    cpp_text += "/*\n"
+    cpp_text += text
+    cpp_text += "*/\n"
+    cpp_text += f"static const unsigned char _doc_data_compressed[{len(buf)}] = {{"
+    for i in range(len(buf)):
+        if i % 32 == 0:
+            cpp_text += "\n\t"
+        cpp_text += str(buf[i]) + ","
+        if i == len(buf) - 1:
+            cpp_text += "\n"
+    cpp_text += "};\n"
+    cpp_text += "\n"
+    cpp_text += f'static godot::internal::DocDataRegistration _doc_data_registration("{buf_hash}", {decomp_size}, {len(buf)}, _doc_data_compressed);\n'
+
+    src_path = os.path.join("gen", out_file)
+    src_out.append(src_path)
+    write_all_text(os.path.join(src_folder, src_path), cpp_text)
+    print()

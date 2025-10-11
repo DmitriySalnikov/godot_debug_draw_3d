@@ -4,7 +4,7 @@ from SCons.Script import SConscript
 from SCons.Script.SConscript import SConsEnvironment
 
 import SCons, SCons.Script
-import sys, os, platform
+import sys, os, platform, re
 import lib_utils, lib_utils_external
 
 # Fixing the encoding of the console
@@ -132,18 +132,93 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out):
     print()
 
 
+def generate_doc_links():
+    from xml.dom import minidom
+
+    lib_version = lib_utils.get_library_version()
+    docs_map = {
+        "DebugDraw2D": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw2D.html",
+            "header": "src/2d/debug_draw_2d.h",
+        },
+        "DebugDraw2DConfig": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw2DConfig.html",
+            "header": "src/2d/config_2d.h",
+        },
+        "DebugDraw2DStats": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw2DStats.html",
+            "header": "src/2d/stats_2d.h",
+        },
+        "DebugDraw3D": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw3D.html",
+            "header": "src/3d/debug_draw_3d.h",
+        },
+        "DebugDraw3DConfig": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw3DConfig.html",
+            "header": "src/3d/config_3d.h",
+        },
+        "DebugDraw3DScopeConfig": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw3DScopeConfig.html",
+            "header": "src/3d/config_scope_3d.h",
+        },
+        "DebugDraw3DStats": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDraw3DStats.html",
+            "header": "src/3d/stats_3d.h",
+        },
+        "DebugDrawManager": {
+            "link": f"https://dd3d.dmitriysalnikov.ru/docs/{lib_version}/classDebugDrawManager.html",
+            "header": "src/debug_draw_manager.h",
+        },
+    }
+    docs_text = ""
+
+    def get_parent_class(cls):
+        res = re.findall(r"GDCLASS\((.*), (.*)\)", lib_utils.read_all_text(docs_map[cls]["header"]))
+        for m in res:
+            if m[0] == cls:
+                return m[1]
+        raise ModuleNotFoundError
+
+    for k in docs_map:
+        dom = minidom.Document()
+        cls = dom.createElement("class")
+        cls.setAttribute("name", k)
+        cls.setAttribute("inherits", get_parent_class(k))
+        cls.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        cls.setAttribute(
+            "xsi:noNamespaceSchemaLocation", "https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd"
+        )
+        dom.appendChild(cls)
+
+        brief = dom.createElement("brief_description")
+        btxt = dom.createTextNode("DebugDraw3D's Class")
+        brief.appendChild(btxt)
+        cls.appendChild(brief)
+
+        tutor = dom.createElement("tutorials")
+        link = dom.createElement("link")
+        link.setAttribute("title", "Online reference")
+        dtxt = dom.createTextNode(docs_map[k]["link"])
+        link.appendChild(dtxt)
+        tutor.appendChild(link)
+        cls.appendChild(tutor)
+
+        docs_text += dom.toprettyxml(encoding="utf-8").decode("utf-8")
+
+    return docs_text
+
+
 def generate_sources_for_resources(env, src_out):
-    # Array of (path, is_text)
-    editor_files = [
-        ("images/icon_3d_32.png", False),
-    ]
-    lib_utils.generate_resources_cpp_h_files(
-        editor_files,
-        "DD3DEditorResources",
-        src_folder,
-        "editor_resources.gen",
-        src_out if "editor" in env["target"] else [],
-    )
+    if "editor" in env["target"]:
+        # Array of (path, is_text)
+        editor_files = [
+            ("images/icon_3d_32.png", False),
+        ]
+        lib_utils.generate_resources_cpp_h_files(
+            editor_files, "DD3DEditorResources", src_folder, "editor_resources.gen", src_out
+        )
+
+        lib_utils.generate_docs_cpp_file(generate_doc_links(), src_folder, "docs.gen.cpp", src_out)
 
     shared_files = [
         ("src/resources/extendable_meshes.gdshader", True),
