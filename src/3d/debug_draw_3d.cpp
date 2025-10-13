@@ -605,7 +605,7 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3D::new_scoped_config() {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
 	LOCK_GUARD(datalock);
-	static std::atomic<uint64_t> create_counter = 0;
+	static uint64_t create_counter = 0;
 	create_counter++;
 
 	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
@@ -889,13 +889,13 @@ void DebugDraw3D::_save_generated_meshes() {
 #endif
 
 Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
-	if (Math::is_equal_approx(p_dir.x, 0)) {
-		if (Math::is_equal_approx(p_dir.z, 0))
+	if (Math::is_equal_approx(p_dir.x, 0, (real_t)0.00001)) {
+		if (Math::is_equal_approx(p_dir.z, 0, (real_t)0.00001))
 			return Vector3_FORWARD;
 		return Vector3_UP;
-	} else if (Math::is_equal_approx(p_dir.y, 0)) {
+	} else if (Math::is_equal_approx(p_dir.y, 0, (real_t)0.00001)) {
 		return p_dir.normalized().cross(Vector3_UP);
-	} else if (Math::is_equal_approx(p_dir.z, 0)) {
+	} else if (Math::is_equal_approx(p_dir.z, 0, (real_t)0.00001)) {
 		return Vector3_UP;
 	}
 

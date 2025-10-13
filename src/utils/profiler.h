@@ -2,6 +2,8 @@
 
 #ifndef TRACY_ENABLE
 
+#define TracyNoop
+
 #define ZoneNamed(x, y)
 #define ZoneNamedN(x, y, z)
 #define ZoneNamedC(x, y, z)
@@ -17,8 +19,12 @@
 
 #define ZoneText(x, y)
 #define ZoneTextV(x, y, z)
+#define ZoneTextF(x, ...)
+#define ZoneTextVF(x, y, ...)
 #define ZoneName(x, y)
 #define ZoneNameV(x, y, z)
+#define ZoneNameF(x, ...)
+#define ZoneNameVF(x, y, ...)
 #define ZoneColor(x)
 #define ZoneColorV(x, y)
 #define ZoneValue(x)
@@ -53,8 +59,10 @@
 
 #define TracyAlloc(x, y)
 #define TracyFree(x)
+#define TracyMemoryDiscard(x)
 #define TracySecureAlloc(x, y)
 #define TracySecureFree(x)
+#define TracySecureMemoryDiscard(x)
 
 #define TracyAllocN(x, y, z)
 #define TracyFreeN(x, y)
@@ -76,8 +84,10 @@
 
 #define TracyAllocS(x, y, z)
 #define TracyFreeS(x, y)
+#define TracyMemoryDiscardS(x, y)
 #define TracySecureAllocS(x, y, z)
 #define TracySecureFreeS(x, y)
+#define TracySecureMemoryDiscardS(x, y)
 
 #define TracyAllocNS(x, y, z, w)
 #define TracyFreeNS(x, y, z)
@@ -97,6 +107,7 @@
 #define TracySetProgramName(x)
 
 #define TracyFiberEnter(x)
+#define TracyFiberEnterHint(x, y)
 #define TracyFiberLeave
 
 #define ProfiledMutex(type, varname, desc) type varname
