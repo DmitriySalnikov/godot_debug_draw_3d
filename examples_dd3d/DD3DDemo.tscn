@@ -1,6 +1,6 @@
 [gd_scene load_steps=43 format=3 uid="uid://c3sccy6x0ht5j"]
 
-[ext_resource type="Script" uid="uid://ba2ie81p2x3x7" path="res://examples_dd3d/DebugDrawDemoScene.gd" id="1"]
+[ext_resource type="Script" uid="uid://ba2ie81p2x3x7" path="res://examples_dd3d/DD3DDemo.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
 [ext_resource type="Script" uid="uid://b5mdrjubj0lg5" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
 [ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="3_tkhi8"]
@@ -379,7 +379,7 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="DebugDrawDemoScene" type="Node3D"]
+[node name="DD3DDemo" type="Node3D"]
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
@@ -850,7 +850,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme = SubResource("3")
 script = ExtResource("5_31v5h")
-switch_to_scene = "res://examples_dd3d/DebugDrawDemoSceneCS.tscn"
+switch_to_scene = "res://examples_dd3d/DD3DDemoCS.tscn"
 metadata/_edit_lock_ = true
 
 [node name="HBox" type="HBoxContainer" parent="Settings"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://1lhiwf8tgleh"]
 
-[ext_resource type="Script" path="res://examples_dd3d/addon_icon.gd" id="1_bq18y"]
+[ext_resource type="Script" uid="uid://b2lj85riqyno0" path="res://examples_dd3d/addon_icon.gd" id="1_bq18y"]
 
 [sub_resource type="Environment" id="1"]
 background_mode = 1

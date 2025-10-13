@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 
 [Tool]
-public partial class DebugDrawDemoSceneCS : Node3D
+public partial class DD3DDemoCS : Node3D
 {
     Random random = new Random();
 

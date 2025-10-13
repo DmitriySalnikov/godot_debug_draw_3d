@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://sxtw8fme7g63"]
+
+[ext_resource type="PackedScene" uid="uid://c3sccy6x0ht5j" path="res://examples_dd3d/DD3DDemo.tscn" id="2"]
+[ext_resource type="Script" uid="uid://dnf8ejsrnlvxb" path="res://examples_dd3d/DD3DDemoCS.cs" id="2_ipqea"]
+
+[node name="DD3DDemoCS" instance=ExtResource("2")]
+script = ExtResource("2_ipqea")
+
+[node name="Settings" parent="." index="22"]
+switch_to_scene = "res://examples_dd3d/DD3DDemo.tscn"
+
+[node name="Label" parent="Settings/HBox/VBoxContainer" index="1"]
+text = "C# example"
+
+[node name="SwitchLang" parent="Settings/HBox/VBox/SettingsPanel/VBox" index="13"]
+text = "Switch to GDScript"
