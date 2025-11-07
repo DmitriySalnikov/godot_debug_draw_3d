@@ -5,10 +5,10 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 
 ## Screenshots
 
-`DebugDrawDemoScene.tscn` in editor
+`DD3DDemo.tscn` in editor
 ![screenshot_2](/images/screenshot_2.png)
 
-`DebugDrawDemoScene.tscn` in play mode
+`DD3DDemo.tscn` in play mode
 ![screenshot_3](/images/screenshot_3.png)
 
 ## Features

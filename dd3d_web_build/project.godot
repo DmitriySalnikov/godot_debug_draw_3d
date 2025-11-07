@@ -11,8 +11,8 @@ config_version=5
 [application]
 
 config/name="Debug Drawing Utility for Godot"
-run/main_scene="res://examples_dd3d/DebugDrawDemoScene.tscn"
-config/features=PackedStringArray("4.3", "GL Compatibility")
+run/main_scene="uid://c3sccy6x0ht5j"
+config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.png"
 config/no_csharp_support=true
 
@@ -21,6 +21,10 @@ config/no_csharp_support=true
 buses/default_bus_layout="res://examples_dd3d/VisualizerAudioBus.tres"
 general/default_playback_type.web=0
 driver/output_latency=50
+
+[debug_draw_3d]
+
+settings/addon_root_folder="res://addons/debug_draw_3d"
 
 [dotnet]
 
