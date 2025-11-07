@@ -30,13 +30,16 @@
             "label": "editor_build_double",
             "command": "scons",
             "args": [
+                "custom_api_file=extension_api_double.json",
+                "precision=double",
                 "target=editor",
                 "debug_symbols=yes",
                 "dev_build=yes",
                 "lto=full",
                 //"telemetry_enabled=yes",
-                "precision=double",
                 //"tracy_enabled=yes",
+                //"fix_precision_enabled=no",
+                //"shader_world_coords_enabled=no",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

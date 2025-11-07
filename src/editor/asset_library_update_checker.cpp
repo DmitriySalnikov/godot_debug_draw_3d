@@ -208,8 +208,6 @@ _DebugDraw3DAssetLibraryUpdateChecker::_DebugDraw3DAssetLibraryUpdateChecker() {
 	godot_asset_api = godot_domain + "/asset-library/api/asset/";
 	godot_asset_page = godot_domain + "/asset-library/asset/";
 
-	DEFINE_SETTING_READ_ONLY(root_settings_section + "addon_version", DD3D_VERSION_STR, Variant::STRING);
-	DEFINE_SETTING_READ_ONLY(root_settings_section + "addon_page", godot_asset_page + String::num_int64(addon_id), Variant::STRING);
 	DEFINE_SETTING_AND_GET(bool check_updates, root_settings_section + "check_for_updates", true, Variant::BOOL);
 
 	if (IS_EDITOR_HINT() && check_updates)

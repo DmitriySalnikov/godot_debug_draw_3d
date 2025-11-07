@@ -213,6 +213,8 @@ def generate_sources_for_resources(env, src_out):
         # Array of (path, is_text)
         editor_files = [
             ("images/icon_3d_32.png", False),
+            ("images/boosty_pixel.png", False),
+            ("images/USDT-TRC20_pixel.png", False),
         ]
         lib_utils.generate_resources_cpp_h_files(
             editor_files, "DD3DEditorResources", src_folder, "editor_resources.gen", src_out

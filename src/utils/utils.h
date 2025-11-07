@@ -149,15 +149,6 @@ static String get_file_name_in_repository(const String &name) {
 		PS()->set_initial_value(path, def);                                  \
 	}                                                                        \
 	var = PS()->get_setting(path)
-#define DEFINE_SETTING_READ_ONLY(path, def, type)  \
-	{                                              \
-		PS()->set_setting(path, def);              \
-		Dictionary info;                           \
-		info["name"] = path;                       \
-		info["type"] = type;                       \
-		PS()->add_property_info(info);             \
-		PS()->set_initial_value(path, def);        \
-	}
 
 #define ASSIGN_SINGLETON(class_name)                                         \
 	if (!singleton) {                                                        \

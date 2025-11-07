@@ -151,19 +151,19 @@ godot::String Utils::search_file(const godot::String start_path, const godot::St
 
 void Utils::get_godot_version(int *major, int *minor, int *patch, int *version_sum) {
 	if (major) {
-		static int static_godot_major = (int)Engine::get_singleton()->get_version_info()["major"];
+		static const int static_godot_major = (int)Engine::get_singleton()->get_version_info()["major"];
 		*major = static_godot_major;
 	}
 	if (minor) {
-		static int static_godot_minor = (int)Engine::get_singleton()->get_version_info()["minor"];
+		static const int static_godot_minor = (int)Engine::get_singleton()->get_version_info()["minor"];
 		*minor = static_godot_minor;
 	}
 	if (patch) {
-		static int static_godot_patch = (int)Engine::get_singleton()->get_version_info()["patch"];
+		static const int static_godot_patch = (int)Engine::get_singleton()->get_version_info()["patch"];
 		*patch = static_godot_patch;
 	}
 	if (version_sum) {
-		static int static_godot_version = (((char)(int)Engine::get_singleton()->get_version_info()["major"]) << 3 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["minor"]) << 2 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["patch"]) << 1 * 8);
+		static const int static_godot_version = (((char)(int)Engine::get_singleton()->get_version_info()["major"]) << 3 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["minor"]) << 2 * 8) + (((char)(int)Engine::get_singleton()->get_version_info()["patch"]) << 1 * 8);
 		*version_sum = static_godot_version;
 	}
 }

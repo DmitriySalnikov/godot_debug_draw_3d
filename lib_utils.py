@@ -200,7 +200,10 @@ def generate_resources_cpp_h_files(
             file_content = None
             if len(input_file_touple) >= 3:
                 file_content = input_file_touple[2]
-            file_name_escaped = input_file_path.replace(".", "_").replace("/", "_").replace("\\", "_").replace(":", "_")
+            
+            file_name_escaped = input_file_path
+            for s in [".", "-", "/", "\\", ":"]:
+                file_name_escaped = file_name_escaped.replace(s, "_")
 
             if is_text:
                 if file_content == None:
