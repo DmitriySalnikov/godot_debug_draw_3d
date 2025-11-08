@@ -1,6 +1,5 @@
 [
   "solid",
   "master",
-  "cpp_api",
-  "build_scripts"
+  "cpp_api"
 ]
