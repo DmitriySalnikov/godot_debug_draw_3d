@@ -40,10 +40,6 @@ Your support adds motivation to develop my public projects.
 * Sphere
 * 3D Text
 
-2D:
-
-* **[Work in progress]**
-
 Overlay:
 
 * Text (with grouping and coloring)

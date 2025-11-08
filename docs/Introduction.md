@@ -30,10 +30,6 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 * Sphere
 * 3D Text
 
-2D:
-
-* **[Work in progress]**
-
 Overlay:
 
 * Text (with grouping and coloring)
