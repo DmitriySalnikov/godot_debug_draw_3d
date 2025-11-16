@@ -53,10 +53,11 @@ Precompiled for:
 * iOS
 * Web (Firefox is supported by Godot 4.3+)
 
-This addon supports working with several World3D and different Viewports.
+This addon supports working with several World3D and different Viewports. [More information](https://dd3d.dmitriysalnikov.ru/docs/?page=md_docs_2SubViewports.html).
+
 There is also a no depth test mode and other settings that can be changed for each instance.
 
-This library supports double-precision builds, for more information, [see the documentation](https://dd3d.dmitriysalnikov.ru/docs/?page=md_docs_2DoublePrecision.html).
+This addon supports double-precision builds, for more information, [see the documentation](https://dd3d.dmitriysalnikov.ru/docs/?page=md_docs_2DoublePrecision.html).
 
 ## [Interactive Web Demo](https://dd3d.dmitriysalnikov.ru/demo/)
 
@@ -146,7 +147,7 @@ The entire text overlay can only be placed in one corner.
 
 ## Usage Analytics
 
-This add-on collects anonymous statistics on **editor** usage time. The data includes the library version, engine version, operating system, system architecture, and locale. No personally identifiable information is gathered.
+This addon collects anonymous statistics on **editor** usage time. The data includes the library version, engine version, operating system, system architecture, and locale. No personally identifiable information is gathered.
 
 Libraries without **editor** support do not collect statistics in any way. Also, previews running in the editor do not collect any usage statistics.
 

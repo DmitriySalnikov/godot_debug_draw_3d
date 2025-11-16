@@ -43,10 +43,11 @@ Precompiled for:
 * iOS
 * Web (Firefox is supported by Godot 4.3+)
 
-This addon supports working with several World3D and different Viewports.
+This addon supports working with several World3D and different Viewports. [More information](SubViewports.md).
+
 There is also a no depth test mode and other settings that can be changed for each instance.
 
-This library supports double-precision builds, for more information, see [Double Precision](DoublePrecision.md).
+This addon supports double-precision builds, for more information, see [Double Precision](DoublePrecision.md).
 
 ## Download
 

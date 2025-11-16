@@ -1,0 +1,116 @@
+[gd_scene load_steps=9 format=3 uid="uid://4pqund3nukl7"]
+
+[sub_resource type="GDScript" id="GDScript_y32ns"]
+script/source = "@tool
+extends Node3D
+
+@export var frustum_enabled = true:
+	set(val):
+		frustum_enabled = val
+		DebugDraw3D.config.frustum_culling_mode = DebugDraw3DConfig.FRUSTUM_PRECISE if val else DebugDraw3DConfig.FRUSTUM_DISABLED
+
+func _enter_tree() -> void:
+	DebugDraw3D.config.force_use_camera_from_scene = true
+
+func _exit_tree() -> void:
+	DebugDraw3D.config.force_use_camera_from_scene = false
+
+func _process(_delta: float) -> void:
+	var curve := $Path3D.curve as Curve3D
+	var points = curve.get_baked_points()
+	var ups = curve.get_baked_up_vectors()
+	var lines = PackedVector3Array()
+	lines.resize(points.size() * 2)
+	
+	for i in range(points.size()):
+		lines[i * 2] = points[i]
+		lines[i * 2 + 1] = points[i] + ups[i]
+	
+	DebugDraw3D.draw_lines(lines, Color.YELLOW)
+
+
+func _on_check_box_toggled(toggled_on: bool) -> void:
+	self.frustum_enabled = toggled_on
+"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wtcfe"]
+sky_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+ground_horizon_color = Color(0.66224277, 0.6717428, 0.6867428, 1)
+
+[sub_resource type="Sky" id="Sky_0e48y"]
+sky_material = SubResource("ProceduralSkyMaterial_wtcfe")
+
+[sub_resource type="Environment" id="Environment_epypp"]
+background_mode = 2
+sky = SubResource("Sky_0e48y")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_epypp"]
+albedo_color = Color(0.3506754, 0.23276979, 0.12343951, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_0hol4"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_0e48y"]
+
+[sub_resource type="Curve3D" id="Curve3D_q6r6c"]
+bake_interval = 0.11
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -5.531494, 0, -6.0880256, -5.817918, 0, -1.5365419, 5.817918, 0, 1.5365419, 2.5486827, 0, -8.88616, 0.8259964, 0, -2.056702, -0.8259964, 0, 2.056702, 8.37335, 0, -1.2475368, 4.7892456, 0, -0.3038473, -4.7892456, 0, 0.3038473, 0.88138366, 0, 2.1438887, -0.7307973, 0, -1.7408733, 0.7307973, 0, 1.7408733, -5.501097, 0, 8.557644, -2.1005936, 0, 0.22366333, 2.1005936, 0, -0.22366333, 0, 0, 11),
+"tilts": PackedFloat32Array(0, 0.09319421, 0, 0, 0, 0)
+}
+point_count = 6
+
+[node name="DD3D_SubViewportDemo" type="Node3D"]
+script = SubResource("GDScript_y32ns")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_epypp")
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+transform = Transform3D(9.821215, 0, 0, 0, 1, 0, 0, 0, 11.795109, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_epypp")
+mesh = SubResource("PlaneMesh_0hol4")
+metadata/_edit_lock_ = true
+
+[node name="Player" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.9217549, 0, -0.387773, 0, 1, 0, 0.387773, 0, 0.9217549, 0, 1.1781173, 0)
+mesh = SubResource("CapsuleMesh_0e48y")
+skeleton = NodePath("")
+
+[node name="Node3D" type="Node3D" parent="Player"]
+transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, 1.569, 2.551)
+
+[node name="Camera3D" type="Camera3D" parent="Player/Node3D"]
+transform = Transform3D(1, 0, 0, 0, 0.9277516, 0.37319833, 0, -0.37319833, 0.9277516, 0, 0, 0)
+current = true
+
+[node name="Path3D" type="Path3D" parent="."]
+curve = SubResource("Curve3D_q6r6c")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+offset_right = 356.0
+offset_bottom = 335.0
+stretch = true
+
+[node name="MyViewport" type="SubViewport" parent="SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(356, 335)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="SubViewportContainer/MyViewport"]
+transform = Transform3D(0.7890948, -0.46304747, 0.40362903, -1.3314483e-08, 0.65708584, 0.7538156, -0.6142715, -0.5948321, 0.51850295, 6.8549986, 9.895414, 9.748488)
+
+[node name="CheckBox" type="CheckBox" parent="."]
+offset_left = 104.0
+offset_top = 305.0
+offset_right = 252.0
+offset_bottom = 336.0
+button_pressed = true
+text = "frustum culling"
+
+[connection signal="toggled" from="CheckBox" to="." method="_on_check_box_toggled"]
