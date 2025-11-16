@@ -10,7 +10,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=11" />
   <meta name="generator" content="Doxygen 1.14.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Debug Draw 3D: Exporting a project</title>
+  <title>Debug Draw 3D: SubViewports</title>
   <link href="tabs.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
@@ -94,7 +94,7 @@ $(function() {
   </div>
 </div>
 <script type="text/javascript">
-$(function(){initNavTree('md_docs_2Export.html','',''); });
+$(function(){initNavTree('md_docs_2SubViewports.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
@@ -120,21 +120,38 @@ $(function(){initNavTree('md_docs_2Export.html','',''); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Exporting a project </div></div>
+  <div class="headertitle"><div class="title">SubViewports </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md14"></a></p>
-<p>Most likely, when exporting a release version of a game, you don't want to export the debug library along with it. But since there is still no <span class="tt">Conditional Compilation</span> in <span class="tt">GDScript</span>, so I decided to create a <span class="tt">dummy</span> library that has the same API as a regular library, but has minimal impact on performance, even if calls to its methods occur. The <span class="tt">dummy</span> library is used by default in the release version.</p>
-<p>However if you need to use debug rendering in the release version, then you can add the <span class="tt">forced_dd3d</span> feature when exporting. In this case, the release library with all the functionality will be used.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md12"></a></p>
+<p>If you use <span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> in <span class="tt">SubViewport</span>s, then you need to use <a class="el" href="classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277">DebugDraw3DScopeConfig.set_viewport</a> to explicitly specify the viewport in which debug information will be drawn.</p>
+<p>This will allow the add-on to find the correct camera that will be used for frustum culling.</p>
+<div class="fragment"><div class="line">func _process(delta) -&gt; void:</div>
+<div class="line">    <span class="comment"># Create a scoped config with explicit viewport specification.</span></div>
+<div class="line">    var _s = <a class="code hl_function" href="classDebugDraw3D.html#a634f471de18ba07b4ff83182577215e5">DebugDraw3D.new_scoped_config</a>().set_viewport(%MyViewport)</div>
+<div class="line">    <span class="comment"># Also, if the script is attached to a Node inside this Viewport,</span></div>
+<div class="line">    <span class="comment"># you can use the get_viewport() function of that Node.</span></div>
+<div class="line">    var _s2 = <a class="code hl_function" href="classDebugDraw3D.html#a634f471de18ba07b4ff83182577215e5">DebugDraw3D.new_scoped_config</a>().set_viewport(get_viewport())</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE, Color.RED)</div>
+<div class="ttc" id="aclassDebugDraw3D_html_a5a6b00c854cfb3c1f480eb4d2a8977d2"><div class="ttname"><a href="classDebugDraw3D.html#a5a6b00c854cfb3c1f480eb4d2a8977d2">DebugDraw3D::draw_box</a></div><div class="ttdeci">void draw_box(const Vector3 &amp;position, const Quaternion &amp;rotation, const Vector3 &amp;size, const Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
+<div class="ttc" id="aclassDebugDraw3D_html_a634f471de18ba07b4ff83182577215e5"><div class="ttname"><a href="classDebugDraw3D.html#a634f471de18ba07b4ff83182577215e5">DebugDraw3D::new_scoped_config</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; new_scoped_config()</div></div>
+</div><!-- fragment --><p>If you are using <span class="tt">SubViewport</span> to render the entire scene, you can use <a class="el" href="classDebugDraw3D.html#a827362cf4d4cafe6e4b704cb848113b5">DebugDraw3D.scoped_config</a> so that you don't have to specify it every time.</p>
+<p>Just call this function once right after loading your viewport:</p>
+<div class="fragment"><div class="line">func _enter_tree() -&gt; void:</div>
+<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a827362cf4d4cafe6e4b704cb848113b5">DebugDraw3D.scoped_config</a>().set_viewport(%MyViewport)</div>
+<div class="ttc" id="aclassDebugDraw3D_html_a827362cf4d4cafe6e4b704cb848113b5"><div class="ttname"><a href="classDebugDraw3D.html#a827362cf4d4cafe6e4b704cb848113b5">DebugDraw3D::scoped_config</a></div><div class="ttdeci">Ref&lt; DebugDraw3DScopeConfig &gt; scoped_config() override</div></div>
+</div><!-- fragment --><p><a class="el" href="classDebugDraw3DScopeConfig.html#aa5cc8163e120284dc83f2b8e46534277">DebugDraw3DScopeConfig.set_viewport</a> also takes into account the <span class="tt">own_world_3d</span> parameter of the <span class="tt">SubViewport</span>, so that debug information will be drawn in the selected world.</p>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md13"></a>
+Split screen</h1>
+<p>If you are using split screen or somehow viewing the same location through multiple Viewports, then you should disable frustum culling to avoid issues with disappearing objects.</p>
+<p>To do this, use <a class="el" href="classDebugDraw3DConfig.html#acb401d2c43e8597c6a0f96a7932fd326">DebugDraw3DConfig.set_frustum_culling_mode</a>:</p>
+<div class="fragment"><div class="line">func _enter_tree() -&gt; void:</div>
+<div class="line">    DebugDraw3D.config.frustum_culling_mode = DebugDraw3DConfig.FRUSTUM_DISABLED</div>
+</div><!-- fragment --><p>This is how <span class="tt">DD3DDemoSubViewport.tscn</span> looks with <span class="tt">frustum_culling_mode</span> enabled (<span class="tt">FRUSTUM_PRECISE</span>) and disabled (<span class="tt">FRUSTUM_DISABLED</span>).</p>
 <div class="image">
-<img src="export_features.png" alt=""/>
+<img src="subviewport_demo.jpg" alt=""/>
 </div>
-    <p>In C#, these tags are not taken into account at compile time, so the Release build will use Runtime checks to disable draw calls. If you want to avoid this, you can manually specify the <span class="tt">FORCED_DD3D</span> symbol.</p>
-<div class="image">
-<img src="csharp_compilation_symbols.png" alt=""/>
-</div>
-    <dl class="section note"><dt>Note</dt><dd>Though it's still best that these calls don't happen at all. In the future, it is possible that the dependency on the native library in the release version will be removed and replaced by dummy GDScript. </dd></dl>
-</div></div><!-- contents -->
+     </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 </div><!-- container -->
