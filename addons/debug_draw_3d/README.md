@@ -144,6 +144,14 @@ The entire text overlay can only be placed in one corner.
 
 [Frustum of Camera3D does not take into account the window size from ProjectSettings](https://github.com/godotengine/godot/issues/70362).
 
+## Usage Analytics
+
+This add-on collects anonymous statistics on **editor** usage time. The data includes the library version, engine version, operating system, system architecture, and locale. No personally identifiable information is gathered.
+
+Libraries without **editor** support do not collect statistics in any way. Also, previews running in the editor do not collect any usage statistics.
+
+You can disable this in the editor settings at: `debug_draw_3d/settings/telemetry_state`.
+
 ## More screenshots
 
 `DD3DDemo.tscn` in editor
