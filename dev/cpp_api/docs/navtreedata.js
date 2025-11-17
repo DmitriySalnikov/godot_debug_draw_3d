@@ -24,7 +24,7 @@
 */
 var NAVTREE =
 [
-  [ "Debug Draw 3D (and 2D)", "index.html", [
+  [ "Debug Draw 3D", "index.html", [
     [ "Introduction", "index.html#autotoc_md0", [
       [ "Screenshots", "index.html#autotoc_md1", null ],
       [ "Features", "index.html#autotoc_md2", null ],
@@ -40,17 +40,21 @@ var NAVTREE =
       [ "Scope configs", "md_docs_2Examples.html#autotoc_md10", null ],
       [ "Project Settings", "md_docs_2Examples.html#autotoc_md11", null ]
     ] ],
+    [ "SubViewports", "md_docs_2SubViewports.html", [
+      [ "Split screen", "md_docs_2SubViewports.html#autotoc_md13", null ]
+    ] ],
     [ "Exporting a project", "md_docs_2Export.html", null ],
     [ "Build", "md_docs_2Build.html", [
-      [ "JavaScript/Web build", "md_docs_2Build.html#autotoc_md14", null ]
+      [ "JavaScript/Web build", "md_docs_2Build.html#autotoc_md16", null ]
     ] ],
     [ "Double Precision", "md_docs_2DoublePrecision.html", [
-      [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md16", [
-        [ "fix_precision_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md17", null ],
-        [ "shader_world_coords_enabled=yes|no (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md18", null ]
+      [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md18", [
+        [ "<span class=\"tt\">fix_precision_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md19", null ],
+        [ "<span class=\"tt\">shader_world_coords_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md20", null ]
       ] ],
-      [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md19", null ]
+      [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md21", null ]
     ] ],
+    [ "Deprecated List", "deprecated.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
@@ -73,3 +77,4 @@ var NAVTREEINDEX =
 
 var SYNCONMSG = 'click to disable panel synchronization';
 var SYNCOFFMSG = 'click to enable panel synchronization';
+var LISTOFALLMEMBERS = 'List of all members';

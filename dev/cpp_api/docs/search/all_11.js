@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['web_20build_0',['JavaScript/Web build',['../md_docs_2Build.html#autotoc_md14',1,'']]]
+  ['yes_0',['yes',['../md_docs_2DoublePrecision.html#autotoc_md19',1,'<span class="tt">fix_precision_enabled=yes|no</span> (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md20',1,'<span class="tt">shader_world_coords_enabled=yes|no</span> (default: yes)']]],
+  ['yes_20no_20default_3a_20yes_1',['yes no default: yes',['../md_docs_2DoublePrecision.html#autotoc_md19',1,'<span class="tt">fix_precision_enabled=yes|no</span> (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md20',1,'<span class="tt">shader_world_coords_enabled=yes|no</span> (default: yes)']]]
 ];
