@@ -7,6 +7,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/font.hpp>
 #include <godot_cpp/classes/random_number_generator.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
@@ -46,7 +47,7 @@ void DD3DTestCppApiNode::_ready() {
 	cfg->set_frustum_culling_mode(DebugDraw3DConfig::FRUSTUM_ROUGH);
 	DebugDraw3D::set_config(cfg);
 	auto cfg2 = DebugDraw3D::get_config();
-	
+
 	DEV_ASSERT(cfg2->get_frustum_culling_mode() == DebugDraw3DConfig::FRUSTUM_ROUGH);
 	DEV_ASSERT(cfg2->is_visible_instance_bounds() == true);
 	UtilityFunctions::print("New Visible bounds: ", cfg2->is_visible_instance_bounds());
@@ -54,13 +55,31 @@ void DD3DTestCppApiNode::_ready() {
 	DEV_ASSERT(cfg2->is_visible_instance_bounds() == false);
 	UtilityFunctions::print("New Visible bounds: ", cfg2->is_visible_instance_bounds());
 
-	// signature must not use ENUM::T
+	// TODO: signature must not use ENUM::T
 	auto cfg2D = DebugDraw2D::get_config();
 	auto pos = cfg2D->get_text_block_position();
 	cfg2D->set_text_block_position(pos);
 
-	// TODO: get and set Ref<Font>
-
+	// Ref's
+	{
+		Ref<godot::Font> font1;
+		{
+			auto *ctrl = memnew(Control);
+			add_child(ctrl);
+			font1 = ctrl->get_theme_default_font();
+			ctrl->queue_free();
+		}
+		auto font_id = font1->get_instance_id();
+		Ref<godot::Font> font2(ObjectDB::get_instance(font_id));
+		
+		DEV_ASSERT(font1->get_instance_id() == font2->get_instance_id());
+		DEV_ASSERT(font1.ptr() == font2.ptr());
+		
+		auto _fnt1 = DebugDraw3D::new_scoped_config()->set_text_font(font1);
+		DEV_ASSERT(font1->get_instance_id() == _fnt1->get_text_font()->get_instance_id());
+		DEV_ASSERT(_fnt1->get_text_font()->get_ascent());
+	}
+		
 #ifdef DEV_ENABLED
 	DebugDrawManager::api_test6(nullptr, Variant(), false, 1, DebugDrawManager::SECOND_VALUE, 0.5f, "test", "test2", "test3");
 #endif

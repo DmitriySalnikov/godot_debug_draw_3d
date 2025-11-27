@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# godot::Ref<T> is used for Godot types
+# Ref<godot::T> or godot::Ref<godot::T> is used for Godot types
 # and Ref<T> is for DD3D classes
 
 # TODO: add tests to CI
@@ -232,6 +232,13 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         ret_type = "void"
                         is_self_return = True
 
+                c_ret_type = ret_type
+                ret_ref_class = ""
+                ret_type_match = re.search(r"Ref\<(godot\:\:\w*)\>", ret_type)
+                if ret_type_match:
+                    c_ret_type = "const uint64_t"
+                    ret_ref_class = ret_type_match.group(1).strip()
+
                 # get all args even in one-line functions
                 cbrace_end = line.rfind("{")
                 args_str = line[
@@ -240,7 +247,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 args = []
 
                 if not is_singleton:
-                    args.append("void *inst")
+                    args.append("void *inst_ptr")
 
                 if len(args_str):
                     # args = [a.strip() for a in args]
@@ -297,17 +304,32 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         new_dict["c_type"] = new_dict["type"].replace("&", "").strip()
 
                     tmp_type = new_dict["type"]
-                    if new_dict["name"] != "inst" and tmp_type != "void *" and tmp_type.endswith("*"):
+                    ref_type_match = re.search(r"Ref\<(godot\:\:\w*)\>", tmp_type)
+
+                    if ref_type_match:
+                        new_dict["type"] = tmp_type
+                        new_dict["c_type"] = "const uint64_t"
+                        new_dict["ref_class"] = ref_type_match.group(1).strip()
+                        print("\t\tFound Godot's Ref type:", tmp_type)
+                    elif new_dict["name"] != "inst_ptr" and tmp_type != "void *" and tmp_type.endswith("*"):
                         new_dict["type"] = "const uint64_t"
                         new_dict["c_type"] = "const uint64_t"
                         new_dict["object_class"] = (
                             tmp_type.replace("const ", "").replace("class ", "").replace("*", "").strip()
                         )
+                        print("\t\tFound Godot's Object* type:", tmp_type)
 
                     args_dict.append(new_dict)
 
+                ret_dict = {
+                    "type": ret_type,
+                    "c_type": c_ret_type,
+                }
+                if len(ret_ref_class):
+                    ret_dict["ref_class"] = ret_ref_class
+
                 fun_dict = {
-                    "return": ret_type,
+                    "return": ret_dict,
                     "self_return": is_self_return,
                     "args": args_dict,
                     "name": func_name,
@@ -347,31 +369,31 @@ def generate_native_api(
         new_funcs.append("")
         new_funcs.append(f"static std::unordered_set<{cls}_NAPIWrapper*> {cls}_NAPIWrapper_storage;")
         new_funcs.append("")
-        new_funcs.append(f"static void* {cls}_create() {{")
+        new_funcs.append(f'extern "C" static void* {cls}_create() {{')
         new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
-        new_funcs.append("\treturn inst;")
+        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};")
+        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
+        new_funcs.append("\treturn inst_ptr;")
         new_funcs.append("};")
         new_funcs.append("")
-        new_funcs.append(f"static void* {cls}_create_nullptr() {{")
+        new_funcs.append(f'extern "C" static void* {cls}_create_nullptr() {{')
         new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
-        new_funcs.append("\treturn inst;")
+        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{}};")
+        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
+        new_funcs.append("\treturn inst_ptr;")
         new_funcs.append("};")
         new_funcs.append("")
         new_funcs.append(f"static void* {cls}_create_from_ref(Ref<{cls}> ref) {{")
         new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst = new {cls}_NAPIWrapper{{ref}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst);")
-        new_funcs.append("\treturn inst;")
+        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{ref}};")
+        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
+        new_funcs.append("\treturn inst_ptr;")
         new_funcs.append("};")
         new_funcs.append("")
-        new_funcs.append(f"static void {cls}_destroy(void *inst) {{")
+        new_funcs.append(f'extern "C" static void {cls}_destroy(void *inst_ptr) {{')
         new_funcs.append("\tZoneScoped;")
         new_funcs.append(
-            f"\tif (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst)); it != {cls}_NAPIWrapper_storage.end()){{"
+            f"\tif (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst_ptr)); it != {cls}_NAPIWrapper_storage.end()){{"
         )
         new_funcs.append(f"\t\t{cls}_NAPIWrapper_storage.erase(it);")
         new_funcs.append(f"\t\tdelete *it;")
@@ -407,7 +429,8 @@ def generate_native_api(
         for func_name in functions:
             func = functions[func_name]
             func_orig_name = func["name"]
-            ret_type = func["return"]
+            ret = func["return"]
+            ret_type = ret["c_type"]
             self_ret = func["self_return"]
             is_ret_custom_ref = is_ref_in_api(ret_type)
 
@@ -415,14 +438,19 @@ def generate_native_api(
 
             # TODO: convert godot::Variant's to void* with _native_ptr
             # TODO: convert godot::String's to something. mb Variant?
+            # TODO: or just use const char* utf8 strings
 
             # TODO: and do the same to other complex types.
             # TODO: or add a new functions with raw pointers with data (e.g. Vector3* points)
+
+            # TODO: replace of the basic godot's types with C Structs
             def process_arg_defines(arg: dict):
                 type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"void *{name}"
+                if "ref_class" in arg:
+                    return f"{type} /*{arg['ref_class']}*/ {name}"
                 if "object_class" in arg:
                     return f"{type} /*{arg['object_class']}*/ {name}"
                 return f"{type} {name}"
@@ -432,6 +460,8 @@ def generate_native_api(
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"static_cast<{get_ref_class_name(type)}_NAPIWrapper*>({name})->ref"
+                if "ref_class" in arg:
+                    return f"godot::Ref<{arg['ref_class']}>(godot::Object::cast_to<{arg['ref_class']}>(godot::ObjectDB::get_instance({name})))"
                 if "object_class" in arg:
                     return f"godot::Object::cast_to<{arg['object_class']}>(godot::ObjectDB::get_instance({name}))"
                 return f"{name}"
@@ -439,31 +469,34 @@ def generate_native_api(
             # func define
             new_func_define_args = ", ".join([process_arg_defines(a) for a in args])
             new_funcs.append(
-                f'static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
+                f'extern "C" static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
             )
             new_funcs.append("\tZoneScoped;")
 
+            def process_ret_calls(line: str, ret: dict):
+                if "ref_class" in ret:
+                    return f"{line}->get_instance_id()"
+                return line
+
             if is_singleton:
                 call_args = ", ".join([process_arg_calls(a) for a in args])
+                ret_str = f"{cls}::get_singleton()->{func_orig_name}({call_args})"
 
                 if ret_type != "void":
                     if is_ret_custom_ref:
-                        new_funcs.append(
-                            f"\treturn {get_ref_class_name(ret_type)}_create_from_ref({cls}::get_singleton()->{func_orig_name}({call_args}));"
-                        )
+                        new_funcs.append(f"\treturn {get_ref_class_name(ret_type)}_create_from_ref({ret_str});")
                     else:
-                        new_funcs.append(f"\treturn {cls}::get_singleton()->{func_orig_name}({call_args});")
+                        new_funcs.append(f"\treturn {process_ret_calls(ret_str, ret)};")
                 else:
-                    new_funcs.append(f"\t{cls}::get_singleton()->{func_orig_name}({call_args});")
+                    new_funcs.append(f"\t{ret_str};")
             else:
                 call_args = ", ".join([process_arg_calls(a) for a in args[1:]])
+                ret_str = f"static_cast<{cls}_NAPIWrapper*>(inst_ptr)->ref->{func_orig_name}({call_args})"
 
                 if ret_type != "void":
-                    new_funcs.append(
-                        f"\treturn static_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({call_args});"
-                    )
+                    new_funcs.append(f"\treturn {process_ret_calls(ret_str, ret)};")
                 else:
-                    new_funcs.append(f"\tstatic_cast<{cls}_NAPIWrapper*>(inst)->ref->{func_orig_name}({call_args});")
+                    new_funcs.append(f"\t{ret_str};")
             new_funcs.append("}")
             new_funcs.append("")
 
@@ -542,23 +575,23 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
         if cls_is_class:
             con_lines = []
-            con_lines.append(f"{cls_indent}void *inst;")
+            con_lines.append(f"{cls_indent}void *inst_ptr;")
             con_lines.append("")
             con_lines.append(f"public:")
-            con_lines.append(f"{cls_indent}{cls}(void *inst) :")
-            con_lines.append(f"{cls_indent}\t\tinst(inst) {{}}")
+            con_lines.append(f"{cls_indent}{cls}(void *inst_ptr) :")
+            con_lines.append(f"{cls_indent}\t\tinst_ptr(inst_ptr) {{}}")
             con_lines.append("")
             con_lines.append(f"{cls_indent}{cls}(bool instantiate = true) :")
-            con_lines.append(f"{cls_indent}\t\tinst(instantiate ? create() : create_nullptr()) {{}}")
+            con_lines.append(f"{cls_indent}\t\tinst_ptr(instantiate ? create() : create_nullptr()) {{}}")
             con_lines.append("")
-            con_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst); }}")
+            con_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst_ptr); }}")
             con_lines.append("")
-            con_lines.append(f"{cls_indent}operator void *() const {{ return inst; }}")
+            con_lines.append(f"{cls_indent}operator void *() const {{ return inst_ptr; }}")
             con_lines.append("")
             namespaces[cls] += con_lines
 
             functions[f"{cls}_create"] = {
-                "return": "void *",
+                "return": {"type": "void *", "c_type": "void *"},
                 "self_return": False,
                 "args": [],
                 "name": "create",
@@ -567,7 +600,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             }
 
             functions[f"{cls}_create_nullptr"] = {
-                "return": "void *",
+                "return": {"type": "void *", "c_type": "void *"},
                 "self_return": False,
                 "args": [],
                 "name": "create_nullptr",
@@ -576,11 +609,11 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             }
 
             functions[f"{cls}_destroy"] = {
-                "return": "void",
+                "return": {"type": "void", "c_type": "void"},
                 "self_return": False,
                 "args": [
                     {
-                        "name": "inst",
+                        "name": "inst_ptr",
                         "type": "void *",
                         "c_type": "void *",
                     },
@@ -597,13 +630,14 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             func: dict = functions[func_name]
             func_orig_name = func["name"]
             ret = func["return"]
+            ret_type = ret["c_type"]
             args = func["args"]
             self_ret = func["self_return"]
             is_private = func.get("private", False)
 
             if self_ret:
-                if ret == "void":
-                    ret = f"std::shared_ptr<{cls}>"
+                if ret_type == "void":
+                    ret_type = f"std::shared_ptr<{cls}>"
 
                 is_class_has_selfreturn[cls] = True
 
@@ -631,15 +665,25 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             def get_ref_to_native_name(ret_type: str):
                 if is_ref_in_api(ret_type):
                     return f"std::shared_ptr<{get_ref_class_name(ret_type)}>"
+                if "ref_class" in ret:
+                    return f"godot::Ref<{ret['ref_class']}>"
                 return ret_type
 
             def process_arg_defines(arg: dict):
-                type = arg["type"]
-                name = arg["name"]
+                type = arg["c_type"].strip()
+                name = arg["name"].strip()
                 res = f"{type} {name}"
 
+                if not type.endswith("*"):
+                    res = f"{type} &{name}"
+
+                if not res.startswith("const ") and not type.endswith("*"):
+                    res = "const " + res
+
                 if is_ref_in_api(type):
-                    res = f"std::shared_ptr<{get_ref_class_name(type)}> {name}"
+                    res = f"const std::shared_ptr<{get_ref_class_name(type)}> &{name}"
+                if "ref_class" in arg:
+                    res = f"const godot::Ref<{arg['ref_class']}> &{name}"
                 if "object_class" in arg:
                     res = f"const {arg['object_class']} * {name}"
 
@@ -662,6 +706,8 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"*{name}"
+                if "ref_class" in arg:
+                    return f"{name}.is_valid() ? {name}->get_instance_id() : 0"
                 if "object_class" in arg:
                     return f"{name} ? {name}->get_instance_id() : 0"
                 return f"{name}"
@@ -681,35 +727,40 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             new_lines += docs
 
-            # Name
+            # Function Declaration
             if cls_is_class and not is_private:
                 inner_args = ", ".join([process_arg_defines(a) for a in args[1:]])
                 new_lines.append(
-                    f'{cls_indent}{get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                    f'{cls_indent}{get_ref_to_native_name(ret_type)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
                 )
             else:
                 inner_args = ", ".join([process_arg_defines(a) for a in args])
                 new_lines.append(
-                    f'{cls_indent}static {get_ref_to_native_name(ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                    f'{cls_indent}static {get_ref_to_native_name(ret_type)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
                 )
 
             # Func pointer
             new_lines.append(
-                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret)}(*{func_name})({", ".join([process_arg_ptr_defines(a) for a in args])}) = nullptr;'
+                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_ptr_defines(a) for a in args])}) = nullptr;'
             )
 
-            def_ret_val = get_default_ret_val(ret)
+            def_ret_val = get_default_ret_val(ret_type)
             call_args = ", ".join([process_arg_calls(a) for a in args])
 
-            if ret != "void" and not self_ret:
-                if is_ref_in_api(ret):
+            if ret_type != "void" and not self_ret:
+                if is_ref_in_api(ret_type):
                     new_lines.append(
-                        f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret)}, {def_ret_val}{", " if len(args) else ""}{call_args});'
+                        f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret_type)}, {def_ret_val}{", " if len(args) else ""}{call_args});'
                     )
                 else:
-                    new_lines.append(
-                        f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{", " if len(args) else ""}{call_args});'
-                    )
+                    if "ref_class" in ret:
+                        new_lines.append(
+                            f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{", " if len(args) else ""}{call_args});'
+                        )
+                    else:
+                        new_lines.append(
+                            f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{", " if len(args) else ""}{call_args});'
+                        )
             else:
                 if self_ret:
                     new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}, {call_args});")

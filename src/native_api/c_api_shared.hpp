@@ -34,7 +34,7 @@ private:
 			oss << "const ";
 		}
 		if constexpr (std::is_reference<U>::value) {
-			oss << getTypeName<std::remove_reference_t<U> >() << "&";
+			oss << getTypeName<std::remove_reference_t<U>>() << "&";
 		} else {
 			oss << typeid(U).name();
 		}

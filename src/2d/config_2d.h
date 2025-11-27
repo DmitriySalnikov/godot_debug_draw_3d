@@ -110,8 +110,8 @@ public:
 	/**
 	 * Custom text Font
 	 */
-	NAPI void set_text_custom_font(const godot::Ref<godot::Font> &_custom_font);
-	NAPI godot::Ref<godot::Font> get_text_custom_font() const;
+	NAPI void set_text_custom_font(const Ref<godot::Font> &_custom_font);
+	NAPI Ref<godot::Font> get_text_custom_font() const;
 };
 
 VARIANT_ENUM_CAST(DebugDraw2DConfig::BlockPosition);

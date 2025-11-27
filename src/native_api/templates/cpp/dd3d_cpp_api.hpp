@@ -140,6 +140,18 @@ struct _DD3D_Loader_ {
 	}                                                            \
 	return _def_ret_val
 
+#define LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF(_name, godot_ref_type, _def_ret_val, ...)                                            \
+	ZoneScoped;                                                                                                                       \
+	if (!_name) {                                                                                                                     \
+		if (!_DD3D_Loader_::load_function(_name, #_name)) {                                                                           \
+			return _def_ret_val;                                                                                                      \
+		}                                                                                                                             \
+	}                                                                                                                                 \
+	if (_name) {                                                                                                                      \
+		return godot::Ref<godot_ref_type>(godot::Object::cast_to<godot_ref_type>(godot::ObjectDB::get_instance(_name(__VA_ARGS__)))); \
+	}                                                                                                                                 \
+	return _def_ret_val
+
 #define LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED(_name, _cls, _def_ret_val, ...) \
 	ZoneScoped;                                                                      \
 	if (!_name) {                                                                    \

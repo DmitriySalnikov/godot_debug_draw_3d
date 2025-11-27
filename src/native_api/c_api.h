@@ -11,6 +11,6 @@ GODOT_WARNING_RESTORE()
 namespace NATIVE_API {
 godot::Dictionary get_functions();
 void clear_orphaned_refs();
-}
+} //namespace NATIVE_API
 
 #endif

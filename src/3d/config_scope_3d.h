@@ -202,10 +202,10 @@ public:
 	 * @warning
 	 * Frequent unsystematic changes to this property can lead to significant performance degradation.
 	 */
-	Ref<DebugDraw3DScopeConfig> set_text_font(godot::Ref<godot::Font> _value) const;
+	Ref<DebugDraw3DScopeConfig> set_text_font(Ref<godot::Font> _value) const;
 	/// @private
-	NAPI NSELF_RETURN set_text_font_selfreturn(godot::Ref<godot::Font> _value) const;
-	NAPI godot::Ref<godot::Font> get_text_font() const; // TODO:
+	NAPI NSELF_RETURN set_text_font_selfreturn(Ref<godot::Font> _value) const;
+	NAPI Ref<godot::Font> get_text_font() const;
 
 	/**
 	 * Set which Viewport will be used to get World3D.
