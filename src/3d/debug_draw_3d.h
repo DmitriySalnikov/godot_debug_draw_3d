@@ -130,9 +130,9 @@ public:
 	/**
 	 * Appearance of points on the path
 	 */
-	enum PointType : int {
-		POINT_TYPE_SQUARE,
-		POINT_TYPE_SPHERE,
+	NAPI_ENUM enum PointType : int {
+		POINT_TYPE_SQUARE = 0,
+		POINT_TYPE_SPHERE = 1,
 	};
 
 private:

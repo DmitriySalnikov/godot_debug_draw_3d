@@ -71,15 +71,15 @@ void DD3DTestCppApiNode::_ready() {
 		}
 		auto font_id = font1->get_instance_id();
 		Ref<godot::Font> font2(ObjectDB::get_instance(font_id));
-		
+
 		DEV_ASSERT(font1->get_instance_id() == font2->get_instance_id());
 		DEV_ASSERT(font1.ptr() == font2.ptr());
-		
+
 		auto _fnt1 = DebugDraw3D::new_scoped_config()->set_text_font(font1);
 		DEV_ASSERT(font1->get_instance_id() == _fnt1->get_text_font()->get_instance_id());
 		DEV_ASSERT(_fnt1->get_text_font()->get_ascent());
 	}
-		
+
 #ifdef DEV_ENABLED
 	DebugDrawManager::api_test6(nullptr, Variant(), false, 1, DebugDrawManager::SECOND_VALUE, 0.5f, "test", "test2", "test3");
 #endif
@@ -91,6 +91,13 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	ZoneScoped;
 
 	DebugDraw3D::draw_sphere(Vector3(1, 1, 1), 2, Color(1, 1, 0), 0);
+
+	/* TODO:
+	PackedVector3Array a;
+	a.append(Vector3(0,0,0));
+	a.append(Vector3(1,1,1));
+	DebugDraw3D::draw_points(a);
+	*/
 
 	// 16ms GD
 	// 2.5ms cpp
