@@ -55,7 +55,6 @@ void DD3DTestCppApiNode::_ready() {
 	DEV_ASSERT(cfg2->is_visible_instance_bounds() == false);
 	UtilityFunctions::print("New Visible bounds: ", cfg2->is_visible_instance_bounds());
 
-	// TODO: signature must not use ENUM::T
 	auto cfg2D = DebugDraw2D::get_config();
 	auto pos = cfg2D->get_text_block_position();
 	cfg2D->set_text_block_position(pos);
@@ -81,6 +80,9 @@ void DD3DTestCppApiNode::_ready() {
 	}
 
 #ifdef DEV_ENABLED
+	DEV_ASSERT(DebugDrawManager::DevTestEnum::FIRST_VALUE == 0);
+	DEV_ASSERT(DebugDrawManager::DevTestEnum::SECOND_VALUE == 10);
+
 	DebugDrawManager::api_test6(nullptr, Variant(), false, 1, DebugDrawManager::SECOND_VALUE, 0.5f, "test", "test2", "test3");
 #endif
 }

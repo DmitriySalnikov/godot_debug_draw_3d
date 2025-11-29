@@ -112,6 +112,15 @@ def insert_lines_at_mark(lines: list, mark: str, insert_lines: list):
     lines[insert_index:insert_index] = insert_lines
 
 
+####################################
+####################################
+
+
+## api.json
+
+
+####################################
+####################################
 def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
     classes = {}
     def_ctx: DefineContext = DefineContext(env)
@@ -177,9 +186,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
             if line.startswith("NAPI_ENUM enum "):
                 split = line[len("NAPI_ENUM enum ") : line.find("{")].split(":")
                 name = split[0].strip()
-                type = split[1].strip()
+                e_type = split[1].strip()
 
-                print(f"\tFound Enum {name} of type {type}")
+                print(f"\tFound Enum {name} of type {e_type}")
                 enum_lines = [line[line.rfind("{") + 1 :]]
                 eidx = idx + 1
                 while True:
@@ -208,17 +217,17 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 for e in enum_lines:
                     split = e.split("=")
                     key = split[0].strip()
-                    value = last_val + 1
+
+                    last_val += 1
+                    value = last_val
                     if len(split) == 2:
                         value = split[1].strip()
+                        if value.isdigit():
+                            last_val = int(value)
 
-                    if value is int:
-                        last_val = value
-                    elif value is str and value.isdigit():
-                        last_val = int(value)
                     values[key] = str(value)
 
-                enums[name] = {"type": type, "values": values}
+                enums[name] = {"type": e_type, "values": values}
                 continue
 
             if line.startswith("NAPI "):
@@ -338,10 +347,64 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 functions[f"{current_class}_{func_name}"] = fun_dict
                 print(f"\tFound method {func_name}")
 
+    ###
+    # Mark all Enum's in args and return types
+    exposed_enums = {}
+    exposed_enums_only_names = []
+    exposed_enums_only_names_map = {}
+    for cls_name in classes:
+        cls = classes[cls_name]
+        for e_name in cls["enums"]:
+            e = cls["enums"][e_name]
+            new_dict = {"class": cls_name, "name": e_name, "type": e["type"]}
+            name = f"{cls_name}::{e_name}"
+            exposed_enums[name] = new_dict
+            exposed_enums_only_names.append(e_name)
+
+            if e_name in exposed_enums_only_names_map:
+                raise Exception(
+                    f'The enum "{e_name}" already exists in another class "{exposed_enums_only_names_map[e_name]}".'
+                )
+            exposed_enums_only_names_map[e_name] = name
+
+    for cls_name in classes:
+        cls = classes[cls_name]
+        for f_name in cls["functions"]:
+            f = cls["functions"][f_name]
+
+            def check_type_name(type: str):
+                for e in exposed_enums_only_names:
+                    if e in type:
+                        if exposed_enums_only_names_map[e] not in type:
+                            print(
+                                f'ERROR: "{exposed_enums_only_names_map[e]}" is named incorrectly in the "{f_name}" function. "{e}" should be called "{exposed_enums_only_names_map[e]}".'
+                            )
+                            return None
+                        else:
+                            return exposed_enums_only_names_map[e]
+                return None
+
+            e_name = check_type_name(f["return"]["type"])
+            if e_name:
+                f["return"]["enum_type"] = exposed_enums[e_name]
+
+            for a in f["args"]:
+                e_name = check_type_name(a["type"])
+                if e_name:
+                    a["enum_type"] = exposed_enums[e_name]
+
     return classes
 
 
-## gen/c_api.gen.cpp
+####################################
+####################################
+
+
+## c_api.gen.cpp
+
+
+####################################
+####################################
 def generate_native_api(
     env: SConsEnvironment,
     header_files: list,
@@ -453,17 +516,23 @@ def generate_native_api(
                     return f"{type} /*{arg['ref_class']}*/ {name}"
                 if "object_class" in arg:
                     return f"{type} /*{arg['object_class']}*/ {name}"
+                if "enum_type" in arg:
+                    e = arg["enum_type"]
+                    return f"{e['type']} /*{e['class']}::{e['name']}*/ {name}"
                 return f"{type} {name}"
 
             def process_arg_calls(arg: dict):
                 type = arg["type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
-                    return f"static_cast<{get_ref_class_name(type)}_NAPIWrapper*>({name})->ref"
+                    return f"static_cast<{get_ref_class_name(type)}_NAPIWrapper *>({name})->ref"
                 if "ref_class" in arg:
                     return f"godot::Ref<{arg['ref_class']}>(godot::Object::cast_to<{arg['ref_class']}>(godot::ObjectDB::get_instance({name})))"
                 if "object_class" in arg:
                     return f"godot::Object::cast_to<{arg['object_class']}>(godot::ObjectDB::get_instance({name}))"
+                if "enum_type" in arg:
+                    e = arg["enum_type"]
+                    return f"static_cast<{e["class"]}::{e["name"]}>({name})"
                 return f"{name}"
 
             # func define
@@ -491,7 +560,7 @@ def generate_native_api(
                     new_funcs.append(f"\t{ret_str};")
             else:
                 call_args = ", ".join([process_arg_calls(a) for a in args[1:]])
-                ret_str = f"static_cast<{cls}_NAPIWrapper*>(inst_ptr)->ref->{func_orig_name}({call_args})"
+                ret_str = f"static_cast<{cls}_NAPIWrapper *>(inst_ptr)->ref->{func_orig_name}({call_args})"
 
                 if ret_type != "void":
                     new_funcs.append(f"\treturn {process_ret_calls(ret_str, ret)};")
@@ -530,7 +599,15 @@ def generate_native_api(
     return api_dict
 
 
-# addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp
+####################################
+####################################
+
+
+## dd3d_cpp_api.hpp
+
+
+####################################
+####################################
 def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_include_classes: list = []) -> bool:
     os.makedirs(out_folder, exist_ok=True)
     classes = dict(api["classes"])
@@ -558,7 +635,6 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             is_namespace_a_class[cls] = cls_is_class
             namespaces[cls] = []
 
-        # TODO: convert enum to uint64_t in C API part!!!
         for enum_name in enums:
             type = enums[enum_name]["type"]
             values = enums[enum_name]["values"]
@@ -691,15 +767,18 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     res += f" = {arg['default']}"
                 return res
 
-            def process_arg_ptr_defines(arg: dict):
+            def process_arg_funcptr_defines(arg: dict):
                 type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
-                    return f"void *"
+                    return f"void * /*{name}*/"
                 if "object_class" in arg:
-                    return f"{type} /*{arg['object_class']}*/"
+                    return f"{type} /*{arg['object_class']} {name}*/"
+                if "enum_type" in arg:
+                    e = arg["enum_type"]
+                    return f"{e['type']} /*{e["class"]}::{e["name"]} {name}*/"
 
-                return f"{type}"
+                return f"{type} /*{name}*/"
 
             def process_arg_calls(arg: dict):
                 type = arg["type"]
@@ -710,6 +789,10 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     return f"{name}.is_valid() ? {name}->get_instance_id() : 0"
                 if "object_class" in arg:
                     return f"{name} ? {name}->get_instance_id() : 0"
+                if "enum_type" in arg:
+                    e = arg["enum_type"]
+                    return f"static_cast<{e['type']}>({name})"
+
                 return f"{name}"
 
             if prev_private_state != is_private:
@@ -741,7 +824,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             # Func pointer
             new_lines.append(
-                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_ptr_defines(a) for a in args])}) = nullptr;'
+                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_funcptr_defines(a) for a in args])}) = nullptr;'
             )
 
             def_ret_val = get_default_ret_val(ret_type)

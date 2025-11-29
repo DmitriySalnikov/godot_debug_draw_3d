@@ -89,6 +89,7 @@
                 "build_cpp_api_tests=yes",
                 "folder_to_include_classes=../tests_native_api/cpp",
                 "custom_godotcpp_suffix=.test_napi",
+                "use_hot_reload=yes",
                 "optimize=speed",
                 "target=editor",
                 "debug_symbols=yes",

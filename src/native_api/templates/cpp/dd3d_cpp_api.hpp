@@ -88,6 +88,7 @@ struct _DD3D_Loader_ {
 #ifndef DD3D_DISABLE_MISMATCH_CHECKS
 					godot::String sign1 = func_dict["signature"];
 					godot::String sign2 = DD3DShared::FunctionSignature<func>::get();
+					//godot::UtilityFunctions::print(log_prefix, "FUNCTION SIGNATURE\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 
 					if (sign1 != sign2) {
 						godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION SIGNATURE MISMATCH !!!\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);

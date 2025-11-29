@@ -95,9 +95,9 @@ private:
 	// TEST C# API GENERATOR
 #ifdef DEV_ENABLED
 public:
-	NAPI_ENUM enum DevTestEnum : int {
+	NAPI_ENUM enum DevTestEnum : uint32_t {
 		FIRST_VALUE = 0, // Test comment
-		SECOND_VALUE = 1,
+		SECOND_VALUE = 10,
 	};
 
 	static Object *default_arg_obj;

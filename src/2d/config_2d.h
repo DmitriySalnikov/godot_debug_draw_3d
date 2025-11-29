@@ -25,11 +25,11 @@ public:
 	/**
 	 * Available positions for placing text blocks.
 	 */
-	NAPI_ENUM enum BlockPosition : int {
-		POSITION_LEFT_TOP = 0,
-		POSITION_RIGHT_TOP = 1,
-		POSITION_LEFT_BOTTOM = 2,
-		POSITION_RIGHT_BOTTOM = 3,
+	NAPI_ENUM enum BlockPosition : uint32_t {
+		POSITION_LEFT_TOP,
+		POSITION_RIGHT_TOP,
+		POSITION_LEFT_BOTTOM,
+		POSITION_RIGHT_BOTTOM,
 	};
 
 private:

@@ -22,10 +22,10 @@ public:
 	/**
 	 * Frustum culling mode. You can disable it completely or select the culling accuracy.
 	 */
-	NAPI_ENUM enum CullingMode : int {
-		FRUSTUM_DISABLED = 0,
-		FRUSTUM_ROUGH = 1,
-		FRUSTUM_PRECISE = 2,
+	NAPI_ENUM enum CullingMode : uint32_t {
+		FRUSTUM_DISABLED,
+		FRUSTUM_ROUGH,
+		FRUSTUM_PRECISE,
 	};
 
 private:

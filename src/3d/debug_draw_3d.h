@@ -130,9 +130,9 @@ public:
 	/**
 	 * Appearance of points on the path
 	 */
-	NAPI_ENUM enum PointType : int {
-		POINT_TYPE_SQUARE = 0,
-		POINT_TYPE_SPHERE = 1,
+	NAPI_ENUM enum PointType : uint32_t {
+		POINT_TYPE_SQUARE,
+		POINT_TYPE_SPHERE,
 	};
 
 private:
@@ -651,7 +651,7 @@ public:
 	 * @param duration The duration of how long the object will be visible
 	 */
 	// TODO:
-	void draw_points(const godot::PackedVector3Array &points, const PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_points(const godot::PackedVector3Array &points, const DebugDraw3D::PointType type = DebugDraw3D::PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a square that will always be turned towards the camera

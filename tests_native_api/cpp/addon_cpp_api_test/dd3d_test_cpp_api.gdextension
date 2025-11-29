@@ -1,8 +1,8 @@
 [configuration]
 
 entry_symbol = "dd3d_test_cpp_api_init"
-compatibility_minimum = "4.2.2"
-reloadable = false
+compatibility_minimum = "4.3.0"
+reloadable = true
 
 [libraries]
 
