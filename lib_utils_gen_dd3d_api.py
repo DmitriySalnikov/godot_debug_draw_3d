@@ -585,7 +585,7 @@ def generate_native_api(
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_DEFINES", new_funcs)
-    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTERS", new_func_regs)
+    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS", new_func_regs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
     c_api_file_name, c_api_file_ext = os.path.splitext(os.path.basename(c_api_template))
 

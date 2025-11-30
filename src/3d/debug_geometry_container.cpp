@@ -397,16 +397,15 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 			for (const auto &culling_data : culling_data) {
 				for (const auto &frustum : culling_data.second->m_frustums) {
-					size_t s = GeometryGenerator::CubeIndexes.size();
-					std::unique_ptr<Vector3[]> l = std::make_unique<Vector3[]>(s);
-					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
+					thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
+					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, lines);
 
-					auto bounds = MathUtils::calculate_vertex_bounds(l.get(), s);
+					auto bounds = MathUtils::calculate_vertex_bounds(lines, GeometryGenerator::CubeIndexes.size());
 					geometry_pool.add_or_update_line(
 							cfg.get(),
 							0,
-							std::move(l),
-							s,
+							lines,
+							GeometryGenerator::CubeIndexes.size(),
 							Colors::red,
 							bounds);
 				}

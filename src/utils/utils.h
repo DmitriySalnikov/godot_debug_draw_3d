@@ -15,8 +15,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_set>
-#include <vector>
 #include <utility>
+#include <vector>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
@@ -314,6 +314,10 @@ public:
 		return appendable;
 	}
 #pragma endregion
+};
+
+struct malloc_free_delete {
+	void operator()(void *x) { free(x); }
 };
 
 #ifndef DISABLE_DEBUG_RENDERING

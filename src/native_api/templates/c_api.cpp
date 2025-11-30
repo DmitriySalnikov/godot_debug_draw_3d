@@ -25,7 +25,7 @@ Dictionary get_functions() {
 		Dictionary functions;
 #define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t)&_name, "signature", DD3DShared::FunctionSignature<decltype(&_name)>::get())
 
-		// GENERATOR_DD3D_FUNCTIONS_REGISTERS
+		// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS
 
 #undef ADD_FUNC
 

@@ -63,7 +63,6 @@ DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
 		: world_id(std::exchange(other.world_id, 0)),
 		  world_watcher(nullptr) {
-
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
 		ncs[i] = std::move(other.ncs[i]);
@@ -833,23 +832,27 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
-#define CHECK_BEFORE_CALL() \
-	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
+#define CHECK_BEFORE_CALL()                          \
+	if (NEED_LEAVE || config->is_freeze_3d_render()) \
+		return;
 
 #define GET_SCOPED_CFG_AND_VDC()                     \
 	auto scfg = scoped_config_for_current_thread();  \
 	auto vdc = get_debug_container(scfg->dcd, true); \
-	if (!vdc) return;
+	if (!vdc)                                        \
+		return;
 
 #define GET_SCOPED_CFG_AND_DGC()                           \
 	GET_SCOPED_CFG_AND_VDC();                              \
 	auto dgc = vdc->dgcs[!!scfg->dcd.no_depth_test].get(); \
-	if (!dgc) return;
+	if (!dgc)                                              \
+		return;
 
 #define GET_SCOPED_CFG_AND_NC()                          \
 	GET_SCOPED_CFG_AND_VDC();                            \
 	auto nc = vdc->ncs[!!scfg->dcd.no_depth_test].get(); \
-	if (!nc) return;
+	if (!nc)                                             \
+		return;
 
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 #define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())
@@ -858,6 +861,16 @@ void DebugDraw3D::clear_all() {
 #define FIX_PRECISION_TRANSFORM(xf) (xf)
 #define FIX_PRECISION_POSITION(pos) (pos)
 #endif
+
+#define ADD_THREAD_LOCAL_BUFFER(_buffer_name, _buffer_type, _current_size, _size_change_step)                                                         \
+	thread_local static std::unique_ptr<_buffer_type, malloc_free_delete> _buffer_name((_buffer_type *)malloc(sizeof(_buffer_type) * _current_size)); \
+	thread_local static size_t _buffer_name##buffer_size = _current_size;                                                                             \
+	if (_current_size > _buffer_name##buffer_size) {                                                                                                  \
+		ZoneScopedN("Update buffer size");                                                                                                            \
+		_buffer_name##buffer_size = (size_t)Math::ceil(_current_size / (double)_size_change_step) * _size_change_step;                                \
+		ZoneTextF("Actual size: %" PRIu64 ", New buffer size: %" PRIu64, _current_size, _buffer_name##buffer_size);                                   \
+		_buffer_name = std::unique_ptr<_buffer_type, malloc_free_delete>((_buffer_type *)malloc(sizeof(_buffer_type) * _buffer_name##buffer_size));   \
+	}
 
 #ifdef DEV_ENABLED
 void DebugDraw3D::_save_generated_meshes() {
@@ -889,14 +902,14 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	return Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
 	if (!scfg->thickness) {
-		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines.get(), p_line_count);
+		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines, p_line_count);
 
 #if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
 		for (size_t l = 0; l < p_line_count; l++) {
@@ -906,15 +919,15 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::uniq
 		dgc->geometry_pool.add_or_update_line(
 				scfg,
 				p_exp_time,
-				std::move(p_lines),
+				p_lines,
 				p_line_count,
 				p_col,
 				aabb);
 	} else {
 		for (int i = 0; i < p_line_count; i += 2) {
 			ZoneScopedN("Convert AB to xf");
-			Vector3 a = p_lines.get()[i];
-			Vector3 diff = p_lines.get()[i + 1] - a;
+			Vector3 a = p_lines[i];
+			Vector3 diff = p_lines[i + 1] - a;
 			real_t len = diff.length();
 			Vector3 center = diff * .5f;
 			dgc->geometry_pool.add_or_update_instance(
@@ -1099,8 +1112,10 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 
 	LOCK_GUARD(datalock);
 	if (is_hit) {
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, hit }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ hit, end }), 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
+		Vector3 first[2] = { start, hit };
+		Vector3 second[2] = { hit, end };
+		add_or_update_line_with_thickness(duration, first, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		add_or_update_line_with_thickness(duration, second, 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
 		GET_SCOPED_CFG_AND_DGC();
 
@@ -1113,7 +1128,8 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size),
 				&Colors::empty_color);
 	} else {
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, end }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		Vector3 line[2] = { start, end };
+		add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 	}
 }
 
@@ -1134,7 +1150,8 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	Vector3 line[2] = { a, b };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
@@ -1146,34 +1163,27 @@ void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color
 		return;
 	}
 
-	size_t s = lines.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	memcpy(l.get(), lines.ptr(), s * sizeof(Vector3));
-
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, lines.ptr(), lines.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
-void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines_c(const Vector3 *lines_data, const size_t &lines_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	if (lines.size() % 2 != 0) {
-		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
+	if (lines_size % 2 != 0) {
+		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines_size) + " is not even.");
 		return;
 	}
 
-	size_t s = lines.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	memcpy(l.get(), lines.data(), s * sizeof(Vector3));
-
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, lines_data, lines_size, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ origin, origin + direction * length }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	Vector3 line[2] = { origin, origin + direction * length };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
@@ -1187,11 +1197,11 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 		return;
 	}
 
-	size_t s = (path.size() - 1) * 2;
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
+	size_t lines_size = (path.size() - 1) * 2;
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	GeometryGenerator::CreateLinesFromPathWireframe(path, buffer.get());
 
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 }
 
 #pragma endregion // Normal
@@ -1240,7 +1250,9 @@ void DebugDraw3D::draw_arrow(const Vector3 &a, const Vector3 &b, const Color &co
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+
+	Vector3 line[2] = { a, b };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 	create_arrow(a, b, color, arrow_size, is_absolute_size, duration);
 }
 
@@ -1254,12 +1266,12 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	size_t s = (path.size() - 1) * 2;
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
+	size_t lines_size = (path.size() - 1) * 2;
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	GeometryGenerator::CreateLinesFromPathWireframe(path, buffer.get());
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
 	for (int64_t i = 0; i < path.size() - 1; i++) {
 		create_arrow(path[i], path[i + 1], color, arrow_size, is_absolute_size, duration);
@@ -1411,18 +1423,24 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_s
 
 	Vector3 origin = is_centered ? transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 : transform.origin;
 
-	std::vector<Vector3> lines;
+	size_t lines_size_x = (subdivision.x + 1) * 2;
+	size_t lines_size_y = (subdivision.y + 1) * 2;
+	size_t lines_size = lines_size_x + lines_size_y;
+
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	Vector3 *lines = buffer.get();
+
 	for (int x = 0; x < subdivision.x + 1; x++) {
-		lines.push_back(origin + x_d * (real_t)x);
-		lines.push_back(origin + x_d * (real_t)x + z_axis);
+		lines[x * 2] = origin + x_d * (real_t)x;
+		lines[x * 2 + 1] = origin + x_d * (real_t)x + z_axis;
 	}
 
 	for (int y = 0; y < subdivision.y + 1; y++) {
-		lines.push_back(origin + z_d * (real_t)y);
-		lines.push_back(origin + z_d * (real_t)y + x_axis);
+		lines[lines_size_x + y * 2] = origin + z_d * (real_t)y;
+		lines[lines_size_x + y * 2 + 1] = origin + z_d * (real_t)y + x_axis;
 	}
 
-	draw_lines_c(lines, IS_DEFAULT_COLOR(color) ? Colors::white : color, duration);
+	draw_lines_c(lines, lines_size, IS_DEFAULT_COLOR(color) ? Colors::white : color, duration);
 }
 
 #pragma region Camera Frustum
@@ -1431,12 +1449,11 @@ void DebugDraw3D::draw_camera_frustum_planes_c(const std::array<Plane, 6> &plane
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	size_t s = GeometryGenerator::CubeIndexes.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, l.get());
+	thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
+	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, lines);
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, lines, GeometryGenerator::CubeIndexes.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {
