@@ -541,10 +541,9 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
-	NAPI void draw_lines(const godot::PackedVector3Array &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_lines(const godot::PackedVector3Array &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/// @private
-	void draw_lines_c(const Vector3* lines_data, const size_t &lines_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_lines_c(const godot::Vector3 *lines_data, const uint64_t &lines_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw an array of lines.
@@ -557,8 +556,9 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
-	NAPI void draw_line_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_line_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	NAPI void draw_line_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Normal
 
@@ -611,8 +611,9 @@ public:
 	 * @param is_absolute_size Is the `arrow_size` absolute or relative to the length of the line?
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
-	NAPI void draw_arrow_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_arrow_path(const godot::PackedVector3Array &path, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	NAPI void draw_arrow_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color = Colors::empty_color, const real_t &arrow_size = 0.75f, const bool &is_absolute_size = true, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Arrows
 #pragma region Points
@@ -631,8 +632,9 @@ public:
 	 * @param size Size of squares
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
-	NAPI void draw_point_path(const godot::PackedVector3Array &path, const DebugDraw3D::PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &points_color = Colors::empty_color, const godot::Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_point_path(const godot::PackedVector3Array &path, const DebugDraw3D::PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &points_color = Colors::empty_color, const godot::Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	NAPI void draw_point_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const DebugDraw3D::PointType type = PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &points_color = Colors::empty_color, const godot::Color &lines_color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Points
 #pragma endregion // Lines
@@ -650,8 +652,9 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
-	NAPI NAPI void draw_points(const godot::PackedVector3Array &points, const DebugDraw3D::PointType type = DebugDraw3D::PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_points(const godot::PackedVector3Array &points, const DebugDraw3D::PointType type = DebugDraw3D::PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	NAPI void draw_points_c(const godot::Vector3 *points_data, const uint64_t &points_size, const DebugDraw3D::PointType type = DebugDraw3D::PointType::POINT_TYPE_SQUARE, const real_t &size = 0.25f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw a square that will always be turned towards the camera
@@ -732,8 +735,6 @@ public:
 
 #pragma region Camera Frustum
 
-	/// @private
-	void draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/**
 	 * Draw camera frustum area.
 	 *
@@ -752,8 +753,9 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	// TODO:
 	void draw_camera_frustum_planes(const godot::Array &camera_frustum, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	NAPI void draw_camera_frustum_planes_c(const godot::Plane *planes_data, const uint64_t planes_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Camera Frustum
 

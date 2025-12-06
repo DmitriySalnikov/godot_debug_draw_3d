@@ -87,15 +87,16 @@
             "command": "scons",
             "args": [
                 "build_cpp_api_tests=yes",
-                "folder_to_include_classes=../tests_native_api/cpp",
                 "custom_godotcpp_suffix=.test_napi",
-                "use_hot_reload=yes",
-                "optimize=speed",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                //
                 "target=editor",
                 "debug_symbols=yes",
+                "optimize=speed",
                 //"dev_build=yes",
                 //"lto=full",
                 //"tracy_enabled=yes",
+                "use_hot_reload=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

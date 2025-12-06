@@ -151,7 +151,8 @@ public:
 	 * @param title_size Title font size
 	 * @param text_size Text font size
 	 */
-	NAPI void begin_text_group(godot::String group_title, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
+	// TODO:
+	void begin_text_group(godot::String group_title, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
 	/**
 	 * Ends the text group. Should be called after DebugDraw2D.begin_text_group.
 	 *
@@ -167,7 +168,8 @@ public:
 	 * @param color_of_value Value color
 	 * @param duration Expiration time
 	 */
-	NAPI void set_text(godot::String key, godot::Variant value = godot::Variant(), int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
+	// TODO:
+	void set_text(godot::String key, godot::Variant value = godot::Variant(), int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 	/**
 	 * Clear all text

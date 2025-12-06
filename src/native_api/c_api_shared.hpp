@@ -7,7 +7,7 @@
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
 #endif
-#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
 #if _MSC_VER
 __pragma(warning(default : 4244 26451 26495));
 #endif

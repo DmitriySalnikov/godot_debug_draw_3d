@@ -12,8 +12,20 @@ class DD3DTestCppApiNode : public Node {
 protected:
 	static void _bind_methods();
 
+	enum class SelectedDrawFunction {
+		draw_box,
+		draw_lines_c,
+		draw_line_path_c,
+		draw_points_c,
+		draw_points_c_square,
+		draw_point_path_c,
+		draw_point_path_c_square,
+		draw_arrow_path_c,
+	};
+
 	bool one_million_boxes = false;
 	bool many_camera_frustums = false;
+	int draw_function = 0;
 
 public:
 	DD3DTestCppApiNode();
@@ -24,4 +36,6 @@ public:
 	bool is_one_million_boxes() { return one_million_boxes; }
 	void set_many_camera_frustums(bool val) { many_camera_frustums = val; }
 	bool is_many_camera_frustums() { return many_camera_frustums; }
+	void set_draw_function(int val) { draw_function = val; }
+	int get_draw_function() { return draw_function; }
 };

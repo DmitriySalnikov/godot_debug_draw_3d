@@ -103,19 +103,23 @@ public:
 	static Object *default_arg_obj;
 
 	// Test regular arguments
-	NAPI void api_test1(godot::Variant arg1, godot::Object *arg2, bool arg3, int arg4, float arg5, godot::String arg6, godot::StringName arg7, godot::NodePath arg8) {}
+	// TODO:
+	void api_test1(godot::Variant arg1, godot::Object *arg2, bool arg3, int arg4, float arg5, godot::String arg6, godot::StringName arg7, godot::NodePath arg8) {}
 	NAPI void api_test2(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) {}
 	NAPI void api_test3(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) {}
-	NAPI void api_test4(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) {}
 	// TODO:
-	NAPI void api_test5(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {}
+	void api_test4(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) {}
+	// TODO:
+	void api_test5(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {}
 	// Test with default arguments
-	NAPI godot::Variant api_test6(godot::Object *arg1, godot::Variant arg2, bool arg3, int arg4, DebugDrawManager::DevTestEnum arg5, float arg6, godot::String arg7, godot::StringName arg8, godot::NodePath arg9) { return "test var"; }
+	// TODO:
+	godot::Variant api_test6(godot::Object *arg1, godot::Variant arg2, bool arg3, int arg4, DebugDrawManager::DevTestEnum arg5, float arg6, godot::String arg7, godot::StringName arg8, godot::NodePath arg9) { return "test var"; }
 	NAPI godot::Color api_test7(godot::Color arg1, godot::Vector2 arg2, godot::Vector2i arg3, godot::Vector3 arg4, godot::Vector3i arg5, godot::Vector4 arg6, godot::Vector4i arg7, godot::Rect2 arg8, godot::Rect2i arg9) { return godot::Color(4, 3, 2, 1); }
 	NAPI DebugDrawManager::DevTestEnum api_test8(godot::Transform2D arg1, godot::Transform3D arg2, godot::Plane arg3, godot::Quaternion arg4, godot::AABB arg5, godot::Basis arg6, godot::Projection arg7) { return (DevTestEnum)1; }
-	NAPI godot::Object *api_test9(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) { return this; }
 	// TODO:
-	NAPI void api_test10(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {}
+	godot::Object *api_test9(godot::RID arg1, godot::Callable arg2, godot::Signal arg3, godot::Dictionary arg4, godot::Array arg5) { return this; }
+	// TODO:
+	void api_test10(godot::PackedByteArray arg1, godot::PackedInt32Array arg2, godot::PackedInt64Array arg3, godot::PackedFloat32Array arg4, godot::PackedFloat64Array arg5, godot::PackedStringArray arg6, godot::PackedVector2Array arg7, godot::PackedVector3Array arg8, godot::PackedColorArray arg9) {}
 
 public:
 #endif

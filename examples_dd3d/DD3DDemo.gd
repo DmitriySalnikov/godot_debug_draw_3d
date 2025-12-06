@@ -38,7 +38,6 @@ var physics_tick_processed := false
 
 var timer_1 := 0.0
 var timer_cubes := 0.0
-var cubes_max_time := 0.0
 var timer_3 := 0.0
 var timer_text := 0.0
 
@@ -512,7 +511,7 @@ func _draw_array_of_boxes():
 	var y_size := 50
 	var z_size := 3
 	var mul := 1
-	var cubes_max_time := 1.25
+	var cubes_show_time := 1.25
 	var show_text := draw_text_with_boxes
 	var cfg = DebugDraw3D.new_scoped_config()
 	
@@ -521,7 +520,7 @@ func _draw_array_of_boxes():
 		y_size = 100
 		z_size = 100
 		mul = 4
-		cubes_max_time = 60
+		cubes_show_time = 60
 		show_text = false
 	
 	var size := Vector3.ONE
@@ -534,14 +533,14 @@ func _draw_array_of_boxes():
 				for z in z_size:
 					cfg.set_thickness(randf_range(0, 0.1))
 					var pos := Vector3(x * mul, (-4-z) * mul, y * mul) + global_position
-					DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+					DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_show_time)
 					
 					if show_text and z == 0:
-						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_max_time)
+						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_show_time)
 		print("Draw Cubes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
-		timer_cubes = cubes_max_time
+		timer_cubes = cubes_show_time
 	
-	if timer_cubes > cubes_max_time:
+	if timer_cubes > cubes_show_time:
 		DebugDraw3D.clear_all();
 		timer_cubes = 0;
 

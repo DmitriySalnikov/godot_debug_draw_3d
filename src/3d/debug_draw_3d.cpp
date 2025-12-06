@@ -862,16 +862,6 @@ void DebugDraw3D::clear_all() {
 #define FIX_PRECISION_POSITION(pos) (pos)
 #endif
 
-#define ADD_THREAD_LOCAL_BUFFER(_buffer_name, _buffer_type, _current_size, _size_change_step)                                                         \
-	thread_local static std::unique_ptr<_buffer_type, malloc_free_delete> _buffer_name((_buffer_type *)malloc(sizeof(_buffer_type) * _current_size)); \
-	thread_local static size_t _buffer_name##buffer_size = _current_size;                                                                             \
-	if (_current_size > _buffer_name##buffer_size) {                                                                                                  \
-		ZoneScopedN("Update buffer size");                                                                                                            \
-		_buffer_name##buffer_size = (size_t)Math::ceil(_current_size / (double)_size_change_step) * _size_change_step;                                \
-		ZoneTextF("Actual size: %" PRIu64 ", New buffer size: %" PRIu64, _current_size, _buffer_name##buffer_size);                                   \
-		_buffer_name = std::unique_ptr<_buffer_type, malloc_free_delete>((_buffer_type *)malloc(sizeof(_buffer_type) * _buffer_name##buffer_size));   \
-	}
-
 #ifdef DEV_ENABLED
 void DebugDraw3D::_save_generated_meshes() {
 	if (!shared_generated_meshes.size())
@@ -1156,24 +1146,16 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 
 void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	ZoneScoped;
-	CHECK_BEFORE_CALL();
-
-	if (lines.size() % 2 != 0) {
-		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
-		return;
-	}
-
-	add_or_update_line_with_thickness(duration, lines.ptr(), lines.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	draw_lines_c(lines.ptr(), lines.size(), color, duration);
 }
 
 void DebugDraw3D::draw_lines_c(const Vector3 *lines_data, const size_t &lines_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-
-	if (lines_size % 2 != 0) {
-		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines_size) + " is not even.");
+	if (!lines_data || lines_size == 0)
 		return;
-	}
+
+	ERR_FAIL_COND_MSG(lines_size % 2 != 0, "The size of the lines array must be even. " + String::num_int64(lines_size) + " is not even.");
 
 	add_or_update_line_with_thickness(duration, lines_data, lines_size, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
@@ -1188,18 +1170,21 @@ void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, cons
 
 void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
 	ZoneScoped;
+	draw_line_path_c(path.ptr(), path.size(), color, duration);
+}
+
+NAPI void DebugDraw3D::draw_line_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	if (path.size() < 2) {
-		if (path.size() == 1) {
-			PRINT_ERROR("Line path must contains at least 2 points.");
-		}
+	if (!path_data || path_size == 0)
 		return;
-	}
 
-	size_t lines_size = (path.size() - 1) * 2;
+	ERR_FAIL_COND_MSG(path_size == 1, "Line path must contains at least 2 points.");
+
+	size_t lines_size = (path_size - 1) * 2;
 	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, buffer.get());
+	GeometryGenerator::CreateLinesFromPathWireframe(path_data, path_size, buffer.get());
 
 	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 }
@@ -1264,17 +1249,25 @@ void DebugDraw3D::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction
 
 void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	ZoneScoped;
+	draw_arrow_path_c(path.ptr(), path.size(), color, arrow_size, is_absolute_size, duration);
+}
+
+NAPI void DebugDraw3D::draw_arrow_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	size_t lines_size = (path.size() - 1) * 2;
+	if (!path_data || path_size == 0)
+		return;
+
+	size_t lines_size = (path_size - 1) * 2;
 	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, buffer.get());
+	GeometryGenerator::CreateLinesFromPathWireframe(path_data, path_size, buffer.get());
 
 	LOCK_GUARD(datalock);
 	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
-	for (int64_t i = 0; i < path.size() - 1; i++) {
-		create_arrow(path[i], path[i + 1], color, arrow_size, is_absolute_size, duration);
+	for (int64_t i = 0; i < path_size - 1; i++) {
+		create_arrow(path_data[i], path_data[i + 1], color, arrow_size, is_absolute_size, duration);
 	}
 }
 
@@ -1283,11 +1276,19 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 
 void DebugDraw3D::draw_point_path(const PackedVector3Array &path, const PointType type, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
 	ZoneScoped;
+	draw_point_path_c(path.ptr(), path.size(), type, size, points_color, lines_color, duration);
+}
+
+NAPI void DebugDraw3D::draw_point_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &points_color, const godot::Color &lines_color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
+	if (!path_data || path_size == 0)
+		return;
+
 	LOCK_GUARD(datalock);
-	draw_points(path, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
-	draw_line_path(path, IS_DEFAULT_COLOR(lines_color) ? Colors::green : lines_color, duration);
+	draw_points_c(path_data, path_size, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
+	draw_line_path_c(path_data, path_size, IS_DEFAULT_COLOR(lines_color) ? Colors::green : lines_color, duration);
 }
 
 #pragma endregion // Points
@@ -1341,18 +1342,45 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 
 void DebugDraw3D::draw_points(const PackedVector3Array &points, const PointType type, const real_t &size, const Color &color, const real_t &duration) {
 	ZoneScoped;
+	draw_points_c(points.ptr(), points.size(), type, size, color, duration);
+}
+
+NAPI void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const uint64_t &points_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
+	if (!points_data || points_size == 0)
+		return;
+
 	LOCK_GUARD(datalock);
-	for (int i = 0; i < points.size(); i++) {
-		switch (type) {
-			case PointType::POINT_TYPE_SQUARE:
-				draw_square(points[i], size, color, duration);
-				break;
-			case PointType::POINT_TYPE_SPHERE:
-				draw_sphere(points[i], size, color, duration);
-				break;
-		}
+	GET_SCOPED_CFG_AND_DGC();
+
+	switch (type) {
+		case PointType::POINT_TYPE_SQUARE:
+			for (int i = 0; i < points_size; i++) {
+				dgc->geometry_pool.add_or_update_instance(
+						scfg,
+						InstanceType::BILLBOARD_SQUARE,
+						duration,
+						Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(points_data[i])),
+						IS_DEFAULT_COLOR(color) ? Colors::red : color,
+						SphereBounds(points_data[i], MathUtils::CubeRadiusForSphere * size),
+						&Colors::empty_color);
+			}
+			break;
+		case PointType::POINT_TYPE_SPHERE:
+			for (int i = 0; i < points_size; i++) {
+				auto transform = Transform3D(Basis().scaled(VEC3_ONE(size * 2)), points_data[i]);
+
+				dgc->geometry_pool.add_or_update_instance(
+						scfg,
+						ConvertableInstanceType::SPHERE,
+						duration,
+						FIX_PRECISION_TRANSFORM(transform),
+						IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
+						SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
+			}
+			break;
 	}
 }
 
@@ -1445,17 +1473,6 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_s
 
 #pragma region Camera Frustum
 
-void DebugDraw3D::draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const Color &color, const real_t &duration) {
-	ZoneScoped;
-	CHECK_BEFORE_CALL();
-
-	thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
-	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, lines);
-
-	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, lines, GeometryGenerator::CubeIndexes.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
-}
-
 void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
@@ -1466,17 +1483,34 @@ void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color
 void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	std::array<Plane, 6> planes = { Plane() };
+
+	thread_local static std::array<Plane, 6> planes;
 
 	if (camera_frustum.size() == 6) {
 		for (int i = 0; i < camera_frustum.size(); i++) {
 			planes[i] = camera_frustum[i];
 		}
 	} else {
-		PRINT_ERROR("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
+		ERR_FAIL_MSG("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
 	}
 
-	draw_camera_frustum_planes_c(planes, color, duration);
+	draw_camera_frustum_planes_c(planes.data(), planes.size(), color, duration);
+}
+
+void DebugDraw3D::draw_camera_frustum_planes_c(const godot::Plane *planes_data, const uint64_t planes_size, const Color &color, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	if (!planes_data || planes_size == 0)
+		return;
+
+	ERR_FAIL_COND(planes_size != 6);
+
+	thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
+	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes_data, planes_size, lines);
+
+	LOCK_GUARD(datalock);
+	add_or_update_line_with_thickness(duration, lines, GeometryGenerator::CubeIndexes.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 #pragma endregion // Camera Frustum
@@ -1508,3 +1542,6 @@ void DebugDraw3D::draw_text(const Vector3 &position, const String text, const in
 #undef GET_SCOPED_CFG_AND_VDC
 #undef GET_SCOPED_CFG_AND_DGC
 #undef GET_SCOPED_CFG_AND_NC
+
+#undef FIX_PRECISION_TRANSFORM
+#undef FIX_PRECISION_POSITION

@@ -21,6 +21,7 @@ __pragma(warning(default : 4244 26451 26495));
 #endif
 
 #ifndef ZoneScoped
+#define _NoProfiler
 #define ZoneScoped
 #endif
 
@@ -29,6 +30,12 @@ struct _DD3D_Loader_ {
 	static constexpr const char *get_funcs_is_double_name = "_get_native_functions_is_double";
 	static constexpr const char *get_funcs_hash_name = "_get_native_functions_hash";
 	static constexpr const char *get_funcs_name = "_get_native_functions";
+
+	enum class LoadingResult {
+		None,
+		Success,
+		Failure
+	};
 
 	static godot::Object *&dd3d_cached() {
 		static godot::Object *dd3d = nullptr;
@@ -107,60 +114,78 @@ struct _DD3D_Loader_ {
 	}
 };
 
-#define LOAD_AND_CALL_FUNC_POINTER(_name, ...)              \
-	ZoneScoped;                                             \
-	if (!_name) {                                           \
-		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
-			return;                                         \
-		}                                                   \
-	}                                                       \
-	if (_name) {                                            \
-		_name(__VA_ARGS__);                                 \
+
+// TODO: Add DD3DNotLoaded state and wait for it to load
+#define LOADING_RESULT static _DD3D_Loader_::LoadingResult _dd3d_loading_result = _DD3D_Loader_::LoadingResult::None
+#define LOAD_FUNC_AND_STORE_RESULT(_name) _dd3d_loading_result = _DD3D_Loader_::load_function(_name, #_name) ? _DD3D_Loader_::LoadingResult::Success : _DD3D_Loader_::LoadingResult::Failure
+#define IS_FIRST_LOADING _dd3d_loading_result == _DD3D_Loader_::LoadingResult::None
+#define IS_LOADED_SUCCESSFULLY _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Success
+#define IS_FAILED_TO_LOAD _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Failure
+
+#define LOAD_AND_CALL_FUNC_POINTER(_name, ...) \
+	ZoneScoped;                                \
+	LOADING_RESULT;                            \
+	if (IS_FIRST_LOADING) {                    \
+		LOAD_FUNC_AND_STORE_RESULT(_name);     \
+		if (IS_FAILED_TO_LOAD) {               \
+			return;                            \
+		}                                      \
+	}                                          \
+	if (IS_LOADED_SUCCESSFULLY) {              \
+		_name(__VA_ARGS__);                    \
 	}
 
-#define LOAD_AND_CALL_FUNC_POINTER_SELFRET(_name, ...)      \
-	ZoneScoped;                                             \
-	if (!_name) {                                           \
-		if (!_DD3D_Loader_::load_function(_name, #_name)) { \
-			return shared_from_this();                      \
-		}                                                   \
-	}                                                       \
-	if (_name) {                                            \
-		_name(__VA_ARGS__);                                 \
+#define LOAD_AND_CALL_FUNC_POINTER_SELFRET(_name, ...) \
+	ZoneScoped;                                        \
+	LOADING_RESULT;                                    \
+	if (IS_FIRST_LOADING) {                            \
+		LOAD_FUNC_AND_STORE_RESULT(_name);             \
+		if (IS_FAILED_TO_LOAD) {                       \
+			return shared_from_this();                 \
+		}                                              \
+	}                                                  \
+	if (IS_LOADED_SUCCESSFULLY) {                      \
+		_name(__VA_ARGS__);                            \
 	}
 
 #define LOAD_AND_CALL_FUNC_POINTER_RET(_name, _def_ret_val, ...) \
 	ZoneScoped;                                                  \
-	if (!_name) {                                                \
-		if (!_DD3D_Loader_::load_function(_name, #_name)) {      \
+	LOADING_RESULT;                                              \
+	if (IS_FIRST_LOADING) {                                      \
+		LOAD_FUNC_AND_STORE_RESULT(_name);                       \
+		if (IS_FAILED_TO_LOAD) {                                 \
 			return _def_ret_val;                                 \
 		}                                                        \
 	}                                                            \
-	if (_name) {                                                 \
+	if (IS_LOADED_SUCCESSFULLY) {                                \
 		return _name(__VA_ARGS__);                               \
 	}                                                            \
 	return _def_ret_val
 
 #define LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF(_name, godot_ref_type, _def_ret_val, ...)                                            \
 	ZoneScoped;                                                                                                                       \
-	if (!_name) {                                                                                                                     \
-		if (!_DD3D_Loader_::load_function(_name, #_name)) {                                                                           \
+	LOADING_RESULT;                                                                                                                   \
+	if (IS_FIRST_LOADING) {                                                                                                           \
+		LOAD_FUNC_AND_STORE_RESULT(_name);                                                                                            \
+		if (IS_FAILED_TO_LOAD) {                                                                                                      \
 			return _def_ret_val;                                                                                                      \
 		}                                                                                                                             \
 	}                                                                                                                                 \
-	if (_name) {                                                                                                                      \
+	if (IS_LOADED_SUCCESSFULLY) {                                                                                                     \
 		return godot::Ref<godot_ref_type>(godot::Object::cast_to<godot_ref_type>(godot::ObjectDB::get_instance(_name(__VA_ARGS__)))); \
 	}                                                                                                                                 \
 	return _def_ret_val
 
 #define LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED(_name, _cls, _def_ret_val, ...) \
 	ZoneScoped;                                                                      \
-	if (!_name) {                                                                    \
-		if (!_DD3D_Loader_::load_function(_name, #_name)) {                          \
+	LOADING_RESULT;                                                                  \
+	if (IS_FIRST_LOADING && !_name) {                                                \
+		LOAD_FUNC_AND_STORE_RESULT(_name);                                           \
+		if (IS_FAILED_TO_LOAD) {                                                     \
 			return _def_ret_val;                                                     \
 		}                                                                            \
 	}                                                                                \
-	if (_name) {                                                                     \
+	if (IS_LOADED_SUCCESSFULLY) {                                                    \
 		return std::make_shared<_cls>(_name(__VA_ARGS__));                           \
 	}                                                                                \
 	return _def_ret_val
@@ -171,4 +196,19 @@ struct _DD3D_Loader_ {
 // GENERATOR_DD3D_API_FUNCTIONS
 // End of the generated API
 
-#undef LOAD_FUNC_POINTER
+#undef LOADING_RESULT
+#undef LOAD_FUNC_AND_STORE_RESULT
+#undef IS_FIRST_LOADING
+#undef IS_LOADED_SUCCESSFULLY
+#undef IS_FAILED_TO_LOAD
+
+#undef LOAD_AND_CALL_FUNC_POINTER
+#undef LOAD_AND_CALL_FUNC_POINTER_SELFRET
+#undef LOAD_AND_CALL_FUNC_POINTER_RET
+#undef LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF
+#undef LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED
+
+#ifdef _NoProfiler
+#undef ZoneScoped
+#endif
+#undef _NoProfiler
