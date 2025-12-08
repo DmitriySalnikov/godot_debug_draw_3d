@@ -937,6 +937,14 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
         #
         # Array function wrappers
+        """
+        New fields for args:
+            "is_const_array": bool
+            "custom_call_args": bool
+        New fields for function:
+            "wrapper_orig_name": str
+            "wrapper_args": list
+        """
         functions_to_add = []
         for idx, func in enumerate(functions):
             if "arg_arrays" in func:
@@ -969,6 +977,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     wrapper_args.insert(arr["data_idx"], new_arg)
 
                 new_func["wrapper_args"] = wrapper_args
+                new_func["wrapper_orig_name"] = func["name"]
                 new_func["name"] = func["name"][: -len("_c")]
                 functions_to_add.append((idx + 1, new_func))
 
@@ -1075,6 +1084,15 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
                 return name
 
+            def process_array_wrapper_arg_calls(arg: dict):
+                type = arg["type"]
+                name = arg["name"]
+
+                if "custom_call_args" in arg:
+                    return ", ".join(arg["custom_call_args"])
+
+                return name
+
             if prev_private_state != is_private:
                 prev_private_state = is_private
                 if is_private:
@@ -1091,7 +1109,10 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             new_lines += docs
 
             # Function Declaration
-            use_args = wrapper_args if wrapper_args else args
+            is_wrapper = wrapper_args != None
+            wrapper_orig_name = func.get("wrapper_orig_name", None)
+            use_args = wrapper_args if is_wrapper else args
+
             if cls_is_class and not is_private:
                 inner_args = ", ".join([process_arg_defines(a) for a in use_args[1:]])
                 new_lines.append(
@@ -1103,39 +1124,48 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     f'{cls_indent}static {get_ref_to_native_name(ret_type)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
                 )
 
-            # Function pointer
-            new_lines.append(
-                f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_funcptr_defines(a) for a in args])}) = nullptr;'
-            )
+            if not is_wrapper:
+                # Function pointer
+                new_lines.append(
+                    f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_funcptr_defines(a) for a in args])}) = nullptr;'
+                )
 
-            # Function call
-            def_ret_val = get_default_ret_val(ret_type)
-            call_args = ", ".join([process_arg_calls(a) for a in use_args])
-            if len(call_args):
-                call_args = ", " + call_args
+                # Function calls
+                def_ret_val = get_default_ret_val(ret_type)
+                call_args = ", ".join([process_arg_calls(a) for a in use_args])
+                if len(call_args):
+                    call_args = ", " + call_args
 
-            if ret_type != "void" and not self_ret:
-                if is_ref_in_api(ret_type):
-                    new_lines.append(
-                        f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret_type)}, {def_ret_val}{call_args});"
-                    )
-                else:
-                    if "ref_class" in ret:
+                if ret_type != "void" and not self_ret:
+                    if is_ref_in_api(ret_type):
                         new_lines.append(
-                            f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{call_args});'
+                            f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret_type)}, {def_ret_val}{call_args});"
                         )
                     else:
-                        new_lines.append(
-                            f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});"
-                        )
-            else:
-                if self_ret:
-                    new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}{call_args});")
-                    new_lines.append(f"{cls_indent}\treturn shared_from_this();")
+                        if "ref_class" in ret:
+                            new_lines.append(
+                                f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{call_args});'
+                            )
+                        else:
+                            new_lines.append(
+                                f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});"
+                            )
                 else:
-                    new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER({func_name}{call_args});")
-            new_lines.append(f"{cls_indent}}}")
+                    if self_ret:
+                        new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}{call_args});")
+                        new_lines.append(f"{cls_indent}\treturn shared_from_this();")
+                    else:
+                        new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER({func_name}{call_args});")
+            else:
+                # Array wrapper calls
+                call_args = ", ".join([process_array_wrapper_arg_calls(a) for a in use_args])
 
+                if ret_type != "void" or self_ret:
+                    new_lines.append(f"{cls_indent}\treturn {wrapper_orig_name}({call_args});")
+                else:
+                    new_lines.append(f"{cls_indent}\t{wrapper_orig_name}({call_args});")
+
+            new_lines.append(f"{cls_indent}}}")
             new_lines.append("")
 
         namespaces[cls] += new_lines

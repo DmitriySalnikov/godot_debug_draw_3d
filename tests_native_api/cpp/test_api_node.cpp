@@ -198,8 +198,9 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 			auto _s1 = DebugDraw3D::new_scoped_config()->set_thickness(0);
 
 			int n = many_camera_frustums ? 1000 : 1;
+			uint64_t t = many_camera_frustums ? Time::get_singleton()->get_ticks_msec() : 0;
 			for (int i = 0; i < n; i++) {
-				DebugDraw3D::draw_camera_frustum(cam, Color::from_hsv(i / float(n), 0.5f, 0.9f));
+				DebugDraw3D::draw_camera_frustum(cam, Color::from_hsv(Math::wrapf(i / float(n) + t * 0.001f, 0, 1), 0.5f, 0.9f));
 
 				// small forward movement
 				Transform3D xf = _s1->get_transform();
