@@ -31,7 +31,15 @@ bool TextGroupItem::update(const double &p_expiration_time, const String &p_key,
 }
 
 bool TextGroupItem::is_expired() {
-	return expiration_time > 0 ? false : !second_chance;
+	if (expiration_time > 0) {
+		return false;
+	} else {
+		if (second_chance) {
+			second_chance = false;
+			return false;
+		}
+	}
+	return true;
 }
 
 void TextGroup::set_group_priority(int p_val) {
@@ -105,8 +113,6 @@ void TextGroup::cleanup_texts(const std::function<void()> &p_update, const doubl
 							t->expiration_time -= p_delta;
 							if (t->is_expired()) {
 								return true;
-							} else {
-								t->second_chance = false;
 							}
 							return false;
 						}),

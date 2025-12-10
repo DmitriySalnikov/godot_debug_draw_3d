@@ -178,9 +178,10 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 
 		timer_cubes = cubes_max_time;
 
-		UtilityFunctions::print("F: ", draw_function,
-				"\tDraw Grid C++: ", (Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0, "ms",
-				"\tTotal Draw time C++: ", DebugDraw3D::get_render_stats()->get_total_time_spent_usec() / 1000.0, "ms");
+		DebugDraw2D::begin_text_group("Stats");
+		DebugDraw2D::set_text("F", String::num_int64(draw_function), 0, { 0, 0, 0, 0 }, cubes_max_time);
+		DebugDraw2D::set_text("Draw Grid C++", String("{0}ms").format(Array::make((Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0)), 1, { 0, 0, 0, 0 }, cubes_max_time);
+		DebugDraw2D::set_text("Total Draw time C++", String("{0}ms").format(Array::make(DebugDraw3D::get_render_stats()->get_total_time_spent_usec() / 1000.0)), 2, { 0, 0, 0, 0 }, cubes_max_time);
 	}
 
 	timer_cubes -= p_delta;
@@ -209,7 +210,9 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 			}
 		}
 
-		if (many_camera_frustums)
-			UtilityFunctions::print("Draw Cameras C++: ", (Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0, "ms");
+		if (many_camera_frustums) {
+			DebugDraw2D::begin_text_group("Stats");
+			DebugDraw2D::set_text("Draw Cameras C++", String("{0}ms").format(Array::make((Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0)), 10);
+		}
 	}
 }

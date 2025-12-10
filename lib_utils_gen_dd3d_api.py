@@ -502,8 +502,8 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 Array fields:
                     "data_name": str
                     "data_idx": int
-                    "size_name": str
-                    "size_idx": int
+                    "size_name" (opt): str
+                    "size_idx" (opt): int
                     "array_type": str
                     "is_const": bool
                 """
@@ -525,41 +525,57 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         and "ref_class" not in a1
                         and "object_class" not in a1
                         and "enum_type" not in a1
-                        and a1["name"].endswith("_data")
+                        and (a1["name"].endswith("_data") or a1["name"].endswith("_string"))
                         and a1["type"].endswith("*")
                         and array_type
                     ):
-                        a2 = args_dict[idx + 1]
-                        if a2["name"].endswith("_size"):
-                            if not a2["name"].startswith(a1["name"].replace("_data", "")):
-                                print(
-                                    f'WARN: Argument name for array size "{a2["name"]}" does not match pointer name "{a1["name"]}".'
-                                )
+                        if a1["name"].endswith("_data"):
+                            a2 = args_dict[idx + 1]
+                            if a2["name"].endswith("_size"):
+                                if not a2["name"].startswith(a1["name"].replace("_data", "")):
+                                    print(
+                                        f'WARN: Argument name for array size "{a2["name"]}" does not match pointer name "{a1["name"]}".'
+                                    )
 
-                            words2 = re.findall(r"\w+", a2["type"])
-                            size_types = ["uint64_t", "int64_t"]
-                            if words2[-1] in size_types:
-                                arr_dict = {
-                                    "data_name": a1["name"],
-                                    "data_idx": idx,
-                                    "size_name": a2["name"],
-                                    "size_idx": idx + 1,
-                                    "array_type": array_type,
-                                    "is_const": const_array,
-                                }
-                                found_arrays.append(arr_dict)
-                                print(
-                                    "\t\tArguments suitable for the PackedArray wrapper have been found: "
-                                    + f'{idx} - {a1["name"]} and {idx + 1} - {a2["name"]}'
-                                )
+                                words2 = re.findall(r"\w+", a2["type"])
+                                size_types = ["uint64_t", "int64_t"]
+                                if words2[-1] in size_types:
+                                    arr_dict = {
+                                        "data_name": a1["name"],
+                                        "data_idx": idx,
+                                        "size_name": a2["name"],
+                                        "size_idx": idx + 1,
+                                        "array_type": array_type,
+                                        "is_const": const_array,
+                                    }
+                                    found_arrays.append(arr_dict)
+                                    print(
+                                        "\t\tArguments suitable for the PackedArray wrapper have been found: "
+                                        + f'{idx} - {a1["name"]} and {idx + 1} - {a2["name"]}'
+                                    )
 
-                                if not func_name.endswith("_c"):
-                                    raise Exception('Function that use C arrays should have name ending in "_c".')
-                            else:
-                                raise Exception(
-                                    "Arguments suitable for the PackedArray wrapper have been found, "
-                                    + f'but the "{a2["type"]} {a2["name"]}" argument type must be one of: {size_types}'
-                                )
+                                    if not func_name.endswith("_c"):
+                                        raise Exception('Function that use C arrays should have name ending in "_c".')
+                                else:
+                                    raise Exception(
+                                        "Arguments suitable for the PackedArray wrapper have been found, "
+                                        + f'but the "{a2["type"]} {a2["name"]}" argument type must be one of: {size_types}'
+                                    )
+                        else:
+                            arr_dict = {
+                                "data_name": a1["name"],
+                                "data_idx": idx,
+                                "array_type": array_type,
+                                "is_const": const_array,
+                            }
+                            found_arrays.append(arr_dict)
+
+                            print(
+                                f'\t\tArguments suitable for the String wrapper have been found: {idx} - {a1["name"]}'
+                            )
+
+                            if not func_name.endswith("_c"):
+                                raise Exception('Function that use C strings should have name ending in "_c".')
                 if len(found_arrays):
                     fun_dict["arg_arrays"] = found_arrays
 
@@ -954,7 +970,8 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 wrapper_args: list = copy.deepcopy(new_func["args"])
 
                 for arr in reversed(arrays_info):
-                    wrapper_args.pop(arr["size_idx"])
+                    if "size_idx" in arr:
+                        wrapper_args.pop(arr["size_idx"])
                     data_arg = wrapper_args.pop(arr["data_idx"])
 
                     new_arg = {
@@ -964,6 +981,9 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                         "is_const_array": arr["is_const"],
                     }
 
+                    if "default" in data_arg and "size_idx" not in arr:
+                        new_arg["default"] = data_arg["default"]
+
                     arr_args = []
                     new_arg["custom_call_args"] = arr_args
 
@@ -972,7 +992,9 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                         arr_args.append(f'{new_arg["name"]}.utf8().' + ptr_suffix)
                     else:
                         arr_args.append(f'{new_arg["name"]}.' + ptr_suffix)
-                    arr_args.append(f'{new_arg["name"]}.size()')
+
+                    if "size_idx" in arr:
+                        arr_args.append(f'{new_arg["name"]}.size()')
 
                     wrapper_args.insert(arr["data_idx"], new_arg)
 

@@ -151,14 +151,16 @@ public:
 	 * @param title_size Title font size
 	 * @param text_size Text font size
 	 */
-	// TODO:
 	void begin_text_group(godot::String group_title, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
+	NAPI void begin_text_group_c(const char* group_title_string, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
+	
 	/**
 	 * Ends the text group. Should be called after DebugDraw2D.begin_text_group.
 	 *
 	 * If you need to create multiple groups, just call DebugDraw2D.begin_text_group again and this function at the end.
 	 */
 	NAPI void end_text_group();
+	
 	/**
 	 * Add or update text in an overlay
 	 *
@@ -168,8 +170,8 @@ public:
 	 * @param color_of_value Value color
 	 * @param duration Expiration time
 	 */
-	// TODO:
 	void set_text(godot::String key, godot::Variant value = godot::Variant(), int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
+	NAPI void set_text_c(const char* key_string, const char* value_string = "", int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 	/**
 	 * Clear all text
