@@ -152,6 +152,8 @@ public:
 	 * @param text_size Text font size
 	 */
 	void begin_text_group(godot::String group_title, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
+	/// @private
+	// #docs_func begin_text_group
 	NAPI void begin_text_group_c(const char* group_title_string, int group_priority = 0, godot::Color group_color = Colors::white_smoke, bool show_title = true, int title_size = 14, int text_size = 12);
 	
 	/**
@@ -171,6 +173,8 @@ public:
 	 * @param duration Expiration time
 	 */
 	void set_text(godot::String key, godot::Variant value = godot::Variant(), int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
+	/// @private
+	// #docs_func set_text
 	NAPI void set_text_c(const char* key_string, const char* value_string = "", int priority = 0, godot::Color color_of_value = Colors::empty_color, real_t duration = -1);
 
 	/**

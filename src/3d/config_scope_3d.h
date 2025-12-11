@@ -114,6 +114,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_thickness(real_t _value) const;
 	/// @private
+	// #docs_func set_thickness
 	NAPI NSELF_RETURN set_thickness_selfreturn(real_t _value) const;
 	NAPI real_t get_thickness() const;
 
@@ -124,6 +125,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_center_brightness(real_t _value) const;
 	/// @private
+	// #docs_func set_center_brightness
 	NAPI NSELF_RETURN set_center_brightness_selfreturn(real_t _value) const;
 	NAPI real_t get_center_brightness() const;
 
@@ -134,6 +136,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_hd_sphere(bool _value) const;
 	/// @private
+	// #docs_func set_hd_sphere
 	NAPI NSELF_RETURN set_hd_sphere_selfreturn(bool _value) const;
 	NAPI bool is_hd_sphere() const;
 
@@ -144,6 +147,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_plane_size(real_t _value) const;
 	/// @private
+	// #docs_func set_plane_size
 	NAPI NSELF_RETURN set_plane_size_selfreturn(real_t _value) const;
 	NAPI real_t get_plane_size() const;
 
@@ -152,6 +156,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_transform(godot::Transform3D _value) const;
 	/// @private
+	// #docs_func set_transform
 	NAPI NSELF_RETURN set_transform_selfreturn(godot::Transform3D _value) const;
 	NAPI godot::Transform3D get_transform() const;
 
@@ -165,6 +170,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_outline_color(godot::Color _value) const;
 	/// @private
+	// #docs_func set_text_outline_color
 	NAPI NSELF_RETURN set_text_outline_color_selfreturn(godot::Color _value) const;
 	NAPI godot::Color get_text_outline_color() const;
 
@@ -178,6 +184,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_outline_size(int32_t _value) const;
 	/// @private
+	// #docs_func set_text_outline_size
 	NAPI NSELF_RETURN set_text_outline_size_selfreturn(int32_t _value) const;
 	NAPI int32_t get_text_outline_size() const;
 
@@ -191,6 +198,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_fixed_size(bool _value) const;
 	/// @private
+	// #docs_func set_text_fixed_size
 	NAPI NSELF_RETURN set_text_fixed_size_selfreturn(bool _value) const;
 	NAPI bool get_text_fixed_size() const;
 
@@ -204,6 +212,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_text_font(Ref<godot::Font> _value) const;
 	/// @private
+	// #docs_func set_text_font
 	NAPI NSELF_RETURN set_text_font_selfreturn(Ref<godot::Font> _value) const;
 	NAPI Ref<godot::Font> get_text_font() const;
 
@@ -219,6 +228,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_viewport(godot::Viewport *_value) const;
 	/// @private
+	// #docs_func set_viewport
 	NAPI NSELF_RETURN set_viewport_selfreturn(godot::Viewport *_value) const;
 	NAPI godot::Viewport *get_viewport() const;
 
@@ -232,6 +242,7 @@ public:
 	 */
 	Ref<DebugDraw3DScopeConfig> set_no_depth_test(bool _value) const;
 	/// @private
+	// #docs_func set_no_depth_test
 	NAPI NSELF_RETURN set_no_depth_test_selfreturn(bool _value) const;
 	NAPI bool is_no_depth_test() const;
 

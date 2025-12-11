@@ -212,18 +212,37 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 dev_print(f"\t\tSkipping: {idx + 1}: {line}")
                 continue
 
-            # TODO: add docs for C/Native functions like `draw_lines_c`
-            docs = []
-            if lines[idx - 1] == "*/":
-                doc_idx = idx - 1
-                while lines[doc_idx] != "/**":
-                    doc_idx -= 1
-                docs = [
-                    line.replace("*", "", 1).strip() if line.startswith("*") else line
-                    for line in lines[doc_idx + 1 : idx - 1]
-                ]
-                # replaces images with placeholder
-                docs = [re.sub(r"(\!\[.*\]\(.*\))", "[THERE WAS AN IMAGE]", line) for line in docs]
+            def get_doc_lines(start_idx: int):
+                found_docs = []
+                if lines[start_idx - 1] == "*/":
+                    doc_idx = start_idx - 1
+                    while lines[doc_idx] != "/**" and doc_idx >= 0:
+                        doc_idx -= 1
+                    found_docs = [
+                        line.replace("*", "", 1).strip() if line.startswith("*") else line
+                        for line in lines[doc_idx + 1 : start_idx - 1]
+                    ]
+                    # replaces images with placeholder
+                    found_docs = [re.sub(r"(\!\[.*\]\(.*\))", "[THERE WAS AN IMAGE]", line) for line in found_docs]
+                return found_docs
+
+            def search_for_docs_override(start_idx: int):
+                new_docs = []
+                cur_idx = start_idx - 1
+                while (lines[cur_idx].startswith("//") or len(lines[cur_idx]) == 0) and cur_idx >= 0:
+                    match = re.search(r"\#docs_func (\w*)", lines[cur_idx])
+                    if match:
+                        override_func = match.group(1)
+                        for o_idx, l in enumerate(lines):
+                            o_match = re.search(f" {override_func}\\(", l)
+                            if o_match:
+                                new_docs = get_doc_lines(o_idx)
+                                break
+                        break
+                    cur_idx -= 1
+                return new_docs
+
+            docs = get_doc_lines(idx)
 
             class_prefixes = ["NAPI_CLASS class ", "NAPI_CLASS_SINGLETON class ", "NAPI_CLASS_REF class "]
             class_prefix = ""
@@ -355,6 +374,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     "ref_class" (opt): str
                     "enum_type" (opt): dict
                 """
+                
+                if len(docs) == 0:
+                    docs = search_for_docs_override(idx)
 
                 func_name_match = re.search(r"\b(\w+)\s*\(", line)
                 func_name = func_name_match.group(1).strip()
@@ -975,7 +997,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     data_arg = wrapper_args.pop(arr["data_idx"])
 
                     new_arg = {
-                        "name": data_arg["name"].replace("_data", ""),
+                        "name": data_arg["name"].replace("_data", "").replace("_string", ""),
                         "type": arr["array_type"],
                         "c_type": arr["array_type"],
                         "is_const_array": arr["is_const"],
