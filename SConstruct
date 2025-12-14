@@ -305,6 +305,9 @@ extra_tags = ""
 if "release" in env["target"] and env["force_enabled_dd3d"]:
     extra_tags += ".enabled"
 
+if env.get("precision", "single") == "double":
+    extra_tags += ".double"
+
 if not env["build_cpp_api_tests"]:
     lib_utils.get_library_object(
         env, project_name, lib_name, extra_tags, env["addon_output_dir"], src_folder, additional_src

@@ -160,7 +160,7 @@ void DebugGeometryContainer::update_center_positions() {
 
 	geometry_pool.for_each_line([&pos_diff](DelayedRendererLine *i) {
 		for (size_t l = 0; l < i->lines_count; l++) {
-			i->lines[l] += pos_diff;
+			i->lines.get()[l] += pos_diff;
 		}
 	});
 

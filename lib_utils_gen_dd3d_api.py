@@ -1119,14 +1119,14 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     return "void *"
                 if "enum_type" in ret:
                     e = ret["enum_type"]
-                    return f"{e['type']} /*{e["class"]}::{e["name"]}*/"
+                    return f"{e['type']} /*{e['class']}::{e['name']}*/"
 
                 return r_type
 
             def get_ret_required_cast_type(ret: dict):
                 if "enum_type" in ret:
                     e = ret["enum_type"]
-                    return f"{e["class"]}::{e["name"]}"
+                    return f"{e['class']}::{e['name']}"
 
                 return None
 
@@ -1161,7 +1161,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     return f"{type} /*{arg['object_class']} {name}*/"
                 if "enum_type" in arg:
                     e = arg["enum_type"]
-                    return f"{e['type']} /*{e["class"]}::{e["name"]} {name}*/"
+                    return f"{e['type']} /*{e['class']}::{e['name']} {name}*/"
 
                 return f"{type} /*{name}*/"
 

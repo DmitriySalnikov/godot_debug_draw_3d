@@ -346,7 +346,7 @@ jobs:
           target: editor
           arch: ${{matrix.arch}}
           artifact: libdouble-${{matrix.platform}}.editor.${{matrix.arch}}
-          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
+          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no custom_api_file=patches/extension_api_double.json
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
@@ -357,7 +357,7 @@ jobs:
           target: template_release
           arch: ${{matrix.arch}}
           artifact: libdouble-${{matrix.platform}}.template_release.${{matrix.arch}}
-          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
+          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no custom_api_file=patches/extension_api_double.json
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 

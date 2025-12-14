@@ -217,7 +217,7 @@ private:
 	void _remove_debug_container(const uint64_t &p_world_id);
 
 	_FORCE_INLINE_ Vector3 get_up_vector(const Vector3 &p_dir);
-	void add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd = nullptr);
+	void add_or_update_line_with_thickness(real_t p_exp_time, Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd = nullptr);
 	Node *get_root_node();
 
 	void create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration = 0);
@@ -541,10 +541,10 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_lines(const godot::PackedVector3Array &lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_lines(godot::PackedVector3Array lines, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/// @private
 	// #docs_func draw_lines
-	NAPI void draw_lines_c(const godot::Vector3 *lines_data, const uint64_t &lines_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_lines_c(godot::Vector3 *lines_data, const uint64_t &lines_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
 	 * Draw an array of lines.

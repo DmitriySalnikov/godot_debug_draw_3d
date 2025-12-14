@@ -9,6 +9,9 @@
         "${workspaceFolder}/godot-cpp/gen/include"
       ],
       "defines": [
+        //"REAL_T_IS_DOUBLE",
+        //"FIX_PRECISION_ENABLED",
+        //
         "WINDOWS_ENABLED",
         "DEBUG_ENABLED",
         "DEV_ENABLED",

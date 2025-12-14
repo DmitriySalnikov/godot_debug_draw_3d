@@ -27,6 +27,35 @@
             }
         },
         {
+            // Sometimes it may be necessary to remove generated bindings when changing precision!
+            "type": "cppbuild",
+            "label": "editor_build_double",
+            "command": "scons",
+            "args": [
+                "custom_api_file=patches/extension_api_double.json",
+                "precision=double",
+                "target=editor",
+                "debug_symbols=yes",
+                "optimize=speed",
+                //"dev_build=yes",
+                //"lto=full",
+                //"telemetry_enabled=yes",
+                //"tracy_enabled=yes",
+                //"fix_precision_enabled=no",
+                //"shader_world_coords_enabled=no",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             // It doesn't seem to work, but it can serve as an example of a build startup command.
             "type": "cppbuild",
             "label": "template_debug_web",
@@ -57,25 +86,22 @@
         },
         {
             "type": "cppbuild",
-            "label": "editor_build_double",
+            "label": "editor_build_linux",
             "command": "scons",
             "args": [
-                "custom_api_file=extension_api_double.json",
-                "precision=double",
                 "target=editor",
                 "debug_symbols=yes",
                 "dev_build=yes",
-                "lto=full",
+                //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
-                //"fix_precision_enabled=no",
-                //"shader_world_coords_enabled=no",
+                //"native_api_enabled=no"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
-                "$msCompile"
+                "$gcc"
             ],
             "group": {
                 "kind": "build",
@@ -113,22 +139,30 @@
         },
         {
             "type": "cppbuild",
-            "label": "editor_build_linux",
+            "label": "test_cpp_api_double",
             "command": "scons",
             "args": [
+                "custom_api_file=patches/extension_api_double.json",
+                "precision=double",
+                //
+                "build_cpp_api_tests=yes",
+                "custom_godotcpp_suffix=.test_napi",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                //"native_api_mismatch_check_enabled=yes",
+                //
                 "target=editor",
                 "debug_symbols=yes",
+                "optimize=speed",
                 //"dev_build=yes",
                 //"lto=full",
-                //"telemetry_enabled=yes",
-                //"tracy_enabled=yes",
-                //"native_api_enabled=no"
+                "tracy_enabled=yes",
+                "use_hot_reload=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
-                "$gcc"
+                "$msCompile"
             ],
             "group": {
                 "kind": "build",

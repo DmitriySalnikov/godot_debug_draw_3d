@@ -892,7 +892,7 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	return Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
@@ -1144,12 +1144,12 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
-void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines(PackedVector3Array lines, const Color &color, const real_t &duration) {
 	ZoneScoped;
-	draw_lines_c(lines.ptr(), lines.size(), color, duration);
+	draw_lines_c(lines.ptrw(), lines.size(), color, duration);
 }
 
-void DebugDraw3D::draw_lines_c(const Vector3 *lines_data, const size_t &lines_size, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines_c(Vector3 *lines_data, const uint64_t &lines_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 	if (!lines_data || lines_size == 0)

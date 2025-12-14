@@ -50,4 +50,3 @@ addons/debug_draw_3d/native_api/
 clang_rt.asan_*
 docs/images/classes/temp/
 SUCCESS
-extension_api*.json

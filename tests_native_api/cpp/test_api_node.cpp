@@ -94,7 +94,7 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	PackedVector3Array a;
 	a.append(Vector3(0, 0, 0));
 	a.append(Vector3(1, 1, 1));
-	DebugDraw3D::draw_lines_c(a.ptr(), a.size());
+	DebugDraw3D::draw_lines_c(a.ptrw(), a.size());
 	a[1] = Vector3(0, 1, 1);
 	DebugDraw3D::draw_lines(a, Color(0, 1, 1));
 
