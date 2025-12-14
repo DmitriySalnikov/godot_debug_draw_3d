@@ -15,7 +15,7 @@ using namespace godot;
 
 namespace NATIVE_API {
 
-// GENERATOR_DD3D_FUNCTIONS_DEFINES
+// GENERATOR_DD3D_FUNCTIONS
 
 Dictionary get_functions() {
 	ZoneScoped;

@@ -5,17 +5,21 @@
 // To create new instances of Ref<T> use std::make_shared<T>, e.g.:
 // auto cfg = std::make_shared<DebugDraw3DConfig>();
 //
+// TODO: about string
+// TODO: about arrays
+//
 // TODO: reverse:
 // Define DD3D_DISABLE_MISMATCH_CHECKS to disable signature mismatch checking and disable method existence checking.
-#include "c_api_shared.hpp"
+
+//#define DD3D_DISABLE_MISMATCH_CHECKS
 
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
 #endif
 // GENERATOR_DD3D_API_INCLUDES
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/variant/builtin_types.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/variant.hpp>
 #if _MSC_VER
 __pragma(warning(default : 4244 26451 26495));
 #endif
@@ -23,6 +27,11 @@ __pragma(warning(default : 4244 26451 26495));
 #ifndef ZoneScoped
 #define _NoProfiler
 #define ZoneScoped
+#endif
+
+#ifndef DD3D_DISABLE_MISMATCH_CHECKS
+#include "c_api_shared.hpp" // GENERATOR_DD3D_API_REMOVE_LINE
+// GENERATOR_DD3D_API_SHARED_EMBED
 #endif
 
 struct _DD3D_Loader_ {
@@ -114,8 +123,6 @@ struct _DD3D_Loader_ {
 	}
 };
 
-
-// TODO: Add DD3DNotLoaded state and wait for it to load
 #define LOADING_RESULT static _DD3D_Loader_::LoadingResult _dd3d_loading_result = _DD3D_Loader_::LoadingResult::None
 #define LOAD_FUNC_AND_STORE_RESULT(_name) _dd3d_loading_result = _DD3D_Loader_::load_function(_name, #_name) ? _DD3D_Loader_::LoadingResult::Success : _DD3D_Loader_::LoadingResult::Failure
 #define IS_FIRST_LOADING _dd3d_loading_result == _DD3D_Loader_::LoadingResult::None
@@ -162,6 +169,20 @@ struct _DD3D_Loader_ {
 	}                                                            \
 	return _def_ret_val
 
+#define LOAD_AND_CALL_FUNC_POINTER_RET_CAST(_name, _ret_cast, _def_ret_val, ...) \
+	ZoneScoped;                                                                  \
+	LOADING_RESULT;                                                              \
+	if (IS_FIRST_LOADING) {                                                      \
+		LOAD_FUNC_AND_STORE_RESULT(_name);                                       \
+		if (IS_FAILED_TO_LOAD) {                                                 \
+			return _def_ret_val;                                                 \
+		}                                                                        \
+	}                                                                            \
+	if (IS_LOADED_SUCCESSFULLY) {                                                \
+		return static_cast<_ret_cast>(_name(__VA_ARGS__));                       \
+	}                                                                            \
+	return _def_ret_val
+
 #define LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF(_name, godot_ref_type, _def_ret_val, ...)                                            \
 	ZoneScoped;                                                                                                                       \
 	LOADING_RESULT;                                                                                                                   \
@@ -205,6 +226,7 @@ struct _DD3D_Loader_ {
 #undef LOAD_AND_CALL_FUNC_POINTER
 #undef LOAD_AND_CALL_FUNC_POINTER_SELFRET
 #undef LOAD_AND_CALL_FUNC_POINTER_RET
+#undef LOAD_AND_CALL_FUNC_POINTER_RET_CAST
 #undef LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF
 #undef LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED
 

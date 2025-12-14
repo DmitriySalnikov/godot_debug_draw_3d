@@ -1,9 +1,5 @@
 #pragma once
 
-#include <sstream>
-#include <string>
-#include <typeinfo>
-
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
 #endif
@@ -11,6 +7,12 @@ __pragma(warning(disable : 4244 26451 26495));
 #if _MSC_VER
 __pragma(warning(default : 4244 26451 26495));
 #endif
+
+// GENERATOR_DD3D_API_SHARED_EMBED_START
+
+#include <sstream>
+#include <string>
+#include <typeinfo>
 
 namespace DD3DShared {
 

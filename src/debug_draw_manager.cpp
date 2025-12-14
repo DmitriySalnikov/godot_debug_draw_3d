@@ -12,10 +12,6 @@ GODOT_WARNING_DISABLE()
 GODOT_WARNING_RESTORE()
 using namespace godot;
 
-#ifdef DEV_ENABLED
-Object *DebugDrawManager::default_arg_obj = nullptr;
-#endif
-
 #ifndef DISABLE_DEBUG_RENDERING
 void _DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
 	root_node = p_root;
@@ -35,24 +31,6 @@ void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
 void DebugDrawManager::_bind_methods() {
-#ifdef DEV_ENABLED
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test1)), &DebugDrawManager::api_test1);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test2)), &DebugDrawManager::api_test2);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test3)), &DebugDrawManager::api_test3);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test4)), &DebugDrawManager::api_test4);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test5)), &DebugDrawManager::api_test5);
-
-	default_arg_obj = memnew(Object);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test6)), &DebugDrawManager::api_test6, default_arg_obj, 1, Variant(), true, 2, 4, 3.5f, "String", "StringName", "Node/Path");
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test7)), &DebugDrawManager::api_test7, Color(1, 2, 3, 4), Vector2(1, 2), Vector2i(3, 4), Vector3(1, 2, 3), Vector3i(4, 5, 6), Vector4(1, 2, 3, 4), Vector4i(5, 6, 7, 8), Rect2(Vector2(1, 2), Vector2(3, 4)), Rect2(Vector2(5, 6), Vector2(7, 8)));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test8)), &DebugDrawManager::api_test8, Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6)), Transform3D(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9), Vector3(10, 11, 12)), Plane(1, 2, 3, 4), Quaternion(1, 2, 3, 4), AABB(Vector3(1, 2, 3), Vector3(4, 5, 6)), Basis(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9)), Projection(Vector4(1, 2, 3, 4), Vector4(5, 6, 7, 8), Vector4(9, 10, 11, 12), Vector4(13, 14, 15, 16)));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test9)), &DebugDrawManager::api_test9, RID(), Callable(), Signal(), Utils::make_dict("test", 2, Vector2(2, 1), Plane(4, 3, 2, 1), "ArrayKey_1", Array::make(2, "test_dict")), Array::make(1, "test", SECOND_VALUE));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test10)), &DebugDrawManager::api_test10, PackedByteArray(TypedArray<uint8_t>::make(1, 2, 3, 4)), PackedInt32Array(), PackedInt64Array(TypedArray<int64_t>::make(-1, -2, -3, -4)), PackedFloat32Array(TypedArray<float>::make(0.1f, 0.2f, 0.3f, 0.4f)), PackedFloat64Array(TypedArray<double>::make(10.5, 20.5, 30.5, 40.5)), PackedStringArray(TypedArray<String>::make("1", "2", "3", "4")), PackedVector2Array(TypedArray<String>::make(Vector2(8, 9), Vector2(28, 39))), PackedVector3Array(TypedArray<String>::make(Vector3(7, 8, 9), Vector3(9, 2, 3))), PackedColorArray(TypedArray<String>::make(Color(1, 1, 0, 0.5), Color(1, 0, 1))));
-
-	BIND_ENUM_CONSTANT(FIRST_VALUE);
-	BIND_ENUM_CONSTANT(SECOND_VALUE);
-#endif
-
 #define REG_CLASS_NAME DebugDrawManager
 
 #ifdef NATIVE_API_ENABLED
@@ -121,9 +99,6 @@ DebugDrawManager::~DebugDrawManager() {
 	UNASSIGN_SINGLETON(DebugDrawManager);
 	deinit();
 
-#ifdef DEV_ENABLED
-	memdelete(default_arg_obj);
-#endif
 #ifdef NATIVE_API_ENABLED
 	NATIVE_API::clear_orphaned_refs();
 #endif

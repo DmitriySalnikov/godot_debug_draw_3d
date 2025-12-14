@@ -22,6 +22,20 @@ default_colors_map = {
     "Colors::white_smoke": "godot::Color(0.96f, 0.96f, 0.96f, 1.0f)",
 }
 
+allowed_enum_types = [
+    "char",
+    "short",
+    "int",
+    "uint8_t",
+    "uint16_t",
+    "uint32_t",
+    "uint64_t",
+    "int8_t",
+    "int16_t",
+    "int32_t",
+    "int64_t",
+]
+
 basic_godot_types = [
     "godot::Vector2",
     "godot::Vector2i",
@@ -180,6 +194,10 @@ def insert_lines_at_mark(lines: list, mark: str, insert_lines: list):
     lines[insert_index:insert_index] = insert_lines
 
 
+def split_text_into_lines(text) -> list:
+    return text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+
+
 ####################################
 ####################################
 
@@ -195,8 +213,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
 
     for header in headers:
         print(f"  Parsing {header} ...")
-        text_data = lib_utils.read_all_text(header)
-        lines = text_data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        lines = split_text_into_lines(lib_utils.read_all_text(header))
         lines = [line.strip() for line in lines]
         def_ctx.reset()
 
@@ -281,6 +298,8 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 split = line[len("NAPI_ENUM enum ") : line.find("{")].split(":")
                 name = split[0].strip()
                 e_type = split[1].strip()
+                if e_type not in allowed_enum_types:
+                    raise Exception(f'Enum must be one of these types: {allowed_enum_types}, but "{e_type}" was found.')
 
                 print(f"\tFound Enum {name} of type {e_type}")
                 enum_lines = [line[line.rfind("{") + 1 :]]
@@ -374,7 +393,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     "ref_class" (opt): str
                     "enum_type" (opt): dict
                 """
-                
+
                 if len(docs) == 0:
                     docs = search_for_docs_override(idx)
 
@@ -543,11 +562,13 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         array_type = basic_types_to_arrays[words1[-1]]
 
                     if (
-                        idx + 1 < len(args_dict)
+                        (
+                            (a1["name"].endswith("_data") and idx + 1 < len(args_dict))
+                            or (a1["name"].endswith("_string"))
+                        )
                         and "ref_class" not in a1
                         and "object_class" not in a1
                         and "enum_type" not in a1
-                        and (a1["name"].endswith("_data") or a1["name"].endswith("_string"))
                         and a1["type"].endswith("*")
                         and array_type
                     ):
@@ -760,16 +781,25 @@ def generate_native_api(
             return False
 
         for func in functions:
-            func_name = func["c_name"]
-            func_orig_name = func["name"]
-            ret = func["return"]
-            ret_type = ret["c_type"]
-            self_ret = func["self_return"]
-            is_ret_custom_ref = is_ref_in_api(ret_type)
 
-            args = func["args"]
+            def process_ret_type(ret: dict):
+                type = ret["c_type"]
+                if "enum_type" in ret:
+                    e = ret["enum_type"]
+                    return f"{e['type']} /*{e['class']}::{e['name']}*/"
 
-            def process_arg_defines(arg: dict):
+                return type
+
+            def process_ret_calls(line: str, ret: dict):
+                if "ref_class" in ret:
+                    return f"{line}->get_instance_id()"
+                if "enum_type" in ret:
+                    e = ret["enum_type"]
+                    return f"static_cast<{e['type']} /*{e['class']}::{e['name']}*/>({line})"
+
+                return line
+
+            def process_arg_decl(arg: dict):
                 type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
@@ -798,18 +828,21 @@ def generate_native_api(
 
                 return f"{name}"
 
+            func_name = func["c_name"]
+            func_orig_name = func["name"]
+            ret = func["return"]
+            ret_type = process_ret_type(ret)
+            self_ret = func["self_return"]
+            is_ret_custom_ref = is_ref_in_api(ret_type)
+
+            args = func["args"]
+
             # func define
-            new_func_define_args = ", ".join([process_arg_defines(a) for a in args])
+            new_func_define_args = ", ".join([process_arg_decl(a) for a in args])
             new_funcs.append(
                 f'{extern_c_dbg}static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
             )
             new_funcs.append("\tZoneScoped;")
-
-            def process_ret_calls(line: str, ret: dict):
-                if "ref_class" in ret:
-                    return f"{line}->get_instance_id()"
-
-                return line
 
             if is_singleton:
                 call_args = ", ".join([process_arg_calls(a) for a in args])
@@ -835,8 +868,7 @@ def generate_native_api(
 
             new_func_regs.append(f"\t\tADD_FUNC({func_name});")
 
-    c_api_temp_data = lib_utils.read_all_text(c_api_template)
-    c_api_lines = c_api_temp_data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    c_api_lines = split_text_into_lines(lib_utils.read_all_text(c_api_template))
 
     insert_lines_at_mark(
         c_api_lines,
@@ -848,7 +880,7 @@ def generate_native_api(
         "// GENERATOR_DD3D_GODOT_API_INCLUDES",
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
-    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_DEFINES", new_funcs)
+    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS", new_funcs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS", new_func_regs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
     c_api_file_name, c_api_file_ext = os.path.splitext(os.path.basename(c_api_template))
@@ -1032,50 +1064,48 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         new_lines = []
 
         for func in functions:
-            func_name = func["c_name"]
-            func_orig_name = func["name"]
-            ret = func["return"]
-            ret_type = ret["c_type"]
-            args = func["args"]
-            wrapper_args = func.get("wrapper_args", None)
-            self_ret = func["self_return"]
-            is_private = func.get("private", False)
 
-            if self_ret:
-                if ret_type == "void":
-                    ret_type = f"std::shared_ptr<{cls}>"
-
-                is_class_has_selfreturn[cls] = True
-
-            def get_default_ret_val(ret_type: str):
-                if ret_type.endswith("*") or ret_type.startswith("Ref<"):
+            def get_default_ret_val(r_type: str):
+                if r_type.endswith("*") or r_type.startswith("Ref<"):
                     return "nullptr"
                 return "{}"
 
-            def get_ref_class_name(ret_type: str):
-                if ret_type.startswith("Ref<"):
-                    return ret_type[4:-1]
-                return ret_type
+            def get_ref_class_name(r_type: str):
+                if r_type.startswith("Ref<"):
+                    return r_type[4:-1]
+                return r_type
 
-            def is_ref_in_api(ret_type: str):
-                if ret_type.startswith("Ref<"):
-                    if get_ref_class_name(ret_type) in classes:
+            def is_ref_in_api(r_type: str):
+                if r_type.startswith("Ref<"):
+                    if get_ref_class_name(r_type) in classes:
                         return True
                 return False
 
-            def get_ref_to_void_arg_name(ret_type: str):
-                if is_ref_in_api(ret_type):
-                    return "void *"
-                return ret_type
-
-            def get_ref_to_native_name(ret_type: str):
-                if is_ref_in_api(ret_type):
-                    return f"std::shared_ptr<{get_ref_class_name(ret_type)}>"
+            def process_ret_type_decl(r_type: str, ret: dict):
+                if is_ref_in_api(r_type):
+                    return f"std::shared_ptr<{get_ref_class_name(r_type)}>"
                 if "ref_class" in ret:
                     return f"godot::Ref<{ret['ref_class']}>"
-                return ret_type
 
-            def process_arg_defines(arg: dict):
+                return r_type
+
+            def process_ret_func_ptr_decl(r_type: str, ret: dict):
+                if is_ref_in_api(r_type):
+                    return "void *"
+                if "enum_type" in ret:
+                    e = ret["enum_type"]
+                    return f"{e['type']} /*{e["class"]}::{e["name"]}*/"
+
+                return r_type
+
+            def get_ret_required_cast_type(ret: dict):
+                if "enum_type" in ret:
+                    e = ret["enum_type"]
+                    return f"{e["class"]}::{e["name"]}"
+
+                return None
+
+            def process_arg_decl(arg: dict):
                 type = arg["c_type"].strip()
                 name = arg["name"].strip()
                 res = f"{type} {name}"
@@ -1097,7 +1127,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     res += f" = {arg['default']}"
                 return res
 
-            def process_arg_funcptr_defines(arg: dict):
+            def process_arg_funcptr_decl(arg: dict):
                 type = arg["c_type"]
                 name = arg["name"]
                 if is_ref_in_api(type):
@@ -1137,6 +1167,21 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
                 return name
 
+            func_name = func["c_name"]
+            func_orig_name = func["name"]
+            ret = func["return"]
+            ret_type = ret["c_type"]
+            args = func["args"]
+            wrapper_args = func.get("wrapper_args", None)
+            self_ret = func["self_return"]
+            is_private = func.get("private", False)
+
+            if self_ret:
+                if ret_type == "void":
+                    ret_type = f"std::shared_ptr<{cls}>"
+
+                is_class_has_selfreturn[cls] = True
+
             if prev_private_state != is_private:
                 prev_private_state = is_private
                 if is_private:
@@ -1158,20 +1203,20 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             use_args = wrapper_args if is_wrapper else args
 
             if cls_is_class and not is_private:
-                inner_args = ", ".join([process_arg_defines(a) for a in use_args[1:]])
+                inner_args = ", ".join([process_arg_decl(a) for a in use_args[1:]])
                 new_lines.append(
-                    f'{cls_indent}{get_ref_to_native_name(ret_type)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                    f'{cls_indent}{process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
                 )
             else:
-                inner_args = ", ".join([process_arg_defines(a) for a in use_args])
+                inner_args = ", ".join([process_arg_decl(a) for a in use_args])
                 new_lines.append(
-                    f'{cls_indent}static {get_ref_to_native_name(ret_type)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                    f'{cls_indent}static {process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
                 )
 
             if not is_wrapper:
                 # Function pointer
                 new_lines.append(
-                    f'{cls_indent}\tstatic {"void" if self_ret else get_ref_to_void_arg_name(ret_type)}(*{func_name})({", ".join([process_arg_funcptr_defines(a) for a in args])}) = nullptr;'
+                    f'{cls_indent}\tstatic {"void" if self_ret else process_ret_func_ptr_decl(ret_type, ret)}(*{func_name})({", ".join([process_arg_funcptr_decl(a) for a in args])}) = nullptr;'
                 )
 
                 # Function calls
@@ -1191,9 +1236,15 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                                 f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{call_args});'
                             )
                         else:
-                            new_lines.append(
-                                f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});"
-                            )
+                            cast_type = get_ret_required_cast_type(ret)
+                            if cast_type:
+                                new_lines.append(
+                                    f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_CAST({func_name}, {cast_type}, {def_ret_val}{call_args});"
+                                )
+                            else:
+                                new_lines.append(
+                                    f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});"
+                                )
                 else:
                     if self_ret:
                         new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}{call_args});")
@@ -1214,10 +1265,25 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
         namespaces[cls] += new_lines
 
-    shutil.copyfile("src/native_api/c_api_shared.hpp", os.path.join(out_folder, "c_api_shared.hpp"))
-    text_data = lib_utils.read_all_text("src/native_api/templates/cpp/dd3d_cpp_api.hpp")
-    lines = text_data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    # Copy the contents of the "c_api_shared.hpp"
+    c_api_shared_content = split_text_into_lines(lib_utils.read_all_text("src/native_api/c_api_shared.hpp"))
+    c_api_shared_content_start = -1
+    for idx, l in enumerate(c_api_shared_content):
+        if l.endswith("// GENERATOR_DD3D_API_SHARED_EMBED_START"):
+            c_api_shared_content_start = idx
+            break
+    c_api_shared_content = c_api_shared_content[c_api_shared_content_start + 1 :]
 
+    lines = split_text_into_lines(lib_utils.read_all_text("src/native_api/templates/cpp/dd3d_cpp_api.hpp"))
+
+    remove_lines = []
+    for idx, l in enumerate(lines):
+        if l.endswith("// GENERATOR_DD3D_API_REMOVE_LINE"):
+            remove_lines.append(idx)
+    for i in reversed(remove_lines):
+        lines.pop(i)
+
+    # Combine class lines
     result_arr = [""]
     for key in namespaces:
         docs: list = classes[key]["docs"]
@@ -1242,6 +1308,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             result_arr.append(f"}} // namespace {key}")
         result_arr.append("")
 
+    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_SHARED_EMBED", c_api_shared_content)
     insert_lines_at_mark(
         lines,
         "// GENERATOR_DD3D_API_INCLUDES",
@@ -1259,17 +1326,14 @@ def gen_apis(env: SConsEnvironment, c_api_template: str, out_folder: str, src_fo
     src = json.loads(lib_utils.read_all_text(src_folder + "/default_sources.json"))
     header_files = [os.path.join(src_folder, f.replace(".cpp", ".h")).replace("\\", "/") for f in src]
     header_files = [h for h in header_files if os.path.exists(h)]
+    additional_includes = ["camera3d", "control", "font", "viewport"]
 
-    api = generate_native_api(
-        env, header_files, c_api_template, out_folder, src_out, ["camera3d", "control", "font", "viewport"]
-    )
+    api = generate_native_api(env, header_files, c_api_template, out_folder, src_out, additional_includes)
     if api == None:
         print("Couldn't get the Native API")
         return 110
 
-    if not gen_cpp_api(
-        env, copy.deepcopy(api), os.path.join(out_folder, "cpp"), ["camera3d", "control", "font", "viewport"]
-    ):
+    if not gen_cpp_api(env, copy.deepcopy(api), os.path.join(out_folder, "cpp"), additional_includes):
         return 111
     print("The generation is finished!")
     return 0
