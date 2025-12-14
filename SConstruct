@@ -51,6 +51,8 @@ def setup_options(env: SConsEnvironment, arguments):
 
     opts.Add(BoolVariable("build_cpp_api_tests", "Build only cpp api tests", False))
     opts.Add(BoolVariable("native_api_enabled", "Enable the native API module", True))
+    opts.Add(BoolVariable("native_api_mismatch_check_enabled", "Enable signature mismatch checking for the native API module", False))
+
     opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
     opts.Add(BoolVariable("force_enabled_dd3d", "Keep the rendering code in the release build", False))
@@ -142,6 +144,9 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
         env.Append(CPPDEFINES=["NATIVE_API_ENABLED"])
         if not COMMAND_LINE_TARGETS:
             gen_apis(None, None, env, src_out)
+
+        if env["native_api_mismatch_check_enabled"]:
+            env.Append(CPPDEFINES=["DD3D_ENABLE_MISMATCH_CHECKS"])
 
     print()
 

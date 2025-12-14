@@ -2,16 +2,15 @@
 
 // This file is generated!
 //
-// To create new instances of Ref<T> use std::make_shared<T>, e.g.:
-// auto cfg = std::make_shared<DebugDraw3DConfig>();
+// To create new instances of Ref<T>, where T is the DD3D class, use std::make_shared<T>, e.g.:
+//   auto cfg = std::make_shared<DebugDraw3DConfig>();
 //
-// TODO: about string
-// TODO: about arrays
+// Functions with strings and arrays also have an additional "_c" version of functions for native arrays.
+// The "_c" version only accepts `utf8` strings.
 //
-// TODO: reverse:
-// Define DD3D_DISABLE_MISMATCH_CHECKS to disable signature mismatch checking and disable method existence checking.
+// Define DD3D_ENABLE_MISMATCH_CHECKS to enable signature mismatch checking
 
-//#define DD3D_DISABLE_MISMATCH_CHECKS
+//#define DD3D_ENABLE_MISMATCH_CHECKS
 
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
@@ -29,7 +28,7 @@ __pragma(warning(default : 4244 26451 26495));
 #define ZoneScoped
 #endif
 
-#ifndef DD3D_DISABLE_MISMATCH_CHECKS
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
 #include "c_api_shared.hpp" // GENERATOR_DD3D_API_REMOVE_LINE
 // GENERATOR_DD3D_API_SHARED_EMBED
 #endif
@@ -46,21 +45,24 @@ struct _DD3D_Loader_ {
 		Failure
 	};
 
-	static godot::Object *&dd3d_cached() {
-		static godot::Object *dd3d = nullptr;
-		return dd3d;
-	}
-
 	static godot::Object *get_dd3d() {
 		ZoneScoped;
 
-		godot::Object *&dd3d_c = dd3d_cached();
-		if (!dd3d_c && godot::Engine::get_singleton()->has_singleton("DebugDrawManager")) {
+		static godot::Object *dd3d_c = nullptr;
+		static bool failed_to_load = false;
+
+		if (failed_to_load)
+			return nullptr;
+
+		if (dd3d_c)
+			return dd3d_c;
+
+		if (godot::Engine::get_singleton()->has_singleton("DebugDrawManager")) {
 			godot::Object *dd3d = godot::Engine::get_singleton()->get_singleton("DebugDrawManager");
 
-#ifndef DD3D_DISABLE_MISMATCH_CHECKS
 			if (!dd3d->has_method(get_funcs_is_double_name)) {
 				godot::UtilityFunctions::printerr(log_prefix, get_funcs_is_double_name, " not found!");
+				failed_to_load = true;
 				return nullptr;
 			}
 
@@ -71,19 +73,22 @@ struct _DD3D_Loader_ {
 #endif
 			if ((bool)dd3d->call(get_funcs_is_double_name) != is_double) {
 				godot::UtilityFunctions::printerr(log_prefix, "The precision of Vectors and Matrices of DD3D and the current library do not match!");
+				failed_to_load = true;
 				return nullptr;
 			}
 
 			if (!dd3d->has_method(get_funcs_hash_name)) {
 				godot::UtilityFunctions::printerr(log_prefix, get_funcs_hash_name, " not found!");
+				failed_to_load = true;
 				return nullptr;
 			}
 
 			if (!dd3d->has_method(get_funcs_name)) {
 				godot::UtilityFunctions::printerr(log_prefix, get_funcs_name, " not found!");
+				failed_to_load = true;
 				return nullptr;
 			}
-#endif
+
 			dd3d_c = dd3d;
 		}
 		return dd3d_c;
@@ -92,7 +97,7 @@ struct _DD3D_Loader_ {
 	template <typename func>
 	static bool load_function(func &val, const char *name) {
 		ZoneScoped;
-		if (Object *dd3d = get_dd3d(); dd3d) {
+		if (godot::Object *dd3d = get_dd3d(); dd3d) {
 			int64_t api_hash = dd3d->call(get_funcs_hash_name);
 
 			// TODO: add an actual comparison with the previous hash. It is useful in case of library reloading, but is it really useful for users?..
@@ -101,12 +106,12 @@ struct _DD3D_Loader_ {
 				if (api.has(name)) {
 					godot::Dictionary func_dict = api[name];
 
-#ifndef DD3D_DISABLE_MISMATCH_CHECKS
-					godot::String sign1 = func_dict["signature"];
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
+					godot::String sign1 = func_dict.get("signature", "");
 					godot::String sign2 = DD3DShared::FunctionSignature<func>::get();
 					//godot::UtilityFunctions::print(log_prefix, "FUNCTION SIGNATURE\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 
-					if (sign1 != sign2) {
+					if (!sign1.is_empty() && sign1 != sign2) {
 						godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION SIGNATURE MISMATCH !!!\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 						return false;
 					}

@@ -1,5 +1,7 @@
 #ifdef NATIVE_API_ENABLED
 
+//#define DD3D_ENABLE_MISMATCH_CHECKS
+
 #include "native_api/c_api.h"
 
 #include "native_api/c_api_shared.hpp"
@@ -23,7 +25,11 @@ Dictionary get_functions() {
 	static godot::Dictionary result;
 	if (result.is_empty()) {
 		Dictionary functions;
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
 #define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t)&_name, "signature", DD3DShared::FunctionSignature<decltype(&_name)>::get())
+#else
+#define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t)&_name)
+#endif
 
 		// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS
 

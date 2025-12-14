@@ -42,3 +42,5 @@ GDExtensionBool GDE_EXPORT dd3d_test_cpp_api_init(GDExtensionInterfaceGetProcAdd
 	return init_obj.init();
 }
 }
+
+// TODO: Hot-Reload crashes the engine on closing.

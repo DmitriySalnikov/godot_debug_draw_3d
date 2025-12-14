@@ -12,7 +12,8 @@
                 //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
-                //"native_api_enabled=no"
+                //"native_api_enabled=no",
+                //"native_api_mismatch_check_enabled=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -89,6 +90,7 @@
                 "build_cpp_api_tests=yes",
                 "custom_godotcpp_suffix=.test_napi",
                 "folder_to_include_classes=../tests_native_api/cpp",
+                //"native_api_mismatch_check_enabled=yes",
                 //
                 "target=editor",
                 "debug_symbols=yes",
