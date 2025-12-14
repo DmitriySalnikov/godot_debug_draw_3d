@@ -7,8 +7,8 @@ var classDebugDraw2D =
     [ "set_custom_canvas", "classDebugDraw2D.html#abd7501e1857ccd1befa7d04b31c4fce3", null ],
     [ "get_render_stats", "classDebugDraw2D.html#a3e2e3565ce8b50a1270b7633960308b7", null ],
     [ "clear_all", "classDebugDraw2D.html#a4de85272575854660d53958b6bdb5f50", null ],
-    [ "begin_text_group", "classDebugDraw2D.html#ad7edd08b5911d3c394e961d79f4bd865", null ],
+    [ "begin_text_group", "classDebugDraw2D.html#a15c9751b8d83aa6eacd6a909341c34da", null ],
     [ "end_text_group", "classDebugDraw2D.html#a87e7cc08380d92c2d19544a176d747b7", null ],
-    [ "set_text", "classDebugDraw2D.html#adf92c3713973db11108c8b7c876af106", null ],
+    [ "set_text", "classDebugDraw2D.html#a760f15fd3c4534c911160e03275ed905", null ],
     [ "clear_texts", "classDebugDraw2D.html#ab5998858cdbb54790c764e8034d0bcda", null ]
 ];

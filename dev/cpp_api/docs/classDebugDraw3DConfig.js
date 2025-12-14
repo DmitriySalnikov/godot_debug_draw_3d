@@ -1,9 +1,9 @@
 var classDebugDraw3DConfig =
 [
-    [ "CullingMode", "classDebugDraw3DConfig.html#a3d24ce0e127a066f5c87d8587a7d46b2", [
-      [ "FRUSTUM_DISABLED", "classDebugDraw3DConfig.html#a3d24ce0e127a066f5c87d8587a7d46b2ae5c879338ccb114542663da0815082d3", null ],
-      [ "FRUSTUM_ROUGH", "classDebugDraw3DConfig.html#a3d24ce0e127a066f5c87d8587a7d46b2a6e6ac9d3d17347df3b5bf05675c31717", null ],
-      [ "FRUSTUM_PRECISE", "classDebugDraw3DConfig.html#a3d24ce0e127a066f5c87d8587a7d46b2a29ee49a5189ea63194d09aa20651ea4f", null ]
+    [ "CullingMode", "classDebugDraw3DConfig.html#aae5a76cd0e47d468fa5987556c614a78", [
+      [ "FRUSTUM_DISABLED", "classDebugDraw3DConfig.html#aae5a76cd0e47d468fa5987556c614a78ae5c879338ccb114542663da0815082d3", null ],
+      [ "FRUSTUM_ROUGH", "classDebugDraw3DConfig.html#aae5a76cd0e47d468fa5987556c614a78a6e6ac9d3d17347df3b5bf05675c31717", null ],
+      [ "FRUSTUM_PRECISE", "classDebugDraw3DConfig.html#aae5a76cd0e47d468fa5987556c614a78a29ee49a5189ea63194d09aa20651ea4f", null ]
     ] ],
     [ "set_freeze_3d_render", "classDebugDraw3DConfig.html#a5fd90408af8b20385403acb296622f82", null ],
     [ "set_visible_instance_bounds", "classDebugDraw3DConfig.html#a9e0efe27a7975eb6bef6d9d5b25b8bea", null ],

@@ -152,9 +152,9 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_debug_enabled
 NAPI godot::Control *&#160;</td><td class="memItemRight" valign="bottom"><b>get_custom_canvas</b> () const</td></tr>
 <tr class="memitem:a3e2e3565ce8b50a1270b7633960308b7" id="r_a3e2e3565ce8b50a1270b7633960308b7"><td class="memItemLeft" align="right" valign="top">NAPI Ref&lt; <a class="el" href="classDebugDraw2DStats.html">DebugDraw2DStats</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3e2e3565ce8b50a1270b7633960308b7">get_render_stats</a> ()</td></tr>
 <tr class="memitem:a4de85272575854660d53958b6bdb5f50" id="r_a4de85272575854660d53958b6bdb5f50"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4de85272575854660d53958b6bdb5f50">clear_all</a> ()</td></tr>
-<tr class="memitem:ad7edd08b5911d3c394e961d79f4bd865" id="r_ad7edd08b5911d3c394e961d79f4bd865"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad7edd08b5911d3c394e961d79f4bd865">begin_text_group</a> (godot::String group_title, int group_priority=0, godot::Color group_color=Colors::white_smoke, bool show_title=true, int title_size=14, int text_size=12)</td></tr>
+<tr class="memitem:a15c9751b8d83aa6eacd6a909341c34da" id="r_a15c9751b8d83aa6eacd6a909341c34da"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15c9751b8d83aa6eacd6a909341c34da">begin_text_group</a> (godot::String group_title, int group_priority=0, godot::Color group_color=Colors::white_smoke, bool show_title=true, int title_size=14, int text_size=12)</td></tr>
 <tr class="memitem:a87e7cc08380d92c2d19544a176d747b7" id="r_a87e7cc08380d92c2d19544a176d747b7"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a87e7cc08380d92c2d19544a176d747b7">end_text_group</a> ()</td></tr>
-<tr class="memitem:adf92c3713973db11108c8b7c876af106" id="r_adf92c3713973db11108c8b7c876af106"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf92c3713973db11108c8b7c876af106">set_text</a> (godot::String key, godot::Variant value=godot::Variant(), int priority=0, godot::Color color_of_value=Colors::empty_color, real_t duration=-1)</td></tr>
+<tr class="memitem:a760f15fd3c4534c911160e03275ed905" id="r_a760f15fd3c4534c911160e03275ed905"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a760f15fd3c4534c911160e03275ed905">set_text</a> (godot::String key, godot::Variant value=godot::Variant(), int priority=0, godot::Color color_of_value=Colors::empty_color, real_t duration=-1)</td></tr>
 <tr class="memitem:ab5998858cdbb54790c764e8034d0bcda" id="r_ab5998858cdbb54790c764e8034d0bcda"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5998858cdbb54790c764e8034d0bcda">clear_texts</a> ()</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
@@ -319,14 +319,14 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad7edd08b5911d3c394e961d79f4bd865" name="ad7edd08b5911d3c394e961d79f4bd865"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7edd08b5911d3c394e961d79f4bd865">&#9670;&#160;</a></span>begin_text_group()</h2>
+<a id="a15c9751b8d83aa6eacd6a909341c34da" name="a15c9751b8d83aa6eacd6a909341c34da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15c9751b8d83aa6eacd6a909341c34da">&#9670;&#160;</a></span>begin_text_group()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">NAPI void DebugDraw2D::begin_text_group </td>
+          <td class="memname">void DebugDraw2D::begin_text_group </td>
           <td>(</td>
           <td class="paramtype">godot::String</td>          <td class="paramname"><span class="paramname"><em>group_title</em></span>, </td>
         </tr>
@@ -357,7 +357,7 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Begin a text group to which all of the following text from <a class="el" href="#adf92c3713973db11108c8b7c876af106">DebugDraw2D.set_text</a> will be added</p>
+<p>Begin a text group to which all of the following text from <a class="el" href="#a760f15fd3c4534c911160e03275ed905">DebugDraw2D.set_text</a> will be added</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">group_title</td><td>Group title and ID </td></tr>
@@ -386,19 +386,19 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Ends the text group. Should be called after <a class="el" href="#ad7edd08b5911d3c394e961d79f4bd865">DebugDraw2D.begin_text_group</a>.</p>
-<p>If you need to create multiple groups, just call <a class="el" href="#ad7edd08b5911d3c394e961d79f4bd865">DebugDraw2D.begin_text_group</a> again and this function at the end. </p>
+<p>Ends the text group. Should be called after <a class="el" href="#a15c9751b8d83aa6eacd6a909341c34da">DebugDraw2D.begin_text_group</a>.</p>
+<p>If you need to create multiple groups, just call <a class="el" href="#a15c9751b8d83aa6eacd6a909341c34da">DebugDraw2D.begin_text_group</a> again and this function at the end. </p>
 
 </div>
 </div>
-<a id="adf92c3713973db11108c8b7c876af106" name="adf92c3713973db11108c8b7c876af106"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf92c3713973db11108c8b7c876af106">&#9670;&#160;</a></span>set_text()</h2>
+<a id="a760f15fd3c4534c911160e03275ed905" name="a760f15fd3c4534c911160e03275ed905"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a760f15fd3c4534c911160e03275ed905">&#9670;&#160;</a></span>set_text()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">NAPI void DebugDraw2D::set_text </td>
+          <td class="memname">void DebugDraw2D::set_text </td>
           <td>(</td>
           <td class="paramtype">godot::String</td>          <td class="paramname"><span class="paramname"><em>key</em></span>, </td>
         </tr>

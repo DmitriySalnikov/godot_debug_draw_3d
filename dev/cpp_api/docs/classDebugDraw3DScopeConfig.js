@@ -8,7 +8,7 @@ var classDebugDraw3DScopeConfig =
     [ "set_text_outline_color", "classDebugDraw3DScopeConfig.html#a36199787c7cef174e10ea961473ccd58", null ],
     [ "set_text_outline_size", "classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d", null ],
     [ "set_text_fixed_size", "classDebugDraw3DScopeConfig.html#afbfed42d023de0a6f491353ee13991c9", null ],
-    [ "set_text_font", "classDebugDraw3DScopeConfig.html#a23fdd0fe50bea5ac9cf7e4a1e396ca67", null ],
+    [ "set_text_font", "classDebugDraw3DScopeConfig.html#a75a03d60de7ec6c1b125f8ba7b5c5845", null ],
     [ "set_viewport", "classDebugDraw3DScopeConfig.html#a7bdeebf7a858a688aee78976bbe98f41", null ],
     [ "set_no_depth_test", "classDebugDraw3DScopeConfig.html#a7743c67671bdce2e946991e0d66031f5", null ]
 ];

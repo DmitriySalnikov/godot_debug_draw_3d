@@ -141,12 +141,12 @@ Inheritance diagram for DebugDraw3DConfig:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a3d24ce0e127a066f5c87d8587a7d46b2" id="r_a3d24ce0e127a066f5c87d8587a7d46b2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3d24ce0e127a066f5c87d8587a7d46b2">CullingMode</a> : int { <br />
-&#160;&#160;<b>FRUSTUM_DISABLED</b> = 0
+<tr class="memitem:aae5a76cd0e47d468fa5987556c614a78" id="r_aae5a76cd0e47d468fa5987556c614a78"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae5a76cd0e47d468fa5987556c614a78">CullingMode</a> : uint32_t { <br />
+&#160;&#160;<b>FRUSTUM_DISABLED</b>
 , <br />
-&#160;&#160;<b>FRUSTUM_ROUGH</b> = 1
+&#160;&#160;<b>FRUSTUM_ROUGH</b>
 , <br />
-&#160;&#160;<b>FRUSTUM_PRECISE</b> = 2
+&#160;&#160;<b>FRUSTUM_PRECISE</b>
 <br />
  }</td></tr>
 </table><table class="memberdecls">
@@ -161,9 +161,9 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_visible_insta
 <tr class="memitem:a59b69e6562d4e54cf5ded0cfe7e53bcb" id="r_a59b69e6562d4e54cf5ded0cfe7e53bcb"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a59b69e6562d4e54cf5ded0cfe7e53bcb">set_use_frustum_culling</a> (const bool &amp;_state)</td></tr>
 <tr class="memitem:aba5a264d9db3135c4365a1161b54186b" id="r_aba5a264d9db3135c4365a1161b54186b"><td class="memItemLeft" align="right" valign="top"><a id="aba5a264d9db3135c4365a1161b54186b" name="aba5a264d9db3135c4365a1161b54186b"></a>
 NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_use_frustum_culling</b> () const</td></tr>
-<tr class="memitem:aae738273bb3db1f2ca905262fc1152f5" id="r_aae738273bb3db1f2ca905262fc1152f5"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae738273bb3db1f2ca905262fc1152f5">set_frustum_culling_mode</a> (const <a class="el" href="#a3d24ce0e127a066f5c87d8587a7d46b2">DebugDraw3DConfig::CullingMode</a> _mode)</td></tr>
+<tr class="memitem:aae738273bb3db1f2ca905262fc1152f5" id="r_aae738273bb3db1f2ca905262fc1152f5"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aae738273bb3db1f2ca905262fc1152f5">set_frustum_culling_mode</a> (const <a class="el" href="#aae5a76cd0e47d468fa5987556c614a78">DebugDraw3DConfig::CullingMode</a> _mode)</td></tr>
 <tr class="memitem:a2d86da901eab7da154fc7e12bacf4167" id="r_a2d86da901eab7da154fc7e12bacf4167"><td class="memItemLeft" align="right" valign="top"><a id="a2d86da901eab7da154fc7e12bacf4167" name="a2d86da901eab7da154fc7e12bacf4167"></a>
-NAPI <a class="el" href="#a3d24ce0e127a066f5c87d8587a7d46b2">DebugDraw3DConfig::CullingMode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_frustum_culling_mode</b> () const</td></tr>
+NAPI <a class="el" href="#aae5a76cd0e47d468fa5987556c614a78">DebugDraw3DConfig::CullingMode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>get_frustum_culling_mode</b> () const</td></tr>
 <tr class="memitem:a637561cc793e05867dd6d5681b141d44" id="r_a637561cc793e05867dd6d5681b141d44"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a637561cc793e05867dd6d5681b141d44">set_frustum_length_scale</a> (const real_t &amp;_distance)</td></tr>
 <tr class="memitem:a97cb6ef0a8aee7a680d3d7437c89826b" id="r_a97cb6ef0a8aee7a680d3d7437c89826b"><td class="memItemLeft" align="right" valign="top"><a id="a97cb6ef0a8aee7a680d3d7437c89826b" name="a97cb6ef0a8aee7a680d3d7437c89826b"></a>
 NAPI real_t&#160;</td><td class="memItemRight" valign="bottom"><b>get_frustum_length_scale</b> () const</td></tr>
@@ -184,14 +184,14 @@ NAPI godot::Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line
 <div class="textblock"><p>This is a class for storing part of the <a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a> configuration. </p>
 <p>You can use <a class="el" href="classDebugDraw3D.html#ad28b164098d6af699c372257175c509d">DebugDraw3D.get_config</a> to get the current instance of the configuration. </p>
 </div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Member Enumeration Documentation</h2>
-<a id="a3d24ce0e127a066f5c87d8587a7d46b2" name="a3d24ce0e127a066f5c87d8587a7d46b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d24ce0e127a066f5c87d8587a7d46b2">&#9670;&#160;</a></span>CullingMode</h2>
+<a id="aae5a76cd0e47d468fa5987556c614a78" name="aae5a76cd0e47d468fa5987556c614a78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae5a76cd0e47d468fa5987556c614a78">&#9670;&#160;</a></span>CullingMode</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="#a3d24ce0e127a066f5c87d8587a7d46b2">DebugDraw3DConfig::CullingMode</a> : int</td>
+          <td class="memname">enum <a class="el" href="#aae5a76cd0e47d468fa5987556c614a78">DebugDraw3DConfig::CullingMode</a> : uint32_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -264,7 +264,7 @@ NAPI godot::Color&#160;</td><td class="memItemRight" valign="bottom"><b>get_line
         <tr>
           <td class="memname">NAPI void DebugDraw3DConfig::set_frustum_culling_mode </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="#a3d24ce0e127a066f5c87d8587a7d46b2">DebugDraw3DConfig::CullingMode</a></td>          <td class="paramname"><span class="paramname"><em>_mode</em></span></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="#aae5a76cd0e47d468fa5987556c614a78">DebugDraw3DConfig::CullingMode</a></td>          <td class="paramname"><span class="paramname"><em>_mode</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>

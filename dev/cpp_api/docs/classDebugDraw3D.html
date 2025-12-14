@@ -142,7 +142,7 @@ Inheritance diagram for DebugDraw3D:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-types" class="groupheader"><a id="pub-types" name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a57cba7f9071ea0c1be17000dcac8f86d" id="r_a57cba7f9071ea0c1be17000dcac8f86d"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">PointType</a> : int { <br />
+<tr class="memitem:a49c72bd25a5769aeee1279540c15d0ea" id="r_a49c72bd25a5769aeee1279540c15d0ea"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">PointType</a> : uint32_t { <br />
 &#160;&#160;<b>POINT_TYPE_SQUARE</b>
 , <br />
 &#160;&#160;<b>POINT_TYPE_SPHERE</b>
@@ -182,8 +182,8 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_debug_enabled
 <tr class="memitem:a247d1f9b5219122e8393d1d37564eb78" id="r_a247d1f9b5219122e8393d1d37564eb78"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a247d1f9b5219122e8393d1d37564eb78">draw_arrow</a> (const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;arrow_size=0.5f, const bool &amp;is_absolute_size=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a8b83e79625ea453e5f5bc73189e1b324" id="r_a8b83e79625ea453e5f5bc73189e1b324"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8b83e79625ea453e5f5bc73189e1b324">draw_arrow_ray</a> (const godot::Vector3 &amp;origin, const godot::Vector3 &amp;direction, const real_t &amp;length, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;arrow_size=0.5f, const bool &amp;is_absolute_size=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a53961c971ba092b6cf25d5b528c13c30" id="r_a53961c971ba092b6cf25d5b528c13c30"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a53961c971ba092b6cf25d5b528c13c30">draw_arrow_path</a> (const godot::PackedVector3Array &amp;path, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;arrow_size=0.75f, const bool &amp;is_absolute_size=true, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
-<tr class="memitem:a66a413c99465d11856d3386ed79e7b7e" id="r_a66a413c99465d11856d3386ed79e7b7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a66a413c99465d11856d3386ed79e7b7e">draw_point_path</a> (const godot::PackedVector3Array &amp;path, const <a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">PointType</a> type=PointType::POINT_TYPE_SQUARE, const real_t &amp;size=0.25f, const godot::Color &amp;points_color=Colors::empty_color, const godot::Color &amp;lines_color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
-<tr class="memitem:a0d90b511c1ef29c02b7b796d4fd67d03" id="r_a0d90b511c1ef29c02b7b796d4fd67d03"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d90b511c1ef29c02b7b796d4fd67d03">draw_points</a> (const godot::PackedVector3Array &amp;points, const <a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">PointType</a> type=PointType::POINT_TYPE_SQUARE, const real_t &amp;size=0.25f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
+<tr class="memitem:ac2e756204c0ded169202bf461d7f9ca0" id="r_ac2e756204c0ded169202bf461d7f9ca0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2e756204c0ded169202bf461d7f9ca0">draw_point_path</a> (const godot::PackedVector3Array &amp;path, const <a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D::PointType</a> type=PointType::POINT_TYPE_SQUARE, const real_t &amp;size=0.25f, const godot::Color &amp;points_color=Colors::empty_color, const godot::Color &amp;lines_color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
+<tr class="memitem:a7f182900706e4a910a1631c54fd5ba2c" id="r_a7f182900706e4a910a1631c54fd5ba2c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f182900706e4a910a1631c54fd5ba2c">draw_points</a> (const godot::PackedVector3Array &amp;points, const <a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D::PointType</a> type=DebugDraw3D::PointType::POINT_TYPE_SQUARE, const real_t &amp;size=0.25f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a8ce1722eeffcaebb4dcd476324111758" id="r_a8ce1722eeffcaebb4dcd476324111758"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ce1722eeffcaebb4dcd476324111758">draw_square</a> (const godot::Vector3 &amp;position, const real_t &amp;size=0.2f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a7c5359977bafd8e21503e2a2a62ad1cb" id="r_a7c5359977bafd8e21503e2a2a62ad1cb"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c5359977bafd8e21503e2a2a62ad1cb">draw_plane</a> (const godot::Plane &amp;plane, const godot::Color &amp;color=Colors::empty_color, const godot::Vector3 &amp;anchor_point=godot::Vector3(INFINITY, INFINITY, INFINITY), const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a29b298156ec4466a93dc82b5eed99c72" id="r_a29b298156ec4466a93dc82b5eed99c72"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a29b298156ec4466a93dc82b5eed99c72">draw_position</a> (const godot::Transform3D &amp;transform, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
@@ -227,14 +227,14 @@ Static Public Member Functions</h2></td></tr>
 <hr  />
  <dl class="section note"><dt>Note</dt><dd>Due to the way Godot registers this addon, it is not possible to use the <span class="tt">draw_</span> methods in the first few frames immediately after the project is launched. </dd></dl>
 </div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Member Enumeration Documentation</h2>
-<a id="a57cba7f9071ea0c1be17000dcac8f86d" name="a57cba7f9071ea0c1be17000dcac8f86d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a57cba7f9071ea0c1be17000dcac8f86d">&#9670;&#160;</a></span>PointType</h2>
+<a id="a49c72bd25a5769aeee1279540c15d0ea" name="a49c72bd25a5769aeee1279540c15d0ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49c72bd25a5769aeee1279540c15d0ea">&#9670;&#160;</a></span>PointType</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">DebugDraw3D::PointType</a> : int</td>
+          <td class="memname">enum <a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D::PointType</a> : uint32_t</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1375,8 +1375,8 @@ is_ab_diagonal = false</div></div>
 
 </div>
 </div>
-<a id="a66a413c99465d11856d3386ed79e7b7e" name="a66a413c99465d11856d3386ed79e7b7e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66a413c99465d11856d3386ed79e7b7e">&#9670;&#160;</a></span>draw_point_path()</h2>
+<a id="ac2e756204c0ded169202bf461d7f9ca0" name="ac2e756204c0ded169202bf461d7f9ca0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac2e756204c0ded169202bf461d7f9ca0">&#9670;&#160;</a></span>draw_point_path()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1389,7 +1389,7 @@ is_ab_diagonal = false</div></div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">PointType</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span><span class="paramdefsep"> = </span><span class="paramdefval">PointType::POINT_TYPE_SQUARE</span>, </td>
+          <td class="paramtype">const <a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D::PointType</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span><span class="paramdefsep"> = </span><span class="paramdefval">PointType::POINT_TYPE_SQUARE</span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1436,8 +1436,8 @@ type = DebugDraw3D.POINT_TYPE_SPHERE</div></div>
 
 </div>
 </div>
-<a id="a0d90b511c1ef29c02b7b796d4fd67d03" name="a0d90b511c1ef29c02b7b796d4fd67d03"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d90b511c1ef29c02b7b796d4fd67d03">&#9670;&#160;</a></span>draw_points()</h2>
+<a id="a7f182900706e4a910a1631c54fd5ba2c" name="a7f182900706e4a910a1631c54fd5ba2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f182900706e4a910a1631c54fd5ba2c">&#9670;&#160;</a></span>draw_points()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1450,7 +1450,7 @@ type = DebugDraw3D.POINT_TYPE_SPHERE</div></div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="#a57cba7f9071ea0c1be17000dcac8f86d">PointType</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span><span class="paramdefsep"> = </span><span class="paramdefval">PointType::POINT_TYPE_SQUARE</span>, </td>
+          <td class="paramtype">const <a class="el" href="#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D::PointType</a></td>          <td class="paramname"><span class="paramname"><em>type</em></span><span class="paramdefsep"> = </span><span class="paramdefval">DebugDraw3D::PointType::POINT_TYPE_SQUARE</span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1876,7 +1876,7 @@ is_centered = true</div></div>
       </table>
 </div><div class="memdoc">
 <p>Draw text using Label3D.</p>
-<dl class="section note"><dt>Note</dt><dd>Outline can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a36199787c7cef174e10ea961473ccd58">DebugDraw3DScopeConfig.set_text_outline_color</a> and <a class="el" href="classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d">DebugDraw3DScopeConfig.set_text_outline_size</a>. The font can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a23fdd0fe50bea5ac9cf7e4a1e396ca67">DebugDraw3DScopeConfig.set_text_font</a>. The text can be made to stay the same size regardless of distance using <a class="el" href="classDebugDraw3DScopeConfig.html#afbfed42d023de0a6f491353ee13991c9">DebugDraw3DScopeConfig.set_text_fixed_size</a>.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Outline can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a36199787c7cef174e10ea961473ccd58">DebugDraw3DScopeConfig.set_text_outline_color</a> and <a class="el" href="classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d">DebugDraw3DScopeConfig.set_text_outline_size</a>. The font can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a75a03d60de7ec6c1b125f8ba7b5c5845">DebugDraw3DScopeConfig.set_text_font</a>. The text can be made to stay the same size regardless of distance using <a class="el" href="classDebugDraw3DScopeConfig.html#afbfed42d023de0a6f491353ee13991c9">DebugDraw3DScopeConfig.set_text_fixed_size</a>.</dd></dl>
 <div class="image">
 <img src="DrawText.webp" alt=""/>
 </div>
