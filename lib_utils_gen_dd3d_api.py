@@ -1,10 +1,35 @@
 #!/usr/bin/env python3
 
-# Ref<godot::T> or godot::Ref<godot::T> is used for Godot types
+# There are several macros here that you need to use to mark functions, classes, and enums for adding them to the Native API.
+#
+# NAPI_CLASS_REF - before the keyword "class" for a RefCounted, e.g.: NAPI_CLASS_REF class DebugDraw3DConfig
+# NAPI_CLASS_SINGLETON - before the keyword "class" for a singleton, e.g.: NAPI_CLASS_SINGLETON class DebugDraw3D
+# NAPI_ENUM - before the keyword “enum” for enums with explicit constant types, e.g.: NAPI_ENUM enum PointType : uint32_t
+#   It is not necessary to explicitly specify enum values; the generator will attempt to substitute them automatically.
+# NAPI - used to mark functions.
+# NSELF_RETURN - should be used immediately after "NAPI" instead of the return type "void",
+#   and the function name should end with "_selfreturn", for example: NAPI NSELF_RETURN set_thickness_selfreturn(real_t _value)
+#
+# Arguments of the function with Ref<godot::T> or godot::Ref<godot::T> is used for Godot types
 # and Ref<T> is for DD3D classes
+#
+# All Packed*Arrays are not available in the Native API. StringName, NodePath, Array and Dictionary too.
+# If you need to pass an array to the Native API, then you need to:
+#   1) add the suffix "_c" to the functions,
+#   2) replace the argument with the supported array type with two separate arguments with the same name
+#       but different suffixes ("_data" and "_size") and pointer and "uint64_t" types.
+#   Example before:
+#       static void draw_lines(const godot::PackedVector3Array &lines, const real_t &duration = 0)
+#   after:
+#       NAPI static void draw_lines_c(const godot::Vector3 * lines_data, const uint64_t &lines_size, const real_t &duration = 0)
+# If you need to pass a string to the Native API,
+#   then you also need to add the suffix "_c" and replace "String" with "char*" and add the suffix "_string" to the argument name.
+#   Example before:
+#       void set_text(godot::String key, real_t duration = -1)
+#   after:
+#       NAPI void set_text_c(const char* key_string, real_t duration = -1)
+#   In this case, the string will be converted to a utf8 char array.
 
-# TODO: add simple `docs` here
-# TODO: add tests to CI
 
 from SCons.Script.SConscript import SConsEnvironment
 
@@ -261,7 +286,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
 
             docs = get_doc_lines(idx)
 
-            class_prefixes = ["NAPI_CLASS class ", "NAPI_CLASS_SINGLETON class ", "NAPI_CLASS_REF class "]
+            class_prefixes = ["NAPI_CLASS_REF class ", "NAPI_CLASS_SINGLETON class "]
             class_prefix = ""
             for p in class_prefixes:
                 if line.startswith(p):
@@ -575,7 +600,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         if a1["name"].endswith("_data"):
                             a2 = args_dict[idx + 1]
                             if a2["name"].endswith("_size"):
-                                if not a2["name"].startswith(a1["name"].replace("_data", "")):
+                                if not a2["name"].startswith(a1["name"].removesuffix("_data")):
                                     print(
                                         f'WARN: Argument name for array size "{a2["name"]}" does not match pointer name "{a1["name"]}".'
                                     )
@@ -1029,7 +1054,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     data_arg = wrapper_args.pop(arr["data_idx"])
 
                     new_arg = {
-                        "name": data_arg["name"].replace("_data", "").replace("_string", ""),
+                        "name": data_arg["name"].removesuffix("_data").removesuffix("_string"),
                         "type": arr["array_type"],
                         "c_type": arr["array_type"],
                         "is_const_array": arr["is_const"],
@@ -1054,7 +1079,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
                 new_func["wrapper_args"] = wrapper_args
                 new_func["wrapper_orig_name"] = func["name"]
-                new_func["name"] = func["name"][: -len("_c")]
+                new_func["name"] = func["name"].removesuffix("_c")
                 functions_to_add.append((idx + 1, new_func))
 
         for f_pair in reversed(functions_to_add):
