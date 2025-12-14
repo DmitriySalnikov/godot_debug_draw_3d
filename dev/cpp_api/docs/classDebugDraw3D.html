@@ -176,7 +176,7 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_debug_enabled
 <tr class="memitem:ad39ed6b321933ccf0038565d4469bdff" id="r_ad39ed6b321933ccf0038565d4469bdff"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad39ed6b321933ccf0038565d4469bdff">draw_line_hit_offset</a> (const godot::Vector3 &amp;start, const godot::Vector3 &amp;end, const bool &amp;is_hit, const real_t &amp;unit_offset_of_hit=0.5f, const real_t &amp;hit_size=0.25f, const godot::Color &amp;hit_color=Colors::empty_color, const godot::Color &amp;after_hit_color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a9230d54569201a01dcfdf2a1fcf0bb9d" id="r_a9230d54569201a01dcfdf2a1fcf0bb9d"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9230d54569201a01dcfdf2a1fcf0bb9d">draw_line</a> (const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a034d616056c7614cf6a2222dcc4e184b" id="r_a034d616056c7614cf6a2222dcc4e184b"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a034d616056c7614cf6a2222dcc4e184b">draw_ray</a> (const godot::Vector3 &amp;origin, const godot::Vector3 &amp;direction, const real_t &amp;length, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
-<tr class="memitem:afefe210b3a11e89b3e470bd7a5c61206" id="r_afefe210b3a11e89b3e470bd7a5c61206"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afefe210b3a11e89b3e470bd7a5c61206">draw_lines</a> (const godot::PackedVector3Array &amp;lines, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
+<tr class="memitem:addb3b7f312642763c9d923c28f9034d2" id="r_addb3b7f312642763c9d923c28f9034d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#addb3b7f312642763c9d923c28f9034d2">draw_lines</a> (godot::PackedVector3Array lines, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:abd8caaed930588822225d8df746a6b25" id="r_abd8caaed930588822225d8df746a6b25"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd8caaed930588822225d8df746a6b25">draw_line_path</a> (const godot::PackedVector3Array &amp;path, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a0fe4a51bfa95b1d234a0060d62dc28ab" id="r_a0fe4a51bfa95b1d234a0060d62dc28ab"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0fe4a51bfa95b1d234a0060d62dc28ab">draw_arrowhead</a> (const godot::Transform3D &amp;transform, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a247d1f9b5219122e8393d1d37564eb78" id="r_a247d1f9b5219122e8393d1d37564eb78"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a247d1f9b5219122e8393d1d37564eb78">draw_arrow</a> (const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;arrow_size=0.5f, const bool &amp;is_absolute_size=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
@@ -1100,8 +1100,8 @@ is_ab_diagonal = false</div></div>
 
 </div>
 </div>
-<a id="afefe210b3a11e89b3e470bd7a5c61206" name="afefe210b3a11e89b3e470bd7a5c61206"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afefe210b3a11e89b3e470bd7a5c61206">&#9670;&#160;</a></span>draw_lines()</h2>
+<a id="addb3b7f312642763c9d923c28f9034d2" name="addb3b7f312642763c9d923c28f9034d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addb3b7f312642763c9d923c28f9034d2">&#9670;&#160;</a></span>draw_lines()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1109,7 +1109,7 @@ is_ab_diagonal = false</div></div>
         <tr>
           <td class="memname">void DebugDraw3D::draw_lines </td>
           <td>(</td>
-          <td class="paramtype">const godot::PackedVector3Array &amp;</td>          <td class="paramname"><span class="paramname"><em>lines</em></span>, </td>
+          <td class="paramtype">godot::PackedVector3Array</td>          <td class="paramname"><span class="paramname"><em>lines</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1162,7 +1162,7 @@ is_ab_diagonal = false</div></div>
       </table>
 </div><div class="memdoc">
 <p>Draw an array of lines.</p>
-<p>Unlike <a class="el" href="#afefe210b3a11e89b3e470bd7a5c61206">DebugDraw3D.draw_lines</a>, here lines are drawn between each point in the array.</p>
+<p>Unlike <a class="el" href="#addb3b7f312642763c9d923c28f9034d2">DebugDraw3D.draw_lines</a>, here lines are drawn between each point in the array.</p>
 <p>The array can be of any size.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

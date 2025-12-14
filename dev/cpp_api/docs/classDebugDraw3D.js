@@ -27,7 +27,7 @@ var classDebugDraw3D =
     [ "draw_line_hit_offset", "classDebugDraw3D.html#ad39ed6b321933ccf0038565d4469bdff", null ],
     [ "draw_line", "classDebugDraw3D.html#a9230d54569201a01dcfdf2a1fcf0bb9d", null ],
     [ "draw_ray", "classDebugDraw3D.html#a034d616056c7614cf6a2222dcc4e184b", null ],
-    [ "draw_lines", "classDebugDraw3D.html#afefe210b3a11e89b3e470bd7a5c61206", null ],
+    [ "draw_lines", "classDebugDraw3D.html#addb3b7f312642763c9d923c28f9034d2", null ],
     [ "draw_line_path", "classDebugDraw3D.html#abd8caaed930588822225d8df746a6b25", null ],
     [ "draw_arrowhead", "classDebugDraw3D.html#a0fe4a51bfa95b1d234a0060d62dc28ab", null ],
     [ "draw_arrow", "classDebugDraw3D.html#a247d1f9b5219122e8393d1d37564eb78", null ],
