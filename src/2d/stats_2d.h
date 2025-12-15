@@ -29,8 +29,10 @@ private:
 
 public:
 	NAPI int64_t get_overlay_text_groups() const { return overlay_text_groups; }
+	/// @private
 	void set_overlay_text_groups(int64_t val) {};
 	NAPI int64_t get_overlay_text_lines() const { return overlay_text_lines; }
+	/// @private
 	void set_overlay_text_lines(int64_t val) {};
 
 #undef DEFINE_DEFAULT_PROP

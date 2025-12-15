@@ -63,58 +63,82 @@ private:
 
 public:
 	NAPI int64_t get_instances() const { return instances; }
+	/// @private
 	void set_instances(int64_t val) {}
 	NAPI int64_t get_lines() const { return lines; }
+	/// @private
 	void set_lines(int64_t val) {}
 	NAPI int64_t get_instances_physics() const { return instances_physics; }
+	/// @private
 	void set_instances_physics(int64_t val) {}
 	NAPI int64_t get_lines_physics() const { return lines_physics; }
+	/// @private
 	void set_lines_physics(int64_t val) {}
 	NAPI int64_t get_total_geometry() const { return total_geometry; }
+	/// @private
 	void set_total_geometry(int64_t val) {}
 
 	NAPI int64_t get_visible_instances() const { return visible_instances; }
+	/// @private
 	void set_visible_instances(int64_t val) {}
 	NAPI int64_t get_visible_lines() const { return visible_lines; }
+	/// @private
 	void set_visible_lines(int64_t val) {}
 	NAPI int64_t get_total_visible() const { return total_visible; }
+	/// @private
 	void set_total_visible(int64_t val) {}
 
 	NAPI int64_t get_time_filling_buffers_instances_usec() const { return time_filling_buffers_instances_usec; }
+	/// @private
 	void set_time_filling_buffers_instances_usec(int64_t val) {}
 	NAPI int64_t get_time_filling_buffers_lines_usec() const { return time_filling_buffers_lines_usec; }
+	/// @private
 	void set_time_filling_buffers_lines_usec(int64_t val) {}
 	NAPI int64_t get_time_filling_buffers_instances_physics_usec() const { return time_filling_buffers_instances_physics_usec; }
+	/// @private
 	void set_time_filling_buffers_instances_physics_usec(int64_t val) {}
 	NAPI int64_t get_time_filling_buffers_lines_physics_usec() const { return time_filling_buffers_lines_physics_usec; }
+	/// @private
 	void set_time_filling_buffers_lines_physics_usec(int64_t val) {}
 	NAPI int64_t get_total_time_filling_buffers_usec() const { return total_time_filling_buffers_usec; }
+	/// @private
 	void set_total_time_filling_buffers_usec(int64_t val) {}
 
 	NAPI int64_t get_time_culling_instances_usec() const { return time_culling_instances_usec; }
+	/// @private
 	void set_time_culling_instances_usec(int64_t val) {}
 	NAPI int64_t get_time_culling_lines_usec() const { return time_culling_lines_usec; }
+	/// @private
 	void set_time_culling_lines_usec(int64_t val) {}
 	NAPI int64_t get_total_time_culling_usec() const { return total_time_culling_usec; }
+	/// @private
 	void set_total_time_culling_usec(int64_t val) {}
 
 	NAPI int64_t get_total_time_spent_usec() const { return total_time_spent_usec; }
+	/// @private
 	void set_total_time_spent_usec(int64_t val) {}
 
 	NAPI int64_t get_created_scoped_configs() const { return created_scoped_configs; }
+	/// @private
 	void set_created_scoped_configs(int64_t val) {}
 	NAPI int64_t get_orphan_scoped_configs() const { return orphan_scoped_configs; }
+	/// @private
 	void set_orphan_scoped_configs(int64_t val) {}
 
 	NAPI int64_t get_nodes_label3d_visible() const { return nodes_label3d_visible; }
+	/// @private
 	void set_nodes_label3d_visible(int64_t val) {}
 	NAPI int64_t get_nodes_label3d_visible_physics() const { return nodes_label3d_visible_physics; }
+	/// @private
 	void set_nodes_label3d_visible_physics(int64_t val) {}
 	NAPI int64_t get_nodes_label3d_exists() const { return nodes_label3d_exists; }
+	/// @private
 	void set_nodes_label3d_exists(int64_t val) {}
 	NAPI int64_t get_nodes_label3d_exists_physics() const { return nodes_label3d_exists_physics; }
+	/// @private
 	void set_nodes_label3d_exists_physics(int64_t val) {}
 	NAPI int64_t get_nodes_label3d_exists_total() const { return nodes_label3d_exists_total; }
+	/// @private
 	void set_nodes_label3d_exists_total(int64_t val) {}
 
 #undef DEFINE_DEFAULT_PROP
