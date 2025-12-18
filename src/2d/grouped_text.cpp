@@ -42,6 +42,17 @@ bool TextGroupItem::is_expired() {
 	return true;
 }
 
+bool TextGroupItem::is_expired_const() const {
+	if (expiration_time > 0) {
+		return false;
+	} else {
+		if (second_chance) {
+			return false;
+		}
+	}
+	return true;
+}
+
 void TextGroup::set_group_priority(int p_val) {
 	if (group_priority != p_val)
 		owner->mark_canvas_dirty();

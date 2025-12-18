@@ -21,6 +21,7 @@ class MultiMesh;
 }
 class DebugDraw3DStats;
 class GeometryPool;
+class DebugGeometryContainer;
 
 class GeometryPoolCullingData {
 public:
@@ -104,6 +105,7 @@ private:
 	};
 
 	bool is_no_depth_test = false;
+	DebugGeometryContainer *owner_dgc = nullptr;
 
 	template <class TInst>
 	struct ObjectsPool {
@@ -235,6 +237,7 @@ public:
 	}
 
 	void set_no_depth_test_info(bool p_no_depth_test);
+	void set_debug_container_owner(DebugGeometryContainer *p_owner);
 
 	std::vector<Viewport *> get_and_validate_viewports();
 

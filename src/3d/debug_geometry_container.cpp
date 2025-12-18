@@ -24,6 +24,7 @@ DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_d
 	RenderingServer *rs = RenderingServer::get_singleton();
 	no_depth_test = p_no_depth_test;
 	geometry_pool.set_no_depth_test_info(no_depth_test);
+	geometry_pool.set_debug_container_owner(this);
 
 	// Create wireframe mesh drawer
 	{
@@ -153,14 +154,18 @@ void DebugGeometryContainer::update_center_positions() {
 	center_position = new_center_position;
 
 	geometry_pool.for_each_instance([&pos_diff](DelayedRendererInstance *i) {
-		i->data.origin_x += (float)pos_diff.x;
-		i->data.origin_y += (float)pos_diff.y;
-		i->data.origin_z += (float)pos_diff.z;
+		if (!i->is_expired()) {
+			i->data.origin_x += (float)pos_diff.x;
+			i->data.origin_y += (float)pos_diff.y;
+			i->data.origin_z += (float)pos_diff.z;
+		}
 	});
 
 	geometry_pool.for_each_line([&pos_diff](DelayedRendererLine *i) {
-		for (size_t l = 0; l < i->lines_count; l++) {
-			i->lines.get()[l] += pos_diff;
+		if (!i->is_expired()) {
+			for (size_t l = 0; l < i->lines_count; l++) {
+				i->lines.get()[l] += pos_diff;
+			}
 		}
 	});
 

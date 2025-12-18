@@ -33,6 +33,7 @@ public:
 
 	bool update(const double &p_expirationTime, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color);
 	bool is_expired();
+	bool is_expired_const() const;
 };
 
 using TextGroupItem_ptr = std::shared_ptr<TextGroupItem>;

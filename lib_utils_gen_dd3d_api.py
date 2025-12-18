@@ -322,6 +322,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
             if line.startswith("NAPI_ENUM enum "):
                 split = line[len("NAPI_ENUM enum ") : line.find("{")].split(":")
                 name = split[0].strip()
+                if len(split) != 2:
+                    raise Exception(f'Enum "{name}" must have an explicit type of constants.')
+
                 e_type = split[1].strip()
                 if e_type not in allowed_enum_types:
                     raise Exception(f'Enum must be one of these types: {allowed_enum_types}, but "{e_type}" was found.')

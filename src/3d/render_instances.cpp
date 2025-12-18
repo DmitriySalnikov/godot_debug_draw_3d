@@ -2,6 +2,7 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
+#include "debug_geometry_container.h"
 #include "stats_3d.h"
 
 GODOT_WARNING_DISABLE()
@@ -442,6 +443,10 @@ void GeometryPool::set_no_depth_test_info(bool p_no_depth_test) {
 	is_no_depth_test = p_no_depth_test;
 }
 
+void GeometryPool::set_debug_container_owner(DebugGeometryContainer *p_owner) {
+	owner_dgc = p_owner;
+}
+
 std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	ZoneScoped;
 	std::vector<Viewport *> res;
@@ -492,6 +497,15 @@ void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_
 		inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
 		inst->bounds = SphereBounds(p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f);
 	}
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	{
+		inst->data.origin_x -= (float)owner_dgc->get_center_position().x;
+		inst->data.origin_y -= (float)owner_dgc->get_center_position().y;
+		inst->data.origin_z -= (float)owner_dgc->get_center_position().z;
+	}
+#endif
+
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
@@ -526,6 +540,12 @@ void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg,
 	} else {
 		inst->bounds = p_aabb;
 	}
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	for (size_t l = 0; l < p_line_count; l++) {
+		inst->lines.get()[l] -= owner_dgc->get_center_position();
+	}
+#endif
 }
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const DebugDraw3DScopeConfig::Data *p_cfg) {

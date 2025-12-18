@@ -51,9 +51,16 @@ void _DD3D_WorldWatcher::_notification(int p_what) {
 	}
 }
 
+Node *_DD3D_WorldWatcher::get_nodes_root() const {
+	return m_nodes_root;
+}
+
 _DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id) {
 	m_owner = p_root;
 	m_world_id = p_world_id;
+	m_nodes_root = memnew(Node);
+
+	call_deferred("add_child", m_nodes_root);
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
@@ -484,7 +491,7 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 	c.dgcs[dgc_depth] = std::make_unique<DebugGeometryContainer>(this, p_dgcd.no_depth_test);
 	c.dgcs[dgc_depth]->set_world(vp_world);
 
-	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher, p_dgcd.no_depth_test);
+	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher->get_nodes_root(), p_dgcd.no_depth_test);
 
 	viewport_to_world_cache[p_dgcd.viewport] = &c;
 
@@ -854,14 +861,6 @@ void DebugDraw3D::clear_all() {
 	if (!nc)                                             \
 		return;
 
-#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
-#define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())
-#define FIX_PRECISION_POSITION(pos) (pos - dgc->get_center_position())
-#else
-#define FIX_PRECISION_TRANSFORM(xf) (xf)
-#define FIX_PRECISION_POSITION(pos) (pos)
-#endif
-
 #ifdef DEV_ENABLED
 void DebugDraw3D::_save_generated_meshes() {
 	if (!shared_generated_meshes.size())
@@ -892,7 +891,7 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	return Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
@@ -900,12 +899,6 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, Vector3 *
 
 	if (!scfg->thickness) {
 		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines, p_line_count);
-
-#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
-		for (size_t l = 0; l < p_line_count; l++) {
-			p_lines[l] -= dgc->get_center_position();
-		}
-#endif
 		dgc->geometry_pool.add_or_update_line(
 				scfg,
 				p_exp_time,
@@ -924,7 +917,7 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, Vector3 *
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
 					p_exp_time,
-					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), FIX_PRECISION_POSITION(a)), // slow
+					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), a), // slow
 					p_col,
 					SphereBounds(a + center, len * .5f));
 		}
@@ -944,7 +937,7 @@ void DebugDraw3D::draw_sphere_base(const Transform3D &transform, const Color &co
 			scfg,
 			ConvertableInstanceType::SPHERE,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
 }
@@ -976,7 +969,7 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::CYLINDER,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CylinderRadiusForSphere));
 }
@@ -999,7 +992,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 			scfg,
 			ConvertableInstanceType::CYLINDER_AB,
 			duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(t.origin, MathUtils::get_max_basis_length(t.basis) * MathUtils::CylinderRadiusForSphere));
 }
@@ -1040,7 +1033,7 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 				scfg,
 				ConvertableInstanceType::CUBE,
 				duration,
-				FIX_PRECISION_TRANSFORM(t),
+				t,
 				IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 				sb);
 	} else {
@@ -1071,7 +1064,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 			scfg,
 			is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			sb);
 }
@@ -1113,7 +1106,7 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				scfg,
 				InstanceType::BILLBOARD_SQUARE,
 				duration,
-				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), FIX_PRECISION_POSITION(hit)),
+				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size),
 				&Colors::empty_color);
@@ -1144,12 +1137,12 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
-void DebugDraw3D::draw_lines(PackedVector3Array lines, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	ZoneScoped;
-	draw_lines_c(lines.ptrw(), lines.size(), color, duration);
+	draw_lines_c(lines.ptr(), lines.size(), color, duration);
 }
 
-void DebugDraw3D::draw_lines_c(Vector3 *lines_data, const uint64_t &lines_size, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines_c(const Vector3 *lines_data, const uint64_t &lines_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 	if (!lines_data || lines_size == 0)
@@ -1209,7 +1202,7 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			p_duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			IS_DEFAULT_COLOR(p_color) ? Colors::light_green : p_color,
 			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
@@ -1225,7 +1218,7 @@ void DebugDraw3D::draw_arrowhead(const Transform3D &transform, const Color &colo
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			SphereBounds(transform.origin + transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
@@ -1307,7 +1300,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 			scfg,
 			InstanceType::BILLBOARD_SQUARE,
 			duration,
-			Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(position)),
+			Transform3D(Basis().scaled(VEC3_ONE(size)), position),
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size),
 			&Colors::empty_color);
@@ -1334,7 +1327,7 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 			scfg,
 			InstanceType::PLANE,
 			duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			front_color,
 			SphereBounds(center_pos, MathUtils::CubeRadiusForSphere * plane_size),
 			&custom_col);
@@ -1362,7 +1355,7 @@ NAPI void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const ui
 						scfg,
 						InstanceType::BILLBOARD_SQUARE,
 						duration,
-						Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(points_data[i])),
+						Transform3D(Basis().scaled(VEC3_ONE(size)), points_data[i]),
 						IS_DEFAULT_COLOR(color) ? Colors::red : color,
 						SphereBounds(points_data[i], MathUtils::CubeRadiusForSphere * size),
 						&Colors::empty_color);
@@ -1376,7 +1369,7 @@ NAPI void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const ui
 						scfg,
 						ConvertableInstanceType::SPHERE,
 						duration,
-						FIX_PRECISION_TRANSFORM(transform),
+						transform,
 						IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
 						SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
 			}
@@ -1395,7 +1388,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::POSITION,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
@@ -1542,6 +1535,3 @@ void DebugDraw3D::draw_text(const Vector3 &position, const String text, const in
 #undef GET_SCOPED_CFG_AND_VDC
 #undef GET_SCOPED_CFG_AND_DGC
 #undef GET_SCOPED_CFG_AND_NC
-
-#undef FIX_PRECISION_TRANSFORM
-#undef FIX_PRECISION_POSITION
