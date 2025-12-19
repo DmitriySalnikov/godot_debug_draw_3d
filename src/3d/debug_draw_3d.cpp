@@ -1524,6 +1524,12 @@ void DebugDraw3D::draw_text(const Vector3 &position, const String text, const in
 			IS_DEFAULT_COLOR(color) ? Colors::white : color,
 			duration);
 }
+
+void DebugDraw3D::draw_text_c(const godot::Vector3 &position, const char *text_string, const int size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
+	draw_text(position, String::utf8(text_string), size, color, duration);
+}
+
 #pragma endregion // Text
 
 #pragma endregion // Misc

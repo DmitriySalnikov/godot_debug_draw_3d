@@ -89,6 +89,7 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	FrameMark;
 	ZoneScoped;
 
+	DebugDraw3D::draw_text(Vector3(1,1,1), String::utf8("Hello Привет こんにちは หวัดดี"));
 	DebugDraw3D::draw_sphere(Vector3(1, 1, 1), 2, Color(1, 1, 0), 0);
 
 	PackedVector3Array a;

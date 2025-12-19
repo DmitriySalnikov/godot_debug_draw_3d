@@ -784,7 +784,10 @@ public:
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
 	 */
-	void draw_text(const Vector3 &position, const String text, const int size = 32, const Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	void draw_text(const godot::Vector3 &position, const godot::String text, const int size = 32, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	/// @private
+	// #docs_func draw_text
+	NAPI void draw_text_c(const godot::Vector3 &position, const char* text_string, const int size = 32, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Text
 
