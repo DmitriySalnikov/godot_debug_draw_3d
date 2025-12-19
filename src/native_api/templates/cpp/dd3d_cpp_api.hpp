@@ -94,8 +94,7 @@ struct _DD3D_Loader_ {
 		return dd3d_c;
 	}
 
-	template <typename func>
-	static bool load_function(func &val, const char *name) {
+	static bool load_function(void *&val, const godot::String &sign2, const char *name) {
 		ZoneScoped;
 		if (godot::Object *dd3d = get_dd3d(); dd3d) {
 			int64_t api_hash = dd3d->call(get_funcs_hash_name);
@@ -108,7 +107,6 @@ struct _DD3D_Loader_ {
 
 #ifdef DD3D_ENABLE_MISMATCH_CHECKS
 					godot::String sign1 = func_dict.get("signature", "");
-					godot::String sign2 = DD3DShared::FunctionSignature<func>::get();
 					//godot::UtilityFunctions::print(log_prefix, "FUNCTION SIGNATURE\n\tFunc name:\t", name, "\n\tDD3D Sign:\t", sign1, "\n\tClient Sign:\t", sign2);
 
 					if (!sign1.is_empty() && sign1 != sign2) {
@@ -116,7 +114,7 @@ struct _DD3D_Loader_ {
 						return false;
 					}
 #endif
-					val = (func)(int64_t)func_dict["ptr"];
+					val = (void *)(int64_t)func_dict["ptr"];
 					return true;
 				} else {
 					godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION NOT FOUND !!! function name: ", name);
@@ -128,11 +126,22 @@ struct _DD3D_Loader_ {
 	}
 };
 
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
+#define FUNC_GET_SIGNATURE(func_name) DD3DShared::FunctionSignature<decltype(func_name)>::get()
+#else
+#define FUNC_GET_SIGNATURE(func_name) ""
+#endif
+
 #define LOADING_RESULT static _DD3D_Loader_::LoadingResult _dd3d_loading_result = _DD3D_Loader_::LoadingResult::None
-#define LOAD_FUNC_AND_STORE_RESULT(_name) _dd3d_loading_result = _DD3D_Loader_::load_function(_name, #_name) ? _DD3D_Loader_::LoadingResult::Success : _DD3D_Loader_::LoadingResult::Failure
 #define IS_FIRST_LOADING _dd3d_loading_result == _DD3D_Loader_::LoadingResult::None
 #define IS_LOADED_SUCCESSFULLY _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Success
 #define IS_FAILED_TO_LOAD _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Failure
+#define LOAD_FUNC_AND_STORE_RESULT(_name)                                                                                                                                                   \
+	void *_dd3d_func_ptr = nullptr;                                                                                                                                                         \
+	_dd3d_loading_result = _DD3D_Loader_::load_function(_dd3d_func_ptr, FUNC_GET_SIGNATURE(_name), #_name) ? _DD3D_Loader_::LoadingResult::Success : _DD3D_Loader_::LoadingResult::Failure; \
+	if (IS_LOADED_SUCCESSFULLY) {                                                                                                                                                           \
+		_name = static_cast<decltype(_name)>(_dd3d_func_ptr);                                                                                                                               \
+	}
 
 #define LOAD_AND_CALL_FUNC_POINTER(_name, ...) \
 	ZoneScoped;                                \
@@ -222,6 +231,7 @@ struct _DD3D_Loader_ {
 // GENERATOR_DD3D_API_FUNCTIONS
 // End of the generated API
 
+#undef FUNC_GET_SIGNATURE
 #undef LOADING_RESULT
 #undef LOAD_FUNC_AND_STORE_RESULT
 #undef IS_FIRST_LOADING
