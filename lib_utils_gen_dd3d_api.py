@@ -238,7 +238,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
 
     for header in headers:
         print(f"  Parsing {header} ...")
-        lines = split_text_into_lines(lib_utils.read_all_text(header))
+        lines = split_text_into_lines(lib_utils.read_all_text(header, True))
         lines = [line.strip() for line in lines]
         def_ctx.reset()
 
@@ -896,7 +896,7 @@ def generate_native_api(
 
             new_func_regs.append(f"\t\tADD_FUNC({func_name});")
 
-    c_api_lines = split_text_into_lines(lib_utils.read_all_text(c_api_template))
+    c_api_lines = split_text_into_lines(lib_utils.read_all_text(c_api_template, True))
 
     insert_lines_at_mark(
         c_api_lines,
@@ -1294,7 +1294,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         namespaces[cls] += new_lines
 
     # Copy the contents of the "c_api_shared.hpp"
-    c_api_shared_content = split_text_into_lines(lib_utils.read_all_text("src/native_api/c_api_shared.hpp"))
+    c_api_shared_content = split_text_into_lines(lib_utils.read_all_text("src/native_api/c_api_shared.hpp", True))
     c_api_shared_content_start = -1
     for idx, l in enumerate(c_api_shared_content):
         if l.endswith("// GENERATOR_DD3D_API_SHARED_EMBED_START"):
@@ -1302,7 +1302,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             break
     c_api_shared_content = c_api_shared_content[c_api_shared_content_start + 1 :]
 
-    lines = split_text_into_lines(lib_utils.read_all_text("src/native_api/templates/cpp/dd3d_cpp_api.hpp"))
+    lines = split_text_into_lines(lib_utils.read_all_text("src/native_api/templates/cpp/dd3d_cpp_api.hpp", True))
 
     remove_lines = []
     for idx, l in enumerate(lines):
@@ -1351,7 +1351,7 @@ def gen_apis(env: SConsEnvironment, c_api_template: str, out_folder: str, src_fo
     print("Generating native API!")
     os.makedirs(out_folder, exist_ok=True)
 
-    src = json.loads(lib_utils.read_all_text(src_folder + "/default_sources.json"))
+    src = json.loads(lib_utils.read_all_text(src_folder + "/default_sources.json", True))
     header_files = [os.path.join(src_folder, f.replace(".cpp", ".h")).replace("\\", "/") for f in src]
     header_files = [h for h in header_files if os.path.exists(h)]
     additional_includes = ["camera3d", "control", "font", "viewport"]

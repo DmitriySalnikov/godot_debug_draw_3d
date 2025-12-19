@@ -69,8 +69,10 @@ def get_library_version():
     return f"{major_value}.{minor_value}.{patch_value}"
 
 
-def read_all_text(file_path: str) -> str | None:
+def read_all_text(file_path: str, force_utf8: bool = False) -> str | None:
     try:
+        if force_utf8:
+            raise UnicodeDecodeError("f", bytearray(), 0, 0, "f")
         with open(file_path, "r") as file:
             text_data = file.read()
     except UnicodeDecodeError:
@@ -207,7 +209,7 @@ def generate_resources_cpp_h_files(
 
             if is_text:
                 if file_content == None:
-                    text_data = read_all_text(input_file_path)
+                    text_data = read_all_text(input_file_path, True)
                 else:
                     text_data = file_content
 
