@@ -95,7 +95,7 @@ private:
 	// TEST C# API GENERATOR
 #ifdef DEV_ENABLED
 public:
-	NAPI_ENUM enum DevTestEnum : uint32_t {
+	NAPI_ENUM enum DevTestEnum : uint16_t {
 		FIRST_VALUE = 0, // Test comment
 		SECOND_VALUE = 10,
 	};
@@ -137,15 +137,15 @@ public:
 	/**
 	 * Clear all 2D and 3D geometry
 	 */
-	void clear_all();
+	NAPI void clear_all();
 	/**
 	 * Set whether to display 2D and 3D debug graphics
 	 */
-	void set_debug_enabled(bool value);
+	NAPI void set_debug_enabled(bool value);
 	/**
 	 * Whether debug 2D and 3D graphics are disabled
 	 */
-	bool is_debug_enabled() const;
+	NAPI bool is_debug_enabled() const;
 #pragma endregion // Exposed Methods
 
 	/// @private

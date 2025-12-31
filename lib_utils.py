@@ -267,3 +267,70 @@ def generate_docs_cpp_file(text: str, src_folder: str, out_file: str, src_out: l
     src_out.append(src_path)
     write_all_text(os.path.join(src_folder, src_path), cpp_text)
     print()
+
+
+# direct port from godot
+def _separate_compound_words(value: str) -> str:
+    if len(value) == 0:
+        return value
+
+    start_index = 0
+    new_string_parts = []
+
+    is_prev_upper = value[0].isupper()
+    is_prev_lower = value[0].islower()
+    is_prev_digit = value[0].isdigit()
+
+    for i in range(1, len(value)):
+        curr = value[i]
+
+        is_curr_upper = curr.isupper()
+        is_curr_lower = curr.islower()
+        is_curr_digit = curr.isdigit()
+
+        is_next_lower = False
+        if i + 1 < len(value):
+            is_next_lower = (value[i + 1]).islower()
+
+        # aA
+        cond_a = is_prev_lower and is_curr_upper
+        # AAa, 2Aa
+        cond_b = (is_prev_upper or is_prev_digit) and is_curr_upper and is_next_lower
+        # 2aa
+        cond_c = is_prev_digit and is_curr_lower and is_next_lower
+        # A2, a2
+        cond_d = (is_prev_upper or is_prev_lower) and is_curr_digit
+
+        if cond_a or cond_b or cond_c or cond_d:
+            new_string_parts.append(value[start_index:i])
+            start_index = i
+
+        is_prev_upper = is_curr_upper
+        is_prev_lower = is_curr_lower
+        is_prev_digit = is_curr_digit
+
+    new_string_parts.append(value[start_index:])
+
+    new_string = " ".join(new_string_parts)
+
+    # Normalize separators to spaces
+    normalized_chars = []
+    for ch in new_string:
+        if ch.isspace() or ch == "_" or ch == "-":
+            normalized_chars.append(" ")
+        else:
+            normalized_chars.append(ch)
+
+    return "".join(normalized_chars).lower()
+
+
+def to_pascal_case(value: str) -> str:
+    words = _separate_compound_words(value).strip()
+    result_parts = []
+
+    for word in words.split():
+        if len(word) > 0:
+            # Capitalize first character only
+            result_parts.append(word[0].upper() + word[1:])
+
+    return "".join(result_parts)

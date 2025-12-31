@@ -209,6 +209,10 @@ class DefineContext:
         return True
 
 
+def line(arr: list, txt: str = "", indent: int = 0):
+    arr.append("\t" * indent + txt)
+
+
 def insert_lines_at_mark(lines: list, mark: str, insert_lines: list):
     insert_index = -1
     for idx, line in enumerate(lines):
@@ -418,7 +422,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     "type": str
                     "c_type": str
                     "basic_godot_type": str
-                    "ref_class" (opt): str
+                    "ref_class" (opt) or "object_class" (opt): str
                     "enum_type" (opt): dict
                 """
 
@@ -447,11 +451,24 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     "type": ret_type,
                     "c_type": c_ret_type,
                 }
-                if len(ret_ref_class):
-                    ret_dict["ref_class"] = ret_ref_class
 
                 check_array_usage(ret_type, True)
                 check_argument_types(ret_dict)
+
+                if len(ret_ref_class):
+                    ret_dict["ref_class"] = ret_ref_class
+                elif (
+                    ret_type != "void *"
+                    and "basic_godot_type" not in ret_dict
+                    and ret_type.endswith("*")
+                    and "godot::" in ret_type
+                ):
+                    ret_dict["type"] = "const uint64_t"
+                    ret_dict["c_type"] = "const uint64_t"
+                    ret_dict["object_class"] = (
+                        ret_type.replace("const ", "").replace("class ", "").replace("*", "").strip()
+                    )
+                    print("\t\tFound Godot's Object* type in return:", ret_type)
 
                 # get all args even in one-line functions
                 cbrace_end = line.rfind("{")
@@ -575,6 +592,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     "size_idx" (opt): int
                     "array_type": str
                     "is_const": bool
+                    "not_godot_array_type" (opt): bool
                 """
 
                 found_arrays = []
@@ -583,11 +601,17 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     const_array = a1["type"].startswith("const")
                     words1 = re.findall(r"\w+", a1["type"])
                     array_type = None
+                    not_godot_array_type = False
 
                     if a1.get("basic_godot_type", "") in basic_types_to_arrays:
                         array_type = basic_types_to_arrays[a1["basic_godot_type"]]
                     elif words1[-1] in basic_types_to_arrays:
                         array_type = basic_types_to_arrays[words1[-1]]
+                    else:
+                        # for array without native godot's type, e.g. godot::Plane *
+                        if "basic_godot_type" in a1 and a1["c_type"].endswith("*"):
+                            array_type = a1["basic_godot_type"]
+                            not_godot_array_type = True
 
                     if (
                         (
@@ -619,6 +643,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                                         "array_type": array_type,
                                         "is_const": const_array,
                                     }
+                                    if not_godot_array_type:
+                                        arr_dict["not_godot_array_type"] = not_godot_array_type
+
                                     found_arrays.append(arr_dict)
                                     print(
                                         "\t\tArguments suitable for the PackedArray wrapper have been found: "
@@ -655,8 +682,8 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 functions.append(fun_dict)
                 print(f"\t  Parsing of method {func_name} completed")
 
-    ###
-    # Mark all Enum's in args and return types
+    ##№
+    print("Mark all Enum's in args and return types...")
 
     """
     Enum arg fields:
@@ -709,6 +736,48 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 if e_name:
                     a["enum_type"] = exposed_enums[e_name]
 
+    ###
+    print("Search for all possible properties...")
+
+    """
+    Properties fields:
+        "name": str
+        "return": dict
+        "set": str
+        "get": str
+    """
+    for cls_name in classes:
+        cls = classes[cls_name]
+        properties = []
+        cls["properties"] = properties
+
+        for f in cls["functions"]:
+            func_name = f["name"]
+            if func_name.startswith("set_") and (
+                len(f["args"]) == 1 or (len(f["args"]) == 2 and f["args"][0]["name"] == "inst_ptr")
+            ):  # 1 arg or 2 args for instance
+                prop_name = func_name.removeprefix("set_")
+                for f2 in cls["functions"]:
+                    func_name2 = f2["name"]
+                    if (func_name2.startswith("get_") or func_name2.startswith("is_")) and (
+                        len(f2["args"]) == 0 or (len(f2["args"]) == 1 and f2["args"][0]["name"] == "inst_ptr")
+                    ):
+                        prop_name2 = func_name2
+                        if prop_name2.startswith("get_"):
+                            prop_name2 = prop_name2.removeprefix("get_")
+                        elif prop_name2.startswith("is_"):
+                            prop_name2 = prop_name2.removeprefix("is_")
+                        if prop_name == prop_name2:
+                            print(f'\tFound Property in "{cls_name}" named "{prop_name}"')
+                            properties.append(
+                                {
+                                    "name": prop_name,
+                                    "return": f2["return"],
+                                    "set": func_name,
+                                    "get": func_name2,
+                                }
+                            )
+
     return classes
 
 
@@ -745,49 +814,51 @@ def generate_native_api(
         if not is_refcounted:
             continue
 
-        new_funcs.append(f"struct {cls}_NAPIWrapper {{")
-        new_funcs.append(f"\tRef<{cls}> ref;")
-        new_funcs.append("};")
-        new_funcs.append("")
-        new_funcs.append(f"static std::unordered_set<{cls}_NAPIWrapper*> {cls}_NAPIWrapper_storage;")
-        new_funcs.append("")
-        new_funcs.append(f"{extern_c_dbg}static void* {cls}_create() {{")
-        new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
-        new_funcs.append("\treturn inst_ptr;")
-        new_funcs.append("};")
-        new_funcs.append("")
-        new_funcs.append(f"{extern_c_dbg}static void* {cls}_create_nullptr() {{")
-        new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
-        new_funcs.append("\treturn inst_ptr;")
-        new_funcs.append("};")
-        new_funcs.append("")
-        new_funcs.append(f"static void* {cls}_create_from_ref(Ref<{cls}> ref) {{")
-        new_funcs.append("\tZoneScoped;")
-        new_funcs.append(f"\tauto* inst_ptr = new {cls}_NAPIWrapper{{ref}};")
-        new_funcs.append(f"\t{cls}_NAPIWrapper_storage.insert(inst_ptr);")
-        new_funcs.append("\treturn inst_ptr;")
-        new_funcs.append("};")
-        new_funcs.append("")
-        new_funcs.append(f"{extern_c_dbg}static void {cls}_destroy(void *inst_ptr) {{")
-        new_funcs.append("\tZoneScoped;")
-        new_funcs.append(
-            f"\tif (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst_ptr)); it != {cls}_NAPIWrapper_storage.end()){{"
+        line(new_funcs, f"struct {cls}_NAPIWrapper {{")
+        line(new_funcs, f"Ref<{cls}> ref;", 1)
+        line(new_funcs, "};")
+        line(new_funcs, "")
+        line(new_funcs, f"static std::unordered_set<{cls}_NAPIWrapper*> {cls}_NAPIWrapper_storage;")
+        line(new_funcs, "")
+        line(new_funcs, f"{extern_c_dbg}static void* {cls}_create() {{")
+        line(new_funcs, "ZoneScoped;", 1)
+        line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};", 1)
+        line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
+        line(new_funcs, "return inst_ptr;", 1)
+        line(new_funcs, "};")
+        line(new_funcs, "")
+        line(new_funcs, f"{extern_c_dbg}static void* {cls}_create_nullptr() {{")
+        line(new_funcs, "ZoneScoped;", 1)
+        line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{}};", 1)
+        line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
+        line(new_funcs, "return inst_ptr;", 1)
+        line(new_funcs, "};")
+        line(new_funcs, "")
+        line(new_funcs, f"static void* {cls}_create_from_ref(Ref<{cls}> ref) {{")
+        line(new_funcs, "ZoneScoped;", 1)
+        line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{ref}};", 1)
+        line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
+        line(new_funcs, "return inst_ptr;", 1)
+        line(new_funcs, "};")
+        line(new_funcs, "")
+        line(new_funcs, f"{extern_c_dbg}static void {cls}_destroy(void *inst_ptr) {{")
+        line(new_funcs, "ZoneScoped;", 1)
+        line(
+            new_funcs,
+            f"if (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst_ptr)); it != {cls}_NAPIWrapper_storage.end()){{",
+            1,
         )
-        new_funcs.append(f"\t\t{cls}_NAPIWrapper_storage.erase(it);")
-        new_funcs.append(f"\t\tdelete *it;")
-        new_funcs.append("\t};")
-        new_funcs.append("};")
-        new_funcs.append("")
+        line(new_funcs, f"{cls}_NAPIWrapper_storage.erase(it);", 2)
+        line(new_funcs, f"delete *it;", 2)
+        line(new_funcs, "};", 1)
+        line(new_funcs, "};")
+        line(new_funcs)
 
-        new_func_regs.append(f"\t\tADD_FUNC({cls}_create);")
-        new_func_regs.append(f"\t\tADD_FUNC({cls}_create_nullptr);")
-        new_func_regs.append(f"\t\tADD_FUNC({cls}_destroy);")
+        line(new_func_regs, f"ADD_FUNC({cls}_create);", 2)
+        line(new_func_regs, f"ADD_FUNC({cls}_create_nullptr);", 2)
+        line(new_func_regs, f"ADD_FUNC({cls}_destroy);", 2)
 
-        new_ref_clears.append(f"\tCLEAR_REFS({cls}, {cls}_NAPIWrapper_storage);")
+        line(new_ref_clears, f"CLEAR_REFS({cls}, {cls}_NAPIWrapper_storage);", 1)
 
     for cls in classes:
         print(f"Genearating DD3D C_API for {cls}...")
@@ -819,7 +890,7 @@ def generate_native_api(
                 return type
 
             def process_ret_calls(line: str, ret: dict):
-                if "ref_class" in ret:
+                if "ref_class" in ret or "object_class" in ret:
                     return f"{line}->get_instance_id()"
                 if "enum_type" in ret:
                     e = ret["enum_type"]
@@ -867,10 +938,11 @@ def generate_native_api(
 
             # func define
             new_func_define_args = ", ".join([process_arg_decl(a) for a in args])
-            new_funcs.append(
-                f'{extern_c_dbg}static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{'
+            line(
+                new_funcs,
+                f'{extern_c_dbg}static {"void *" if is_ret_custom_ref else ret_type} {func_name}({new_func_define_args}) {{',
             )
-            new_funcs.append("\tZoneScoped;")
+            line(new_funcs, "ZoneScoped;", 1)
 
             if is_singleton:
                 call_args = ", ".join([process_arg_calls(a) for a in args])
@@ -878,23 +950,23 @@ def generate_native_api(
 
                 if ret_type != "void":
                     if is_ret_custom_ref:
-                        new_funcs.append(f"\treturn {get_ref_class_name(ret_type)}_create_from_ref({ret_str});")
+                        line(new_funcs, f"return {get_ref_class_name(ret_type)}_create_from_ref({ret_str});", 1)
                     else:
-                        new_funcs.append(f"\treturn {process_ret_calls(ret_str, ret)};")
+                        line(new_funcs, f"return {process_ret_calls(ret_str, ret)};", 1)
                 else:
-                    new_funcs.append(f"\t{ret_str};")
+                    line(new_funcs, f"{ret_str};", 1)
             else:
                 call_args = ", ".join([process_arg_calls(a) for a in args[1:]])
                 ret_str = f"static_cast<{cls}_NAPIWrapper *>(inst_ptr)->ref->{func_orig_name}({call_args})"
 
                 if ret_type != "void":
-                    new_funcs.append(f"\treturn {process_ret_calls(ret_str, ret)};")
+                    line(new_funcs, f"return {process_ret_calls(ret_str, ret)};", 1)
                 else:
-                    new_funcs.append(f"\t{ret_str};")
-            new_funcs.append("}")
-            new_funcs.append("")
+                    line(new_funcs, f"{ret_str};", 1)
+            line(new_funcs, "}")
+            line(new_funcs, "")
 
-            new_func_regs.append(f"\t\tADD_FUNC({func_name});")
+            line(new_func_regs, f"ADD_FUNC({func_name});", 2)
 
     c_api_lines = split_text_into_lines(lib_utils.read_all_text(c_api_template, True))
 
@@ -944,7 +1016,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         print(f"Genearating CPP_API forward declarations for {cls}...")
         cls_is_class = classes[cls]["type"] != "singleton"
         if cls_is_class:
-            fwd_decls.append(f"class {cls};")
+            line(fwd_decls, f"class {cls};")
 
     for cls in classes:
         print(f"Genearating CPP_API for {cls}...")
@@ -952,7 +1024,6 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         enums = classes[cls]["enums"]
         functions: list = classes[cls]["functions"]
         cls_is_class = classes[cls]["type"] != "singleton"
-        cls_indent = "\t" if cls_is_class else ""
 
         if cls not in namespaces:
             is_namespace_a_class[cls] = cls_is_class
@@ -963,12 +1034,12 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             values = enums[enum_name]["values"]
             enum_lines = []
             if cls_is_class:
-                enum_lines.append("public:")
-            enum_lines.append(f"{cls_indent}enum {enum_name} : {type} {{")
+                line(enum_lines, "public:")
+            line(enum_lines, f"enum {enum_name} : {type} {{")
             for value_name in values:
-                enum_lines.append(f"{cls_indent}\t{value_name} = {values[value_name]},")
-            enum_lines.append(f"{cls_indent}}};")
-            enum_lines.append("")
+                line(enum_lines, f"{value_name} = {values[value_name]},", 1)
+            line(enum_lines, f"}};")
+            line(enum_lines)
 
             namespaces[cls] += enum_lines
 
@@ -976,19 +1047,19 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         # Class wrapper
         if cls_is_class:
             con_lines = []
-            con_lines.append(f"{cls_indent}void *inst_ptr;")
-            con_lines.append("")
-            con_lines.append(f"public:")
-            con_lines.append(f"{cls_indent}{cls}(void *inst_ptr) :")
-            con_lines.append(f"{cls_indent}\t\tinst_ptr(inst_ptr) {{}}")
-            con_lines.append("")
-            con_lines.append(f"{cls_indent}{cls}(bool instantiate = true) :")
-            con_lines.append(f"{cls_indent}\t\tinst_ptr(instantiate ? create() : create_nullptr()) {{}}")
-            con_lines.append("")
-            con_lines.append(f"{cls_indent}~{cls}() {{ destroy(inst_ptr); }}")
-            con_lines.append("")
-            con_lines.append(f"{cls_indent}operator void *() const {{ return inst_ptr; }}")
-            con_lines.append("")
+            line(con_lines, f"void *inst_ptr;")
+            line(con_lines, "")
+            line(con_lines, f"public:")
+            line(con_lines, f"{cls}(void *inst_ptr) :")
+            line(con_lines, f"inst_ptr(inst_ptr) {{}}", 2)
+            line(con_lines, "")
+            line(con_lines, f"{cls}(bool instantiate = true) :")
+            line(con_lines, f"inst_ptr(instantiate ? create() : create_nullptr()) {{}}", 2)
+            line(con_lines, "")
+            line(con_lines, f"~{cls}() {{ destroy(inst_ptr); }}")
+            line(con_lines, "")
+            line(con_lines, f"operator void *() const {{ return inst_ptr; }}")
+            line(con_lines, "")
             namespaces[cls] += con_lines
 
             functions.append(
@@ -1050,8 +1121,13 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 new_func = copy.deepcopy(func)
                 new_func.pop("arg_arrays")
                 wrapper_args: list = copy.deepcopy(new_func["args"])
+                processed_args = 0
 
                 for arr in reversed(arrays_info):
+                    if arr.get("not_godot_array_type", False):
+                        continue
+
+                    processed_args += 1
                     if "size_idx" in arr:
                         wrapper_args.pop(arr["size_idx"])
                     data_arg = wrapper_args.pop(arr["data_idx"])
@@ -1080,6 +1156,9 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
                     wrapper_args.insert(arr["data_idx"], new_arg)
 
+                if not processed_args:
+                    continue
+
                 new_func["wrapper_args"] = wrapper_args
                 new_func["wrapper_orig_name"] = func["name"]
                 new_func["name"] = func["name"].removesuffix("_c")
@@ -1089,7 +1168,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             functions.insert(f_pair[0], f_pair[1])
 
         prev_private_state = False
-        new_lines = []
+        func_lines = []
 
         for func in functions:
 
@@ -1112,6 +1191,8 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             def process_ret_type_decl(r_type: str, ret: dict):
                 if is_ref_in_api(r_type):
                     return f"std::shared_ptr<{get_ref_class_name(r_type)}>"
+                if "object_class" in ret:
+                    return f"{ret['object_class']} *"
                 if "ref_class" in ret:
                     return f"godot::Ref<{ret['ref_class']}>"
 
@@ -1213,17 +1294,17 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             if prev_private_state != is_private:
                 prev_private_state = is_private
                 if is_private:
-                    new_lines.append("private:")
+                    line(func_lines, "private:")
                 else:
-                    new_lines.append("public:")
+                    line(func_lines, "public:")
 
             docs = func["docs"]
             if len(docs):
-                docs = [cls_indent + " * " + line for line in docs]
-                docs.insert(0, f"{cls_indent}/**")
-                docs.insert(len(docs), f"{cls_indent} */")
+                docs = [" * " + line for line in docs]
+                docs.insert(0, "/**")
+                docs.insert(len(docs), " */")
 
-            new_lines += docs
+            func_lines += docs
 
             # Function Declaration
             is_wrapper = wrapper_args != None
@@ -1232,19 +1313,23 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             if cls_is_class and not is_private:
                 inner_args = ", ".join([process_arg_decl(a) for a in use_args[1:]])
-                new_lines.append(
-                    f'{cls_indent}{process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                line(
+                    func_lines,
+                    f'{process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{',
                 )
             else:
                 inner_args = ", ".join([process_arg_decl(a) for a in use_args])
-                new_lines.append(
-                    f'{cls_indent}static {process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{'
+                line(
+                    func_lines,
+                    f'static {process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{',
                 )
 
             if not is_wrapper:
                 # Function pointer
-                new_lines.append(
-                    f'{cls_indent}\tstatic {"void" if self_ret else process_ret_func_ptr_decl(ret_type, ret)}(*{func_name})({", ".join([process_arg_funcptr_decl(a) for a in args])}) = nullptr;'
+                line(
+                    func_lines,
+                    f'static {"void" if self_ret else process_ret_func_ptr_decl(ret_type, ret)}(*{func_name})({", ".join([process_arg_funcptr_decl(a) for a in args])}) = nullptr;',
+                    1,
                 )
 
                 # Function calls
@@ -1255,43 +1340,61 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
                 if ret_type != "void" and not self_ret:
                     if is_ref_in_api(ret_type):
-                        new_lines.append(
-                            f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret_type)}, {def_ret_val}{call_args});"
+                        line(
+                            func_lines,
+                            f"LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED({func_name}, {get_ref_class_name(ret_type)}, {def_ret_val}{call_args});",
+                            1,
                         )
                     else:
                         if "ref_class" in ret:
-                            new_lines.append(
-                                f'{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{call_args});'
+                            line(
+                                func_lines,
+                                f'LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF({func_name}, {ret["ref_class"]}, {def_ret_val}{call_args});',
+                                1,
+                            )
+                        elif "object_class" in ret:
+                            line(
+                                func_lines,
+                                f'LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_OBJECT({func_name}, {ret["object_class"]}, {def_ret_val}{call_args});',
+                                1,
                             )
                         else:
                             cast_type = get_ret_required_cast_type(ret)
                             if cast_type:
-                                new_lines.append(
-                                    f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET_CAST({func_name}, {cast_type}, {def_ret_val}{call_args});"
+                                line(
+                                    func_lines,
+                                    f"LOAD_AND_CALL_FUNC_POINTER_RET_CAST({func_name}, {cast_type}, {def_ret_val}{call_args});",
+                                    1,
                                 )
                             else:
-                                new_lines.append(
-                                    f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});"
+                                line(
+                                    func_lines,
+                                    f"LOAD_AND_CALL_FUNC_POINTER_RET({func_name}, {def_ret_val}{call_args});",
+                                    1,
                                 )
                 else:
                     if self_ret:
-                        new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}{call_args});")
-                        new_lines.append(f"{cls_indent}\treturn shared_from_this();")
+                        line(
+                            func_lines,
+                            f"LOAD_AND_CALL_FUNC_POINTER_SELFRET({func_name}{call_args});",
+                            1,
+                        )
+                        line(func_lines, f"return shared_from_this();", 1)
                     else:
-                        new_lines.append(f"{cls_indent}\tLOAD_AND_CALL_FUNC_POINTER({func_name}{call_args});")
+                        line(func_lines, f"LOAD_AND_CALL_FUNC_POINTER({func_name}{call_args});", 1)
             else:
                 # Array wrapper calls
                 call_args = ", ".join([process_array_wrapper_arg_calls(a) for a in use_args])
 
                 if ret_type != "void" or self_ret:
-                    new_lines.append(f"{cls_indent}\treturn {wrapper_orig_name}({call_args});")
+                    line(func_lines, f"return {wrapper_orig_name}({call_args});", 1)
                 else:
-                    new_lines.append(f"{cls_indent}\t{wrapper_orig_name}({call_args});")
+                    line(func_lines, f"{wrapper_orig_name}({call_args});", 1)
 
-            new_lines.append(f"{cls_indent}}}")
-            new_lines.append("")
+            line(func_lines, f"}}")
+            line(func_lines)
 
-        namespaces[cls] += new_lines
+        namespaces[cls] += func_lines
 
     # Copy the contents of the "c_api_shared.hpp"
     c_api_shared_content = split_text_into_lines(lib_utils.read_all_text("src/native_api/c_api_shared.hpp", True))
@@ -1322,19 +1425,25 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         result_arr = result_arr + docs
 
         if is_namespace_a_class[key]:
+
+            def get_indent(l: str):
+                if l.startswith("private:") or l.startswith("public:") or l == "":
+                    return ""
+                return "\t"
+
             if key in is_class_has_selfreturn:
                 # class has self return functions
-                result_arr.append(f"class {key} : public std::enable_shared_from_this<{key}> {{")
+                line(result_arr, f"class {key} : public std::enable_shared_from_this<{key}> {{")
             else:
                 # regular class
-                result_arr.append(f"class {key} {{")
-            result_arr += namespaces[key]
-            result_arr.append(f"}}; // class {key}")
+                line(result_arr, f"class {key} {{")
+            result_arr += [get_indent(l) + l for l in namespaces[key]]
+            line(result_arr, f"}}; // class {key}")
         else:
-            result_arr.append(f"namespace {key} {{")
+            line(result_arr, f"namespace {key} {{")
             result_arr += namespaces[key]
-            result_arr.append(f"}} // namespace {key}")
-        result_arr.append("")
+            line(result_arr, f"}} // namespace {key}")
+        line(result_arr)
 
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_SHARED_EMBED", c_api_shared_content)
     insert_lines_at_mark(
@@ -1345,6 +1454,684 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FORWARD_DECLARATIONS", fwd_decls)
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", result_arr)
     return lib_utils.write_all_text(os.path.join(out_folder, "dd3d_cpp_api.hpp"), "\n".join(lines))
+
+
+####################################
+####################################
+
+
+## dd3d_cs_api.cs
+
+
+####################################
+####################################
+def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_include_classes: list = []) -> bool:
+    os.makedirs(out_folder, exist_ok=True)
+    classes: dict = api["classes"]
+    is_namespace_a_class = {}
+    is_class_has_selfreturn = {}
+    class_lines = {}
+
+    """
+    value:
+        "name"
+        "decl"
+    """
+    default_arg_values_redirects = {}
+    enum_remaps = {}
+
+    base_cs_types_map = {
+        "bool": "bool",
+        "float": "float",
+        "double": "double",
+        "real_t": "real_t",
+        "char": "byte",
+        "short": "short",
+        "int": "int",
+        "uint8_t": "ubyte",
+        "uint16_t": "ushort",
+        "uint32_t": "uint",
+        "uint64_t": "ulong",
+        "int8_t": "byte",
+        "int16_t": "short",
+        "int32_t": "int",
+        "int64_t": "long",
+        #
+        "void *": "IntPtr",
+    }
+
+    def to_cs_type_ex(type: str) -> tuple:
+        type = type.removeprefix("const").strip()
+
+        if type in base_cs_types_map:
+            return (True, base_cs_types_map[type])
+
+        type = type.replace("godot::", "")
+
+        godot_types_map = {
+            "Object": "GodotObject",
+            "AABB": "Aabb",
+            "Rect2i": "Rect2I",
+            "Vector2i": "Vector2I",
+            "Vector3i": "Vector3I",
+            "Vector4i": "Vector4I",
+            #
+            "String": "string",
+            "PackedByteArray": "byte[]",
+            "PackedInt32Array": "int[]",
+            "PackedInt64Array": "long[]",
+            "PackedFloat32Array": "float[]",
+            "PackedFloat64Array": "double[]",
+            "PackedVector2Array": "Vector2[]",
+            "PackedVector3Array": "Vector3[]",
+            "PackedColorArray": "Color[]",
+            "PackedVector4Array": "Vector4[]",
+        }
+        if type in godot_types_map:
+            return (True, godot_types_map[type])
+
+        return (False, type)
+
+    def to_cs_type(type: str) -> str:
+        return to_cs_type_ex(type)[1]
+
+    def to_cs_name(txt: str) -> str:
+        return lib_utils.to_pascal_case(txt)
+
+    for cls in classes:
+        print(f"Genearating CS_API for {cls}...")
+
+        enums = classes[cls]["enums"]
+        functions: list = classes[cls]["functions"]
+        properties: list = classes[cls]["properties"]
+        cls_is_class = classes[cls]["type"] != "singleton"
+
+        if cls not in class_lines:
+            is_namespace_a_class[cls] = cls_is_class
+            class_lines[cls] = []
+
+        for enum_name in enums:
+            type = enums[enum_name]["type"]
+            values = enums[enum_name]["values"]
+            values_list = list(enums[enum_name]["values"].keys())
+
+            prefix = ""
+            if len(values_list) > 0:
+                first_enum = values_list[0]
+                test_split = first_enum.split("_")
+
+                for i in range(len(test_split)):
+                    split = first_enum.rsplit("_", i)
+                    test_prefix = split[0]
+
+                    full_match = True
+                    for j in range(1, len(values_list)):
+                        if not values_list[j].startswith(test_prefix):
+                            full_match = False
+                            break
+
+                    if full_match:
+                        prefix = test_prefix
+
+            if enum_name not in enum_remaps:
+                enum_remaps[enum_name] = {}
+
+            enum_lines = []
+            line(enum_lines, f"public enum {enum_name} : {to_cs_type(type)}")
+            line(enum_lines, "{")
+            for value_name in values:
+                enum_remaps[enum_name][value_name] = to_cs_name(value_name.removeprefix(prefix))
+                line(enum_lines, f"{to_cs_name(value_name.removeprefix(prefix))} = {values[value_name]},", 1)
+            line(enum_lines, "}")
+            line(enum_lines)
+
+            class_lines[cls] += enum_lines
+
+        #
+        # Class wrapper
+        if cls_is_class:
+            con_lines = []
+            line(con_lines, f"IntPtr inst_ptr;")
+            line(con_lines)
+            line(con_lines, f"public {cls}(IntPtr inst_ptr) => this.inst_ptr = inst_ptr;")
+            line(con_lines)
+            line(
+                con_lines,
+                f"public {cls}(bool instantiate = true) => this.inst_ptr = instantiate ? Create() : CreateNullptr();",
+            )
+            line(con_lines)
+            line(con_lines, f"~{cls}() => Destroy(inst_ptr);")
+            line(con_lines)
+            line(con_lines, f"public static explicit operator IntPtr({cls} o) {{ return o.inst_ptr; }}")
+            line(con_lines)
+            class_lines[cls] += con_lines
+
+            functions.append(
+                {
+                    "name": "Create",
+                    "c_name": f"{cls}_create",
+                    "docs": [],
+                    "args": [],
+                    "return": {"type": "void *", "c_type": "void *"},
+                    "self_return": False,
+                    "private": True,
+                }
+            )
+
+            functions.append(
+                {
+                    "name": "CreateNullptr",
+                    "c_name": f"{cls}_create_nullptr",
+                    "docs": [],
+                    "args": [],
+                    "return": {"type": "void *", "c_type": "void *"},
+                    "self_return": False,
+                    "private": True,
+                }
+            )
+
+            functions.append(
+                {
+                    "name": "Destroy",
+                    "c_name": f"{cls}_destroy",
+                    "docs": [],
+                    "args": [
+                        {
+                            "name": "inst_ptr",
+                            "type": "void *",
+                            "c_type": "void *",
+                        },
+                    ],
+                    "return": {"type": "void", "c_type": "void"},
+                    "self_return": False,
+                    "private": True,
+                }
+            )
+
+        #
+        # Array function wrappers
+        """
+        New fields for args:
+            "is_const_array": bool
+            "custom_call_args": bool
+        New fields for function:
+            "wrapper_args": list
+        """
+        functions_to_add = []
+        for idx, func in enumerate(functions):
+            if "arg_arrays" in func:
+                arrays_info = func["arg_arrays"]
+                new_func = copy.deepcopy(func)
+                new_func.pop("arg_arrays")
+                pre_try = []
+                post_try = []
+                wrapper_args: list = copy.deepcopy(new_func["args"])
+
+                for arr in reversed(arrays_info):
+                    not_godot_array_type = arr.get("not_godot_array_type", False)
+
+                    if "size_idx" in arr:
+                        wrapper_args.pop(arr["size_idx"])
+                    data_arg = wrapper_args.pop(arr["data_idx"])
+
+                    new_arg = {
+                        "name": data_arg["name"].removesuffix("_data").removesuffix("_string"),
+                        "type": arr["array_type"],
+                        "c_type": arr["array_type"],
+                        "is_const_array": arr["is_const"],
+                    }
+
+                    if "default" in data_arg and "size_idx" not in arr:
+                        new_arg["default"] = data_arg["default"]
+
+                    arr_args = []
+                    new_arg["custom_call_args"] = arr_args
+
+                    if arr["array_type"] in ["godot::String"]:
+                        arr_args.append(f'{new_arg["name"]}')
+                    else:
+                        if not_godot_array_type:
+                            for a in func["args"]:
+                                if a["name"] == data_arg["name"]:
+                                    a["not_godot_array_type"] = True  # copy to the original function too
+                            new_arg["not_godot_array_type"] = True
+
+                        pre_try.append(
+                            f'var {new_arg["name"]}_native_fixed = GCHandle.Alloc({new_arg["name"]}, GCHandleType.Pinned);'
+                        )
+                        post_try.append(f'{new_arg["name"]}_native_fixed.Free();')
+
+                        arr_args.append(f'{new_arg["name"]}_native_fixed.AddrOfPinnedObject()')
+
+                    if "size_idx" in arr:
+                        arr_args.append(f'(ulong){new_arg["name"]}.Length')
+
+                    wrapper_args.insert(arr["data_idx"], new_arg)
+
+                new_func["wrapper_args"] = wrapper_args
+                new_func["name"] = func["name"].removesuffix("_c")
+
+                if len(pre_try):
+                    new_func["try"] = {
+                        "pre": pre_try,
+                        "post": post_try,
+                    }
+                func["skip"] = True
+                functions_to_add.append((idx + 1, new_func))
+
+        for f_pair in reversed(functions_to_add):
+            functions.insert(f_pair[0], f_pair[1])
+
+        def get_default_ret_val(r_type: str):
+            if r_type.endswith("*"):
+                return "IntPtr.Zero"
+            if r_type.startswith("Ref<"):
+                return "null"
+            return "default"
+
+        def get_ref_class_name(r_type: str):
+            if r_type.startswith("Ref<"):
+                return r_type[4:-1]
+            return r_type
+
+        def is_ref_in_api(r_type: str):
+            if r_type.startswith("Ref<"):
+                if get_ref_class_name(r_type) in classes:
+                    return True
+            return False
+
+        def process_ret_type_decl(r_type: str, ret: dict):
+            if is_ref_in_api(r_type):
+                return f"{get_ref_class_name(r_type)}"
+            if "object_class" in ret:
+                return f"{to_cs_type(ret['object_class'])}"
+            if "ref_class" in ret:
+                return f"{to_cs_type(ret['ref_class'])}"
+            if "enum_type" in ret:
+                e = ret["enum_type"]
+                return f"{e['class']}.{e['name']}"
+
+            return to_cs_type(r_type)
+
+        def process_ret_func_ptr_decl(r_type: str, ret: dict):
+            if is_ref_in_api(r_type):
+                return "IntPtr"
+            if "enum_type" in ret:
+                e = ret["enum_type"]
+                return f"{to_cs_type(e['type'])} /*{e['class']}::{e['name']}*/"
+
+            return to_cs_type(r_type)
+
+        def get_ret_required_cast_type(ret: dict):
+            if "enum_type" in ret:
+                e = ret["enum_type"]
+                return f"{e['class']}.{e['name']}"
+
+            return None
+
+        def process_arg_decl(arg: dict):
+            type = arg["c_type"].strip()
+            name = arg["name"].strip()
+
+            if arg.get("not_godot_array_type", False):
+                return f"{to_cs_type(type)}[] {name}"
+
+            if is_ref_in_api(type):
+                return f"{get_ref_class_name(type)} {name}"
+            if "ref_class" in arg:
+                return f"{to_cs_type(arg['ref_class'])} {name}"
+            if "object_class" in arg:
+                res = f"{to_cs_type(arg['object_class'])} {name}"
+                if "default" in arg and arg["default"] == "nullptr":
+                    res += " = null"
+                return res
+            if "enum_type" in arg:
+                e = arg["enum_type"]
+                res = f"{e['class']}.{e['name']} {name}"
+                if "default" in arg:
+                    split = arg["default"].split("::")
+                    split[-1] = to_cs_name(enum_remaps[e["name"]][split[-1]])
+                    res += f" = {".".join(split)}"
+
+                return res
+
+            res = f"{to_cs_type(type)} {name}"
+
+            if "default" in arg:
+                val = arg["default"]
+                if val in default_arg_values_redirects:
+                    res = f"{to_cs_type(type)}? {name} = null"
+                else:
+                    res += f" = {val}"
+
+            return res
+
+        def process_arg_funcptr_decl(arg: dict, arrays: dict):
+            type = arg["c_type"]
+            name = arg["name"]
+
+            if arg.get("not_godot_array_type", False):
+                return f"IntPtr /*{type}*/ {name}"
+            else:
+                for arr in arrays:
+                    if name == arr["data_name"]:
+                        at = to_cs_type(arr["array_type"])
+                        if at in ["string"]:
+                            return f"[MarshalAs(UnmanagedType.LPUTF8Str)] {at} /*{arr['array_type']}*/ {name}"
+                        else:
+                            return f"IntPtr /*{arr['array_type']}*/ {name}"
+
+            if is_ref_in_api(type):
+                return f"IntPtr {name}"
+            if "object_class" in arg:
+                return f"{to_cs_type(type)} /*{arg['object_class']}*/ {name}"
+            if "enum_type" in arg:
+                e = arg["enum_type"]
+                return f"{to_cs_type(e['type'])} /*{e['class']}::{e['name']}*/ {name}"
+
+            return f"{to_cs_type(type)} {name}"
+
+        def process_arg_calls(arg: dict):
+            type = arg["type"]
+            name = arg["name"]
+            if is_ref_in_api(type):
+                return f"(IntPtr){name}"
+            if "ref_class" in arg or "object_class" in arg:
+                return f"{name} != null ? {name}.GetInstanceId() : 0"
+            if "enum_type" in arg:
+                e = arg["enum_type"]
+                return f"({to_cs_type(e['type'])})({name})"
+
+            if "custom_call_args" in arg:
+                return ", ".join(arg["custom_call_args"])
+
+            if "default" in arg:
+                val = arg["default"]
+                if val in default_arg_values_redirects:
+                    return f'{name} ?? _DebugDrawUtils_.{default_arg_values_redirects[val]["name"]}'
+
+            return name
+
+        def process_array_wrapper_arg_calls(arg: dict):
+            type = arg["type"]
+            name = arg["name"]
+
+            if "custom_call_args" in arg:
+                return ", ".join(arg["custom_call_args"])
+
+            return process_arg_calls(arg)
+
+        func_lines = []
+
+        # Properties
+        # TODO: add docs!!
+        for prop in properties:
+            static = "" if cls_is_class else "static "
+            p_ret = process_ret_type_decl(prop["return"]["c_type"], prop["return"])
+            p_get = f'get => {to_cs_name(prop["get"])}();'
+            p_set = f'set => {to_cs_name(prop["set"])}(value);'
+            line(
+                func_lines,
+                f'public {static}{p_ret} {to_cs_name(prop["name"])} {{ {p_get} {p_set} }}',
+            )
+
+        if len(properties):
+            line(func_lines)
+
+        for func in functions:
+
+            func_name = func["c_name"]
+            ret = func["return"]
+            ret_type = ret["c_type"]
+            args = func["args"]
+            arg_arrays = func.get("arg_arrays", [])
+            self_ret = func["self_return"]
+
+            is_wrapper = func.get("wrapper_args", None) != None
+
+            if not is_wrapper:
+                # Function pointer
+                line(
+                    func_lines,
+                    "[UnmanagedFunctionPointer(CallingConvention.StdCall)] delegate "
+                    + f'{process_ret_func_ptr_decl(ret_type, ret)} dlgt_{func_name}({", ".join([process_arg_funcptr_decl(a, arg_arrays) for a in args])});',
+                )
+                line(
+                    func_lines,
+                    f"static dlgt_{func_name} func_{func_name}; static DD3DFuncLoadingResult func_load_result_{func_name};",
+                )
+
+                # Create static default values
+                for a in args:
+                    if "default" not in a:
+                        continue
+                    if "ref_class" in a or "object_class" in a:
+                        continue
+                    if "enum_type" in a:
+                        continue
+
+                    val = a["default"]
+                    if val in default_arg_values_redirects:
+                        continue
+
+                    type = to_cs_type(a["c_type"])
+
+                    if type in base_cs_types_map.values():
+                        continue
+
+                    need_to_skip = False
+                    for arr in arg_arrays:
+                        if a["name"] == arr["data_name"]:
+                            at = to_cs_type(arr["array_type"])
+                            if at == "string":
+                                need_to_skip = True
+                                break
+                    if need_to_skip:
+                        continue
+
+                    idx = len(default_arg_values_redirects)
+                    arg_name = "_default_arg_" + str(idx)
+
+                    static_val = val
+                    structs = re.search(r"(.*)(\(.*\))", static_val)
+                    if structs:
+                        if to_cs_type(structs.group(1)) == type:
+                            s_args = structs.group(2)
+                            s_args = s_args.replace("INFINITY", "real_t.PositiveInfinity")
+                            static_val = f"new {type}{s_args}"
+
+                    d = {
+                        "name": arg_name,
+                        "decl": f"public static readonly {type} {arg_name} = {static_val};",
+                    }
+                    default_arg_values_redirects[val] = d
+
+        line(func_lines)
+
+        for func in functions:
+            if func.get("skip", False):
+                continue
+
+            func_name = func["c_name"]
+            func_orig_name = func["name"]
+            ret = func["return"]
+            ret_type = ret["c_type"]
+            args = func["args"]
+            arg_arrays = func.get("arg_arrays", [])
+            wrapper_args = func.get("wrapper_args", None)
+            try_finally = func.get("try", None)
+            self_ret = func["self_return"]
+            is_private = func.get("private", False)
+            access_mod = "private" if is_private else "public"
+
+            if self_ret:
+                if ret_type == "void":
+                    ret_type = cls
+
+                is_class_has_selfreturn[cls] = True
+
+            docs = func["docs"]
+            if len(docs):
+                docs = ["/// " + line for line in docs]
+                docs.insert(0, "/// <summary>")
+                docs.insert(len(docs), "/// </summary>")
+
+            func_lines += docs
+
+            # Function Declaration
+            is_wrapper = wrapper_args != None
+            use_args = wrapper_args if is_wrapper else args
+
+            if cls_is_class and not is_private:
+                inner_args = ", ".join([process_arg_decl(a) for a in use_args[1:]])
+                line(
+                    func_lines,
+                    f'{access_mod} {process_ret_type_decl(ret_type, ret)} {to_cs_name(func_orig_name.removesuffix("_selfreturn"))}({inner_args})',
+                )
+            else:
+                inner_args = ", ".join([process_arg_decl(a) for a in use_args])
+                line(
+                    func_lines,
+                    f'{access_mod} static {process_ret_type_decl(ret_type, ret)} {to_cs_name(func_orig_name.removesuffix("_selfreturn"))}({inner_args})',
+                )
+            line(func_lines, "{")
+
+            # Function calls
+            def_ret_val = get_default_ret_val(ret_type)
+            call_args = ", ".join([process_arg_calls(a) for a in use_args])
+
+            line(
+                func_lines,
+                f'if (!_DebugDrawUtils_.LoadFunction("{func_name}", ref func_{func_name}, ref func_load_result_{func_name}))',
+                1,
+            )
+
+            if not is_wrapper:
+                if ret_type != "void" and not self_ret:
+                    line(func_lines, f"return {def_ret_val};", 2)
+                    if is_ref_in_api(ret_type):
+                        line(
+                            func_lines,
+                            f"return new {to_cs_type(get_ref_class_name(ret_type))}(func_{func_name}({call_args}));",
+                            1,
+                        )
+                    else:
+                        if "ref_class" in ret:
+                            line(
+                                func_lines,
+                                f'return ({to_cs_type(ret["ref_class"])})GodotObject.InstanceFromId(func_{func_name}({call_args}));',
+                                1,
+                            )
+                        elif "object_class" in ret:
+                            line(
+                                func_lines,
+                                f'return ({to_cs_type(ret["object_class"])})GodotObject.InstanceFromId(func_{func_name}({call_args}));',
+                                1,
+                            )
+                        else:
+                            cast_type = get_ret_required_cast_type(ret)
+                            if cast_type:
+                                line(func_lines, f"return ({cast_type})func_{func_name}({call_args});", 1)
+                            else:
+                                line(func_lines, f"return func_{func_name}({call_args});", 1)
+
+                else:
+                    if self_ret:
+                        line(func_lines, "return this;", 2)
+                        line(func_lines, f"func_{func_name}({call_args});", 1)
+                        line(func_lines, "return this;", 1)
+                    else:
+                        line(func_lines, f"return;", 2)
+                        line(func_lines, f"func_{func_name}({call_args});", 1)
+            else:
+                # Array wrapper calls
+                call_args = ", ".join([process_array_wrapper_arg_calls(a) for a in use_args])
+
+                if ret_type != "void" or self_ret:
+                    line(func_lines, f"return {def_ret_val};", 2)
+                else:
+                    line(func_lines, f"return;", 2)
+
+                extra_indent = 0
+                if try_finally:
+                    extra_indent = 1
+                    line(func_lines, "")
+                    for p in try_finally["pre"]:
+                        line(func_lines, p, 1)
+                    line(func_lines, "try", 1)
+                    line(func_lines, "{", 1)
+
+                if ret_type != "void" or self_ret:
+                    line(func_lines, f"return func_{func_name}({call_args});", extra_indent + 1)
+                else:
+                    line(func_lines, f"func_{func_name}({call_args});", extra_indent + 1)
+
+                if try_finally:
+                    line(func_lines, "}", 1)
+                    line(func_lines, "finally", 1)
+                    line(func_lines, "{", 1)
+                    for p in try_finally["post"]:
+                        line(func_lines, p, extra_indent + 1)
+                    line(func_lines, "}", 1)
+                    extra_indent = 0
+
+            line(func_lines, "}")
+            line(func_lines)
+
+        if cls_is_class:
+            line(func_lines, f"public void Dispose()")
+            line(func_lines, "{")
+            line(func_lines, "if (inst_ptr != IntPtr.Zero)", 1)
+            line(func_lines, "{", 1)
+            line(func_lines, "Destroy(inst_ptr);", 2)
+            line(func_lines, "inst_ptr = IntPtr.Zero;", 2)
+            line(func_lines, "}", 1)
+            line(func_lines, "}")
+
+        class_lines[cls] += func_lines
+
+    def_lines = []
+    for v in default_arg_values_redirects.values():
+        line(def_lines, v["decl"], 1)
+
+    # Combine class lines
+    result_arr = [""]
+    for key in class_lines:
+        docs: list = classes[key]["docs"]
+        if len(docs):
+            docs = ["/// " + line for line in docs]
+            docs.insert(0, "/// <summary>")
+            docs.insert(len(docs), "/// </summary>")
+        result_arr = result_arr + docs
+
+        def get_indent(l: str):
+            if l == "":
+                return ""
+            return "\t"
+
+        if is_namespace_a_class[key]:
+            if key in is_class_has_selfreturn:
+                # class has self return functions
+                line(result_arr, f"internal class {key} : IDisposable")
+                line(result_arr, "{")
+            else:
+                # regular class
+                line(result_arr, f"internal class {key} : IDisposable")
+                line(result_arr, "{")
+            result_arr += [get_indent(l) + l for l in class_lines[key]]
+            line(result_arr, f"}}; // class {key}")
+        else:
+            line(result_arr, f"internal static class {key}")
+            line(result_arr, "{")
+            result_arr += [get_indent(l) + l for l in class_lines[key]]
+            line(result_arr, f"}} // class {key}")
+        line(result_arr)
+
+    lines = split_text_into_lines(lib_utils.read_all_text("src/native_api/templates/cs/dd3d_cs_api.cs", True))
+    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_DEFAULT_VALUES", def_lines)
+    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", result_arr)
+
+    return lib_utils.write_all_text(os.path.join(out_folder, "dd3d_cs_api.generated.cs"), "\n".join(lines))
 
 
 def gen_apis(env: SConsEnvironment, c_api_template: str, out_folder: str, src_folder: str, src_out: list):
@@ -1361,7 +2148,13 @@ def gen_apis(env: SConsEnvironment, c_api_template: str, out_folder: str, src_fo
         print("Couldn't get the Native API")
         return 110
 
+    print("###################################################################\n")
     if not gen_cpp_api(env, copy.deepcopy(api), os.path.join(out_folder, "cpp"), additional_includes):
         return 111
+
+    print("###################################################################\n")
+    if not gen_cs_api(env, copy.deepcopy(api), os.path.join(out_folder, "cs"), additional_includes):
+        return 112
+
     print("The generation is finished!")
     return 0

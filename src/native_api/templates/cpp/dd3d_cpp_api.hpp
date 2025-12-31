@@ -197,6 +197,20 @@ struct _DD3D_Loader_ {
 	}                                                                            \
 	return _def_ret_val
 
+#define LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_OBJECT(_name, godot_object_type, _def_ret_val, ...)             \
+	ZoneScoped;                                                                                              \
+	LOADING_RESULT;                                                                                          \
+	if (IS_FIRST_LOADING) {                                                                                  \
+		LOAD_FUNC_AND_STORE_RESULT(_name);                                                                   \
+		if (IS_FAILED_TO_LOAD) {                                                                             \
+			return _def_ret_val;                                                                             \
+		}                                                                                                    \
+	}                                                                                                        \
+	if (IS_LOADED_SUCCESSFULLY) {                                                                            \
+		return godot::Object::cast_to<godot_object_type>(godot::ObjectDB::get_instance(_name(__VA_ARGS__))); \
+	}                                                                                                        \
+	return _def_ret_val
+
 #define LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF(_name, godot_ref_type, _def_ret_val, ...)                                            \
 	ZoneScoped;                                                                                                                       \
 	LOADING_RESULT;                                                                                                                   \
@@ -242,6 +256,7 @@ struct _DD3D_Loader_ {
 #undef LOAD_AND_CALL_FUNC_POINTER_SELFRET
 #undef LOAD_AND_CALL_FUNC_POINTER_RET
 #undef LOAD_AND_CALL_FUNC_POINTER_RET_CAST
+#undef LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_OBJECT
 #undef LOAD_AND_CALL_FUNC_POINTER_RET_GODOT_REF
 #undef LOAD_AND_CALL_FUNC_POINTER_RET_REF_TO_SHARED
 

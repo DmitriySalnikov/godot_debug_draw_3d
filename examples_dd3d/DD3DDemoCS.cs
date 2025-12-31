@@ -157,10 +157,10 @@ public partial class DD3DDemoCS : Node3D
             var line_end = new Vector3(1, Mathf.Cos(_time * 4f), 0);
             DebugDraw3D.DrawBox(box_pos, Quaternion.Identity, new Vector3(1, 2, 1), new Color(0, 1, 0));
             DebugDraw3D.DrawLine(line_begin, line_end, new Color(1, 1, 0));
-            DebugDraw2D.SetText("Time", _time);
-            DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
-            DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond());
-            DebugDraw2D.SetText("delta", delta);
+            DebugDraw2D.SetText("Time", _time.ToString());
+            DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn().ToString());
+            DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond().ToString());
+            DebugDraw2D.SetText("delta", delta.ToString());
 
             dHitTest.Visible = false;
             dLagTest.Visible = false;
@@ -438,7 +438,7 @@ public partial class DD3DDemoCS : Node3D
             DebugDraw2D.SetText("Text", "Value", 0, Colors.Aquamarine);
             DebugDraw2D.SetText("Text out of order", null, -1, Colors.Silver);
             DebugDraw2D.BeginTextGroup("-- Second Group --", 1, Colors.Beige);
-            DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn());
+            DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn().ToString());
             DebugDraw2D.EndTextGroup();
         }
 
@@ -449,12 +449,12 @@ public partial class DD3DDemoCS : Node3D
 
             if (render_stats != null && text_groups_show_stats)
             {
-                DebugDraw2D.SetText("Total", render_stats.TotalGeometry);
-                DebugDraw2D.SetText("Instances", render_stats.Instances, 1);
-                DebugDraw2D.SetText("Lines", render_stats.Lines, 2);
-                DebugDraw2D.SetText("Total Visible", render_stats.TotalVisible, 3);
-                DebugDraw2D.SetText("Visible Instances", render_stats.VisibleInstances, 4);
-                DebugDraw2D.SetText("Visible Lines", render_stats.VisibleLines, 5);
+                DebugDraw2D.SetText("Total", render_stats.TotalGeometry.ToString());
+                DebugDraw2D.SetText("Instances", render_stats.Instances.ToString(), 1);
+                DebugDraw2D.SetText("Lines", render_stats.Lines.ToString(), 2);
+                DebugDraw2D.SetText("Total Visible", render_stats.TotalVisible.ToString(), 3);
+                DebugDraw2D.SetText("Visible Instances", render_stats.VisibleInstances.ToString(), 4);
+                DebugDraw2D.SetText("Visible Lines", render_stats.VisibleLines.ToString(), 5);
 
                 DebugDraw2D.SetText("---", "", 12);
 
@@ -466,8 +466,8 @@ public partial class DD3DDemoCS : Node3D
 
                 DebugDraw2D.SetText("----", null, 32);
 
-                DebugDraw2D.SetText("Total Label3D", render_stats.NodesLabel3dExistsTotal, 33);
-                DebugDraw2D.SetText("Visible Label3D", render_stats.NodesLabel3dVisible + render_stats.NodesLabel3dVisiblePhysics, 34);
+                DebugDraw2D.SetText("Total Label3D", render_stats.NodesLabel3dExistsTotal.ToString(), 33);
+                DebugDraw2D.SetText("Visible Label3D", (render_stats.NodesLabel3dVisible + render_stats.NodesLabel3dVisiblePhysics).ToString(), 34);
 
                 DebugDraw2D.SetText("-----", null, 48);
 
@@ -482,8 +482,8 @@ public partial class DD3DDemoCS : Node3D
             var render_stats_2d = DebugDraw2D.GetRenderStats();
             if (render_stats_2d != null && text_groups_show_stats_2d)
             {
-                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 96);
-                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 97);
+                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups.ToString(), 96);
+                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines.ToString(), 97);
             }
             DebugDraw2D.EndTextGroup();
         }
@@ -495,19 +495,19 @@ public partial class DD3DDemoCS : Node3D
             {
                 DebugDraw2D.SetText("WASD QE, LMB", "To move", 0);
             }
-            DebugDraw2D.SetText("Alt: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
+            DebugDraw2D.SetText("Alt: change render layers", DebugDraw3D.Config.GeometryRenderLayers.ToString(), 1);
             if (!OS.HasFeature("web"))
             {
                 DebugDraw2D.SetText("Ctrl: toggle anti-aliasing", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
             }
-            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 3);
+            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender.ToString(), 3);
             if (Engine.IsEditorHint())
             {
-                DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
+                DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene.ToString(), 4);
             }
             DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
             DebugDraw2D.SetText("Left: frustum culling mode", frustum_culling_mode_names[(int)DebugDraw3D.Config.FrustumCullingMode], 6);
-            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 7);
+            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds.ToString(), 7);
         }
     }
 

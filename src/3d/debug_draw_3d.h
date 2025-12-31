@@ -787,7 +787,7 @@ public:
 	void draw_text(const godot::Vector3 &position, const godot::String text, const int size = 32, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/// @private
 	// #docs_func draw_text
-	NAPI void draw_text_c(const godot::Vector3 &position, const char* text_string, const int size = 32, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_text_c(const godot::Vector3 &position, const char *text_string, const int size = 32, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Text
 
