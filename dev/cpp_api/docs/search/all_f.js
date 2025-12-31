@@ -7,7 +7,7 @@ var searchData=
   ['set_5fcenter_5fbrightness_4',['set_center_brightness',['../classDebugDraw3DScopeConfig.html#a804863d10d459d59e9f123a65da42f1e',1,'DebugDraw3DScopeConfig']]],
   ['set_5fconfig_5',['set_config',['../classDebugDraw2D.html#a09302b8d6e30a28404382e9035006411',1,'DebugDraw2D::set_config()'],['../classDebugDraw3D.html#a30b616e7749693c3296c84125e39128f',1,'DebugDraw3D::set_config()']]],
   ['set_5fcustom_5fcanvas_6',['set_custom_canvas',['../classDebugDraw2D.html#abd7501e1857ccd1befa7d04b31c4fce3',1,'DebugDraw2D']]],
-  ['set_5fdebug_5fenabled_7',['set_debug_enabled',['../classDebugDrawManager.html#aa2a02002be21f77c31559926bd66bcbe',1,'DebugDrawManager::set_debug_enabled()'],['../classDebugDraw2D.html#a20b1cf1a59fbdf9efd04f672c910a03b',1,'DebugDraw2D::set_debug_enabled()'],['../classDebugDraw3D.html#a483e8f275d808c06bf90a6a38b08f50c',1,'DebugDraw3D::set_debug_enabled()']]],
+  ['set_5fdebug_5fenabled_7',['set_debug_enabled',['../classDebugDrawManager.html#a2b00f1f90923a6a3c95553ce677bb5c1',1,'DebugDrawManager::set_debug_enabled()'],['../classDebugDraw2D.html#a20b1cf1a59fbdf9efd04f672c910a03b',1,'DebugDraw2D::set_debug_enabled()'],['../classDebugDraw3D.html#a483e8f275d808c06bf90a6a38b08f50c',1,'DebugDraw3D::set_debug_enabled()']]],
   ['set_5fforce_5fuse_5fcamera_5ffrom_5fscene_8',['set_force_use_camera_from_scene',['../classDebugDraw3DConfig.html#acd4e6b8db3488acdb1262905ffc8641e',1,'DebugDraw3DConfig']]],
   ['set_5ffreeze_5f3d_5frender_9',['set_freeze_3d_render',['../classDebugDraw3DConfig.html#a5fd90408af8b20385403acb296622f82',1,'DebugDraw3DConfig']]],
   ['set_5ffrustum_5fculling_5fmode_10',['set_frustum_culling_mode',['../classDebugDraw3DConfig.html#aae738273bb3db1f2ca905262fc1152f5',1,'DebugDraw3DConfig']]],
