@@ -10,6 +10,7 @@
 // GENERATOR_DD3D_API_INCLUDES
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/os.hpp>
 // GENERATOR_DD3D_GODOT_API_INCLUDES
 GODOT_WARNING_RESTORE()
 
@@ -31,12 +32,17 @@ Dictionary get_functions() {
 #define ADD_FUNC(_name) functions[#_name] = Utils::make_dict("ptr", (int64_t)&_name)
 #endif
 
-		// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS
+		Dictionary classes;
+#define ADD_CLASS(_name) classes[#_name] = Utils::make_dict("size", static_cast<int32_t>(sizeof(_name)))
+
+		// GENERATOR_DD3D_REGISTRATIONS
 
 #undef ADD_FUNC
+#undef ADD_CLASS
 
 		result["hash"] = functions.hash();
 		result["functions"] = functions;
+		result["classes"] = classes;
 	}
 	return result;
 }
@@ -44,15 +50,24 @@ Dictionary get_functions() {
 void clear_orphaned_refs() {
 	ZoneScoped;
 
-#define CLEAR_REFS(_class, _name)                                                                               \
-	if (!_name.empty())                                                                                         \
-		WARN_PRINT(godot::String(#_class) + ": Not all References were cleared before DebugDraw3D shut down."); \
-	for (const auto &i : _name) {                                                                               \
-		delete i;                                                                                               \
-	}                                                                                                           \
+	// VMs with managed memory and garbage collector may not release resources until the program is completed.
+	// Therefore, these warnings will be displayed almost always.
+	bool warning_is_printed = false;
+#define CLEAR_REFS(_class, _name)                                                                                                                                              \
+	if (godot::OS::get_singleton()->is_stdout_verbose() && !_name.empty()) {                                                                                                   \
+		WARN_PRINT("Verbose Output: " + godot::String(#_class) + ": Not all References (" + String::num_int64(_name.size()) + ") were cleared before DebugDraw3D shut down."); \
+		warning_is_printed = true;                                                                                                                                             \
+	}                                                                                                                                                                          \
+	for (const auto &i : _name) {                                                                                                                                              \
+		delete i;                                                                                                                                                              \
+	}                                                                                                                                                                          \
 	_name.clear();
 
 	// GENERATOR_DD3D_REFS_CLEAR
+
+	if (warning_is_printed) {
+		WARN_PRINT("Verbose Output DD3D: If you are using a language with a garbage collector, then most likely everything is fine.");
+	}
 
 #undef CLEAR_REFS
 }

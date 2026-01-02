@@ -89,7 +89,7 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	FrameMark;
 	ZoneScoped;
 
-	DebugDraw3D::draw_text(Vector3(1,1,1), String::utf8("Hello Привет こんにちは หวัดดี"));
+	DebugDraw3D::draw_text(Vector3(1, 1, 1), String::utf8("Hello Привет こんにちは หวัดดี"));
 	DebugDraw3D::draw_sphere(Vector3(1, 1, 1), 2, Color(1, 1, 0), 0);
 
 	PackedVector3Array a;
@@ -177,11 +177,12 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 			}
 		}
 
+		uint64_t _end_time = Time::get_singleton()->get_ticks_usec();
 		timer_cubes = cubes_max_time;
 
 		DebugDraw2D::begin_text_group("Stats");
 		DebugDraw2D::set_text("F", String::num_int64(draw_function), 0, { 0, 0, 0, 0 }, cubes_max_time);
-		DebugDraw2D::set_text("Draw Grid C++", String("{0}ms").format(Array::make((Time::get_singleton()->get_ticks_usec() - _start_time) / 1000.0)), 1, { 0, 0, 0, 0 }, cubes_max_time);
+		DebugDraw2D::set_text("Draw Grid C++", String("{0}ms").format(Array::make((_end_time - _start_time) / 1000.0)), 1, { 0, 0, 0, 0 }, cubes_max_time);
 		DebugDraw2D::set_text("Total Draw time C++", String("{0}ms").format(Array::make(DebugDraw3D::get_render_stats()->get_total_time_spent_usec() / 1000.0)), 2, { 0, 0, 0, 0 }, cubes_max_time);
 	}
 

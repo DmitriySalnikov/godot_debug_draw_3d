@@ -129,6 +129,7 @@ public:
 
 #pragma region Exposed Methods
 #ifdef NATIVE_API_ENABLED
+	Dictionary _get_native_classes();
 	Dictionary _get_native_functions();
 	bool _get_native_functions_is_double();
 	int64_t _get_native_functions_hash();

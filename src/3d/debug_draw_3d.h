@@ -763,7 +763,7 @@ public:
 	void draw_camera_frustum_planes(const godot::Array &camera_frustum, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 	/// @private
 	// #docs_func draw_camera_frustum_planes
-	NAPI void draw_camera_frustum_planes_c(const godot::Plane *planes_data, const uint64_t planes_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+	NAPI void draw_camera_frustum_planes_c(const godot::Plane *camera_frustum_data, const uint64_t camera_frustum_size, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 #pragma endregion // Camera Frustum
 

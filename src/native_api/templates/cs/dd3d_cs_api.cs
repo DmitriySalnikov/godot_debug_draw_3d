@@ -4,21 +4,20 @@
 /// //////////////////////////////////////////////////////////////
 
 using Godot;
-using Godot.Collections;
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-using real_t = float;
-using DD3DFuncLoadingResult = _DebugDrawUtils_.LoadingResult;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using DD3DFuncLoadingResult = InternalDD3DApiLoaderUtils_.LoadingResult;
 
-internal static class _DebugDrawUtils_
+// Precision is replaced during generation, but can be replaced manually if necessary.
+using real_t = float;
+
+internal static class InternalDD3DApiLoaderUtils_
 {
     static readonly string log_prefix = "[DD3D] ";
     static readonly string get_funcs_is_double_name = "_get_native_functions_is_double";
     static readonly string get_funcs_hash_name = "_get_native_functions_hash";
+    static readonly string get_classes_name = "_get_native_classes";
     static readonly string get_funcs_name = "_get_native_functions";
 
     public enum LoadingResult
@@ -30,8 +29,9 @@ internal static class _DebugDrawUtils_
 
     static GodotObject dd3d_c = null;
     static bool failed_to_load = false;
+    static System.Collections.Generic.Dictionary<Type, int> dd3d_class_sizes = new();
 
-    public static GodotObject get_dd3d()
+    static GodotObject get_dd3d()
     {
         if (failed_to_load)
             return null;
@@ -59,18 +59,14 @@ internal static class _DebugDrawUtils_
                 return null;
             }
 
-            if (!dd3d.HasMethod(get_funcs_hash_name))
+            foreach (string name in new string[] { get_funcs_hash_name, get_classes_name, get_funcs_name })
             {
-                GD.PrintErr(log_prefix, get_funcs_hash_name, " not found!");
-                failed_to_load = true;
-                return null;
-            }
-
-            if (!dd3d.HasMethod(get_funcs_name))
-            {
-                GD.PrintErr(log_prefix, get_funcs_name, " not found!");
-                failed_to_load = true;
-                return null;
+                if (!dd3d.HasMethod(name))
+                {
+                    GD.PrintErr(log_prefix, name, " not found!");
+                    failed_to_load = true;
+                    return null;
+                }
             }
 
             dd3d_c = dd3d;
@@ -85,10 +81,10 @@ internal static class _DebugDrawUtils_
         GodotObject dd3d = get_dd3d();
         if (dd3d != null)
         {
-            Dictionary api = dd3d.Call(get_funcs_name).AsGodotDictionary();
+            Godot.Collections.Dictionary api = dd3d.Call(get_funcs_name).AsGodotDictionary();
             if (api.ContainsKey(name))
             {
-                Dictionary func_dict = api[name].AsGodotDictionary();
+                Godot.Collections.Dictionary func_dict = api[name].AsGodotDictionary();
 
                 // TODO: signature check?
 
@@ -105,7 +101,30 @@ internal static class _DebugDrawUtils_
         return false;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // TODO: compare performance without the attribute
+    static int _get_class_size(Type cls)
+    {
+        GodotObject dd3d = get_dd3d();
+        if (dd3d != null)
+        {
+            Godot.Collections.Dictionary api = dd3d.Call(get_classes_name).AsGodotDictionary();
+            if (api.ContainsKey(cls.Name))
+            {
+                Godot.Collections.Dictionary cls_dict = api[cls.Name].AsGodotDictionary();
+
+                var size = cls_dict["size"].AsInt32();
+                dd3d_class_sizes[cls] = size;
+                return size;
+            }
+            else
+            {
+                GD.PrintErr(log_prefix, "!!! CLASS NOT FOUND !!! class name: ", cls.Name);
+                return -1; // crash
+            }
+        }
+        return -1; // crash
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool LoadFunction<dlgt_T>(string name, ref dlgt_T func, ref DD3DFuncLoadingResult result)
     {
         if (result == DD3DFuncLoadingResult.None)
@@ -113,6 +132,14 @@ internal static class _DebugDrawUtils_
         if (result == DD3DFuncLoadingResult.Failure)
             return false;
         return true;
+    }
+
+    public static int GetDD3DClassSize(Type cls)
+    {
+        if (dd3d_class_sizes.TryGetValue(cls, out int val))
+            return val;
+        else
+            return _get_class_size(cls);
     }
 
     // GENERATOR_DD3D_API_DEFAULT_VALUES

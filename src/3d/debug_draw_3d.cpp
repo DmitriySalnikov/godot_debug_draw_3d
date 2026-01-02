@@ -1490,17 +1490,17 @@ void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const 
 	draw_camera_frustum_planes_c(planes.data(), planes.size(), color, duration);
 }
 
-void DebugDraw3D::draw_camera_frustum_planes_c(const godot::Plane *planes_data, const uint64_t planes_size, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_camera_frustum_planes_c(const godot::Plane *camera_frustum_data, const uint64_t camera_frustum_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	if (!planes_data || planes_size == 0)
+	if (!camera_frustum_data || camera_frustum_size == 0)
 		return;
 
-	ERR_FAIL_COND(planes_size != 6);
+	ERR_FAIL_COND(camera_frustum_size != 6);
 
 	thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
-	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes_data, planes_size, lines);
+	GeometryGenerator::CreateCameraFrustumLinesWireframe(camera_frustum_data, camera_frustum_size, lines);
 
 	LOCK_GUARD(datalock);
 	add_or_update_line_with_thickness(duration, lines, GeometryGenerator::CubeIndexes.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);

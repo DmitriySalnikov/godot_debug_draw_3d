@@ -384,6 +384,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 "return": dict
                 "self_return": bool
                 "arg_arrays" (opt): list
+                "private" (opt): str
             """
 
             if line.startswith("NAPI "):
@@ -801,6 +802,7 @@ def generate_native_api(
     classes = get_api_functions(env, header_files)
 
     new_funcs = []
+    new_class_regs = []
     new_func_regs = []
     new_ref_clears = []
 
@@ -853,6 +855,8 @@ def generate_native_api(
         line(new_funcs, "};", 1)
         line(new_funcs, "};")
         line(new_funcs)
+
+        line(new_class_regs, f"ADD_CLASS({cls});", 2)
 
         line(new_func_regs, f"ADD_FUNC({cls}_create);", 2)
         line(new_func_regs, f"ADD_FUNC({cls}_create_nullptr);", 2)
@@ -968,6 +972,55 @@ def generate_native_api(
 
             line(new_func_regs, f"ADD_FUNC({func_name});", 2)
 
+    for cls in classes:
+        is_refcounted = classes[cls]["type"] == "refcounted"
+        if not is_refcounted:
+            continue
+
+        functions = classes[cls]["functions"]
+
+        functions.append(
+            {
+                "name": "create",
+                "c_name": f"{cls}_create",
+                "docs": [],
+                "args": [],
+                "return": {"type": "void *", "c_type": "void *"},
+                "self_return": False,
+                "private": True,
+            }
+        )
+
+        functions.append(
+            {
+                "name": "create_nullptr",
+                "c_name": f"{cls}_create_nullptr",
+                "docs": [],
+                "args": [],
+                "return": {"type": "void *", "c_type": "void *"},
+                "self_return": False,
+                "private": True,
+            }
+        )
+
+        functions.append(
+            {
+                "name": "destroy",
+                "c_name": f"{cls}_destroy",
+                "docs": [],
+                "args": [
+                    {
+                        "name": "inst_ptr",
+                        "type": "void *",
+                        "c_type": "void *",
+                    },
+                ],
+                "return": {"type": "void", "c_type": "void"},
+                "self_return": False,
+                "private": True,
+            }
+        )
+
     c_api_lines = split_text_into_lines(lib_utils.read_all_text(c_api_template, True))
 
     insert_lines_at_mark(
@@ -981,7 +1034,7 @@ def generate_native_api(
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS", new_funcs)
-    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS_REGISTRATIONS", new_func_regs)
+    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REGISTRATIONS", new_class_regs + new_func_regs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
     c_api_file_name, c_api_file_ext = os.path.splitext(os.path.basename(c_api_template))
 
@@ -1047,6 +1100,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         # Class wrapper
         if cls_is_class:
             con_lines = []
+            line(con_lines, f"private:")
             line(con_lines, f"void *inst_ptr;")
             line(con_lines, "")
             line(con_lines, f"public:")
@@ -1061,48 +1115,6 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             line(con_lines, f"operator void *() const {{ return inst_ptr; }}")
             line(con_lines, "")
             namespaces[cls] += con_lines
-
-            functions.append(
-                {
-                    "name": "create",
-                    "c_name": f"{cls}_create",
-                    "docs": [],
-                    "args": [],
-                    "return": {"type": "void *", "c_type": "void *"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
-
-            functions.append(
-                {
-                    "name": "create_nullptr",
-                    "c_name": f"{cls}_create_nullptr",
-                    "docs": [],
-                    "args": [],
-                    "return": {"type": "void *", "c_type": "void *"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
-
-            functions.append(
-                {
-                    "name": "destroy",
-                    "c_name": f"{cls}_destroy",
-                    "docs": [],
-                    "args": [
-                        {
-                            "name": "inst_ptr",
-                            "type": "void *",
-                            "c_type": "void *",
-                        },
-                    ],
-                    "return": {"type": "void", "c_type": "void"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
 
         #
         # Array function wrappers
@@ -1538,6 +1550,143 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
     def to_cs_name(txt: str) -> str:
         return lib_utils.to_pascal_case(txt)
 
+    def convert_doxygen_tags_to_cs(docs: list, function: dict = None):
+        new_docs = copy.deepcopy(docs)
+        finished = False
+        first_not_summary_line_idx = -1
+
+        def get_docs_lines_with_indexes(start_idx: int = 0):
+            return [f"{i}. {new_docs[i]}" for i in range(start_idx, len(new_docs))]
+
+        def check_in_summary(idx: int, tag: str):
+            nonlocal first_not_summary_line_idx
+            if first_not_summary_line_idx != -1:
+                raise Exception(
+                    f'The "{tag}" tag on line {idx} must be used before the params and the return value:\n'
+                    + "\n".join(get_docs_lines_with_indexes())
+                )
+
+        def stop_summary(idx: int):
+            nonlocal first_not_summary_line_idx
+            if first_not_summary_line_idx == -1:
+                first_not_summary_line_idx = idx
+
+        while not finished:
+
+            def get_end_idx_for_block(start_idx: int, custom_stop_str: str = ""):
+                end_idx = len(new_docs)
+                is_in_code_block = False
+                tag_code_end = "```"
+                for i in range(start_idx, len(new_docs)):
+                    l = new_docs[i]
+                    if not is_in_code_block and (l.startswith("```") or l.startswith("<code>")):
+                        is_in_code_block = True
+                        if l.startswith("<code>"):
+                            tag_code_end = "</code>"
+                        continue
+                    elif is_in_code_block and l.startswith(tag_code_end):
+                        is_in_code_block = False
+                        continue
+                    elif is_in_code_block:
+                        continue
+
+                    if len(l) == 0:
+                        end_idx = i
+                        break
+                    elif len(custom_stop_str) and l.startswith(custom_stop_str):
+                        end_idx = i
+                        break
+
+                if is_in_code_block:
+                    raise Exception(
+                        f'The closing tag "{tag_code_end}" of the code block was not found in the documentation text:\n'
+                        + "\n".join(get_docs_lines_with_indexes(start_idx))
+                    )
+
+                return end_idx
+
+            def replace_tags(tag: str, idx: int):
+                match (tag):
+                    case "@brief" | "@note" | "@warning":
+                        new_docs[idx] = new_docs[idx].replace(tag, "<para>")
+                        insert_idx = get_end_idx_for_block(idx)
+                        new_docs.insert(insert_idx, "</para>")
+                    case "@deprecated":
+                        new_docs[idx] = "<para>Deprecated</para>"
+                    case "```":
+                        new_docs[idx] = "<code>"
+                        for i, l in enumerate(new_docs):
+                            if l.startswith("```"):
+                                new_docs[i] = new_docs[i].replace("```", "</code>")
+                                break
+                    case "@param":
+                        m = re.search(r"^@param (\w*)", new_docs[idx])
+                        if not m:
+                            raise Exception("The description of the @param tag is missing.")
+
+                        param_name = m.group(1)
+                        new_docs[idx] = f'<param name="{param_name}">' + new_docs[idx][m.end() :].lstrip()
+                        end_idx = get_end_idx_for_block(idx + 1, tag)
+                        if (end_idx - idx) == 1:
+                            new_docs[idx] += "</param>"
+                        else:
+                            new_docs.insert(end_idx, "</param>")
+
+                        if function and not function.get("skip", False):
+                            wrapper_args = function.get("wrapper_args", None)
+                            used_args = wrapper_args if wrapper_args else function["args"]
+                            found = False
+                            for a in used_args:
+                                if a["name"] == param_name:
+                                    found = True
+                                    break
+
+                            if not found:
+                                raise Exception(
+                                    f'The "{param_name}" argument specified in the documentation was not found in the list of arguments for the "{function["name"]}" function.'
+                                    + f'\nFunction args: {[a["name"] for a in used_args]}.'
+                                )
+
+            tag = ""
+            tag_line_idx = -1
+            for i, l in enumerate(new_docs):
+                summary_tags = [
+                    "@brief",
+                    "@note",
+                    "@warning",
+                    "@deprecated",
+                    "```",
+                ]
+                for t in summary_tags:
+                    if l.startswith(t):
+                        tag = t
+                        check_in_summary(i, t)
+
+                additional_tags = ["@param"]
+                if len(tag) == 0:
+                    for t in additional_tags:
+                        if l.startswith(t):
+                            tag = t
+                            stop_summary(i)
+
+                if len(tag):
+                    tag_line_idx = i
+                    break
+
+            if len(tag):
+                replace_tags(tag, tag_line_idx)
+                continue
+
+            finished = True
+
+        if first_not_summary_line_idx >= 0:
+            new_docs.insert(first_not_summary_line_idx, "</summary>")
+        else:
+            new_docs.append("</summary>")
+        new_docs.insert(0, "<summary>")
+
+        return new_docs
+
     for cls in classes:
         print(f"Genearating CS_API for {cls}...")
 
@@ -1592,61 +1741,44 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
         if cls_is_class:
             con_lines = []
             line(con_lines, f"IntPtr inst_ptr;")
+            # The pressure helps to reduce the number of objects, but not so much.
+            #line(con_lines, f"int pressure_size = 0;")
             line(con_lines)
-            line(con_lines, f"public {cls}(IntPtr inst_ptr) => this.inst_ptr = inst_ptr;")
+            line(con_lines, f"public {cls}(IntPtr inst_ptr)")
+            line(con_lines, "{")
+            line(con_lines, "this.inst_ptr = inst_ptr;", 1)
+            #line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 1)
+            #line(con_lines, "GC.AddMemoryPressure(pressure_size);", 1)
+            line(con_lines, "}")
             line(con_lines)
-            line(
-                con_lines,
-                f"public {cls}(bool instantiate = true) => this.inst_ptr = instantiate ? Create() : CreateNullptr();",
-            )
+            line(con_lines, f"public {cls}(bool instantiate = true)")
+            line(con_lines, "{")
+            line(con_lines, "this.inst_ptr = instantiate ? Create() : CreateNullptr();", 1)
+            #line(con_lines, "if (instantiate)", 1)
+            #line(con_lines, "{", 1)
+            #line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 2)
+            #line(con_lines, "GC.AddMemoryPressure(pressure_size);", 2)
+            #line(con_lines, "}", 1)
+            line(con_lines, "}")
             line(con_lines)
-            line(con_lines, f"~{cls}() => Destroy(inst_ptr);")
+            line(con_lines, f"~{cls}() => Dispose();")
             line(con_lines)
             line(con_lines, f"public static explicit operator IntPtr({cls} o) {{ return o.inst_ptr; }}")
             line(con_lines)
+
+            line(con_lines, f"public void Dispose()")
+            line(con_lines, "{")
+            line(con_lines, "if (inst_ptr != IntPtr.Zero)", 1)
+            line(con_lines, "{", 1)
+            line(con_lines, "Destroy(inst_ptr);", 2)
+            #line(con_lines, "if (pressure_size > 0)", 2)
+            #line(con_lines, "GC.RemoveMemoryPressure(pressure_size);", 3)
+            line(con_lines, "inst_ptr = IntPtr.Zero;", 2)
+            line(con_lines, "}", 1)
+            line(con_lines, "}")
+            line(con_lines)
+
             class_lines[cls] += con_lines
-
-            functions.append(
-                {
-                    "name": "Create",
-                    "c_name": f"{cls}_create",
-                    "docs": [],
-                    "args": [],
-                    "return": {"type": "void *", "c_type": "void *"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
-
-            functions.append(
-                {
-                    "name": "CreateNullptr",
-                    "c_name": f"{cls}_create_nullptr",
-                    "docs": [],
-                    "args": [],
-                    "return": {"type": "void *", "c_type": "void *"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
-
-            functions.append(
-                {
-                    "name": "Destroy",
-                    "c_name": f"{cls}_destroy",
-                    "docs": [],
-                    "args": [
-                        {
-                            "name": "inst_ptr",
-                            "type": "void *",
-                            "c_type": "void *",
-                        },
-                    ],
-                    "return": {"type": "void", "c_type": "void"},
-                    "self_return": False,
-                    "private": True,
-                }
-            )
 
         #
         # Array function wrappers
@@ -1656,6 +1788,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             "custom_call_args": bool
         New fields for function:
             "wrapper_args": list
+            "skip": bool
         """
         functions_to_add = []
         for idx, func in enumerate(functions):
@@ -1848,7 +1981,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             if "default" in arg:
                 val = arg["default"]
                 if val in default_arg_values_redirects:
-                    return f'{name} ?? _DebugDrawUtils_.{default_arg_values_redirects[val]["name"]}'
+                    return f'{name} ?? InternalDD3DApiLoaderUtils_.{default_arg_values_redirects[val]["name"]}'
 
             return name
 
@@ -1864,16 +1997,31 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
         func_lines = []
 
         # Properties
-        # TODO: add docs!!
         for prop in properties:
             static = "" if cls_is_class else "static "
             p_ret = process_ret_type_decl(prop["return"]["c_type"], prop["return"])
             p_get = f'get => {to_cs_name(prop["get"])}();'
             p_set = f'set => {to_cs_name(prop["set"])}(value);'
+
+            for f in [prop["set"], prop["get"]]:
+                found = False
+                for func in functions:
+                    if func["name"] == f:
+                        docs = func["docs"]
+                        if len(docs):
+                            new_docs = convert_doxygen_tags_to_cs(docs, func)
+                            new_docs = ["/// " + line for line in new_docs]
+                            func_lines += new_docs
+                            found = True
+                            break
+                if found:
+                    break
+
             line(
                 func_lines,
                 f'public {static}{p_ret} {to_cs_name(prop["name"])} {{ {p_get} {p_set} }}',
             )
+            line(func_lines)
 
         if len(properties):
             line(func_lines)
@@ -1972,11 +2120,9 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
 
             docs = func["docs"]
             if len(docs):
-                docs = ["/// " + line for line in docs]
-                docs.insert(0, "/// <summary>")
-                docs.insert(len(docs), "/// </summary>")
-
-            func_lines += docs
+                new_docs = convert_doxygen_tags_to_cs(docs, func)
+                new_docs = ["/// " + line for line in new_docs]
+                func_lines += new_docs
 
             # Function Declaration
             is_wrapper = wrapper_args != None
@@ -2002,7 +2148,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
 
             line(
                 func_lines,
-                f'if (!_DebugDrawUtils_.LoadFunction("{func_name}", ref func_{func_name}, ref func_load_result_{func_name}))',
+                f'if (!InternalDD3DApiLoaderUtils_.LoadFunction("{func_name}", ref func_{func_name}, ref func_load_result_{func_name}))',
                 1,
             )
 
@@ -2078,16 +2224,6 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             line(func_lines, "}")
             line(func_lines)
 
-        if cls_is_class:
-            line(func_lines, f"public void Dispose()")
-            line(func_lines, "{")
-            line(func_lines, "if (inst_ptr != IntPtr.Zero)", 1)
-            line(func_lines, "{", 1)
-            line(func_lines, "Destroy(inst_ptr);", 2)
-            line(func_lines, "inst_ptr = IntPtr.Zero;", 2)
-            line(func_lines, "}", 1)
-            line(func_lines, "}")
-
         class_lines[cls] += func_lines
 
     def_lines = []
@@ -2099,10 +2235,9 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
     for key in class_lines:
         docs: list = classes[key]["docs"]
         if len(docs):
-            docs = ["/// " + line for line in docs]
-            docs.insert(0, "/// <summary>")
-            docs.insert(len(docs), "/// </summary>")
-        result_arr = result_arr + docs
+            new_docs = convert_doxygen_tags_to_cs(docs)
+            new_docs = ["/// " + line for line in new_docs]
+            result_arr = result_arr + new_docs
 
         def get_indent(l: str):
             if l == "":
@@ -2127,7 +2262,15 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             line(result_arr, f"}} // class {key}")
         line(result_arr)
 
+    def_lines = [l.replace("\t", "    ") for l in def_lines]
+    result_arr = [l.replace("\t", "    ") for l in result_arr]
+
     lines = split_text_into_lines(lib_utils.read_all_text("src/native_api/templates/cs/dd3d_cs_api.cs", True))
+
+    # replace real_t if precision=double is used.
+    if env.get("precision", "single") == "double":
+        insert_lines_at_mark(lines, "using real_t = float;", ["using real_t = double;"])
+
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_DEFAULT_VALUES", def_lines)
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", result_arr)
 

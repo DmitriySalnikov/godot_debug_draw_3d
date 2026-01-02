@@ -34,6 +34,7 @@ void DebugDrawManager::_bind_methods() {
 #define REG_CLASS_NAME DebugDrawManager
 
 #ifdef NATIVE_API_ENABLED
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_classes)), &DebugDrawManager::_get_native_classes);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions)), &DebugDrawManager::_get_native_functions);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_is_double)), &DebugDrawManager::_get_native_functions_is_double);
 	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_hash)), &DebugDrawManager::_get_native_functions_hash);
@@ -105,6 +106,10 @@ DebugDrawManager::~DebugDrawManager() {
 }
 
 #ifdef NATIVE_API_ENABLED
+Dictionary DebugDrawManager::_get_native_classes() {
+	return NATIVE_API::get_functions().get("classes", Dictionary());
+}
+
 Dictionary DebugDrawManager::_get_native_functions() {
 	return NATIVE_API::get_functions().get("functions", Dictionary());
 }
