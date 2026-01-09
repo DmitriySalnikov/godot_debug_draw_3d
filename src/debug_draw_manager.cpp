@@ -8,6 +8,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
@@ -146,7 +147,7 @@ bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDrawManager::_define_and_update_addon_root_folder() {
+String DebugDrawManager::_define_and_update_addon_root_folder() {
 	DEFINE_SETTING_AND_GET_HINT(String root_folder, String(Utils::root_settings_section) + Utils::addon_root_folder, "", Variant::STRING, PropertyHint::PROPERTY_HINT_DIR, "");
 
 	if (IS_EDITOR_HINT()) {
@@ -164,6 +165,30 @@ void DebugDrawManager::_define_and_update_addon_root_folder() {
 			PS()->set_setting(String(Utils::root_settings_section) + Utils::addon_root_folder, root_folder);
 		}
 	}
+
+	return root_folder;
+}
+
+void DebugDrawManager::_remove_old_bindings(String addon_folder) const {
+#ifdef TOOLS_ENABLED
+	if (IS_EDITOR_HINT() && !addon_folder.is_empty()) {
+		String dir = addon_folder.path_join("gen/csharp");
+
+		std::vector<String> files = {
+			dir.path_join("DebugDrawGeneratedAPI.cs"),
+			dir.path_join("DebugDrawGeneratedAPI.cs") + ".uid",
+			dir.path_join("DebugDrawGeneratedAPI.generated.cs"),
+			dir.path_join("DebugDrawGeneratedAPI.generated.cs") + ".uid",
+			dir.path_join("log.txt"),
+		};
+
+		for (auto &f : files) {
+			if (FileAccess::file_exists(f)) {
+				DirAccess::remove_absolute(f);
+			}
+		}
+	}
+#endif
 }
 
 void DebugDrawManager::init() {
@@ -173,7 +198,8 @@ void DebugDrawManager::init() {
 	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + s_initial_state, true, Variant::BOOL);
 	set_debug_enabled(initial_debug_state);
 
-	_define_and_update_addon_root_folder();
+	String addon_folder = _define_and_update_addon_root_folder();
+	_remove_old_bindings(addon_folder);
 
 	// manager_aliases.push_back(StringName("Dmgr"));
 	// dd2d_aliases.push_back(StringName("Dbg2"));

@@ -87,7 +87,8 @@ private:
 	void _on_scene_changed(bool p_is_scene_null);
 
 	void _integrate_into_engine();
-	void _define_and_update_addon_root_folder();
+	String _define_and_update_addon_root_folder();
+	void _remove_old_bindings(String addon_folder) const;
 
 	void _register_singleton_aliases(const TypedArray<StringName> &p_names, Object *p_instance);
 	void _unregister_singleton_aliases(const TypedArray<StringName> &p_names);
