@@ -3,6 +3,14 @@
 /// THE CHANGES IN THIS FILE WILL BE OVERWRITTEN AFTER THE UPDATE!
 /// //////////////////////////////////////////////////////////////
 
+#if !DEBUG && !FORCED_DD3D
+#define _DD3D_RUNTIME_CHECK_ENABLED
+#endif
+
+#if (!DEBUG || FORCED_DD3D) || (DEBUG && !FORCED_DD3D)
+#define _DD3D_COMPILETIME_CHECK_ENABLED
+#endif
+
 using Godot;
 using System;
 using System.Runtime.CompilerServices;
@@ -14,6 +22,14 @@ using real_t = float;
 
 internal static class InternalDD3DApiLoaderUtils_
 {
+    const bool is_debug_enabled =
+#if DEBUG
+    true;
+#else
+    false;
+#endif
+    public static readonly bool IsCallEnabled = is_debug_enabled || OS.HasFeature("forced_dd3d");
+
     static readonly string log_prefix = "[DD3D] ";
     static readonly string get_funcs_is_double_name = "_get_native_functions_is_double";
     static readonly string get_funcs_hash_name = "_get_native_functions_hash";

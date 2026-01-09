@@ -1742,23 +1742,23 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             con_lines = []
             line(con_lines, f"IntPtr inst_ptr;")
             # The pressure helps to reduce the number of objects, but not so much.
-            #line(con_lines, f"int pressure_size = 0;")
+            # line(con_lines, f"int pressure_size = 0;")
             line(con_lines)
             line(con_lines, f"public {cls}(IntPtr inst_ptr)")
             line(con_lines, "{")
             line(con_lines, "this.inst_ptr = inst_ptr;", 1)
-            #line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 1)
-            #line(con_lines, "GC.AddMemoryPressure(pressure_size);", 1)
+            # line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 1)
+            # line(con_lines, "GC.AddMemoryPressure(pressure_size);", 1)
             line(con_lines, "}")
             line(con_lines)
             line(con_lines, f"public {cls}(bool instantiate = true)")
             line(con_lines, "{")
             line(con_lines, "this.inst_ptr = instantiate ? Create() : CreateNullptr();", 1)
-            #line(con_lines, "if (instantiate)", 1)
-            #line(con_lines, "{", 1)
-            #line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 2)
-            #line(con_lines, "GC.AddMemoryPressure(pressure_size);", 2)
-            #line(con_lines, "}", 1)
+            # line(con_lines, "if (instantiate)", 1)
+            # line(con_lines, "{", 1)
+            # line(con_lines, "pressure_size = InternalDD3DApiLoaderUtils_.GetDD3DClassSize(GetType());", 2)
+            # line(con_lines, "GC.AddMemoryPressure(pressure_size);", 2)
+            # line(con_lines, "}", 1)
             line(con_lines, "}")
             line(con_lines)
             line(con_lines, f"~{cls}() => Dispose();")
@@ -1771,8 +1771,8 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             line(con_lines, "if (inst_ptr != IntPtr.Zero)", 1)
             line(con_lines, "{", 1)
             line(con_lines, "Destroy(inst_ptr);", 2)
-            #line(con_lines, "if (pressure_size > 0)", 2)
-            #line(con_lines, "GC.RemoveMemoryPressure(pressure_size);", 3)
+            # line(con_lines, "if (pressure_size > 0)", 2)
+            # line(con_lines, "GC.RemoveMemoryPressure(pressure_size);", 3)
             line(con_lines, "inst_ptr = IntPtr.Zero;", 2)
             line(con_lines, "}", 1)
             line(con_lines, "}")
@@ -2026,6 +2026,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
         if len(properties):
             line(func_lines)
 
+        # Function decl
         for func in functions:
 
             func_name = func["c_name"]
@@ -2111,12 +2112,24 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             self_ret = func["self_return"]
             is_private = func.get("private", False)
             access_mod = "private" if is_private else "public"
+            func_can_be_disabled = True
 
             if self_ret:
                 if ret_type == "void":
                     ret_type = cls
 
                 is_class_has_selfreturn[cls] = True
+
+            else:
+                if is_ref_in_api(ret_type) or "object_class" in ret or "ref_class" in ret:
+                    func_can_be_disabled = False
+
+            if is_private:
+                func_can_be_disabled = False
+
+            for prop in properties:
+                if func_orig_name == prop["get"]:
+                    func_can_be_disabled = False
 
             docs = func["docs"]
             if len(docs):
@@ -2142,84 +2155,104 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
                 )
             line(func_lines, "{")
 
+            if func_can_be_disabled:
+                line(func_lines, "#if _DD3D_RUNTIME_CHECK_ENABLED")
+                line(func_lines, "if (InternalDD3DApiLoaderUtils_.IsCallEnabled)", 1)
+                line(func_lines, "#endif")
+                line(func_lines, "{", 1)
+                line(func_lines, "#if _DD3D_COMPILETIME_CHECK_ENABLED")
+
             # Function calls
             def_ret_val = get_default_ret_val(ret_type)
             call_args = ", ".join([process_arg_calls(a) for a in use_args])
 
+            base_indent = 2 if func_can_be_disabled else 1
+
             line(
                 func_lines,
                 f'if (!InternalDD3DApiLoaderUtils_.LoadFunction("{func_name}", ref func_{func_name}, ref func_load_result_{func_name}))',
-                1,
+                base_indent,
             )
 
             if not is_wrapper:
                 if ret_type != "void" and not self_ret:
-                    line(func_lines, f"return {def_ret_val};", 2)
+                    line(func_lines, f"return {def_ret_val};", base_indent + 1)
                     if is_ref_in_api(ret_type):
                         line(
                             func_lines,
                             f"return new {to_cs_type(get_ref_class_name(ret_type))}(func_{func_name}({call_args}));",
-                            1,
+                            base_indent,
                         )
                     else:
                         if "ref_class" in ret:
                             line(
                                 func_lines,
                                 f'return ({to_cs_type(ret["ref_class"])})GodotObject.InstanceFromId(func_{func_name}({call_args}));',
-                                1,
+                                base_indent,
                             )
                         elif "object_class" in ret:
                             line(
                                 func_lines,
                                 f'return ({to_cs_type(ret["object_class"])})GodotObject.InstanceFromId(func_{func_name}({call_args}));',
-                                1,
+                                base_indent,
                             )
                         else:
                             cast_type = get_ret_required_cast_type(ret)
                             if cast_type:
-                                line(func_lines, f"return ({cast_type})func_{func_name}({call_args});", 1)
+                                line(func_lines, f"return ({cast_type})func_{func_name}({call_args});", base_indent)
                             else:
-                                line(func_lines, f"return func_{func_name}({call_args});", 1)
+                                line(func_lines, f"return func_{func_name}({call_args});", base_indent)
 
                 else:
                     if self_ret:
-                        line(func_lines, "return this;", 2)
-                        line(func_lines, f"func_{func_name}({call_args});", 1)
-                        line(func_lines, "return this;", 1)
+                        line(func_lines, "return this;", base_indent + 1)
+                        line(func_lines, f"func_{func_name}({call_args});", base_indent)
+                        line(func_lines, "return this;", base_indent)
                     else:
-                        line(func_lines, f"return;", 2)
-                        line(func_lines, f"func_{func_name}({call_args});", 1)
+                        line(func_lines, f"return;", base_indent + 1)
+                        line(func_lines, f"func_{func_name}({call_args});", base_indent)
             else:
                 # Array wrapper calls
                 call_args = ", ".join([process_array_wrapper_arg_calls(a) for a in use_args])
 
                 if ret_type != "void" or self_ret:
-                    line(func_lines, f"return {def_ret_val};", 2)
+                    line(func_lines, f"return {def_ret_val};", base_indent + 1)
                 else:
-                    line(func_lines, f"return;", 2)
+                    line(func_lines, f"return;", base_indent + 1)
 
                 extra_indent = 0
                 if try_finally:
                     extra_indent = 1
                     line(func_lines, "")
                     for p in try_finally["pre"]:
-                        line(func_lines, p, 1)
-                    line(func_lines, "try", 1)
-                    line(func_lines, "{", 1)
+                        line(func_lines, p, base_indent)
+                    line(func_lines, "try", base_indent)
+                    line(func_lines, "{", base_indent)
 
                 if ret_type != "void" or self_ret:
-                    line(func_lines, f"return func_{func_name}({call_args});", extra_indent + 1)
+                    line(func_lines, f"return func_{func_name}({call_args});", base_indent + extra_indent)
                 else:
-                    line(func_lines, f"func_{func_name}({call_args});", extra_indent + 1)
+                    line(func_lines, f"func_{func_name}({call_args});", base_indent + extra_indent)
 
                 if try_finally:
-                    line(func_lines, "}", 1)
-                    line(func_lines, "finally", 1)
-                    line(func_lines, "{", 1)
+                    line(func_lines, "}", base_indent)
+                    line(func_lines, "finally", base_indent)
+                    line(func_lines, "{", base_indent)
                     for p in try_finally["post"]:
-                        line(func_lines, p, extra_indent + 1)
-                    line(func_lines, "}", 1)
+                        line(func_lines, p, base_indent + extra_indent)
+                    line(func_lines, "}", base_indent)
                     extra_indent = 0
+
+            if func_can_be_disabled:
+                line(func_lines, "#endif")
+                line(func_lines, "}", 1)
+                if ret_type != "void" or self_ret:
+                    line(func_lines, "#if _DD3D_RUNTIME_CHECK_ENABLED")
+                    if self_ret:
+                        line(func_lines, f"return this;", 1)
+                    else:
+                        line(func_lines, f"return {def_ret_val};", 1)
+                    line(func_lines, "#endif")
 
             line(func_lines, "}")
             line(func_lines)
@@ -2241,6 +2274,8 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
 
         def get_indent(l: str):
             if l == "":
+                return ""
+            if l.startswith("#"):
                 return ""
             return "\t"
 

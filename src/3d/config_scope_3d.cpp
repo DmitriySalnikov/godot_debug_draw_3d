@@ -8,8 +8,6 @@ GODOT_WARNING_RESTORE()
 
 void DebugDraw3DScopeConfig::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3DScopeConfig
-	REG_METHOD(_manual_unregister);
-
 	REG_METHOD(set_thickness, "value");
 	REG_METHOD(get_thickness);
 
@@ -43,13 +41,6 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 	REG_METHOD(set_text_fixed_size, "value");
 	REG_METHOD(get_text_fixed_size);
 #undef REG_CLASS_NAME
-}
-
-void DebugDraw3DScopeConfig::_manual_unregister() {
-	if (unregister_action) {
-		unregister_action(thread_id, guard_id);
-	}
-	unregister_action = nullptr;
 }
 
 Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
@@ -221,7 +212,10 @@ DebugDraw3DScopeConfig::DebugDraw3DScopeConfig(const uint64_t &p_thread_id, cons
 }
 
 DebugDraw3DScopeConfig::~DebugDraw3DScopeConfig() {
-	_manual_unregister();
+	if (unregister_action) {
+		unregister_action(thread_id, guard_id);
+	}
+	unregister_action = nullptr;
 }
 
 DebugDraw3DScopeConfig::Data::Data() :

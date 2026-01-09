@@ -101,12 +101,6 @@ public:
 	/// @private
 	std::shared_ptr<Data> data = nullptr;
 
-	/// @private
-	/**
-	 * It can be used for example in C#
-	 */
-	NAPI void _manual_unregister();
-
 	/**
 	 * Set the thickness of the volumetric lines. If the value is 0, the standard wireframe rendering will be used.
 	 *
