@@ -9,8 +9,15 @@
 // The "_c" version only accepts `utf8` strings.
 //
 // Define DD3D_ENABLE_MISMATCH_CHECKS to enable signature mismatch checking
+//
+// Define FORCED_DD3D to ignore the lack of DEBUG_ENABLED.
 
 //#define DD3D_ENABLE_MISMATCH_CHECKS
+//#define FORCED_DD3D
+
+#if defined(DEBUG_ENABLED) || defined(FORCED_DD3D)
+#define _DD3D_RUNTIME_CHECK_ENABLED
+#endif
 
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
@@ -244,6 +251,8 @@ struct _DD3D_Loader_ {
 // Start of the generated API
 // GENERATOR_DD3D_API_FUNCTIONS
 // End of the generated API
+
+#undef _DD3D_RUNTIME_CHECK_ENABLED
 
 #undef FUNC_GET_SIGNATURE
 #undef LOADING_RESULT

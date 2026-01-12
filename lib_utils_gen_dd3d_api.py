@@ -1077,6 +1077,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         enums = classes[cls]["enums"]
         functions: list = classes[cls]["functions"]
         cls_is_class = classes[cls]["type"] != "singleton"
+        properties: list = classes[cls]["properties"]
 
         if cls not in namespaces:
             is_namespace_a_class[cls] = cls_is_class
@@ -1296,12 +1297,23 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
             wrapper_args = func.get("wrapper_args", None)
             self_ret = func["self_return"]
             is_private = func.get("private", False)
+            func_can_be_disabled = True
 
             if self_ret:
                 if ret_type == "void":
                     ret_type = f"std::shared_ptr<{cls}>"
 
                 is_class_has_selfreturn[cls] = True
+            else:
+                if is_ref_in_api(ret_type):
+                    func_can_be_disabled = False
+
+            if is_private:
+                func_can_be_disabled = False
+
+            for prop in properties:
+                if func_orig_name == prop["get"]:
+                    func_can_be_disabled = False
 
             if prev_private_state != is_private:
                 prev_private_state = is_private
@@ -1335,6 +1347,9 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     func_lines,
                     f'static {process_ret_type_decl(ret_type, ret)} {func_orig_name.removesuffix("_selfreturn")}({inner_args}) {{',
                 )
+
+            if func_can_be_disabled:
+                line(func_lines, "#ifdef _DD3D_RUNTIME_CHECK_ENABLED")
 
             if not is_wrapper:
                 # Function pointer
@@ -1403,6 +1418,15 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 else:
                     line(func_lines, f"{wrapper_orig_name}({call_args});", 1)
 
+            if func_can_be_disabled:
+                if ret_type != "void" or self_ret:
+                    line(func_lines, "#else")
+                    if self_ret:
+                        line(func_lines, f"return shared_from_this();", 1)
+                    else:
+                        line(func_lines, f"return {def_ret_val};", 1)
+                line(func_lines, "#endif")
+
             line(func_lines, f"}}")
             line(func_lines)
 
@@ -1439,7 +1463,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         if is_namespace_a_class[key]:
 
             def get_indent(l: str):
-                if l.startswith("private:") or l.startswith("public:") or l == "":
+                if l.startswith("private:") or l.startswith("public:") or l == "" or l.startswith("#"):
                     return ""
                 return "\t"
 
@@ -2119,9 +2143,8 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
                     ret_type = cls
 
                 is_class_has_selfreturn[cls] = True
-
             else:
-                if is_ref_in_api(ret_type) or "object_class" in ret or "ref_class" in ret:
+                if is_ref_in_api(ret_type):
                     func_can_be_disabled = False
 
             if is_private:

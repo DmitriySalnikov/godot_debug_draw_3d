@@ -72,8 +72,11 @@ void DD3DTestCppApiNode::_ready() {
 		DEV_ASSERT(font1.ptr() == font2.ptr());
 
 		auto _fnt1 = DebugDraw3D::new_scoped_config()->set_text_font(font1);
-		DEV_ASSERT(font1->get_instance_id() == _fnt1->get_text_font()->get_instance_id());
-		DEV_ASSERT(_fnt1->get_text_font()->get_ascent());
+		DEV_ASSERT(_fnt1->get_text_font().is_valid());
+		if (_fnt1->get_text_font().is_valid()) {
+			DEV_ASSERT(font1->get_instance_id() == _fnt1->get_text_font()->get_instance_id());
+			DEV_ASSERT(_fnt1->get_text_font()->get_ascent());
+		}
 	}
 
 #ifdef DEV_ENABLED
