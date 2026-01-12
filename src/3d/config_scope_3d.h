@@ -32,18 +32,18 @@ using namespace godot;
  * So, narrow the scope if you want to use `await` and DebugDraw3DScopeConfig in the same method.
  * Or set the value of the variable to `null` so that the object is cleared due to lack of references.
  * ```python
- *	# Bad example
- *	var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
- *	DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
- *	await get_tree().process_frame
- *	# your code...
+ * # Bad example
+ * var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
+ * DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
+ * await get_tree().process_frame
+ * # your code...
  *
- *	# Good example
- *	if true:
- *		var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
- *		DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
- *	await get_tree().process_frame
- *	# your code...
+ * # Good example
+ * if true:
+ * 	var _s = DebugDraw3D.new_scoped_config().set_thickness(0.3)
+ * 	DebugDraw3D.draw_box(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)
+ * await get_tree().process_frame
+ * # your code...
  * ```
  *
  * ### Examples:

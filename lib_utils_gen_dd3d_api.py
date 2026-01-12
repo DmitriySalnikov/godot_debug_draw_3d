@@ -264,12 +264,32 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     doc_idx = start_idx - 1
                     while lines[doc_idx] != "/**" and doc_idx >= 0:
                         doc_idx -= 1
-                    found_docs = [
-                        line.replace("*", "", 1).strip() if line.startswith("*") else line
-                        for line in lines[doc_idx + 1 : start_idx - 1]
-                    ]
-                    # replaces images with placeholder
-                    found_docs = [re.sub(r"(\!\[.*\]\(.*\))", "[THERE WAS AN IMAGE]", line) for line in found_docs]
+                    doc_idx += 1  # ignore /**
+
+                    code_blocks = 0
+                    for d_line, line in enumerate(lines[doc_idx : start_idx - 1]):
+                        l: str = line
+                        code_blocks += l.count("```")
+
+                        if l.startswith("* "):
+                            l = l.removeprefix("* ")
+                        elif len(l) > 1 and l.startswith("*"):
+                            raise Exception(
+                                f'{header}:{doc_idx + d_line + 1}: Incorrect formatting of doxygen comment. The line must begin with "* "'
+                            )
+                        else:
+                            l = l.removeprefix("*")
+
+                        # replaces images with placeholder
+                        l = re.sub(r"(\!\[.*\]\(.*\))", "[THERE WAS AN IMAGE]", l)
+
+                        if code_blocks % 2 == 0:
+                            l = l.strip()
+                        else:
+                            l = l.rstrip()
+
+                        found_docs.append(l)
+
                 return found_docs
 
             def search_for_docs_override(start_idx: int):
@@ -1324,7 +1344,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
 
             docs = func["docs"]
             if len(docs):
-                docs = [" * " + line for line in docs]
+                docs = [" * " + line if len(line) else " *" for line in docs]
                 docs.insert(0, "/**")
                 docs.insert(len(docs), " */")
 
@@ -1355,7 +1375,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 # Function pointer
                 line(
                     func_lines,
-                    f'static {"void" if self_ret else process_ret_func_ptr_decl(ret_type, ret)}(*{func_name})({", ".join([process_arg_funcptr_decl(a) for a in args])}) = nullptr;',
+                    f'static {"void" if self_ret else process_ret_func_ptr_decl(ret_type, ret)} (*{func_name})({", ".join([process_arg_funcptr_decl(a) for a in args])}) = nullptr;',
                     1,
                 )
 
@@ -1455,7 +1475,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
     for key in namespaces:
         docs: list = classes[key]["docs"]
         if len(docs):
-            docs = [" * " + line for line in docs]
+            docs = [" * " + line if len(line) else " *" for line in docs]
             docs.insert(0, "/**")
             docs.insert(len(docs), " */")
         result_arr = result_arr + docs
@@ -1630,46 +1650,48 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
                 return end_idx
 
             def replace_tags(tag: str, idx: int):
-                match (tag):
-                    case "@brief" | "@note" | "@warning":
-                        new_docs[idx] = new_docs[idx].replace(tag, "<para>")
-                        insert_idx = get_end_idx_for_block(idx)
-                        new_docs.insert(insert_idx, "</para>")
-                    case "@deprecated":
-                        new_docs[idx] = "<para>Deprecated</para>"
-                    case "```":
-                        new_docs[idx] = "<code>"
-                        for i, l in enumerate(new_docs):
-                            if l.startswith("```"):
-                                new_docs[i] = new_docs[i].replace("```", "</code>")
+                if tag in ["@brief", "@note", "@warning"]:
+                    new_docs[idx] = new_docs[idx].replace(tag, "<para>")
+                    insert_idx = get_end_idx_for_block(idx)
+                    new_docs.insert(insert_idx, "</para>")
+
+                elif tag in ["@deprecated"]:
+                    new_docs[idx] = "<para>Deprecated</para>"
+
+                elif tag in ["```"]:
+                    new_docs[idx] = "<code>"
+                    for i, l in enumerate(new_docs):
+                        if l.startswith("```"):
+                            new_docs[i] = new_docs[i].replace("```", "</code>")
+                            break
+
+                elif tag in ["@param"]:
+                    m = re.search(r"^@param (\w*)", new_docs[idx])
+                    if not m:
+                        raise Exception("The description of the @param tag is missing.")
+
+                    param_name = m.group(1)
+                    new_docs[idx] = f'<param name="{param_name}">' + new_docs[idx][m.end() :].lstrip()
+                    end_idx = get_end_idx_for_block(idx + 1, tag)
+                    if (end_idx - idx) == 1:
+                        new_docs[idx] += "</param>"
+                    else:
+                        new_docs.insert(end_idx, "</param>")
+
+                    if function and not function.get("skip", False):
+                        wrapper_args = function.get("wrapper_args", None)
+                        used_args = wrapper_args if wrapper_args else function["args"]
+                        found = False
+                        for a in used_args:
+                            if a["name"] == param_name:
+                                found = True
                                 break
-                    case "@param":
-                        m = re.search(r"^@param (\w*)", new_docs[idx])
-                        if not m:
-                            raise Exception("The description of the @param tag is missing.")
 
-                        param_name = m.group(1)
-                        new_docs[idx] = f'<param name="{param_name}">' + new_docs[idx][m.end() :].lstrip()
-                        end_idx = get_end_idx_for_block(idx + 1, tag)
-                        if (end_idx - idx) == 1:
-                            new_docs[idx] += "</param>"
-                        else:
-                            new_docs.insert(end_idx, "</param>")
-
-                        if function and not function.get("skip", False):
-                            wrapper_args = function.get("wrapper_args", None)
-                            used_args = wrapper_args if wrapper_args else function["args"]
-                            found = False
-                            for a in used_args:
-                                if a["name"] == param_name:
-                                    found = True
-                                    break
-
-                            if not found:
-                                raise Exception(
-                                    f'The "{param_name}" argument specified in the documentation was not found in the list of arguments for the "{function["name"]}" function.'
-                                    + f'\nFunction args: {[a["name"] for a in used_args]}.'
-                                )
+                        if not found:
+                            raise Exception(
+                                f'The "{param_name}" argument specified in the documentation was not found in the list of arguments for the "{function["name"]}" function.'
+                                + f'\nFunction args: {[a["name"] for a in used_args]}.'
+                            )
 
             tag = ""
             tag_line_idx = -1
@@ -1948,7 +1970,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
                 if "default" in arg:
                     split = arg["default"].split("::")
                     split[-1] = to_cs_name(enum_remaps[e["name"]][split[-1]])
-                    res += f" = {".".join(split)}"
+                    res += f' = {".".join(split)}'
 
                 return res
 
