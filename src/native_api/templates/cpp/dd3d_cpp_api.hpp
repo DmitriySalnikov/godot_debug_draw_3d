@@ -41,7 +41,7 @@ __pragma(warning(default : 4244 26451 26495));
 #endif
 
 struct _DD3D_Loader_ {
-	static constexpr const char *log_prefix = "[DD3D] ";
+	static constexpr const char *log_prefix = "[DD3D C++] ";
 	static constexpr const char *get_funcs_is_double_name = "_get_native_functions_is_double";
 	static constexpr const char *get_funcs_hash_name = "_get_native_functions_hash";
 	static constexpr const char *get_funcs_name = "_get_native_functions";
@@ -97,6 +97,9 @@ struct _DD3D_Loader_ {
 			}
 
 			dd3d_c = dd3d;
+		} else {
+			ERR_PRINT(godot::String(log_prefix) + "DebugDrawManager not found! Most likely, DebugDraw3D was not loaded correctly.");
+			failed_to_load = true;
 		}
 		return dd3d_c;
 	}

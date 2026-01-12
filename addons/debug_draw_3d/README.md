@@ -2,7 +2,7 @@
 
 # Debug drawing utility for Godot
 
-This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in `C++` and can be used with `GDScript` or `C#`.
+This is an add-on for debug drawing in 3D and for some 2D overlays, which is written in `C++` and can be used with `GDScript`, `C++` or `C#`.
 
 Based on my previous addon, which was developed [only for C#](https://github.com/DmitriySalnikov/godot_debug_draw_cs), and which was inspired by [Zylann's GDScript addon](https://github.com/Zylann/godot_debug_draw)
 

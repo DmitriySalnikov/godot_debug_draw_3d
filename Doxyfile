@@ -995,6 +995,7 @@ INPUT                  = docs/Introduction.md \
                          docs/Examples.md \
                          docs/SubViewports.md \
                          docs/Export.md \
+                         docs/NativeAPI.md \
                          docs/Build.md \
                          docs/DoublePrecision.md \
                          src/debug_draw_manager.h \

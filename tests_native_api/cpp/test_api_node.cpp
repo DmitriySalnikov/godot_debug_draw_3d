@@ -30,7 +30,12 @@ DD3DTestCppApiNode::DD3DTestCppApiNode() {
 
 void DD3DTestCppApiNode::_ready() {
 	// Some Ref tests
-	DebugDraw3DScopeConfig();
+	{
+		auto test = DebugDraw3DScopeConfig();
+		// DD3D GDExtension not loaded
+		if (!test)
+			return;
+	}
 
 	auto cfg = DebugDraw3D::get_config();
 	UtilityFunctions::print("Frustum scale: ", cfg->get_frustum_length_scale(), ", Visible bounds: ", cfg->is_visible_instance_bounds());
@@ -112,6 +117,10 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	float cubes_max_time = 1.25;
 	auto cfg = DebugDraw3D::new_scoped_config();
 	SelectedDrawFunction selected_func = (SelectedDrawFunction)draw_function;
+
+	// DD3D GDExtension not loaded
+	if (!cfg)
+		return;
 
 	// 2060ms GD
 	// 430ms cpp

@@ -59,6 +59,9 @@ public partial class DD3DDemoCS : Node3D
         if (!IsInsideTree())
             return;
 
+        // DD3D GDExtension not loaded
+        if (DebugDraw3D.Config == null)
+            return;
         DebugDraw2D.Config.TextBackgroundColor = new Color(0.3f, 0.3f, 0.3f, 0.8f);
     }
 
@@ -120,6 +123,10 @@ public partial class DD3DDemoCS : Node3D
         // Physics specific:
         if (!zylann_example)
         {
+            // DD3D GDExtension not loaded
+            if (DebugDraw3D.ScopedConfig() == null)
+                return;
+
             DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
             if (more_test_cases)
             {
@@ -140,6 +147,10 @@ public partial class DD3DDemoCS : Node3D
 
     void MainUpdate(double delta)
     {
+        // DD3D GDExtension not loaded
+        if (DebugDraw3D.ScopedConfig() == null)
+            return;
+
         DebugDraw3D.ScopedConfig().SetThickness(debug_thickness).SetCenterBrightness(debug_center_brightness);
 
         _update_keys_just_press();

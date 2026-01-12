@@ -30,7 +30,7 @@ internal static class InternalDD3DApiLoaderUtils_
 #endif
     public static readonly bool IsCallEnabled = is_debug_enabled || OS.HasFeature("forced_dd3d");
 
-    static readonly string log_prefix = "[DD3D] ";
+    static readonly string log_prefix = "[DD3D C#] ";
     static readonly string get_funcs_is_double_name = "_get_native_functions_is_double";
     static readonly string get_funcs_hash_name = "_get_native_functions_hash";
     static readonly string get_classes_name = "_get_native_classes";
@@ -87,6 +87,11 @@ internal static class InternalDD3DApiLoaderUtils_
 
             dd3d_c = dd3d;
             return dd3d_c;
+        }
+        else
+        {
+            GD.PrintErr(log_prefix, "DebugDrawManager not found! Most likely, DebugDraw3D was not loaded correctly.");
+            failed_to_load = true;
         }
 
         return null;

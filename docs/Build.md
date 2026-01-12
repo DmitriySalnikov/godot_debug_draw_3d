@@ -16,8 +16,6 @@ git apply --ignore-space-change --ignore-whitespace ../patches/godot_cpp_exclude
 # Optional
 # #Faster builds and larger binaries
 git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch
-# #Fixes runtime link errors
-git apply --ignore-space-change --ignore-whitespace ../patches/big_int_fix.patch
 ```
 
 Then you can just run scons as usual:
@@ -29,7 +27,7 @@ scons target=editor dev_build=yes debug_symbols=yes
 
 # #Android builds
 # ANDROID_NDK_ROOT is required in your environment variables.
-# Or ANDROID_HOME with 'ndk/23.2.8568313' installed.
+# Or ANDROID_HOME with 'ndk/28.1.13356709' installed.
 scons platform=android target=template_release arch=arm64v8
 # If you have a different version of NDK installed and both ANDROID_HOME
 # and ANDROID_NDK_ROOT have been added to the environment variables,
