@@ -10,7 +10,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=11" />
   <meta name="generator" content="Doxygen 1.14.0" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Debug Draw 3D: Class Members - Enumerations</title>
+  <title>Debug Draw 3D: Native API</title>
   <link href="tabs.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="jquery.js"></script>
   <script type="text/javascript" src="dynsections.js"></script>
@@ -94,7 +94,7 @@ $(function() {
   </div>
 </div>
 <script type="text/javascript">
-$(function(){initNavTree('functions_enum.html','',''); });
+$(function(){initNavTree('md_docs_2NativeAPI.html','',''); });
 </script>
 <div id="container">
 <div id="doc-content">
@@ -119,13 +119,20 @@ $(function(){initNavTree('functions_enum.html','',''); });
 </div>
 </div>
 
+<div><div class="header">
+  <div class="headertitle"><div class="title">Native API </div></div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all documented enums with links to the class documentation for each member:</div><ul>
-<li>BlockPosition&#160;:&#160;<a class="el" href="classDebugDraw2DConfig.html#a5d166d494caf32e223e6d3ccce259834">DebugDraw2DConfig</a></li>
-<li>CullingMode&#160;:&#160;<a class="el" href="classDebugDraw3DConfig.html#aae5a76cd0e47d468fa5987556c614a78">DebugDraw3DConfig</a></li>
-<li>PointType&#160;:&#160;<a class="el" href="classDebugDraw3D.html#a49c72bd25a5769aeee1279540c15d0ea">DebugDraw3D</a></li>
-</ul>
-</div><!-- contents -->
+<div class="textblock"><p><a class="anchor" id="autotoc_md15"></a></p>
+<p><span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> can also be used in languages other than <span class="tt">GDScript</span>.</p>
+<p>For quite some time now, <span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> has been available for use from <span class="tt">C#</span>. However, prior to version <span class="tt">1.7.0</span>, this was a very slow solution implemented using <span class="tt">GodotObject.Call</span>.</p>
+<p>Starting with version <span class="tt">1.7.0</span>, a native API was implemented for interaction with other languages. This interface is a <span class="tt">C API</span> that is initialized via <span class="tt">Object.Call</span> and obtains function addresses from <span class="tt">Dictionary</span>. Descriptions of all functions are stored in <span class="tt">addons/debug_draw_3d/native_api/api.json</span> after building the project via <span class="tt">scons</span>. So it should be possible to generate an API for any language that supports the <span class="tt">C API</span> and is integrated into Godot.</p>
+<p>Currently, support for <span class="tt">C#</span> and <span class="tt">C++</span> has been implemented. Both bindings are stored in the corresponding subfolders in the <span class="tt">addons/debug_draw_3d/native_api</span> folder and consists of standalone files that can be easily imported into your project to start using them.</p>
+<p>For <span class="tt">C++</span>, include the header <span class="tt">addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp</span> in your code and you will immediately have access to all <span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> classes. In the repository, you can find a test project utilizing C++ bindings.</p>
+<p>For <span class="tt">C#</span>, all <span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> classes should be available to you immediately after installing the addon, since the <span class="tt">C# project</span> is located in the same folder as the <span class="tt">Godot project</span>.</p>
+<dl class="section note"><dt>Note</dt><dd>Please note that methods that return objects may return <span class="tt">null</span> if <span class="tt"><a class="el" href="classDebugDraw3D.html" title="Singleton class for calling debugging 3D methods.">DebugDraw3D</a></span> has not been loaded, which may cause a crash. </dd></dl>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
 </div><!-- doc-content -->
 </div><!-- container -->
 <!-- HTML footer for doxygen 1.10.0-->

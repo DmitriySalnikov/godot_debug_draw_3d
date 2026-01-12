@@ -37,7 +37,7 @@ var searchData=
   ['set_5fviewport_34',['set_viewport',['../classDebugDraw3DScopeConfig.html#a7bdeebf7a858a688aee78976bbe98f41',1,'DebugDraw3DScopeConfig']]],
   ['set_5fvisible_5finstance_5fbounds_35',['set_visible_instance_bounds',['../classDebugDraw3DConfig.html#a9e0efe27a7975eb6bef6d9d5b25b8bea',1,'DebugDraw3DConfig']]],
   ['settings_36',['Project Settings',['../md_docs_2Examples.html#autotoc_md11',1,'']]],
-  ['shader_5fworld_5fcoords_5fenabled_20yes_20no_20default_3a_20yes_37',['&lt;span class=&quot;tt&quot;&gt;shader_world_coords_enabled=yes|no&lt;/span&gt; (default: yes)',['../md_docs_2DoublePrecision.html#autotoc_md20',1,'']]],
+  ['shader_5fworld_5fcoords_5fenabled_20yes_20no_20default_3a_20yes_37',['&lt;span class=&quot;tt&quot;&gt;shader_world_coords_enabled=yes|no&lt;/span&gt; (default: yes)',['../md_docs_2DoublePrecision.html#autotoc_md21',1,'']]],
   ['split_20screen_38',['Split screen',['../md_docs_2SubViewports.html#autotoc_md13',1,'']]],
   ['steps_39',['Next steps',['../index.html#autotoc_md6',1,'']]],
   ['subviewports_40',['SubViewports',['../md_docs_2SubViewports.html',1,'']]],

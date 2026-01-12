@@ -57,7 +57,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D<span
-                      id="projectnumber">&#160;1.6.1</span>
+                      id="projectnumber">&#160;1.7.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -123,17 +123,17 @@ $(function(){initNavTree('md_docs_2DoublePrecision.html','',''); });
   <div class="headertitle"><div class="title">Double Precision </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md17"></a></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md18"></a></p>
 <p><a href="https://docs.godotengine.org/en/latest/tutorials/physics/large_world_coordinates.html">Godot Docs - Large world coordinates</a></p>
 <p>This library supports building with <span class="tt">precision=double</span>, but does not provide pre-compiled binaries, as does Godot itself.</p>
 <p>Before building with double precision, it is recommended to read the <a class="el" href="md_docs_2Build.html">Build</a> tips.</p>
-<h1 class="doxsection"><a class="anchor" id="autotoc_md18"></a>
+<h1 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
 Compilation flags</h1>
 <p>By default, you can simply run scons with the desired platform and the <span class="tt">precision=double</span> flag:</p>
 <div class="fragment"><div class="line">scons platform=windows target=editor arch=x86_64 precision=double</div>
 </div><!-- fragment --><p>But there are also a few additional flags that can affect the visual representation of meshes.</p>
 <dl class="section note"><dt>Note</dt><dd>The videos were captured at the position <span class="tt">Vector3(16_000_000, 0, 0)</span>.</dd></dl>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md19"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
 <span class="tt">fix_precision_enabled=yes|no</span> (default: yes)</h2>
 <p>This flag enables a hack that moves the centers of all multimesh to the camera position if the camera has moved too far away. If this flag is disabled, then all meshes will always be drawn relative to the center of the world.</p>
 <p>Enabling or disabling the <span class="tt">fix_precision_enabled</span> flag only affects if <span class="tt">precision=double</span> is enabled.</p>
@@ -143,7 +143,7 @@ Compilation flags</h1>
   There should be a <a href="fix_precision_enabled.webm">video</a> here, but your browser does not support WebM VP9 video.
 </video>
 </p>
-<h2 class="doxsection"><a class="anchor" id="autotoc_md20"></a>
+<h2 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
 <span class="tt">shader_world_coords_enabled=yes|no</span> (default: yes)</h2>
 <p>This flag changes how meshes using world coordinates will be displayed. This category includes all volumetric objects. Wireframe meshes are not affected by this flag.</p>
 <p><span class="tt">shader_world_coords_enabled</span> flag can be toggled independently of <span class="tt">precision=double</span>.</p>
@@ -158,7 +158,7 @@ Compilation flags</h1>
 <img src="shader_world_coords_enabled_origin.png" alt=""/>
 <div class="caption">
 shader_world_coords_enabled_origin</div></div>
-    <h1 class="doxsection"><a class="anchor" id="autotoc_md21"></a>
+    <h1 class="doxsection"><a class="anchor" id="autotoc_md22"></a>
 Examples</h1>
 <div class="fragment"><div class="line"><span class="comment"># Disable world coordinates for shaders and enable position fix:</span></div>
 <div class="line">scons platform=windows target=editor arch=x86_64 precision=double shader_world_coords_enabled=no fix_precision_enabled=yes</div>

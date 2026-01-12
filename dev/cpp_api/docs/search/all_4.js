@@ -9,7 +9,7 @@ var searchData=
   ['debugdraw3dscopeconfig_6',['DebugDraw3DScopeConfig',['../classDebugDraw3DScopeConfig.html',1,'']]],
   ['debugdraw3dstats_7',['DebugDraw3DStats',['../classDebugDraw3DStats.html',1,'']]],
   ['debugdrawmanager_8',['DebugDrawManager',['../classDebugDrawManager.html',1,'']]],
-  ['default_3a_20yes_9',['default: yes',['../md_docs_2DoublePrecision.html#autotoc_md19',1,'<span class="tt">fix_precision_enabled=yes|no</span> (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md20',1,'<span class="tt">shader_world_coords_enabled=yes|no</span> (default: yes)']]],
+  ['default_3a_20yes_9',['default: yes',['../md_docs_2DoublePrecision.html#autotoc_md20',1,'<span class="tt">fix_precision_enabled=yes|no</span> (default: yes)'],['../md_docs_2DoublePrecision.html#autotoc_md21',1,'<span class="tt">shader_world_coords_enabled=yes|no</span> (default: yes)']]],
   ['deprecated_20list_10',['Deprecated List',['../deprecated.html',1,'']]],
   ['double_20precision_11',['Double Precision',['../md_docs_2DoublePrecision.html',1,'']]],
   ['download_12',['Download',['../index.html#autotoc_md3',1,'']]],

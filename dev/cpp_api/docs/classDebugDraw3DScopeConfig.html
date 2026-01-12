@@ -57,7 +57,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D<span
-                      id="projectnumber">&#160;1.6.1</span>
+                      id="projectnumber">&#160;1.7.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -188,14 +188,14 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_no_depth_test
 <div class="line"> </div>
 <div class="line"><span class="comment"># Good example</span></div>
 <div class="line"><span class="keywordflow">if</span> true:</div>
-<div class="line">    var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0.3)</div>
-<div class="line">    <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
+<div class="line"> var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0.3)</div>
+<div class="line"> <a class="code hl_function" href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D.draw_box</a>(Vector3.ZERO, Quaternion.IDENTITY, Vector3.ONE)</div>
 <div class="line">await get_tree().process_frame</div>
 <div class="line"><span class="comment"># your code...</span></div>
 <div class="ttc" id="aclassDebugDraw3D_html_a1bb432e76acc3316ce2307386b21c1e6"><div class="ttname"><a href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D::new_scoped_config</a></div><div class="ttdeci">NAPI Ref&lt; DebugDraw3DScopeConfig &gt; new_scoped_config()</div></div>
 <div class="ttc" id="aclassDebugDraw3D_html_a7547793282ac71a0d4267b320db858ce"><div class="ttname"><a href="classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce">DebugDraw3D::draw_box</a></div><div class="ttdeci">NAPI void draw_box(const godot::Vector3 &amp;position, const godot::Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</div></div>
 </div><!-- fragment --></dd></dl>
-<h3 class="doxsection"><a class="anchor" id="autotoc_md26"></a>
+<h3 class="doxsection"><a class="anchor" id="autotoc_md27"></a>
 Examples:</h3>
 <div class="fragment"><div class="line">var _s = <a class="code hl_function" href="classDebugDraw3D.html#a1bb432e76acc3316ce2307386b21c1e6">DebugDraw3D.new_scoped_config</a>().set_thickness(0.025).set_center_brightness(0.7)</div>
 <div class="line"><a class="code hl_function" href="classDebugDraw3D.html#a6ffe9699a06ffa555dba37a5e10290b8">DebugDraw3D.draw_grid_xf</a>(%Grid.global_transform, Vector2i(10,10), Color.LIGHT_GRAY)</div>
