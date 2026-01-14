@@ -29,6 +29,10 @@
 #   after:
 #       NAPI void set_text_c(const char* key_string, real_t duration = -1)
 #   In this case, the string will be converted to a utf8 char array.
+#
+# The API may differ depending on the flags passed in `env`. Some features may also be disabled depending on C++ compilation flags.
+# Currently, this script directly supports the following flags:
+#   `precision`
 
 
 from SCons.Script.SConscript import SConsEnvironment

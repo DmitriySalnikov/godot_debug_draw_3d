@@ -49,9 +49,10 @@ def setup_options(env: SConsEnvironment, arguments):
         )
     )
 
-    opts.Add(BoolVariable("build_cpp_api_tests", "Build only cpp api tests", False))
     opts.Add(BoolVariable("native_api_enabled", "Enable the native API module", True))
     opts.Add(BoolVariable("native_api_mismatch_check_enabled", "Enable signature mismatch checking for the native API module", False))
+    opts.Add(BoolVariable("cpp_api_tests", "Build only cpp api tests", False))
+    opts.Add(BoolVariable("cpp_api_auto_gen", "Auto-generate native API files for a test project", True))
 
     opts.Add(BoolVariable("telemetry_enabled", "Enable the telemetry module", False))
     opts.Add(BoolVariable("tracy_enabled", "Enable tracy profiler", False))
@@ -59,14 +60,14 @@ def setup_options(env: SConsEnvironment, arguments):
     opts.Add(
         BoolVariable(
             "fix_precision_enabled",
-            "Fix precision errors at greater distances, utilizing more CPU resources.\nApplies only in combination with 'precision=double'",
+            "Fix precision errors at greater distances, utilizing more CPU resources.\n\tApplies only in combination with 'precision=double'",
             True,
         )
     )
     opts.Add(
         BoolVariable(
             "shader_world_coords_enabled",
-            "Use world coordinates in shaders, if applicable.\nExpandable meshes become more uniform.\nDisable it for stability at a great distance from the center of the world.",
+            "Use world coordinates in shaders, if applicable.\n\tExpandable meshes become more uniform.\n\tDisable it for stability at a great distance from the center of the world.",
             True,
         )
     )
@@ -142,7 +143,7 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
 
     if env["native_api_enabled"]:
         env.Append(CPPDEFINES=["NATIVE_API_ENABLED"])
-        if not COMMAND_LINE_TARGETS:
+        if (not COMMAND_LINE_TARGETS and not env["cpp_api_tests"]) or (env["cpp_api_tests"] and env["cpp_api_auto_gen"]):
             gen_apis(None, None, env, src_out)
 
         if env["native_api_mismatch_check_enabled"]:
@@ -287,7 +288,7 @@ def get_android_toolchain() -> str:
 env: SConsEnvironment = SConscript("godot-cpp/SConstruct")
 env = env.Clone()
 
-args = SCons.Script.ARGUMENTS
+args = ARGUMENTS
 additional_src = []
 setup_options(env, args)
 setup_defines_and_flags(env, additional_src)
@@ -308,13 +309,10 @@ if "release" in env["target"] and env["force_enabled_dd3d"]:
 if env.get("precision", "single") == "double":
     extra_tags += ".double"
 
-if not env["build_cpp_api_tests"]:
+if not env["cpp_api_tests"]:
     lib_utils.get_library_object(
         env, project_name, lib_name, extra_tags, env["addon_output_dir"], src_folder, additional_src
     )
-
-if env.get("precision", "single") == "double":
-    extra_tags += ".double"
 
 # Register console commands
 env.Command("apply_patches", [], apply_patches)
@@ -323,29 +321,15 @@ env.Command("gen_apis", [], gen_apis)
 
 
 ## CPP API TESTS
-
-if env["build_cpp_api_tests"]:
-    tests_src_folder = "tests_native_api/cpp"
+if env["cpp_api_tests"]:
+    tests_src_folder = os.path.join("tests_native_api", "cpp")
     env.Append(CPPPATH=src_folder)
-    env["SHOBJPREFIX"] = "#obj/"
-    additional_tags = ""
-    if env["platform"] == "web" and env.get("threads", True):
-        additional_tags = ".threads"
-
-    lib_filename = "lib{}.{}.{}.{}{}".format(
-        "dd3d_cpp_api", env["platform"], env["target"], env["arch"], additional_tags
-    )
-    lib_filename = os.path.join(tests_src_folder, "addon_cpp_api_test", "libs", lib_filename + env["SHLIBSUFFIX"])
 
     additional_src = []
 
     if env["tracy_enabled"]:
-        additional_src.append("src/utils/TracyClientCustom.cpp")
+        additional_src.append("../../src/utils/TracyClientCustom.cpp")
 
-    shbin = env.Default(
-        env.SharedLibrary(
-            target=env.File(lib_filename),
-            source=lib_utils.get_sources(env.Glob(os.path.join(tests_src_folder, "*.cpp")), "", "test_c_api")
-            + additional_src,
-        )
+    lib_utils.get_library_object(
+        env, "DD3D CPP Test", "dd3d_cpp_api", "", os.path.join(tests_src_folder, "addon_cpp_api_test", "libs"), tests_src_folder, additional_src
     )

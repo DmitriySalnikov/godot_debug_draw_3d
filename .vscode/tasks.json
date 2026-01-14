@@ -113,7 +113,7 @@
             "label": "test_cpp_api",
             "command": "scons",
             "args": [
-                "build_cpp_api_tests=yes",
+                "cpp_api_tests=yes",
                 "custom_godotcpp_suffix=.test_napi",
                 "folder_to_include_classes=../tests_native_api/cpp",
                 //"native_api_mismatch_check_enabled=yes",
@@ -125,6 +125,7 @@
                 //"lto=full",
                 //"tracy_enabled=yes",
                 "use_hot_reload=yes",
+                //"cpp_api_auto_gen=no",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -145,7 +146,7 @@
                 "custom_api_file=patches/extension_api_double.json",
                 "precision=double",
                 //
-                "build_cpp_api_tests=yes",
+                "cpp_api_tests=yes",
                 "custom_godotcpp_suffix=.test_napi",
                 "folder_to_include_classes=../tests_native_api/cpp",
                 //"native_api_mismatch_check_enabled=yes",
@@ -155,8 +156,9 @@
                 "optimize=speed",
                 //"dev_build=yes",
                 //"lto=full",
-                "tracy_enabled=yes",
+                //"tracy_enabled=yes",
                 "use_hot_reload=yes",
+                //"cpp_api_auto_gen=no",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

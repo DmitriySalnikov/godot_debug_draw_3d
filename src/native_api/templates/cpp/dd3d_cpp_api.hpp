@@ -19,6 +19,8 @@
 #define _DD3D_RUNTIME_CHECK_ENABLED
 #endif
 
+#include <memory>
+
 #if _MSC_VER
 __pragma(warning(disable : 4244 26451 26495));
 #endif

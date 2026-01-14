@@ -147,4 +147,3 @@ runs:
       run: |
         rm -rf "${{env.SCONS_CACHE}}"
         rm -rf "${{inputs.output_libs_path}}"
-

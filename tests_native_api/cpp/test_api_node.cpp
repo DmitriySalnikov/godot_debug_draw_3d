@@ -1,8 +1,7 @@
 #include "test_api_node.h"
 
-#include "../src/utils/compiler.h"
-#include "../src/utils/macro_utils.h"
-#include "../src/utils/profiler.h"
+#include "utils/macro_utils.h"
+#include "utils/profiler.h"
 
 #include "../../addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp"
 
