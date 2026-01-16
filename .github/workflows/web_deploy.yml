@@ -136,7 +136,6 @@ jobs:
             echo "CNAME not found, presumably domain of gh-pages: \`$domain\`" >> $GITHUB_STEP_SUMMARY
           fi
 
-
   web-gdextension:
     name: 🕸 Build a Web library
     needs: data_preparation
@@ -150,6 +149,7 @@ jobs:
             target: template_release
             arch: wasm32
             artifact: web.demo_build
+            # build only forced_dd3d
             additional: lto=full force_enabled_dd3d=yes threads=yes
 
           - platform: linux
@@ -186,10 +186,9 @@ jobs:
           arch: ${{matrix.arch}}
           artifact: ${{matrix.artifact}}
           additional: ${{matrix.additional}}
-          additional_enabled_dd3d: false
+          build_forced_dd3d: false
           output_libs_path: bin
           use_cache: true
-
 
   generate_docs:
     name: 📚 Generate Docs
@@ -629,7 +628,6 @@ jobs:
           echo "## Changed files:" >> $GITHUB_STEP_SUMMARY
           codeblock_tmp=$'```\nSTATS\n```'
           echo "${codeblock_tmp//STATS/$(git diff --stat HEAD~)}" >> $GITHUB_STEP_SUMMARY
-
 
   deploy:
     name: 🌐 Deploy

@@ -13,7 +13,6 @@ using namespace godot;
 struct AABBMinMax;
 
 class MathUtils {
-
 public:
 	static const float Sqrt2;
 	static const float CubeRadiusForSphere;
@@ -29,6 +28,7 @@ public:
 	_FORCE_INLINE_ static AABB calculate_vertex_bounds(const Vector3 *p_lines, size_t p_count);
 
 	_FORCE_INLINE_ static std::array<Vector3, 8> get_frustum_cube(const std::array<Plane, 6> p_frustum);
+	_FORCE_INLINE_ static std::array<Vector3, 8> get_frustum_cube(const Plane *p_frustum_data, const uint64_t p_frustum_size);
 	_FORCE_INLINE_ static void scale_frustum_far_plane_distance(std::array<Plane, 6> &p_frustum, const Transform3D &p_camera_xf, const real_t &p_scale);
 };
 
@@ -157,6 +157,12 @@ _FORCE_INLINE_ AABB MathUtils::calculate_vertex_bounds(const Vector3 *p_lines, s
 }
 
 _FORCE_INLINE_ std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::array<Plane, 6> p_frustum) {
+	return get_frustum_cube(p_frustum.data(), p_frustum.size());
+}
+
+_FORCE_INLINE_ std::array<Vector3, 8> MathUtils::get_frustum_cube(const Plane *p_frustum_data, const uint64_t p_frustum_size) {
+	DEV_ASSERT(p_frustum_size == 6);
+
 	std::function<Vector3(const Plane &, const Plane &, const Plane &)> intersect_planes = [&](const Plane &a, const Plane &b, const Plane &c) {
 		Vector3 intersec_result;
 		a.intersect_3(b, c, &intersec_result);
@@ -166,15 +172,15 @@ _FORCE_INLINE_ std::array<Vector3, 8> MathUtils::get_frustum_cube(const std::arr
 	//  near, far, left, top, right, bottom
 	//  0,    1,   2,    3,   4,     5
 	return std::array<Vector3, 8>({
-			intersect_planes(p_frustum[0], p_frustum[3], p_frustum[2]),
-			intersect_planes(p_frustum[0], p_frustum[3], p_frustum[4]),
-			intersect_planes(p_frustum[0], p_frustum[5], p_frustum[4]),
-			intersect_planes(p_frustum[0], p_frustum[5], p_frustum[2]),
+			intersect_planes(p_frustum_data[0], p_frustum_data[3], p_frustum_data[2]),
+			intersect_planes(p_frustum_data[0], p_frustum_data[3], p_frustum_data[4]),
+			intersect_planes(p_frustum_data[0], p_frustum_data[5], p_frustum_data[4]),
+			intersect_planes(p_frustum_data[0], p_frustum_data[5], p_frustum_data[2]),
 
-			intersect_planes(p_frustum[1], p_frustum[3], p_frustum[2]),
-			intersect_planes(p_frustum[1], p_frustum[3], p_frustum[4]),
-			intersect_planes(p_frustum[1], p_frustum[5], p_frustum[4]),
-			intersect_planes(p_frustum[1], p_frustum[5], p_frustum[2]),
+			intersect_planes(p_frustum_data[1], p_frustum_data[3], p_frustum_data[2]),
+			intersect_planes(p_frustum_data[1], p_frustum_data[3], p_frustum_data[4]),
+			intersect_planes(p_frustum_data[1], p_frustum_data[5], p_frustum_data[4]),
+			intersect_planes(p_frustum_data[1], p_frustum_data[5], p_frustum_data[2]),
 	});
 }
 
@@ -194,11 +200,11 @@ _FORCE_INLINE_ void MathUtils::scale_frustum_far_plane_distance(std::array<Plane
 
 _FORCE_INLINE_ bool AABBMinMax::intersects(const AABBMinMax &p_aabb) const {
 	return min.x < p_aabb.max.x &&
-		   max.x > p_aabb.min.x &&
-		   min.y < p_aabb.max.y &&
-		   max.y > p_aabb.min.y &&
-		   min.z < p_aabb.max.z &&
-		   max.z > p_aabb.min.z;
+			max.x > p_aabb.min.x &&
+			min.y < p_aabb.max.y &&
+			max.y > p_aabb.min.y &&
+			min.z < p_aabb.max.z &&
+			max.z > p_aabb.min.z;
 }
 
 _FORCE_INLINE_ void AABBMinMax::merge_with(const AABBMinMax &p_aabb) {

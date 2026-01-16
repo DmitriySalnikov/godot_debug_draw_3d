@@ -1,7 +1,7 @@
 #pragma once
 
 #define DD3D_MAJOR 1
-#define DD3D_MINOR 6
+#define DD3D_MINOR 7
 #define DD3D_PATCH 0
 #define DD3D_VERSION ((DD3D_MAJOR << (8 * 3)) + (DD3D_MINOR << (8 * 2)) + (DD3D_PATCH << (8 * 1)))
 

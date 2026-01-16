@@ -45,7 +45,7 @@ public:
 
 #pragma endregion
 
-	template <class TVertexes, class TIndexes = std::array<int, 0>, class TColors = std::array<Color, 0>, class TNormal = std::array<Vector3, 0>, class TUV = std::array<Vector2, 0>, class TCustom0 = std::array<Vector3, 0> >
+	template <class TVertexes, class TIndexes = std::array<int, 0>, class TColors = std::array<Color, 0>, class TNormal = std::array<Vector3, 0>, class TUV = std::array<Vector2, 0>, class TCustom0 = std::array<Vector3, 0>>
 	static Ref<ArrayMesh> CreateMeshNative(Mesh::PrimitiveType type, const TVertexes &vertexes, const TIndexes &indexes = {}, const TColors &colors = {}, const TNormal &normals = {}, const TUV &uv = {}, const TCustom0 &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0) {
 		return CreateMesh(type,
 				Utils::convert_to_packed_array<PackedVector3Array>(vertexes),
@@ -64,12 +64,17 @@ public:
 	static Ref<ArrayMesh> CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel);
 
 	static Ref<ArrayMesh> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
-	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes);
-	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes);
-	static Ref<ArrayMesh> CreateLinesFromPath(const PackedVector3Array &path);
 
-	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, std::vector<Vector3> &vertexes);
-	static void CreateLinesFromPathWireframe(const PackedVector3Array &path, Vector3 *vertexes);
+	/// vertexes.size() == CubeIndexes.size()
+	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes);
+	/// frustum_size == 6
+	/// vertexes.size() == CubeIndexes.size()
+	static void CreateCameraFrustumLinesWireframe(const godot::Plane *frustum_data, const uint64_t frustum_size, Vector3 *vertexes);
+
+	static void CreateLinesFromPathWireframe(const Vector3 *path_data, const uint64_t path_size, std::vector<Vector3> &vertexes);
+	/// vertexes.size() == (path_size - 1) * 2
+	static void CreateLinesFromPathWireframe(const Vector3 *path_data, const uint64_t path_size, Vector3 *vertexes);
+
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes);
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes);
 

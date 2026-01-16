@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/compiler.h"
+#include "utils/native_api_hooks.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/ref_counted.hpp>
@@ -15,27 +16,28 @@ using namespace godot;
  *
  * To get an instance of this class with current statistics, use DebugDraw2D.get_render_stats.
  */
-class DebugDraw2DStats : public RefCounted {
+NAPI_CLASS_REF class DebugDraw2DStats : public RefCounted {
 	GDCLASS(DebugDraw2DStats, RefCounted)
 
 protected:
 	/// @private
 	static void _bind_methods();
 
-#define DEFINE_DEFAULT_PROP(name, type, def) \
-private:                                     \
-	type name = def;                         \
-                                             \
-public:                                      \
-	type get_##name() const { return name; } \
-	void set_##name(int64_t val) {}
+private:
+	int64_t overlay_text_groups = 0;
+	int64_t overlay_text_lines = 0;
 
-	DEFINE_DEFAULT_PROP(overlay_text_groups, int64_t, 0);
-	DEFINE_DEFAULT_PROP(overlay_text_lines, int64_t, 0);
+public:
+	NAPI int64_t get_overlay_text_groups() const { return overlay_text_groups; }
+	/// @private
+	NAPI void set_overlay_text_groups(int64_t val) {};
+	NAPI int64_t get_overlay_text_lines() const { return overlay_text_lines; }
+	/// @private
+	NAPI void set_overlay_text_lines(int64_t val) {};
 
 #undef DEFINE_DEFAULT_PROP
 
-	DebugDraw2DStats(){};
+	DebugDraw2DStats() {};
 
 	/// @private
 	void setup(

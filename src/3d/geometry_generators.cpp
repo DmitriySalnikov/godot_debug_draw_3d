@@ -48,39 +48,57 @@ const std::array<int, 24> GeometryGenerator::CubeIndexes{
 };
 
 const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndexes{
-	0, 1,
-	1, 2,
-	2, 3,
-	3, 0,
+	0,
+	1,
+	1,
+	2,
+	2,
+	3,
+	3,
+	0,
 
-	4, 5,
-	5, 6,
-	6, 7,
-	7, 4,
+	4,
+	5,
+	5,
+	6,
+	6,
+	7,
+	7,
+	4,
 
-	0, 4,
-	1, 5,
-	2, 6,
-	3, 7,
+	0,
+	4,
+	1,
+	5,
+	2,
+	6,
+	3,
+	7,
 
 	// Diagonals
 
 	// Top Bottom
-	1, 3,
+	1,
+	3,
 	// 0, 2,
-	4, 6,
+	4,
+	6,
 	// 5, 7,
 
 	// Front Back
-	1, 4,
+	1,
+	4,
 	// 0, 5,
-	3, 6,
+	3,
+	6,
 	// 2, 7,
 
 	// Left Right
-	3, 4,
+	3,
+	4,
 	// 0, 7,
-	1, 6,
+	1,
+	6,
 	// 2, 5,
 };
 
@@ -549,60 +567,41 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const float &radius,
 
 Ref<ArrayMesh> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
 	ZoneScoped;
-	std::vector<Vector3> res;
-	CreateCameraFrustumLinesWireframe(frustum, res);
+	std::vector<Vector3> vertexes;
+	vertexes.resize(CubeIndexes.size());
+	CreateCameraFrustumLinesWireframe(frustum, vertexes.data());
 
 	return CreateMeshNative(
 			Mesh::PRIMITIVE_LINES,
-			res,
-			std::array<int, 0>(),
-			std::array<Color, 0>(),
-			std::array<Vector3, 0>());
-}
-
-void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, std::vector<Vector3> &vertexes) {
-	ZoneScoped;
-	vertexes.resize(CubeIndexes.size());
-	CreateCameraFrustumLinesWireframe(frustum, vertexes.data());
-}
-
-void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes) {
-	ZoneScoped;
-
-	auto cube = MathUtils::get_frustum_cube(frustum);
-	for (int i = 0; i < CubeIndexes.size(); i++)
-		vertexes[i] = cube[CubeIndexes[i]];
-}
-
-Ref<ArrayMesh> GeometryGenerator::CreateLinesFromPath(const PackedVector3Array &path) {
-	ZoneScoped;
-	std::vector<Vector3> vertexes;
-	CreateLinesFromPathWireframe(path, vertexes);
-
-	return CreateMeshNative(
-			Mesh::PRIMITIVE_TRIANGLES,
 			vertexes,
 			std::array<int, 0>(),
 			std::array<Color, 0>(),
 			std::array<Vector3, 0>());
 }
 
-void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &path, std::vector<Vector3> &vertexes) {
+void GeometryGenerator::CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes) {
 	ZoneScoped;
-	vertexes.resize(((size_t)path.size() - 1) * 2);
-
-	for (int64_t i = 0; i < path.size() - 1; i++) {
-		vertexes[i * 2 + 0] = path[i];
-		vertexes[i * 2 + 1] = path[i + 1];
-	}
+	CreateCameraFrustumLinesWireframe(frustum.data(), frustum.size(), vertexes);
 }
 
-void GeometryGenerator::CreateLinesFromPathWireframe(const PackedVector3Array &path, Vector3 *vertexes) {
+void GeometryGenerator::CreateCameraFrustumLinesWireframe(const godot::Plane *frustum_data, const uint64_t frustum_size, Vector3 *vertexes) {
 	ZoneScoped;
+	auto cube = MathUtils::get_frustum_cube(frustum_data, frustum_size);
+	for (int i = 0; i < CubeIndexes.size(); i++)
+		vertexes[i] = cube[CubeIndexes[i]];
+}
 
-	for (int64_t i = 0; i < path.size() - 1; i++) {
-		vertexes[i * 2 + 0] = path[i];
-		vertexes[i * 2 + 1] = path[i + 1];
+void GeometryGenerator::CreateLinesFromPathWireframe(const Vector3 *path_data, const uint64_t path_size, std::vector<Vector3> &vertexes) {
+	ZoneScoped;
+	vertexes.resize((path_size - 1) * 2);
+	CreateLinesFromPathWireframe(path_data, path_size, vertexes.data());
+}
+
+void GeometryGenerator::CreateLinesFromPathWireframe(const Vector3 *path_data, const uint64_t path_size, Vector3 *vertexes) {
+	ZoneScoped;
+	for (int64_t i = 0; i < path_size - 1; i++) {
+		vertexes[i * 2 + 0] = path_data[i];
+		vertexes[i * 2 + 1] = path_data[i + 1];
 	}
 }
 

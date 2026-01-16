@@ -163,9 +163,10 @@ func main_update(delta: float) -> void:
 	
 	## Delayed spheres
 	if timer_1 < 0:
-		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position, 2.0, Color.BLUE_VIOLET, 2.0)
+		var s_xf: Transform3D = $Spheres/SpherePosition.global_transform
+		DebugDraw3D.draw_sphere(s_xf.origin, 2.0, Color.BLUE_VIOLET, 2.0)
 		var _shd = DebugDraw3D.new_scoped_config().set_hd_sphere(true)
-		DebugDraw3D.draw_sphere($Spheres/SpherePosition.global_position + Vector3.FORWARD * 4, 2.0, Color.CORNFLOWER_BLUE, 2.0)
+		DebugDraw3D.draw_sphere(s_xf.origin - s_xf.basis.z * 4.2, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		timer_1 = 2
 	
 	# Cylinders
@@ -225,18 +226,19 @@ func main_update(delta: float) -> void:
 	var points_below4: PackedVector3Array = []
 	var lines_above: PackedVector3Array = []
 	
+	var down_vec = -global_transform.basis.y
 	for c in $LinePath.get_children():
 		if not c is Node3D:
 			break
 		points.append(c.global_position)
-		points_below.append(c.global_position + Vector3.DOWN)
-		points_below2.append(c.global_position + Vector3.DOWN * 2)
-		points_below3.append(c.global_position + Vector3.DOWN * 3)
-		points_below4.append(c.global_position + Vector3.DOWN * 4)
+		points_below.append(c.global_position + down_vec)
+		points_below2.append(c.global_position + down_vec * 2)
+		points_below3.append(c.global_position + down_vec * 3)
+		points_below4.append(c.global_position + down_vec * 4)
 	
 	for x in points.size()-1:
-		lines_above.append(points[x] + Vector3.UP)
-		lines_above.append(points[x+1] + Vector3.UP)
+		lines_above.append(points[x] - down_vec)
+		lines_above.append(points[x+1] - down_vec)
 	
 	## drawing lines
 	DebugDraw3D.draw_lines(lines_above)
@@ -299,7 +301,7 @@ func main_update(delta: float) -> void:
 		_text_tests()
 	
 	# Lag Test
-	var lag_test_pos = $LagTest/RESET.get_animation("RESET").track_get_key_value(0,0)
+	var lag_test_pos = to_global($LagTest/RESET.get_animation("RESET").track_get_key_value(0,0))
 	_draw_zone_title_pos(lag_test_pos, "Lag test")
 	
 	$LagTest.position = lag_test_pos + Vector3(sin(Time.get_ticks_msec() / 100.0) * 2.5, 0, 0)
@@ -511,7 +513,7 @@ func _draw_array_of_boxes():
 	var y_size := 50
 	var z_size := 3
 	var mul := 1
-	var cubes_max_time := 1.25
+	var cubes_show_time := 1.25
 	var show_text := draw_text_with_boxes
 	var cfg = DebugDraw3D.new_scoped_config()
 	
@@ -520,7 +522,7 @@ func _draw_array_of_boxes():
 		y_size = 100
 		z_size = 100
 		mul = 4
-		cubes_max_time = 60
+		cubes_show_time = 60
 		show_text = false
 	
 	var size := Vector3.ONE
@@ -533,12 +535,16 @@ func _draw_array_of_boxes():
 				for z in z_size:
 					cfg.set_thickness(randf_range(0, 0.1))
 					var pos := Vector3(x * mul, (-4-z) * mul, y * mul) + global_position
-					DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_max_time)
+					DebugDraw3D.draw_box(pos, Quaternion.IDENTITY, size, DebugDraw3D.empty_color, false, cubes_show_time)
 					
 					if show_text and z == 0:
-						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_max_time)
-		#print("Draw Cubes: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
-		timer_cubes = cubes_max_time
+						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_show_time)
+		print("Draw Cubes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
+		timer_cubes = cubes_show_time
+	
+	if timer_cubes > cubes_show_time:
+		DebugDraw3D.clear_all();
+		timer_cubes = 0;
 
 
 func _ready() -> void:

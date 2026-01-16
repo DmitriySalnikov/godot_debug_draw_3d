@@ -51,9 +51,16 @@ void _DD3D_WorldWatcher::_notification(int p_what) {
 	}
 }
 
+Node *_DD3D_WorldWatcher::get_nodes_root() const {
+	return m_nodes_root;
+}
+
 _DD3D_WorldWatcher::_DD3D_WorldWatcher(DebugDraw3D *p_root, uint64_t p_world_id) {
 	m_owner = p_root;
 	m_world_id = p_world_id;
+	m_nodes_root = memnew(Node);
+
+	call_deferred("add_child", m_nodes_root);
 }
 
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
@@ -63,7 +70,6 @@ DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem() :
 DebugDraw3D::ViewportToDebugContainerItem::ViewportToDebugContainerItem(ViewportToDebugContainerItem &&other) noexcept
 		: world_id(std::exchange(other.world_id, 0)),
 		  world_watcher(nullptr) {
-
 	for (size_t i = 0; i < (int)MeshMaterialVariant::MAX; i++) {
 		dgcs[i] = std::move(other.dgcs[i]);
 		ncs[i] = std::move(other.ncs[i]);
@@ -80,19 +86,6 @@ DebugDraw3D::ViewportToDebugContainerItem::~ViewportToDebugContainerItem() {
 #endif
 
 DebugDraw3D *DebugDraw3D::singleton = nullptr;
-const char *DebugDraw3D::s_use_icosphere = "use_icosphere";
-const char *DebugDraw3D::s_use_icosphere_hd = "use_icosphere_for_hd";
-const char *DebugDraw3D::s_add_bevel_to_volumetric = "add_bevel_to_volumetric_geometry";
-const char *DebugDraw3D::s_default_frustum_scale = "defaults/frustum_length_scale";
-
-const char *DebugDraw3D::s_default_thickness = "volumetric_defaults/thickness";
-const char *DebugDraw3D::s_default_center_brightness = "volumetric_defaults/center_brightness";
-const char *DebugDraw3D::s_default_hd_spheres = "volumetric_defaults/hd_spheres";
-const char *DebugDraw3D::s_default_plane_size = "volumetric_defaults/plane_size";
-
-const char *DebugDraw3D::s_render_priority = "rendering/render_priority";
-const char *DebugDraw3D::s_render_mode = "rendering/render_mode";
-const char *DebugDraw3D::s_render_fog_disabled = "rendering/disable_fog";
 
 void DebugDraw3D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw3D
@@ -471,7 +464,6 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 
 	if (const auto &dgc_pair = debug_containers.find(vp_world_id);
 			dgc_pair != debug_containers.end() && dgc_pair->second.dgcs[dgc_depth]) {
-
 		viewport_to_world_cache[p_dgcd.viewport] = &dgc_pair->second;
 		return &dgc_pair->second;
 	}
@@ -499,7 +491,7 @@ DebugDraw3D::ViewportToDebugContainerItem *DebugDraw3D::get_debug_container(cons
 	c.dgcs[dgc_depth] = std::make_unique<DebugGeometryContainer>(this, p_dgcd.no_depth_test);
 	c.dgcs[dgc_depth]->set_world(vp_world);
 
-	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher, p_dgcd.no_depth_test);
+	c.ncs[dgc_depth] = std::make_unique<NodesContainer>(this, c.world_watcher->get_nodes_root(), p_dgcd.no_depth_test);
 
 	viewport_to_world_cache[p_dgcd.viewport] = &c;
 
@@ -655,7 +647,8 @@ void DebugDraw3D::_load_materials() {
 		}
 
 		switch (render_mode) {
-			case 0: break;
+			case 0:
+				break;
 			case 1:
 				prefix += "#define FORCED_TRANSPARENT\n";
 				break;
@@ -846,31 +839,27 @@ void DebugDraw3D::clear_all() {
 
 #ifndef DISABLE_DEBUG_RENDERING
 #define IS_DEFAULT_COLOR(name) (name == Colors::empty_color)
-#define CHECK_BEFORE_CALL() \
-	if (NEED_LEAVE || config->is_freeze_3d_render()) return;
+#define CHECK_BEFORE_CALL()                          \
+	if (NEED_LEAVE || config->is_freeze_3d_render()) \
+		return;
 
 #define GET_SCOPED_CFG_AND_VDC()                     \
 	auto scfg = scoped_config_for_current_thread();  \
 	auto vdc = get_debug_container(scfg->dcd, true); \
-	if (!vdc) return;
+	if (!vdc)                                        \
+		return;
 
 #define GET_SCOPED_CFG_AND_DGC()                           \
 	GET_SCOPED_CFG_AND_VDC();                              \
 	auto dgc = vdc->dgcs[!!scfg->dcd.no_depth_test].get(); \
-	if (!dgc) return;
+	if (!dgc)                                              \
+		return;
 
 #define GET_SCOPED_CFG_AND_NC()                          \
 	GET_SCOPED_CFG_AND_VDC();                            \
 	auto nc = vdc->ncs[!!scfg->dcd.no_depth_test].get(); \
-	if (!nc) return;
-
-#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
-#define FIX_PRECISION_TRANSFORM(xf) Transform3D(xf.basis, xf.origin - dgc->get_center_position())
-#define FIX_PRECISION_POSITION(pos) (pos - dgc->get_center_position())
-#else
-#define FIX_PRECISION_TRANSFORM(xf) (xf)
-#define FIX_PRECISION_POSITION(pos) (pos)
-#endif
+	if (!nc)                                             \
+		return;
 
 #ifdef DEV_ENABLED
 void DebugDraw3D::_save_generated_meshes() {
@@ -902,39 +891,33 @@ Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	return Vector3_UP;
 }
 
-void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
+void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
 	ZoneScoped;
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
 	if (!scfg->thickness) {
-		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines.get(), p_line_count);
-
-#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
-		for (size_t l = 0; l < p_line_count; l++) {
-			p_lines[l] -= dgc->get_center_position();
-		}
-#endif
+		AABB aabb = MathUtils::calculate_vertex_bounds(p_lines, p_line_count);
 		dgc->geometry_pool.add_or_update_line(
 				scfg,
 				p_exp_time,
-				std::move(p_lines),
+				p_lines,
 				p_line_count,
 				p_col,
 				aabb);
 	} else {
 		for (int i = 0; i < p_line_count; i += 2) {
 			ZoneScopedN("Convert AB to xf");
-			Vector3 a = p_lines.get()[i];
-			Vector3 diff = p_lines.get()[i + 1] - a;
+			Vector3 a = p_lines[i];
+			Vector3 diff = p_lines[i + 1] - a;
 			real_t len = diff.length();
 			Vector3 center = diff * .5f;
 			dgc->geometry_pool.add_or_update_instance(
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
 					p_exp_time,
-					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), FIX_PRECISION_POSITION(a)), // slow
+					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), a), // slow
 					p_col,
 					SphereBounds(a + center, len * .5f));
 		}
@@ -954,7 +937,7 @@ void DebugDraw3D::draw_sphere_base(const Transform3D &transform, const Color &co
 			scfg,
 			ConvertableInstanceType::SPHERE,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
 }
@@ -986,7 +969,7 @@ void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::CYLINDER,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::CylinderRadiusForSphere));
 }
@@ -1009,7 +992,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 			scfg,
 			ConvertableInstanceType::CYLINDER_AB,
 			duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			SphereBounds(t.origin, MathUtils::get_max_basis_length(t.basis) * MathUtils::CylinderRadiusForSphere));
 }
@@ -1050,7 +1033,7 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 				scfg,
 				ConvertableInstanceType::CUBE,
 				duration,
-				FIX_PRECISION_TRANSFORM(t),
+				t,
 				IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 				sb);
 	} else {
@@ -1081,7 +1064,7 @@ void DebugDraw3D::draw_box_xf(const Transform3D &transform, const Color &color, 
 			scfg,
 			is_box_centered ? ConvertableInstanceType::CUBE_CENTERED : ConvertableInstanceType::CUBE,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
 			sb);
 }
@@ -1112,8 +1095,10 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 
 	LOCK_GUARD(datalock);
 	if (is_hit) {
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, hit }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ hit, end }), 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
+		Vector3 first[2] = { start, hit };
+		Vector3 second[2] = { hit, end };
+		add_or_update_line_with_thickness(duration, first, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		add_or_update_line_with_thickness(duration, second, 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
 
 		GET_SCOPED_CFG_AND_DGC();
 
@@ -1121,12 +1106,13 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 				scfg,
 				InstanceType::BILLBOARD_SQUARE,
 				duration,
-				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), FIX_PRECISION_POSITION(hit)),
+				Transform3D(Basis().scaled(VEC3_ONE(hit_size)), hit),
 				IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color,
 				SphereBounds(hit, MathUtils::CubeRadiusForSphere * hit_size),
 				&Colors::empty_color);
 	} else {
-		add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ start, end }), 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		Vector3 line[2] = { start, end };
+		add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
 	}
 }
 
@@ -1147,64 +1133,53 @@ void DebugDraw3D::draw_line(const Vector3 &a, const Vector3 &b, const Color &col
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	Vector3 line[2] = { a, b };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_lines(const PackedVector3Array &lines, const Color &color, const real_t &duration) {
 	ZoneScoped;
-	CHECK_BEFORE_CALL();
-
-	if (lines.size() % 2 != 0) {
-		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
-		return;
-	}
-
-	size_t s = lines.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	memcpy(l.get(), lines.ptr(), s * sizeof(Vector3));
-
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	draw_lines_c(lines.ptr(), lines.size(), color, duration);
 }
 
-void DebugDraw3D::draw_lines_c(const std::vector<Vector3> &lines, const Color &color, const real_t &duration) {
+void DebugDraw3D::draw_lines_c(const Vector3 *lines_data, const uint64_t &lines_size, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-
-	if (lines.size() % 2 != 0) {
-		PRINT_ERROR("The size of the lines array must be even. " + String::num_int64(lines.size()) + " is not even.");
+	if (!lines_data || lines_size == 0)
 		return;
-	}
 
-	size_t s = lines.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	memcpy(l.get(), lines.data(), s * sizeof(Vector3));
+	ERR_FAIL_COND_MSG(lines_size % 2 != 0, "The size of the lines array must be even. " + String::num_int64(lines_size) + " is not even.");
 
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	add_or_update_line_with_thickness(duration, lines_data, lines_size, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_ray(const Vector3 &origin, const Vector3 &direction, const real_t &length, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ origin, origin + direction * length }), 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
+	Vector3 line[2] = { origin, origin + direction * length };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &color, const real_t &duration) {
 	ZoneScoped;
+	draw_line_path_c(path.ptr(), path.size(), color, duration);
+}
+
+NAPI void DebugDraw3D::draw_line_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	if (path.size() < 2) {
-		if (path.size() == 1) {
-			PRINT_ERROR("Line path must contains at least 2 points.");
-		}
+	if (!path_data || path_size == 0)
 		return;
-	}
 
-	size_t s = (path.size() - 1) * 2;
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
+	ERR_FAIL_COND_MSG(path_size == 1, "Line path must contains at least 2 points.");
 
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	size_t lines_size = (path_size - 1) * 2;
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	GeometryGenerator::CreateLinesFromPathWireframe(path_data, path_size, buffer.get());
+
+	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 }
 
 #pragma endregion // Normal
@@ -1227,7 +1202,7 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			p_duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			IS_DEFAULT_COLOR(p_color) ? Colors::light_green : p_color,
 			SphereBounds(t.origin + t.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * size));
 }
@@ -1243,7 +1218,7 @@ void DebugDraw3D::draw_arrowhead(const Transform3D &transform, const Color &colo
 			scfg,
 			ConvertableInstanceType::ARROWHEAD,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::light_green : color,
 			SphereBounds(transform.origin + transform.basis.get_column(2) * 0.5f, MathUtils::ArrowRadiusForSphere * MathUtils::get_max_basis_length(transform.basis)));
 }
@@ -1253,7 +1228,9 @@ void DebugDraw3D::draw_arrow(const Vector3 &a, const Vector3 &b, const Color &co
 	CHECK_BEFORE_CALL();
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::unique_ptr<Vector3[]>(new Vector3[2]{ a, b }), 2, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+
+	Vector3 line[2] = { a, b };
+	add_or_update_line_with_thickness(duration, line, 2, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 	create_arrow(a, b, color, arrow_size, is_absolute_size, duration);
 }
 
@@ -1265,17 +1242,25 @@ void DebugDraw3D::draw_arrow_ray(const Vector3 &origin, const Vector3 &direction
 
 void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	ZoneScoped;
+	draw_arrow_path_c(path.ptr(), path.size(), color, arrow_size, is_absolute_size, duration);
+}
+
+NAPI void DebugDraw3D::draw_arrow_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	size_t s = (path.size() - 1) * 2;
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateLinesFromPathWireframe(path, l.get());
+	if (!path_data || path_size == 0)
+		return;
+
+	size_t lines_size = (path_size - 1) * 2;
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	GeometryGenerator::CreateLinesFromPathWireframe(path_data, path_size, buffer.get());
 
 	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
+	add_or_update_line_with_thickness(duration, buffer.get(), lines_size, IS_DEFAULT_COLOR(color) ? Colors::light_green : color);
 
-	for (int64_t i = 0; i < path.size() - 1; i++) {
-		create_arrow(path[i], path[i + 1], color, arrow_size, is_absolute_size, duration);
+	for (int64_t i = 0; i < path_size - 1; i++) {
+		create_arrow(path_data[i], path_data[i + 1], color, arrow_size, is_absolute_size, duration);
 	}
 }
 
@@ -1284,11 +1269,19 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 
 void DebugDraw3D::draw_point_path(const PackedVector3Array &path, const PointType type, const real_t &size, const Color &points_color, const Color &lines_color, const real_t &duration) {
 	ZoneScoped;
+	draw_point_path_c(path.ptr(), path.size(), type, size, points_color, lines_color, duration);
+}
+
+NAPI void DebugDraw3D::draw_point_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &points_color, const godot::Color &lines_color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
+	if (!path_data || path_size == 0)
+		return;
+
 	LOCK_GUARD(datalock);
-	draw_points(path, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
-	draw_line_path(path, IS_DEFAULT_COLOR(lines_color) ? Colors::green : lines_color, duration);
+	draw_points_c(path_data, path_size, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
+	draw_line_path_c(path_data, path_size, IS_DEFAULT_COLOR(lines_color) ? Colors::green : lines_color, duration);
 }
 
 #pragma endregion // Points
@@ -1307,7 +1300,7 @@ void DebugDraw3D::draw_square(const Vector3 &position, const real_t &size, const
 			scfg,
 			InstanceType::BILLBOARD_SQUARE,
 			duration,
-			Transform3D(Basis().scaled(VEC3_ONE(size)), FIX_PRECISION_POSITION(position)),
+			Transform3D(Basis().scaled(VEC3_ONE(size)), position),
 			IS_DEFAULT_COLOR(color) ? Colors::red : color,
 			SphereBounds(position, MathUtils::CubeRadiusForSphere * size),
 			&Colors::empty_color);
@@ -1334,7 +1327,7 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 			scfg,
 			InstanceType::PLANE,
 			duration,
-			FIX_PRECISION_TRANSFORM(t),
+			t,
 			front_color,
 			SphereBounds(center_pos, MathUtils::CubeRadiusForSphere * plane_size),
 			&custom_col);
@@ -1342,18 +1335,45 @@ void DebugDraw3D::draw_plane(const Plane &plane, const Color &color, const Vecto
 
 void DebugDraw3D::draw_points(const PackedVector3Array &points, const PointType type, const real_t &size, const Color &color, const real_t &duration) {
 	ZoneScoped;
+	draw_points_c(points.ptr(), points.size(), type, size, color, duration);
+}
+
+NAPI void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const uint64_t &points_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
+	if (!points_data || points_size == 0)
+		return;
+
 	LOCK_GUARD(datalock);
-	for (int i = 0; i < points.size(); i++) {
-		switch (type) {
-			case PointType::POINT_TYPE_SQUARE:
-				draw_square(points[i], size, color, duration);
-				break;
-			case PointType::POINT_TYPE_SPHERE:
-				draw_sphere(points[i], size, color, duration);
-				break;
-		}
+	GET_SCOPED_CFG_AND_DGC();
+
+	switch (type) {
+		case PointType::POINT_TYPE_SQUARE:
+			for (int i = 0; i < points_size; i++) {
+				dgc->geometry_pool.add_or_update_instance(
+						scfg,
+						InstanceType::BILLBOARD_SQUARE,
+						duration,
+						Transform3D(Basis().scaled(VEC3_ONE(size)), points_data[i]),
+						IS_DEFAULT_COLOR(color) ? Colors::red : color,
+						SphereBounds(points_data[i], MathUtils::CubeRadiusForSphere * size),
+						&Colors::empty_color);
+			}
+			break;
+		case PointType::POINT_TYPE_SPHERE:
+			for (int i = 0; i < points_size; i++) {
+				auto transform = Transform3D(Basis().scaled(VEC3_ONE(size * 2)), points_data[i]);
+
+				dgc->geometry_pool.add_or_update_instance(
+						scfg,
+						ConvertableInstanceType::SPHERE,
+						duration,
+						transform,
+						IS_DEFAULT_COLOR(color) ? Colors::chartreuse : color,
+						SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * 0.5f));
+			}
+			break;
 	}
 }
 
@@ -1368,7 +1388,7 @@ void DebugDraw3D::draw_position(const Transform3D &transform, const Color &color
 			scfg,
 			ConvertableInstanceType::POSITION,
 			duration,
-			FIX_PRECISION_TRANSFORM(transform),
+			transform,
 			IS_DEFAULT_COLOR(color) ? Colors::crimson : color,
 			SphereBounds(transform.origin, MathUtils::get_max_basis_length(transform.basis) * MathUtils::AxisRadiusForSphere));
 }
@@ -1422,37 +1442,29 @@ void DebugDraw3D::draw_grid_xf(const Transform3D &transform, const Vector2i &p_s
 
 #undef MAX_SUBDIVISIONS
 
-	Vector3 origin = is_centered ?
-							 transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 :
-							 transform.origin;
+	Vector3 origin = is_centered ? transform.origin - x_d * (real_t)subdivision.x * 0.5 - z_d * (real_t)subdivision.y * 0.5 : transform.origin;
 
-	std::vector<Vector3> lines;
+	size_t lines_size_x = (subdivision.x + 1) * 2;
+	size_t lines_size_y = (subdivision.y + 1) * 2;
+	size_t lines_size = lines_size_x + lines_size_y;
+
+	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
+	Vector3 *lines = buffer.get();
+
 	for (int x = 0; x < subdivision.x + 1; x++) {
-		lines.push_back(origin + x_d * (real_t)x);
-		lines.push_back(origin + x_d * (real_t)x + z_axis);
+		lines[x * 2] = origin + x_d * (real_t)x;
+		lines[x * 2 + 1] = origin + x_d * (real_t)x + z_axis;
 	}
 
 	for (int y = 0; y < subdivision.y + 1; y++) {
-		lines.push_back(origin + z_d * (real_t)y);
-		lines.push_back(origin + z_d * (real_t)y + x_axis);
+		lines[lines_size_x + y * 2] = origin + z_d * (real_t)y;
+		lines[lines_size_x + y * 2 + 1] = origin + z_d * (real_t)y + x_axis;
 	}
 
-	draw_lines_c(lines, IS_DEFAULT_COLOR(color) ? Colors::white : color, duration);
+	draw_lines_c(lines, lines_size, IS_DEFAULT_COLOR(color) ? Colors::white : color, duration);
 }
 
 #pragma region Camera Frustum
-
-void DebugDraw3D::draw_camera_frustum_planes_c(const std::array<Plane, 6> &planes, const Color &color, const real_t &duration) {
-	ZoneScoped;
-	CHECK_BEFORE_CALL();
-
-	size_t s = GeometryGenerator::CubeIndexes.size();
-	std::unique_ptr<Vector3[]> l(new Vector3[s]);
-	GeometryGenerator::CreateCameraFrustumLinesWireframe(planes, l.get());
-
-	LOCK_GUARD(datalock);
-	add_or_update_line_with_thickness(duration, std::move(l), s, IS_DEFAULT_COLOR(color) ? Colors::red : color);
-}
 
 void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color, const real_t &duration) {
 	ZoneScoped;
@@ -1464,17 +1476,34 @@ void DebugDraw3D::draw_camera_frustum(const Camera3D *camera, const Color &color
 void DebugDraw3D::draw_camera_frustum_planes(const Array &camera_frustum, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
-	std::array<Plane, 6> planes = { Plane() };
+
+	thread_local static std::array<Plane, 6> planes;
 
 	if (camera_frustum.size() == 6) {
 		for (int i = 0; i < camera_frustum.size(); i++) {
 			planes[i] = camera_frustum[i];
 		}
 	} else {
-		PRINT_ERROR("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
+		ERR_FAIL_MSG("Camera frustum requires an array of 6 planes. Recieved " + String::num_int64(camera_frustum.size()));
 	}
 
-	draw_camera_frustum_planes_c(planes, color, duration);
+	draw_camera_frustum_planes_c(planes.data(), planes.size(), color, duration);
+}
+
+void DebugDraw3D::draw_camera_frustum_planes_c(const godot::Plane *camera_frustum_data, const uint64_t camera_frustum_size, const Color &color, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	if (!camera_frustum_data || camera_frustum_size == 0)
+		return;
+
+	ERR_FAIL_COND(camera_frustum_size != 6);
+
+	thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
+	GeometryGenerator::CreateCameraFrustumLinesWireframe(camera_frustum_data, camera_frustum_size, lines);
+
+	LOCK_GUARD(datalock);
+	add_or_update_line_with_thickness(duration, lines, GeometryGenerator::CubeIndexes.size(), IS_DEFAULT_COLOR(color) ? Colors::red : color);
 }
 
 #pragma endregion // Camera Frustum
@@ -1495,6 +1524,12 @@ void DebugDraw3D::draw_text(const Vector3 &position, const String text, const in
 			IS_DEFAULT_COLOR(color) ? Colors::white : color,
 			duration);
 }
+
+void DebugDraw3D::draw_text_c(const godot::Vector3 &position, const char *text_string, const int size, const godot::Color &color, const real_t &duration) {
+	ZoneScoped;
+	draw_text(position, String::utf8(text_string), size, color, duration);
+}
+
 #pragma endregion // Text
 
 #pragma endregion // Misc

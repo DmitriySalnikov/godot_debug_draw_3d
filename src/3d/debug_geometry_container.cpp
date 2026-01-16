@@ -8,6 +8,7 @@
 #include "stats_3d.h"
 
 #include <array>
+#include <utility>
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/camera3d.hpp>
@@ -18,11 +19,12 @@ using namespace godot;
 
 DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_depth_test) {
 	ZoneScoped;
-	DEV_PRINT_STD("New " NAMEOF(DebugGeometryContainer) " created: %s\n", p_no_depth_test ? "NoDepth" : "Normal");
+	DEV_PRINT_STD("New %s created: %s\n", NAMEOF(DebugGeometryContainer), p_no_depth_test ? "NoDepth" : "Normal");
 	owner = p_owner;
 	RenderingServer *rs = RenderingServer::get_singleton();
 	no_depth_test = p_no_depth_test;
 	geometry_pool.set_no_depth_test_info(no_depth_test);
+	geometry_pool.set_debug_container_owner(this);
 
 	// Create wireframe mesh drawer
 	{
@@ -152,14 +154,18 @@ void DebugGeometryContainer::update_center_positions() {
 	center_position = new_center_position;
 
 	geometry_pool.for_each_instance([&pos_diff](DelayedRendererInstance *i) {
-		i->data.origin_x += (float)pos_diff.x;
-		i->data.origin_y += (float)pos_diff.y;
-		i->data.origin_z += (float)pos_diff.z;
+		if (!i->is_expired()) {
+			i->data.origin_x += (float)pos_diff.x;
+			i->data.origin_y += (float)pos_diff.y;
+			i->data.origin_z += (float)pos_diff.z;
+		}
 	});
 
 	geometry_pool.for_each_line([&pos_diff](DelayedRendererLine *i) {
-		for (size_t l = 0; l < i->lines_count; l++) {
-			i->lines[l] += pos_diff;
+		if (!i->is_expired()) {
+			for (size_t l = 0; l < i->lines_count; l++) {
+				i->lines.get()[l] += pos_diff;
+			}
 		}
 	});
 
@@ -213,15 +219,15 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 #define FIX_DOUBLE_PRECISION_ERRORS
 #endif
 
-	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > culling_data;
+	std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData>> culling_data;
 	{
 		ZoneScopedN("Get frustums");
 
 		for (const auto &vp_p : available_viewports) {
-			std::vector<std::array<Plane, 6> > frustum_planes;
+			std::vector<std::array<Plane, 6>> frustum_planes;
 			std::vector<AABBMinMax> frustum_boxes;
 
-			std::vector<std::pair<Array, Camera3D *> > frustum_arrays;
+			std::vector<std::pair<Array, Camera3D *>> frustum_arrays;
 			frustum_arrays.reserve(1);
 
 #ifdef DEBUG_ENABLED
@@ -396,16 +402,15 @@ void DebugGeometryContainer::update_geometry(double p_delta) {
 
 			for (const auto &culling_data : culling_data) {
 				for (const auto &frustum : culling_data.second->m_frustums) {
-					size_t s = GeometryGenerator::CubeIndexes.size();
-					std::unique_ptr<Vector3[]> l = std::make_unique<Vector3[]>(s);
-					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, l.get());
+					thread_local static Vector3 lines[GeometryGenerator::CubeIndexes.size()];
+					GeometryGenerator::CreateCameraFrustumLinesWireframe(frustum, lines);
 
-					auto bounds = MathUtils::calculate_vertex_bounds(l.get(), s);
+					auto bounds = MathUtils::calculate_vertex_bounds(lines, GeometryGenerator::CubeIndexes.size());
 					geometry_pool.add_or_update_line(
 							cfg.get(),
 							0,
-							std::move(l),
-							s,
+							lines,
+							GeometryGenerator::CubeIndexes.size(),
 							Colors::red,
 							bounds);
 				}

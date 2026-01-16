@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b1t231cdom61b"]
+
+[node name="DD3DTestCppApiNode" type="DD3DTestCppApiNode"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, -0.707107, -8, 0, -8)
+far = 500.0

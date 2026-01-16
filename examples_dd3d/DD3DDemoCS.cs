@@ -1,4 +1,4 @@
-
+﻿
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -6,8 +6,6 @@ using System.Collections.Generic;
 [Tool]
 public partial class DD3DDemoCS : Node3D
 {
-    Random random = new Random();
-
     [Export] Font custom_font;
     [Export] Font custom_3d_font;
     [Export] bool zylann_example = false;
@@ -19,6 +17,7 @@ public partial class DD3DDemoCS : Node3D
     [Export] bool draw_text_with_boxes = false;
     [Export] bool draw_1m_boxes = false;
     [Export(PropertyHint.Range, "0, 5, 0.001")] float debug_thickness = 0.1f;
+    [Export(PropertyHint.Range, "0, 1, 0.001")] float debug_center_brightness = 0.8f;
     [Export(PropertyHint.Range, "0, 1")] float camera_frustum_scale = 0.9f;
 
     [ExportGroup("Text groups", "text_groups")]
@@ -60,6 +59,9 @@ public partial class DD3DDemoCS : Node3D
         if (!IsInsideTree())
             return;
 
+        // DD3D GDExtension not loaded
+        if (DebugDraw3D.Config == null)
+            return;
         DebugDraw2D.Config.TextBackgroundColor = new Color(0.3f, 0.3f, 0.3f, 0.8f);
     }
 
@@ -121,6 +123,10 @@ public partial class DD3DDemoCS : Node3D
         // Physics specific:
         if (!zylann_example)
         {
+            // DD3D GDExtension not loaded
+            if (DebugDraw3D.ScopedConfig() == null)
+                return;
+
             DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
             if (more_test_cases)
             {
@@ -141,7 +147,11 @@ public partial class DD3DDemoCS : Node3D
 
     void MainUpdate(double delta)
     {
-        DebugDraw3D.ScopedConfig().SetThickness(debug_thickness);
+        // DD3D GDExtension not loaded
+        if (DebugDraw3D.ScopedConfig() == null)
+            return;
+
+        DebugDraw3D.ScopedConfig().SetThickness(debug_thickness).SetCenterBrightness(debug_center_brightness);
 
         _update_keys_just_press();
 
@@ -157,10 +167,10 @@ public partial class DD3DDemoCS : Node3D
             var line_end = new Vector3(1, Mathf.Cos(_time * 4f), 0);
             DebugDraw3D.DrawBox(box_pos, Quaternion.Identity, new Vector3(1, 2, 1), new Color(0, 1, 0));
             DebugDraw3D.DrawLine(line_begin, line_end, new Color(1, 1, 0));
-            DebugDraw2D.SetText("Time", _time);
-            DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn());
-            DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond());
-            DebugDraw2D.SetText("delta", delta);
+            DebugDraw2D.SetText("Time", _time.ToString());
+            DebugDraw2D.SetText("Frames drawn", Engine.GetFramesDrawn().ToString());
+            DebugDraw2D.SetText("FPS", Engine.GetFramesPerSecond().ToString());
+            DebugDraw2D.SetText("delta", delta.ToString());
 
             dHitTest.Visible = false;
             dLagTest.Visible = false;
@@ -232,13 +242,13 @@ public partial class DD3DDemoCS : Node3D
         /// Delayed spheres
         if (timer_1 <= 0)
         {
-            DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition, 2.0f, Colors.BlueViolet, 2.0f);
+            var s_xf = dSpherePosition.GlobalTransform;
+            DebugDraw3D.DrawSphere(s_xf.Origin, 2.0f, Colors.BlueViolet, 2.0f);
             using (var _s1 = DebugDraw3D.NewScopedConfig().SetHdSphere(true))
-                DebugDraw3D.DrawSphere(dSpherePosition.GlobalPosition + Vector3.Forward * 4, 2.0f, Colors.CornflowerBlue, 2.0f);
+                DebugDraw3D.DrawSphere(s_xf.Origin - s_xf.Basis.Z * 4.2f, 2.0f, Colors.CornflowerBlue, 2.0f);
             timer_1 = 2;
         }
 
-        timer_1 -= delta;
 
         // Cylinders
         _draw_zone_title(pCylindersBox, "Cylinders");
@@ -280,8 +290,6 @@ public partial class DD3DDemoCS : Node3D
             timer_3 = 2;
         }
 
-        timer_3 -= delta;
-
         // Test UP vector
         DebugDraw3D.DrawLine(dLines_7.GlobalPosition, dLines_Target.GlobalPosition, Colors.Red);
 
@@ -295,29 +303,30 @@ public partial class DD3DDemoCS : Node3D
         _draw_zone_title(pPathsBox, "Paths");
 
         /// preparing data
-        List<Vector3> points = new List<Vector3>();
-        List<Vector3> points_below = new List<Vector3>();
-        List<Vector3> points_below2 = new List<Vector3>();
-        List<Vector3> points_below3 = new List<Vector3>();
-        List<Vector3> points_below4 = new List<Vector3>();
-        List<Vector3> lines_above = new List<Vector3>();
+        List<Vector3> points = [];
+        List<Vector3> points_below = [];
+        List<Vector3> points_below2 = [];
+        List<Vector3> points_below3 = [];
+        List<Vector3> points_below4 = [];
+        List<Vector3> lines_above = [];
 
+        var down_vec = -GlobalTransform.Basis.Y;
         foreach (var node in dLinePath.GetChildren())
         {
             if (node is Node3D c)
             {
                 points.Add(c.GlobalPosition);
-                points_below.Add(c.GlobalPosition + Vector3.Down);
-                points_below2.Add(c.GlobalPosition + Vector3.Down * 2);
-                points_below3.Add(c.GlobalPosition + Vector3.Down * 3);
-                points_below4.Add(c.GlobalPosition + Vector3.Down * 4);
+                points_below.Add(c.GlobalPosition + down_vec);
+                points_below2.Add(c.GlobalPosition + down_vec * 2);
+                points_below3.Add(c.GlobalPosition + down_vec * 3);
+                points_below4.Add(c.GlobalPosition + down_vec * 4);
             }
         }
 
         for (int x = 0; x < points.Count - 1; x++)
         {
-            lines_above.Add(points[x] + Vector3.Up);
-            lines_above.Add(points[x + 1] + Vector3.Up);
+            lines_above.Add(points[x] - down_vec);
+            lines_above.Add(points[x + 1] - down_vec);
         }
 
         /// drawing lines
@@ -387,7 +396,7 @@ public partial class DD3DDemoCS : Node3D
         }
 
         // Lag Test
-        var lag_test_pos = (Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0);
+        var lag_test_pos = ToGlobal((Vector3)dLagTest_RESET.GetAnimation("RESET").TrackGetKeyValue(0, 0));
         _draw_zone_title_pos(lag_test_pos, "Lag test");
 
         dLagTest.Position = lag_test_pos + new Vector3(Mathf.Sin(Time.GetTicksMsec() / 100.0f) * 2.5f, 0, 0);
@@ -438,7 +447,7 @@ public partial class DD3DDemoCS : Node3D
             DebugDraw2D.SetText("Text", "Value", 0, Colors.Aquamarine);
             DebugDraw2D.SetText("Text out of order", null, -1, Colors.Silver);
             DebugDraw2D.BeginTextGroup("-- Second Group --", 1, Colors.Beige);
-            DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn());
+            DebugDraw2D.SetText("Rendered frames", Engine.GetFramesDrawn().ToString());
             DebugDraw2D.EndTextGroup();
         }
 
@@ -449,12 +458,12 @@ public partial class DD3DDemoCS : Node3D
 
             if (render_stats != null && text_groups_show_stats)
             {
-                DebugDraw2D.SetText("Total", render_stats.TotalGeometry);
-                DebugDraw2D.SetText("Instances", render_stats.Instances, 1);
-                DebugDraw2D.SetText("Lines", render_stats.Lines, 2);
-                DebugDraw2D.SetText("Total Visible", render_stats.TotalVisible, 3);
-                DebugDraw2D.SetText("Visible Instances", render_stats.VisibleInstances, 4);
-                DebugDraw2D.SetText("Visible Lines", render_stats.VisibleLines, 5);
+                DebugDraw2D.SetText("Total", render_stats.TotalGeometry.ToString());
+                DebugDraw2D.SetText("Instances", render_stats.Instances.ToString(), 1);
+                DebugDraw2D.SetText("Lines", render_stats.Lines.ToString(), 2);
+                DebugDraw2D.SetText("Total Visible", render_stats.TotalVisible.ToString(), 3);
+                DebugDraw2D.SetText("Visible Instances", render_stats.VisibleInstances.ToString(), 4);
+                DebugDraw2D.SetText("Visible Lines", render_stats.VisibleLines.ToString(), 5);
 
                 DebugDraw2D.SetText("---", "", 12);
 
@@ -466,8 +475,8 @@ public partial class DD3DDemoCS : Node3D
 
                 DebugDraw2D.SetText("----", null, 32);
 
-                DebugDraw2D.SetText("Total Label3D", render_stats.NodesLabel3dExistsTotal, 33);
-                DebugDraw2D.SetText("Visible Label3D", render_stats.NodesLabel3dVisible + render_stats.NodesLabel3dVisiblePhysics, 34);
+                DebugDraw2D.SetText("Total Label3D", render_stats.NodesLabel3dExistsTotal.ToString(), 33);
+                DebugDraw2D.SetText("Visible Label3D", (render_stats.NodesLabel3dVisible + render_stats.NodesLabel3dVisiblePhysics).ToString(), 34);
 
                 DebugDraw2D.SetText("-----", null, 48);
 
@@ -482,8 +491,8 @@ public partial class DD3DDemoCS : Node3D
             var render_stats_2d = DebugDraw2D.GetRenderStats();
             if (render_stats_2d != null && text_groups_show_stats_2d)
             {
-                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups, 96);
-                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines, 97);
+                DebugDraw2D.SetText("Text groups", render_stats_2d.OverlayTextGroups.ToString(), 96);
+                DebugDraw2D.SetText("Text lines", render_stats_2d.OverlayTextLines.ToString(), 97);
             }
             DebugDraw2D.EndTextGroup();
         }
@@ -495,19 +504,19 @@ public partial class DD3DDemoCS : Node3D
             {
                 DebugDraw2D.SetText("WASD QE, LMB", "To move", 0);
             }
-            DebugDraw2D.SetText("Alt: change render layers", DebugDraw3D.Config.GeometryRenderLayers, 1);
+            DebugDraw2D.SetText("Alt: change render layers", DebugDraw3D.Config.GeometryRenderLayers.ToString(), 1);
             if (!OS.HasFeature("web"))
             {
                 DebugDraw2D.SetText("Ctrl: toggle anti-aliasing", GetViewport().Msaa3D == Viewport.Msaa.Msaa4X ? "MSAA 4x" : "Disabled", 2);
             }
-            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender, 3);
+            DebugDraw2D.SetText("Down: freeze render", DebugDraw3D.Config.Freeze3dRender.ToString(), 3);
             if (Engine.IsEditorHint())
             {
-                DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene, 4);
+                DebugDraw2D.SetText("Up: use scene camera", DebugDraw3D.Config.ForceUseCameraFromScene.ToString(), 4);
             }
             DebugDraw2D.SetText("1,2,3: toggle debug", $"{DebugDraw3D.DebugEnabled}, {DebugDraw2D.DebugEnabled} 😐, {DebugDrawManager.DebugEnabled} 😏", 5);
             DebugDraw2D.SetText("Left: frustum culling mode", frustum_culling_mode_names[(int)DebugDraw3D.Config.FrustumCullingMode], 6);
-            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds, 7);
+            DebugDraw2D.SetText("Right: draw bounds for culling", DebugDraw3D.Config.VisibleInstanceBounds.ToString(), 7);
         }
     }
 
@@ -705,8 +714,14 @@ public partial class DD3DDemoCS : Node3D
                     }
                 }
             }
-            //GD.Print($"Draw Cubes: {((Time.GetTicksUsec() - start_time) / 1000.0):F3}ms");
+            GD.Print($"Draw Cubes C#: {((Time.GetTicksUsec() - start_time) / 1000.0):F3}ms");
             timer_cubes = cubes_max_time;
+        }
+
+        if (timer_cubes > cubes_max_time)
+        {
+            DebugDraw3D.ClearAll();
+            timer_cubes = 0;
         }
     }
 

@@ -46,23 +46,13 @@ env:
   ENVIRONMENT_NAME: ${{inputs.production_build == 'true' && 'production' || ''}}
   OUTPUT_LIBS_PATH: bin
   FORCE_DISABLE_UNITY: yes
-  NDK_VERSION: '28.1.13356709' # r28b
+  NDK_VERSION: "28.1.13356709" # r28b
+  EM_VERSION: 3.1.64
 
 jobs:
-  windows-gdextension:
-    name: 🏁 Windows
-    runs-on: windows-latest
-    environment: ${{inputs.production_build == true && 'production' || ''}}
-    env:
-      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
-      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
-      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x86_64]
-        target: [editor, template_release]
+  gen-api:
+    name: 📝 Native API Generation
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -70,21 +60,48 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Compile GDExtension
-        uses: ./.github/actions/compile_gdextension
+      - name: Get library version
+        id: get_version
+        uses: ./.github/actions/get_lib_version
         with:
-          platform: windows
-          target: ${{matrix.target}}
-          arch: ${{matrix.arch}}
-          artifact: libdd3d-windows.${{matrix.target}}.${{matrix.arch}}
-          additional: lto=full
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{env.USE_CACHE}}
+          print_summary: false
+
+      - name: Configuring Python packages
+        run: |
+          python -m pip install scons
+          python --version
+          scons --version
+
+      - name: Standard API
+        run: scons gen_apis addon_output_dir=${{env.OUTPUT_LIBS_PATH}}/libs
+
+      - name: Upload Standard API
+        uses: actions/upload-artifact@v4
+        with:
+          name: .gdextension_native_api-${{steps.get_version.outputs.version}}
+          retention-days: 7
+          include-hidden-files: true
+          path: |
+            ${{env.OUTPUT_LIBS_PATH}}/native_api
+            !${{env.OUTPUT_LIBS_PATH}}/native_api/*.json
+
+      - name: Double API
+        run: scons gen_apis precision=double addon_output_dir=${{env.OUTPUT_LIBS_PATH}}/libs
+
+      - name: Upload Double API
+        uses: actions/upload-artifact@v4
+        with:
+          name: .gdextension_native_api_double-${{steps.get_version.outputs.version}}
+          retention-days: 7
+          include-hidden-files: true
+          path: |
+            ${{env.OUTPUT_LIBS_PATH}}/native_api
+            !${{env.OUTPUT_LIBS_PATH}}/native_api/*.json
 
   # ============================================
 
-  linux-gdextension:
-    name: 🐧 Linux
+  editor-gdextension:
+    name: "${{matrix.platform_name}}: ${{matrix.arch}}, ${{matrix.target}}"
     runs-on: ${{matrix.runner-os}}
     environment: ${{inputs.production_build == true && 'production' || ''}}
     env:
@@ -95,13 +112,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, arm64]
+        runner-os:
+          [ubuntu-22.04, ubuntu-22.04-arm, windows-latest, macos-latest]
         target: [editor, template_release]
         include:
-          - arch: x86_64
-            runner-os: ubuntu-22.04
-          - arch: arm64
-            runner-os: ubuntu-22.04-arm
+          # Linux
+          - runner-os: ubuntu-22.04
+            platform_name: 🐧 Linux
+            platform: linux
+            arch: x86_64
+          - runner-os: ubuntu-22.04-arm
+            platform_name: 🐧 Linux
+            platform: linux
+            arch: arm64
+          # Windows
+          - runner-os: windows-latest
+            platform_name: 🏁 Windows
+            platform: windows
+            arch: x86_64
+          # macOS
+          - runner-os: macos-latest
+            platform_name: 🍏 MacOS
+            platform: macos
+            arch: universal
+            additional: macos_deployment_target=10.14
 
     steps:
       - name: Checkout
@@ -112,30 +146,68 @@ jobs:
       - name: Compile GDExtension
         uses: ./.github/actions/compile_gdextension
         with:
-          platform: linux
+          platform: ${{matrix.platform}}
           target: ${{matrix.target}}
           arch: ${{matrix.arch}}
-          artifact: libdd3d-linux.${{matrix.target}}.${{matrix.arch}}
-          additional: lto=full
+          artifact: libdd3d-${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
+          additional: lto=full ${{matrix.additional}}
+          build_cpp_tests: true
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
-  macos-gdextension:
-    name: 🍏 MacOS
-    runs-on: macos-latest
-    environment: ${{inputs.production_build == true && 'production' || ''}}
-    env:
-      TELEMETRY_DD3D_APP_ID: ${{secrets.TELEMETRY_DD3D_APP_ID}}
-      TELEMETRY_DD3D_HOST: ${{secrets.TELEMETRY_DD3D_HOST}}
-      TELEMETRY_DST_FILE_KEY: ${{secrets.TELEMETRY_DST_FILE_KEY}}
+  template-gdextension:
+    name: "${{matrix.platform_name}}: ${{matrix.arch}}"
+    runs-on: ${{matrix.runner-os}}
 
     strategy:
       fail-fast: false
       matrix:
-        arch: [universal]
-        target: [editor, template_release]
+        include:
+          # Android
+          - runner-os: ubuntu-latest
+            platform_name: 🤖 Android
+            platform: android
+            arch: arm32
+            additional: ANDROID_HOME=""
+            forced_dd3d: false
+          - runner-os: ubuntu-latest
+            platform_name: 🤖 Android
+            platform: android
+            arch: arm64
+            additional: ANDROID_HOME=""
+            forced_dd3d: false
+          - runner-os: ubuntu-latest
+            platform_name: 🤖 Android
+            platform: android
+            arch: x86_32
+            additional: ANDROID_HOME=""
+            forced_dd3d: false
+          - runner-os: ubuntu-latest
+            platform_name: 🤖 Android
+            platform: android
+            arch: x86_64
+            additional: ANDROID_HOME=""
+            forced_dd3d: false
+          # iOS
+          - runner-os: macos-latest
+            platform_name: 🍏 iOS
+            platform: ios
+            arch: universal
+          # Web
+          - runner-os: ubuntu-latest
+            platform_name: 🕸 Web
+            platform: web
+            arch: wasm32
+            additional: threads=yes
+            suffix: .threads_yes
+          - runner-os: ubuntu-latest
+            platform_name: 🕸 Web threads=no
+            platform: web
+            arch: wasm32
+            additional: threads=no
+            suffix: .threads_no
 
     steps:
       - name: Checkout
@@ -143,170 +215,53 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Compile GDExtension
-        uses: ./.github/actions/compile_gdextension
+      - name: Setup NDK
+        id: setup_ndk
+        if: matrix.platform == 'android'
+        uses: ./.github/actions/setup_ndk
         with:
-          platform: macos
-          target: ${{matrix.target}}
-          arch: ${{matrix.arch}}
-          artifact: libdd3d-macos.${{matrix.target}}.${{matrix.arch}}
-          additional: lto=full macos_deployment_target=10.14
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{env.USE_CACHE}}
+          ndk_version: ${{env.NDK_VERSION}}
 
-  # ============================================
-
-  ios-gdextension:
-    name: 🍏 Ios
-    runs-on: macos-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [universal]
-        target: [template_debug, template_release]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Setup Emscripten
+        uses: pyodide/setup-emsdk@v15
+        if: matrix.platform == 'web'
+        continue-on-error: true
         with:
-          submodules: recursive
-
-      - name: Compile GDExtension
-        uses: ./.github/actions/compile_gdextension
-        with:
-          platform: ios
-          target: ${{matrix.target}}
-          arch: ${{matrix.arch}}
-          artifact: libdd3d-ios.${{matrix.target}}.${{matrix.arch}}
-          additional: lto=full
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{env.USE_CACHE}}
-
-  # ============================================
-
-  android-gdextension:
-    name: 🤖 Android
-    runs-on: ubuntu-24.04
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [arm32, arm64, x86_32, x86_64]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      # Based on https://stackoverflow.com/q/60776512/8980874 and https://github.com/godotengine/godot/blob/4.5-stable/platform/android/detect.py#L89
-      - name: Get ANDROID_HOME and NDK
-        run: |
-          echo "path=${ANDROID_HOME}" >> $GITHUB_OUTPUT
-          echo "ndk_path=${ANDROID_HOME}/ndk/${{env.NDK_VERSION}}" >> $GITHUB_OUTPUT
-        id: get_android_home
-
-      - name: Restore NDK Cache
-        id: ndk-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{steps.get_android_home.outputs.ndk_path}}
-          key: ndk-cache-${{env.NDK_VERSION}}
-
-      - name: Install NDK
-        if: steps.ndk-cache.outputs.cache-hit != 'true'
-        run: echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;${{env.NDK_VERSION}}"
-
-      - name: Save NDK Cache
-        if: steps.ndk-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{steps.get_android_home.outputs.ndk_path}}
-          key: ndk-cache-${{env.NDK_VERSION}}
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: obj/emsdk_cache
 
       - name: Compile GDExtension target=template_debug
         uses: ./.github/actions/compile_gdextension
         env:
-          ANDROID_NDK_ROOT: ${{steps.get_android_home.outputs.ndk_path}}
+          ANDROID_NDK_ROOT: ${{steps.setup_ndk.outputs.ndk_path}}
         with:
-          platform: android
+          platform: ${{matrix.platform}}
           target: template_debug
           arch: ${{matrix.arch}}
-          artifact: libdd3d-android.template_debug.${{matrix.arch}}
-          additional: lto=full ANDROID_HOME=""
-          additional_enabled_dd3d: false
+          artifact: libdd3d-${{matrix.platform}}.template_debug.${{matrix.arch}}${{matrix.suffix}}
+          additional: lto=full ${{matrix.additional}}
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
       - name: Compile GDExtension target=template_release
         uses: ./.github/actions/compile_gdextension
         env:
-          ANDROID_NDK_ROOT: ${{steps.get_android_home.outputs.ndk_path}}
+          ANDROID_NDK_ROOT: ${{steps.setup_ndk.outputs.ndk_path}}
         with:
-          platform: android
+          platform: ${{matrix.platform}}
           target: template_release
           arch: ${{matrix.arch}}
-          artifact: libdd3d-android.template_release.${{matrix.arch}}
-          additional: lto=full ANDROID_HOME=""
-          additional_enabled_dd3d: false
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{env.USE_CACHE}}
-
-  # ============================================
-
-  web-gdextension:
-    name: 🕸 Web
-    runs-on: ubuntu-24.04
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [wasm32]
-        target: [template_debug, template_release]
-
-    env:
-      EM_VERSION: 3.1.64
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Download Emscripten
-        uses: pyodide/setup-emsdk@v15
-        continue-on-error: true
-        with:
-          version: ${{env.EM_VERSION}}
-          actions-cache-folder: obj/emsdk_cache
-
-      - name: Compile GDExtension threads=no
-        uses: ./.github/actions/compile_gdextension
-        with:
-          platform: web
-          target: ${{matrix.target}}
-          arch: ${{matrix.arch}}
-          artifact: libdd3d-web.${{matrix.target}}.${{matrix.arch}}.threads_no
-          additional: lto=full threads=no
-          output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
-          use_cache: ${{env.USE_CACHE}}
-
-      - name: Compile GDExtension threads=yes
-        uses: ./.github/actions/compile_gdextension
-        with:
-          platform: web
-          target: ${{matrix.target}}
-          arch: ${{matrix.arch}}
-          artifact: libdd3d-web.${{matrix.target}}.${{matrix.arch}}.threads_yes
-          additional: lto=full threads=yes
+          artifact: libdd3d-${{matrix.platform}}.template_release.${{matrix.arch}}${{matrix.suffix}}
+          additional: lto=full ${{matrix.additional}}
+          build_forced_dd3d: ${{!format('{0}', matrix.forced_dd3d) && 'true' || format('{0}', matrix.forced_dd3d)}} # Default true
+          build_cpp_tests: true
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
   # ============================================
 
   double-debug-gdextension:
-    name: "2️⃣ Double: ${{matrix.runner-os}}, Platform-${{matrix.platform}}"
+    name: "2️⃣ Double: ${{matrix.runner-os}}, ${{matrix.platform}}"
     runs-on: ${{matrix.runner-os}}
     environment: ${{inputs.production_build == true && 'production' || ''}}
     env:
@@ -318,19 +273,20 @@ jobs:
       fail-fast: false
       matrix:
         # sync with other jobs
-        runner-os: [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
+        runner-os:
+          [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
           - runner-os: ubuntu-22.04
-            platform: "linux"
-            arch: "x86_64"
+            platform: linux
+            arch: x86_64
           - runner-os: ubuntu-22.04-arm
-            platform: "linux"
-            arch: "arm64"
+            platform: linux
+            arch: arm64
           - runner-os: macos-latest
-            platform: "macos"
-            arch: "universal"
+            platform: macos
+            arch: universal
           - runner-os: windows-latest
-            platform: "windows"
+            platform: windows
             arch: "x86_64"
 
     steps:
@@ -346,7 +302,7 @@ jobs:
           target: editor
           arch: ${{matrix.arch}}
           artifact: libdouble-${{matrix.platform}}.editor.${{matrix.arch}}
-          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
+          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no custom_api_file=patches/extension_api_double.json
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
@@ -357,7 +313,7 @@ jobs:
           target: template_release
           arch: ${{matrix.arch}}
           artifact: libdouble-${{matrix.platform}}.template_release.${{matrix.arch}}
-          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no
+          additional: lto=full precision=double fix_precision_enabled=yes shader_world_coords_enabled=no custom_api_file=patches/extension_api_double.json
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
@@ -368,8 +324,9 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        PYTHON_VER: ["3.8"] # this is the minimum available version to install on ubuntu 22.04 and 24.04
-                            # but the code is most likely compatible with python 3.6
+        PYTHON_VER:
+          ["3.8"] # this is the minimum available version to install on ubuntu 22.04 and 24.04
+          # but the code is most likely compatible with python 3.6
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -394,15 +351,7 @@ jobs:
   # ============================================
 
   collect-gdextension:
-    needs:
-      [
-        windows-gdextension,
-        linux-gdextension,
-        macos-gdextension,
-        android-gdextension,
-        web-gdextension,
-        ios-gdextension,
-      ]
+    needs: [editor-gdextension, template-gdextension]
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-24.04
     outputs:
@@ -460,7 +409,8 @@ jobs:
       fail-fast: false
       matrix:
         # sync with other jobs
-        runner-os: [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
+        runner-os:
+          [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
           - runner-os: ubuntu-22.04
             file_suffix: "stable_linux.x86_64.zip"

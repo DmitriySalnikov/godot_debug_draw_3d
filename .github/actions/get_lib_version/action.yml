@@ -1,5 +1,10 @@
 name: Get library version
 description: Get library version
+inputs:
+  print_summary:
+    description: Print Summary (true|false).
+    default: "true"
+    required: false
 outputs:
   version:
     description: The current version of the library
@@ -30,10 +35,11 @@ runs:
         version_string="$major.$minor.$patch"
 
         echo "version=$version_string" >> $GITHUB_OUTPUT
-        echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+        if [ "${{inputs.print_summary}}" == "true" ]; then
+          echo "Library Version found in file \`version.h\`: \`$version_string\`" >> $GITHUB_STEP_SUMMARY
+        fi
 
     - name: Clear temp repository
       shell: bash
       run: |
         rm -rf "get_version_temp_repositiory"
-

@@ -19,9 +19,12 @@ inputs:
   additional:
     description: Any additional arguments
     default: ""
-  additional_enabled_dd3d:
-    description: Use force_enabled_dd3d if possible
+  build_forced_dd3d:
+    description: Build an additional library with force_enabled_dd3d, if possible
     default: "true"
+  build_cpp_tests:
+    description: Build a test library to test the C++ API
+    default: "false"
   output_libs_path:
     description: Path to compiled libraries
     required: true
@@ -94,15 +97,27 @@ runs:
         scons apply_patches
 
         telemetry_args=""
-        if [[ "${{env.PRODUCTION_BUILD}}" == "true" && " template_debug editor " == *" ${{inputs.target}} "* && " linux macos windows " == *" ${{inputs.platform}} "* && "${{steps.checkout_tele_repo.conclusion}}" == "success" ]]; then
+        if [[ "${{env.PRODUCTION_BUILD}}" == "true" && " editor " == *" ${{inputs.target}} "* && " linux macos windows " == *" ${{inputs.platform}} "* && "${{steps.checkout_tele_repo.conclusion}}" == "success" ]]; then
           telemetry_args="telemetry_enabled=yes"
         fi
         scons_params="platform=${{inputs.platform}} arch=${{inputs.arch}} optimize=speed target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}"
 
         scons $scons_params $telemetry_args
-        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.additional_enabled_dd3d}}" == "true" ]; then
+
+        if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.build_forced_dd3d}}" == "true" ]; then
+          echo "============================================="
+          echo "🧊 build_forced_dd3d"
+          echo "============================================="
           scons $scons_params force_enabled_dd3d=yes
         fi
+
+        if [ "${{inputs.build_cpp_tests}}" == "true" ]; then
+          echo "============================================="
+          echo "🧪 build_cpp_tests"
+          echo "============================================="
+          scons $scons_params cpp_api_tests=yes custom_godotcpp_suffix=.test_napi folder_to_include_classes=../tests_native_api/cpp cpp_api_auto_gen=no
+        fi
+
         echo "::endgroup::"
 
     - name: Prepare artifact Unix
@@ -147,4 +162,3 @@ runs:
       run: |
         rm -rf "${{env.SCONS_CACHE}}"
         rm -rf "${{inputs.output_libs_path}}"
-

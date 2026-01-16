@@ -1,0 +1,42 @@
+name: Install and cache NDK
+description: Install and cache the specified version of the NDK
+inputs:
+  ndk_version:
+    description: Fully qualified NDK version (e.g. 28.1.13356709).
+    required: true
+outputs:
+  android_home:
+    description: Path to ANDROID_HOME.
+    value: ${{steps.get_android_home.outputs.android_home}}
+  ndk_path:
+    description: Path to the root folder of the installed NDK.
+    value: ${{steps.get_android_home.outputs.ndk_path}}
+runs:
+  using: composite
+  steps:
+    # Based on https://stackoverflow.com/q/60776512/8980874 and https://github.com/godotengine/godot/blob/4.5-stable/platform/android/detect.py#L89
+    - name: Get ANDROID_HOME and NDK
+      id: get_android_home
+      shell: bash
+      run: |
+        echo "android_home=${ANDROID_HOME}" >> $GITHUB_OUTPUT
+        echo "ndk_path=${ANDROID_HOME}/ndk/${{inputs.ndk_version}}" >> $GITHUB_OUTPUT
+
+    - name: Restore NDK Cache
+      id: ndk-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{steps.get_android_home.outputs.ndk_path}}
+        key: ndk-cache-${{inputs.ndk_version}}
+
+    - name: Install NDK
+      if: steps.ndk-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: echo "y" | sudo ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "ndk;${{inputs.ndk_version}}"
+
+    - name: Save NDK Cache
+      if: steps.ndk-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: ${{steps.get_android_home.outputs.ndk_path}}
+        key: ndk-cache-${{inputs.ndk_version}}

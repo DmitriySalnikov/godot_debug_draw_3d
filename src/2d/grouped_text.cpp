@@ -7,7 +7,7 @@ using namespace godot;
 
 #ifndef DISABLE_DEBUG_RENDERING
 TextGroupItem::TextGroupItem(const double &p_expiration_time, const String &p_key, const String &p_text, const int &p_priority, const Color &p_color) {
-	DEV_PRINT_STD("New " NAMEOF(TextGroupItem) " created: %s : %s\n", p_key.utf8().get_data(), p_text.utf8().get_data());
+	DEV_PRINT_STD("New %s created: %s : %s\n", NAMEOF(TextGroupItem), p_key.utf8().get_data(), p_text.utf8().get_data());
 
 	expiration_time = p_expiration_time;
 	key = p_key;
@@ -31,7 +31,26 @@ bool TextGroupItem::update(const double &p_expiration_time, const String &p_key,
 }
 
 bool TextGroupItem::is_expired() {
-	return expiration_time > 0 ? false : !second_chance;
+	if (expiration_time > 0) {
+		return false;
+	} else {
+		if (second_chance) {
+			second_chance = false;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool TextGroupItem::is_expired_const() const {
+	if (expiration_time > 0) {
+		return false;
+	} else {
+		if (second_chance) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void TextGroup::set_group_priority(int p_val) {
@@ -85,7 +104,7 @@ int TextGroup::get_text_size() {
 }
 
 TextGroup::TextGroup(DebugDraw2D *p_owner, const String &p_title, const int &p_priority, const bool &p_show_title, const Color &p_group_color, const int &p_title_size, const int &p_text_size) {
-	DEV_PRINT_STD("New " NAMEOF(TextGroup) " created: %s\n", p_title.utf8().get_data());
+	DEV_PRINT_STD("New %s created: %s\n", NAMEOF(TextGroup), p_title.utf8().get_data());
 
 	owner = p_owner;
 	title = p_title;
@@ -105,8 +124,6 @@ void TextGroup::cleanup_texts(const std::function<void()> &p_update, const doubl
 							t->expiration_time -= p_delta;
 							if (t->is_expired()) {
 								return true;
-							} else {
-								t->second_chance = false;
 							}
 							return false;
 						}),

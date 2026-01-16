@@ -1,7 +1,6 @@
 #ifdef TOOLS_ENABLED
 
 #include "editor_menu_extensions.h"
-#include "generate_csharp_bindings.h"
 #include "utils/utils.h"
 
 GODOT_WARNING_DISABLE()
@@ -322,7 +321,7 @@ inline String DebugDrawMenuExtensionPlugin::_get_plugin_name() const {
 
 void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	ZoneScoped;
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " _enter_tree\n");
+	DEV_PRINT_STD("%s _enter_tree\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	PopupMenu *menu = memnew(PopupMenu);
 	menu->connect("id_pressed", callable_mp(this, &DebugDrawMenuExtensionPlugin::_on_id_pressed));
@@ -330,11 +329,10 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	menu->add_item("Open the project page", MENU_OPEN_LIBRARY_SITE);
 	menu->add_item("Report an issue", MENU_OPEN_REPORT_ISSUE);
 	menu->add_item("Open the documentation", MENU_OPEN_DOCUMENTATION_SITE);
-	menu->add_item("Generate C# bindings", MENU_GENERATE_CSHARP_BINDING);
 
 	add_tool_submenu_item(menu_item_name, menu);
 
-	// HACK to change item icon
+	// HACK: to change item icon
 	PopupMenu *parent = cast_to<PopupMenu>(menu->get_parent());
 
 	Ref<Image> img;
@@ -371,10 +369,6 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(int p_id) {
 			OS::get_singleton()->shell_open(url_docs_page);
 			break;
 		}
-		case MENU_GENERATE_CSHARP_BINDING: {
-			GenerateCSharpBindingsPlugin().generate();
-			break;
-		}
 		default:
 			PRINT_ERROR("DD3D: Menu item " + String::num_int64(p_id) + " not implemented.");
 			break;
@@ -399,7 +393,7 @@ void DebugDrawMenuExtensionPlugin::_on_gui_input(const Ref<godot::InputEvent> ie
 }
 
 DebugDrawMenuExtensionPlugin::DebugDrawMenuExtensionPlugin() {
-	DEV_PRINT_STD(NAMEOF(DebugDrawMenuExtensionPlugin) " constructor\n");
+	DEV_PRINT_STD("%s constructor\n", NAMEOF(DebugDrawMenuExtensionPlugin));
 
 	menu_item_name = "Debug Draw";
 }

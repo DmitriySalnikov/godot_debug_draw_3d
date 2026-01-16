@@ -12,7 +12,6 @@ GODOT_WARNING_RESTORE()
 #define NEED_LEAVE (!_is_enabled_override())
 
 DebugDraw2D *DebugDraw2D::singleton = nullptr;
-const char *DebugDraw2D::s_marked_dirty = "marked_dirty";
 
 void DebugDraw2D::_bind_methods() {
 #define REG_CLASS_NAME DebugDraw2D
@@ -212,7 +211,8 @@ void DebugDraw2D::_set_custom_canvas_internal(Control *_canvas) {
 void DebugDraw2D::_on_canvas_item_draw(Control *ci) {
 	ZoneScoped;
 #ifndef DISABLE_DEBUG_RENDERING
-	if (!ci) return;
+	if (!ci)
+		return;
 	Vector2 vp_size = ci->has_meta("UseParentSize") ? Object::cast_to<Control>(ci->get_parent())->get_rect().size : ci->get_rect().size;
 
 	grouped_text->draw(ci, _font, vp_size);
@@ -327,20 +327,24 @@ void DebugDraw2D::clear_all() {
 #pragma region Text
 
 #ifndef DISABLE_DEBUG_RENDERING
-#define CALL_TO_2D(obj, func, ...)  \
-	if (!obj || NEED_LEAVE) return; \
+#define CALL_TO_2D(obj, func, ...) \
+	if (!obj || NEED_LEAVE)        \
+		return;                    \
 	obj->func(__VA_ARGS__)
 
 #define FORCE_CALL_TO_2D(obj, func, ...) \
-	if (!obj) return;                    \
+	if (!obj)                            \
+		return;                          \
 	obj->func(__VA_ARGS__)
 
 #define CALL_TO_2D_RET(obj, func, def, ...) \
-	if (!obj || NEED_LEAVE) return def;     \
+	if (!obj || NEED_LEAVE)                 \
+		return def;                         \
 	return obj->func(__VA_ARGS__)
 
 #define FORCE_CALL_TO_2D_RET(obj, func, def, ...) \
-	if (!obj) return def;                         \
+	if (!obj)                                     \
+		return def;                               \
 	return obj->func(__VA_ARGS__)
 #else
 #define CALL_TO_2D(obj, func, ...) return
@@ -354,6 +358,11 @@ void DebugDraw2D::begin_text_group(String group_title, int group_priority, Color
 	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title, title_size, text_size);
 }
 
+NAPI void DebugDraw2D::begin_text_group_c(const char *group_title_string, int group_priority, godot::Color group_color, bool show_title, int title_size, int text_size) {
+	ZoneScoped;
+	begin_text_group(String::utf8(group_title_string), group_priority, group_color, show_title, title_size, text_size);
+}
+
 void DebugDraw2D::end_text_group() {
 	ZoneScoped;
 	CALL_TO_2D(grouped_text, end_text_group);
@@ -362,6 +371,11 @@ void DebugDraw2D::end_text_group() {
 void DebugDraw2D::set_text(String key, Variant value, int priority, Color color_of_value, real_t duration) {
 	ZoneScoped;
 	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
+}
+
+NAPI void DebugDraw2D::set_text_c(const char *key_string, const char *value_string, int priority, godot::Color color_of_value, real_t duration) {
+	ZoneScoped;
+	set_text(String::utf8(key_string), String::utf8(value_string), priority, color_of_value,  duration);
 }
 
 void DebugDraw2D::clear_texts() {

@@ -12,7 +12,8 @@
                 //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
-                //"native_api_enabled=no"
+                //"native_api_enabled=no",
+                //"native_api_mismatch_check_enabled=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -26,16 +27,18 @@
             }
         },
         {
+            // Sometimes it may be necessary to remove generated bindings when changing precision!
             "type": "cppbuild",
             "label": "editor_build_double",
             "command": "scons",
             "args": [
-                "custom_api_file=extension_api_double.json",
+                "custom_api_file=patches/extension_api_double.json",
                 "precision=double",
                 "target=editor",
                 "debug_symbols=yes",
-                "dev_build=yes",
-                "lto=full",
+                "optimize=speed",
+                //"dev_build=yes",
+                //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
                 //"fix_precision_enabled=no",
@@ -53,18 +56,22 @@
             }
         },
         {
+            // It doesn't seem to work, but it can serve as an example of a build startup command.
             "type": "cppbuild",
-            "label": "test_cpp_api",
-            "command": "scons",
+            "label": "template_debug_web",
+            "command": "cmd",
             "args": [
-                "build_cpp_api_tests=yes",
-                "folder_to_include_classes=../tests_native_api/cpp",
-                "custom_godotcpp_suffix=.test_napi",
-                "target=editor",
+                "/c",
+                "emsdk_env.bat",
+                "&&",
+                "scons",
+                "platform=web",
+                "target=template_debug",
                 "debug_symbols=yes",
-                //"dev_build=yes",
+                "dev_build=yes",
                 //"lto=full",
                 //"tracy_enabled=yes",
+                "force_enabled_dd3d=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -84,7 +91,7 @@
             "args": [
                 "target=editor",
                 "debug_symbols=yes",
-                //"dev_build=yes",
+                "dev_build=yes",
                 //"lto=full",
                 //"telemetry_enabled=yes",
                 //"tracy_enabled=yes",
@@ -95,6 +102,69 @@
             },
             "problemMatcher": [
                 "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "test_cpp_api",
+            "command": "scons",
+            "args": [
+                "cpp_api_tests=yes",
+                "custom_godotcpp_suffix=.test_napi",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                //"native_api_mismatch_check_enabled=yes",
+                //
+                "target=editor",
+                "debug_symbols=yes",
+                "optimize=speed",
+                //"dev_build=yes",
+                //"lto=full",
+                //"tracy_enabled=yes",
+                "use_hot_reload=yes",
+                //"cpp_api_auto_gen=no",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "test_cpp_api_double",
+            "command": "scons",
+            "args": [
+                "custom_api_file=patches/extension_api_double.json",
+                "precision=double",
+                //
+                "cpp_api_tests=yes",
+                "custom_godotcpp_suffix=.test_napi",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                //"native_api_mismatch_check_enabled=yes",
+                //
+                "target=editor",
+                "debug_symbols=yes",
+                "optimize=speed",
+                //"dev_build=yes",
+                //"lto=full",
+                //"tracy_enabled=yes",
+                "use_hot_reload=yes",
+                //"cpp_api_auto_gen=no",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
             ],
             "group": {
                 "kind": "build",

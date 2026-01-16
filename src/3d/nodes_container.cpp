@@ -322,6 +322,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_outline_size, opts_hash);
 	opts_hash = hash_murmur3_one_32((uint32_t)p_cfg->text_fixed_size, opts_hash);
 
+	// fixed size
 	uint32_t text_hash = text.hash();
 	real_t pixel_size = 0.005f; // godot default
 	if (p_cfg->text_fixed_size) {
@@ -334,6 +335,7 @@ void NodesContainer::add_or_update_text(const DebugDraw3DScopeConfig::Data *p_cf
 			pixel_size = godot::Math::atan(fov * 0.5f) * aspect_ratio;
 		}
 	}
+
 	// if called from the main thread, just add/update
 	if (auto *os = OS::get_singleton(); os->get_thread_caller_id() == os->get_main_thread_id()) {
 		auto *lblit = text_pools[(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)].get(opts_hash, text_hash);

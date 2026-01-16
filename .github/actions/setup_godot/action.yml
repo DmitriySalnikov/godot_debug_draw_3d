@@ -77,7 +77,7 @@ runs:
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       shell: bash
       run: |
-        # TODO test mono
+        # TODO: test mono
         if [ "${{inputs.is_mono}}" == "true" ]; then
           echo "Move the Mono files to the root of the temporary folder"
           mv -f Godot*/* temp_download/ || true

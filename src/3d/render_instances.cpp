@@ -2,6 +2,7 @@
 
 #ifndef DISABLE_DEBUG_RENDERING
 
+#include "debug_geometry_container.h"
 #include "stats_3d.h"
 
 GODOT_WARNING_DISABLE()
@@ -36,16 +37,16 @@ frustum:
 
 DelayedRendererInstance::DelayedRendererInstance() :
 		DelayedRenderer() {
-	DEV_PRINT_STD("New " NAMEOF(DelayedRendererInstance) " created\n");
+	DEV_PRINT_STD("New %s created\n", NAMEOF(DelayedRendererInstance));
 }
 
 DelayedRendererLine::DelayedRendererLine() :
 		DelayedRenderer(),
 		lines_count(0) {
-	DEV_PRINT_STD("New " NAMEOF(DelayedRendererLine) " created\n");
+	DEV_PRINT_STD("New %s created\n", NAMEOF(DelayedRendererLine));
 }
 
-void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
+void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes, Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData>> &p_culling_data) {
 	ZoneScoped;
 	fill_instance_data(p_meshes, p_culling_data);
 	fill_lines_data(p_ig, p_culling_data);
@@ -54,7 +55,7 @@ void GeometryPool::fill_mesh_data(const std::vector<Ref<MultiMesh> *> &p_meshes,
 	physics_delta_sum = 0;
 }
 
-void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
+void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_meshes, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData>> &p_culling_data) {
 	ZoneScoped;
 
 	constexpr size_t INSTANCE_DATA_FLOAT_COUNT = ((sizeof(float) * 3 /*3 components*/ * 4 /*4 vectors3*/ + sizeof(godot::Color) /*Instance Color*/ + sizeof(godot::Color) /*Custom Data*/) / sizeof(float));
@@ -182,7 +183,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 	time_spent_to_fill_buffers_of_instances -= time_spent_to_cull_instances;
 }
 
-void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData> > &p_culling_data) {
+void GeometryPool::fill_lines_data(Ref<ArrayMesh> p_ig, std::unordered_map<Viewport *, std::shared_ptr<GeometryPoolCullingData>> &p_culling_data) {
 	ZoneScoped;
 
 	uint64_t used_lines = 0;
@@ -442,6 +443,10 @@ void GeometryPool::set_no_depth_test_info(bool p_no_depth_test) {
 	is_no_depth_test = p_no_depth_test;
 }
 
+void GeometryPool::set_debug_container_owner(DebugGeometryContainer *p_owner) {
+	owner_dgc = p_owner;
+}
+
 std::vector<Viewport *> GeometryPool::get_and_validate_viewports() {
 	ZoneScoped;
 	std::vector<Viewport *> res;
@@ -492,12 +497,21 @@ void GeometryPool::add_or_update_instance(const DebugDraw3DScopeConfig::Data *p_
 		inst->data = GeometryPoolData3DInstance(p_transform, p_col, p_custom_col ? *p_custom_col : _scoped_config_to_custom(p_cfg));
 		inst->bounds = SphereBounds(p_bounds.position, p_bounds.radius + p_cfg->thickness * 0.5f);
 	}
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	{
+		inst->data.origin_x -= (float)owner_dgc->get_center_position().x;
+		inst->data.origin_y -= (float)owner_dgc->get_center_position().y;
+		inst->data.origin_z -= (float)owner_dgc->get_center_position().z;
+	}
+#endif
+
 	inst->expiration_time = p_exp_time;
 	inst->is_used_one_time = false;
 	inst->is_visible = true;
 }
 
-void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg, const real_t &p_exp_time, std::unique_ptr<Vector3[]> p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb) {
+void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg, const real_t &p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const AABB &p_aabb) {
 	ZoneScoped;
 	auto &proc = pools[p_cfg->dcd.viewport][(int)(Engine::get_singleton()->is_in_physics_frame() ? ProcessType::PHYSICS_PROCESS : ProcessType::PROCESS)];
 	DelayedRendererLine *inst = proc.lines.get(p_exp_time > 0);
@@ -506,7 +520,9 @@ void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg,
 		viewport_ids[p_cfg->dcd.viewport] = p_cfg->dcd.viewport_id;
 	}
 
-	inst->lines = std::move(p_lines);
+	inst->lines = std::unique_ptr<Vector3, malloc_free_delete>((Vector3 *)malloc(sizeof(Vector3) * p_line_count));
+	memcpy(inst->lines.get(), p_lines, p_line_count * sizeof(Vector3));
+
 	inst->lines_count = p_line_count;
 	inst->color = p_col;
 	inst->expiration_time = p_exp_time;
@@ -518,12 +534,18 @@ void GeometryPool::add_or_update_line(const DebugDraw3DScopeConfig::Data *p_cfg,
 		inst->bounds = p_cfg->transform.xform(p_aabb);
 
 		for (size_t i = 0; i < inst->lines_count; i++) {
-			auto &v = inst->lines[i];
+			auto &v = inst->lines.get()[i];
 			v = p_cfg->transform.xform(v);
 		}
 	} else {
 		inst->bounds = p_aabb;
 	}
+
+#if defined(REAL_T_IS_DOUBLE) && defined(FIX_PRECISION_ENABLED)
+	for (size_t l = 0; l < p_line_count; l++) {
+		inst->lines.get()[l] -= owner_dgc->get_center_position();
+	}
+#endif
 }
 
 GeometryType GeometryPool::_scoped_config_get_geometry_type(const DebugDraw3DScopeConfig::Data *p_cfg) {

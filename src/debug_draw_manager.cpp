@@ -3,21 +3,15 @@
 #include "2d/debug_draw_2d.h"
 #include "2d/grouped_text.h"
 #include "3d/debug_draw_3d.h"
+#include "native_api/c_api.h"
 #include "utils/utils.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/generate_csharp_bindings.h"
-#endif
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;
-
-#ifdef DEV_ENABLED
-Object *DebugDrawManager::default_arg_obj = nullptr;
-#endif
 
 #ifndef DISABLE_DEBUG_RENDERING
 void _DD3D_PhysicsWatcher::init(DebugDrawManager *p_root) {
@@ -37,33 +31,15 @@ void _DD3D_PhysicsWatcher::_physics_process(double p_delta) {
 
 DebugDrawManager *DebugDrawManager::singleton = nullptr;
 
-const char *DebugDrawManager::s_initial_state = "initial_debug_state";
-const char *DebugDrawManager::s_manager_aliases = NAMEOF(DebugDrawManager) "_singleton_aliases ";
-const char *DebugDrawManager::s_dd2d_aliases = NAMEOF(DebugDraw2D) "_singleton_aliases";
-const char *DebugDrawManager::s_dd3d_aliases = NAMEOF(DebugDraw3D) "_singleton_aliases";
-
-const char *DebugDrawManager::s_extension_unloading = "extension_unloading";
-
 void DebugDrawManager::_bind_methods() {
-#ifdef DEV_ENABLED
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test1)), &DebugDrawManager::api_test1);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test2)), &DebugDrawManager::api_test2);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test3)), &DebugDrawManager::api_test3);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test4)), &DebugDrawManager::api_test4);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test5)), &DebugDrawManager::api_test5);
-
-	default_arg_obj = memnew(Object);
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test6)), &DebugDrawManager::api_test6, default_arg_obj, 1, Variant(), true, 2, 4, 3.5f, "String", "StringName", "Node/Path");
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test7)), &DebugDrawManager::api_test7, Color(1, 2, 3, 4), Vector2(1, 2), Vector2i(3, 4), Vector3(1, 2, 3), Vector3i(4, 5, 6), Vector4(1, 2, 3, 4), Vector4i(5, 6, 7, 8), Rect2(Vector2(1, 2), Vector2(3, 4)), Rect2(Vector2(5, 6), Vector2(7, 8)));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test8)), &DebugDrawManager::api_test8, Transform2D(Vector2(1, 2), Vector2(3, 4), Vector2(5, 6)), Transform3D(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9), Vector3(10, 11, 12)), Plane(1, 2, 3, 4), Quaternion(1, 2, 3, 4), AABB(Vector3(1, 2, 3), Vector3(4, 5, 6)), Basis(Vector3(1, 2, 3), Vector3(4, 5, 6), Vector3(7, 8, 9)), Projection(Vector4(1, 2, 3, 4), Vector4(5, 6, 7, 8), Vector4(9, 10, 11, 12), Vector4(13, 14, 15, 16)));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test9)), &DebugDrawManager::api_test9, RID(), Callable(), Signal(), Utils::make_dict("test", 2, Vector2(2, 1), Plane(4, 3, 2, 1), "ArrayKey_1", Array::make(2, "test_dict")), Array::make(1, "test", SECOND_VALUE));
-	ClassDB::bind_method(D_METHOD(NAMEOF(api_test10)), &DebugDrawManager::api_test10, PackedByteArray(TypedArray<uint8_t>::make(1, 2, 3, 4)), PackedInt32Array(), PackedInt64Array(TypedArray<int64_t>::make(-1, -2, -3, -4)), PackedFloat32Array(TypedArray<float>::make(0.1f, 0.2f, 0.3f, 0.4f)), PackedFloat64Array(TypedArray<double>::make(10.5, 20.5, 30.5, 40.5)), PackedStringArray(TypedArray<String>::make("1", "2", "3", "4")), PackedVector2Array(TypedArray<String>::make(Vector2(8, 9), Vector2(28, 39))), PackedVector3Array(TypedArray<String>::make(Vector3(7, 8, 9), Vector3(9, 2, 3))), PackedColorArray(TypedArray<String>::make(Color(1, 1, 0, 0.5), Color(1, 0, 1))));
-
-	BIND_ENUM_CONSTANT(FIRST_VALUE);
-	BIND_ENUM_CONSTANT(SECOND_VALUE);
-#endif
-
 #define REG_CLASS_NAME DebugDrawManager
+
+#ifdef NATIVE_API_ENABLED
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_classes)), &DebugDrawManager::_get_native_classes);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions)), &DebugDrawManager::_get_native_functions);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_is_double)), &DebugDrawManager::_get_native_functions_is_double);
+	ClassDB::bind_method(D_METHOD(NAMEOF(_get_native_functions_hash)), &DebugDrawManager::_get_native_functions_hash);
+#endif
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
 
@@ -125,10 +101,32 @@ DebugDrawManager::~DebugDrawManager() {
 	UNASSIGN_SINGLETON(DebugDrawManager);
 	deinit();
 
-#ifdef DEV_ENABLED
-	memdelete(default_arg_obj);
+#ifdef NATIVE_API_ENABLED
+	NATIVE_API::clear_orphaned_refs();
 #endif
 }
+
+#ifdef NATIVE_API_ENABLED
+Dictionary DebugDrawManager::_get_native_classes() {
+	return NATIVE_API::get_functions().get("classes", Dictionary());
+}
+
+Dictionary DebugDrawManager::_get_native_functions() {
+	return NATIVE_API::get_functions().get("functions", Dictionary());
+}
+
+bool DebugDrawManager::_get_native_functions_is_double() {
+#ifdef REAL_T_IS_DOUBLE
+	return true;
+#else
+	return false;
+#endif
+}
+
+int64_t DebugDrawManager::_get_native_functions_hash() {
+	return NATIVE_API::get_functions().get("hash", 0);
+}
+#endif
 
 void DebugDrawManager::clear_all() {
 	ZoneScoped;
@@ -149,7 +147,7 @@ bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
 }
 
-void DebugDrawManager::_define_and_update_addon_root_folder() {
+String DebugDrawManager::_define_and_update_addon_root_folder() {
 	DEFINE_SETTING_AND_GET_HINT(String root_folder, String(Utils::root_settings_section) + Utils::addon_root_folder, "", Variant::STRING, PropertyHint::PROPERTY_HINT_DIR, "");
 
 	if (IS_EDITOR_HINT()) {
@@ -167,6 +165,31 @@ void DebugDrawManager::_define_and_update_addon_root_folder() {
 			PS()->set_setting(String(Utils::root_settings_section) + Utils::addon_root_folder, root_folder);
 		}
 	}
+
+	return root_folder;
+}
+
+void DebugDrawManager::_remove_old_bindings(String addon_folder) const {
+#ifdef TOOLS_ENABLED
+	if (IS_EDITOR_HINT() && !addon_folder.is_empty()) {
+		String dir = addon_folder.path_join("gen/csharp");
+
+		std::vector<String> files = {
+			dir.path_join("DebugDrawGeneratedAPI.cs"),
+			dir.path_join("DebugDrawGeneratedAPI.cs") + ".uid",
+			dir.path_join("DebugDrawGeneratedAPI.generated.cs"),
+			dir.path_join("DebugDrawGeneratedAPI.generated.cs") + ".uid",
+			dir.path_join("log.txt"),
+		};
+
+		for (auto &f : files) {
+			if (FileAccess::file_exists(f)) {
+				PRINT_WARNING("DD3D: Deletes the file previously generated by this addon: {0}.", f);
+				DirAccess::remove_absolute(f);
+			}
+		}
+	}
+#endif
 }
 
 void DebugDrawManager::init() {
@@ -176,7 +199,8 @@ void DebugDrawManager::init() {
 	DEFINE_SETTING_AND_GET(bool initial_debug_state, String(Utils::root_settings_section) + s_initial_state, true, Variant::BOOL);
 	set_debug_enabled(initial_debug_state);
 
-	_define_and_update_addon_root_folder();
+	String addon_folder = _define_and_update_addon_root_folder();
+	_remove_old_bindings(addon_folder);
 
 	// manager_aliases.push_back(StringName("Dmgr"));
 	// dd2d_aliases.push_back(StringName("Dbg2"));
@@ -373,12 +397,6 @@ void DebugDrawManager::_integrate_into_engine() {
 	debug_draw_2d_singleton->set_custom_canvas(nullptr);
 	_connect_scene_changed();
 #endif
-
-#ifdef TOOLS_ENABLED
-	if (IS_EDITOR_HINT()) {
-		_try_to_update_cs_bindings();
-	}
-#endif
 }
 
 void DebugDrawManager::_process_start(double p_delta) {
@@ -430,15 +448,3 @@ void DebugDrawManager::_physics_process(double p_delta) {
 	}
 #endif
 }
-
-#ifdef TOOLS_ENABLED
-void DebugDrawManager::_try_to_update_cs_bindings() {
-	ZoneScoped;
-	auto g = GenerateCSharpBindingsPlugin();
-	if (g.is_need_to_update()) {
-		PRINT_WARNING("C# bindings for 'Debug Draw' were not found or are outdated!");
-		g.generate();
-	}
-}
-
-#endif
