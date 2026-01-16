@@ -57,7 +57,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D<span
-                      id="projectnumber">&#160;1.6.0</span>
+                      id="projectnumber">&#160;1.7.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -123,7 +123,7 @@ $(function(){initNavTree('md_docs_2Build.html','',''); });
   <div class="headertitle"><div class="title">Build </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md15"></a></p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md16"></a></p>
 <p>As well as for the engine itself, you will need to configure the <a href="https://docs.godotengine.org/en/4.1/contributing/development/compiling/index.html">environment</a>. And also you may need to apply several patches:</p>
 <div class="fragment"><div class="line"><span class="comment"># To apply all patches automatically, you can call a single command:</span></div>
 <div class="line">scons apply_patches</div>
@@ -137,8 +137,6 @@ $(function(){initNavTree('md_docs_2Build.html','',''); });
 <div class="line"><span class="comment"># Optional</span></div>
 <div class="line"><span class="comment"># #Faster builds and larger binaries</span></div>
 <div class="line">git apply --ignore-space-change --ignore-whitespace ../patches/unity_build.patch</div>
-<div class="line"><span class="comment"># #Fixes runtime link errors</span></div>
-<div class="line">git apply --ignore-space-change --ignore-whitespace ../patches/big_int_fix.patch</div>
 </div><!-- fragment --><p>Then you can just run scons as usual:</p>
 <div class="fragment"><div class="line"><span class="comment"># build for the current system.</span></div>
 <div class="line"><span class="comment"># target=editor is used for both the editor and the debug template.</span></div>
@@ -146,7 +144,7 @@ $(function(){initNavTree('md_docs_2Build.html','',''); });
 <div class="line"> </div>
 <div class="line"><span class="comment"># #Android builds</span></div>
 <div class="line"><span class="comment"># ANDROID_NDK_ROOT is required in your environment variables.</span></div>
-<div class="line"><span class="comment"># Or ANDROID_HOME with &#39;ndk/23.2.8568313&#39; installed.</span></div>
+<div class="line"><span class="comment"># Or ANDROID_HOME with &#39;ndk/28.1.13356709&#39; installed.</span></div>
 <div class="line">scons platform=android target=template_release arch=arm64v8</div>
 <div class="line"><span class="comment"># If you have a different version of NDK installed and both ANDROID_HOME</span></div>
 <div class="line"><span class="comment"># and ANDROID_NDK_ROOT have been added to the environment variables,</span></div>
@@ -157,7 +155,7 @@ $(function(){initNavTree('md_docs_2Build.html','',''); });
 <div class="line"><span class="comment"># GDExtension for Web currently works best with Emscripten &#39;3.1.63&#39;.</span></div>
 <div class="line"><span class="comment"># Add threads=[yes|no] depending on the version of Godot and the export flags.</span></div>
 <div class="line">scons platform=web target=template_debug</div>
-</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md16"></a>
+</div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md17"></a>
 JavaScript/Web build</h1>
 <p>If you have problems running the Web version of your project, you can try using the scripts and tips from <a href="https://gist.github.com/DmitriySalnikov/ce12ff100df4e3352176768f5232abfa">this page</a>.</p>
 <p>If you too want to add an <a href="https://dd3d.dmitriysalnikov.ru/demo/">Interactive Demo</a> to your GitHub repository, then you can see how Nick Maltbie (<a href="https://github.com/nicholas-maltbie">nicholas-maltbie</a>) added this feature to this repository in PR <a href="https://github.com/DmitriySalnikov/godot_debug_draw_3d/pull/24">#24</a>!</p>

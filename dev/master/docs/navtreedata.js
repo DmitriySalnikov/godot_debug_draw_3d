@@ -44,15 +44,16 @@ var NAVTREE =
       [ "Split screen", "md_docs_2SubViewports.html#autotoc_md13", null ]
     ] ],
     [ "Exporting a project", "md_docs_2Export.html", null ],
+    [ "Native API", "md_docs_2NativeAPI.html", null ],
     [ "Build", "md_docs_2Build.html", [
-      [ "JavaScript/Web build", "md_docs_2Build.html#autotoc_md16", null ]
+      [ "JavaScript/Web build", "md_docs_2Build.html#autotoc_md17", null ]
     ] ],
     [ "Double Precision", "md_docs_2DoublePrecision.html", [
-      [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md18", [
-        [ "<span class=\"tt\">fix_precision_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md19", null ],
-        [ "<span class=\"tt\">shader_world_coords_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md20", null ]
+      [ "Compilation flags", "md_docs_2DoublePrecision.html#autotoc_md19", [
+        [ "<span class=\"tt\">fix_precision_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md20", null ],
+        [ "<span class=\"tt\">shader_world_coords_enabled=yes|no</span> (default: yes)", "md_docs_2DoublePrecision.html#autotoc_md21", null ]
       ] ],
-      [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md21", null ]
+      [ "Examples", "md_docs_2DoublePrecision.html#autotoc_md22", null ]
     ] ],
     [ "Deprecated List", "deprecated.html", null ],
     [ "Classes", "annotated.html", [

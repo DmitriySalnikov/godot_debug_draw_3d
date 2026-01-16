@@ -57,7 +57,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D<span
-                      id="projectnumber">&#160;1.6.0</span>
+                      id="projectnumber">&#160;1.7.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -126,38 +126,38 @@ $(function(){initNavTree('stats__2d_8h_source.html','',''); });
 <div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;utils/compiler.h&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span>GODOT_WARNING_DISABLE()</div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;godot_cpp/classes/ref_counted.hpp&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span>GODOT_WARNING_RESTORE()</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>using namespace godot;</div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span></div>
-<div class="foldopen" id="foldopen00018" data-start="{" data-end="};">
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno"><a class="line" href="classDebugDraw2DStats.html">   18</a></span>class DebugDraw2DStats : public RefCounted {</div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    GDCLASS(DebugDraw2DStats, RefCounted)</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="keyword">protected</span>:</div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span> </div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="preprocessor">#define DEFINE_DEFAULT_PROP(name, type, def) \</span></div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="preprocessor">private:                                     \</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="preprocessor">    type name = def;                         \</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span><span class="preprocessor">                                             \</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span><span class="preprocessor">public:                                      \</span></div>
-<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="preprocessor">    type get_##name() const { return name; } \</span></div>
-<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">    void set_##name(int64_t val) {}</span></div>
-<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
-<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    DEFINE_DEFAULT_PROP(overlay_text_groups, int64_t, 0);</div>
-<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    DEFINE_DEFAULT_PROP(overlay_text_lines, int64_t, 0);</div>
-<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#undef DEFINE_DEFAULT_PROP</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;utils/native_api_hooks.h&quot;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span>GODOT_WARNING_DISABLE()</div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;godot_cpp/classes/ref_counted.hpp&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>GODOT_WARNING_RESTORE()</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>using namespace godot;</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span></div>
+<div class="foldopen" id="foldopen00019" data-start="{" data-end="};">
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classDebugDraw2DStats.html">   19</a></span>NAPI_CLASS_REF class DebugDraw2DStats : public RefCounted {</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    GDCLASS(DebugDraw2DStats, RefCounted)</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">protected</span>:</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="keyword">static</span> <span class="keywordtype">void</span> _bind_methods();</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    int64_t overlay_text_groups = 0;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    int64_t overlay_text_lines = 0;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span> </div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>    NAPI int64_t get_overlay_text_groups()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> overlay_text_groups; }</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    NAPI <span class="keywordtype">void</span> set_overlay_text_groups(int64_t val) {};</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    NAPI int64_t get_overlay_text_lines()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> overlay_text_lines; }</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    NAPI <span class="keywordtype">void</span> set_overlay_text_lines(int64_t val) {};</div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>    DebugDraw2DStats(){};</div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>    <span class="keywordtype">void</span> setup(</div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>            <span class="keyword">const</span> int64_t &amp;p_overlay_text_groups,</div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>            <span class="keyword">const</span> int64_t &amp;p_overlay_text_lines);</div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>};</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#undef DEFINE_DEFAULT_PROP</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    DebugDraw2DStats() {};</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    <span class="keywordtype">void</span> setup(</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>            <span class="keyword">const</span> int64_t &amp;p_overlay_text_groups,</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>            <span class="keyword">const</span> int64_t &amp;p_overlay_text_lines);</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>};</div>
 </div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->

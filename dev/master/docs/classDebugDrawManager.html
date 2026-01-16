@@ -57,7 +57,7 @@
               <td id="projectlogo"><a href="index.html"><img alt="Logo" src="icon_3d_64.png" /></a></td>
               <td id="projectalign">
                   <div id="projectname">Debug Draw 3D<span
-                      id="projectnumber">&#160;1.6.0</span>
+                      id="projectnumber">&#160;1.7.0</span>
                   </div>
                 <div id="projectbrief">Draw 3D debug graphics and 2D overlays with this add-on.</div>
               </td>
@@ -141,9 +141,9 @@ Inheritance diagram for DebugDrawManager:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a56da9c3e5a3b7a97083b48b85cc3737a" id="r_a56da9c3e5a3b7a97083b48b85cc3737a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a56da9c3e5a3b7a97083b48b85cc3737a">clear_all</a> ()</td></tr>
-<tr class="memitem:aa2a02002be21f77c31559926bd66bcbe" id="r_aa2a02002be21f77c31559926bd66bcbe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2a02002be21f77c31559926bd66bcbe">set_debug_enabled</a> (bool value)</td></tr>
-<tr class="memitem:a5920f8f62eae11b5318843bfa668a6ef" id="r_a5920f8f62eae11b5318843bfa668a6ef"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5920f8f62eae11b5318843bfa668a6ef">is_debug_enabled</a> () const</td></tr>
+<tr class="memitem:ad36ae8e091d50c9272b8ef0bb0bfe065" id="r_ad36ae8e091d50c9272b8ef0bb0bfe065"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad36ae8e091d50c9272b8ef0bb0bfe065">clear_all</a> ()</td></tr>
+<tr class="memitem:a2b00f1f90923a6a3c95553ce677bb5c1" id="r_a2b00f1f90923a6a3c95553ce677bb5c1"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b00f1f90923a6a3c95553ce677bb5c1">set_debug_enabled</a> (bool value)</td></tr>
+<tr class="memitem:a0c9de309a67c4a12005104aa53c0f50e" id="r_a0c9de309a67c4a12005104aa53c0f50e"><td class="memItemLeft" align="right" valign="top">NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0c9de309a67c4a12005104aa53c0f50e">is_debug_enabled</a> () const</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-static-methods" class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -188,14 +188,14 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a56da9c3e5a3b7a97083b48b85cc3737a" name="a56da9c3e5a3b7a97083b48b85cc3737a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a56da9c3e5a3b7a97083b48b85cc3737a">&#9670;&#160;</a></span>clear_all()</h2>
+<a id="ad36ae8e091d50c9272b8ef0bb0bfe065" name="ad36ae8e091d50c9272b8ef0bb0bfe065"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad36ae8e091d50c9272b8ef0bb0bfe065">&#9670;&#160;</a></span>clear_all()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void DebugDrawManager::clear_all </td>
+          <td class="memname">NAPI void DebugDrawManager::clear_all </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -206,14 +206,14 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="aa2a02002be21f77c31559926bd66bcbe" name="aa2a02002be21f77c31559926bd66bcbe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa2a02002be21f77c31559926bd66bcbe">&#9670;&#160;</a></span>set_debug_enabled()</h2>
+<a id="a2b00f1f90923a6a3c95553ce677bb5c1" name="a2b00f1f90923a6a3c95553ce677bb5c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b00f1f90923a6a3c95553ce677bb5c1">&#9670;&#160;</a></span>set_debug_enabled()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void DebugDrawManager::set_debug_enabled </td>
+          <td class="memname">NAPI void DebugDrawManager::set_debug_enabled </td>
           <td>(</td>
           <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>value</em></span></td><td>)</td>
           <td></td>
@@ -224,14 +224,14 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a5920f8f62eae11b5318843bfa668a6ef" name="a5920f8f62eae11b5318843bfa668a6ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5920f8f62eae11b5318843bfa668a6ef">&#9670;&#160;</a></span>is_debug_enabled()</h2>
+<a id="a0c9de309a67c4a12005104aa53c0f50e" name="a0c9de309a67c4a12005104aa53c0f50e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c9de309a67c4a12005104aa53c0f50e">&#9670;&#160;</a></span>is_debug_enabled()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool DebugDrawManager::is_debug_enabled </td>
+          <td class="memname">NAPI bool DebugDrawManager::is_debug_enabled </td>
           <td>(</td>
           <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td> const</td>

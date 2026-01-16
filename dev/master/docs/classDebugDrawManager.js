@@ -1,6 +1,6 @@
 var classDebugDrawManager =
 [
-    [ "clear_all", "classDebugDrawManager.html#a56da9c3e5a3b7a97083b48b85cc3737a", null ],
-    [ "set_debug_enabled", "classDebugDrawManager.html#aa2a02002be21f77c31559926bd66bcbe", null ],
-    [ "is_debug_enabled", "classDebugDrawManager.html#a5920f8f62eae11b5318843bfa668a6ef", null ]
+    [ "clear_all", "classDebugDrawManager.html#ad36ae8e091d50c9272b8ef0bb0bfe065", null ],
+    [ "set_debug_enabled", "classDebugDrawManager.html#a2b00f1f90923a6a3c95553ce677bb5c1", null ],
+    [ "is_debug_enabled", "classDebugDrawManager.html#a0c9de309a67c4a12005104aa53c0f50e", null ]
 ];

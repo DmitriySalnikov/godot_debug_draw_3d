@@ -1,14 +1,14 @@
 var classDebugDraw2D =
 [
     [ "get_empty_color", "classDebugDraw2D.html#aa01386e943f05eed86693cef08d99eaf", null ],
-    [ "set_debug_enabled", "classDebugDraw2D.html#a435a7d3a1854512657851f1012892284", null ],
-    [ "set_config", "classDebugDraw2D.html#af5cdd66ef13d453153e636e29e4e164c", null ],
-    [ "get_config", "classDebugDraw2D.html#a05ae1dd207cf6a6c1000bf323a023cd4", null ],
-    [ "set_custom_canvas", "classDebugDraw2D.html#a0b111f429b856cb93df850211e620238", null ],
-    [ "get_render_stats", "classDebugDraw2D.html#aa7eca39840443b931406ac82a942d0e5", null ],
-    [ "clear_all", "classDebugDraw2D.html#ac2777945373badd86306f490bfe261af", null ],
-    [ "begin_text_group", "classDebugDraw2D.html#af43a2126f2ad765333f3dd485f77ead3", null ],
-    [ "end_text_group", "classDebugDraw2D.html#afa404c23686cc5c5e43dc8b20aa56707", null ],
-    [ "set_text", "classDebugDraw2D.html#abf06cb513639049d9097f4d08684c387", null ],
-    [ "clear_texts", "classDebugDraw2D.html#aac2a6cee303adf72c169ea53c87438a6", null ]
+    [ "set_debug_enabled", "classDebugDraw2D.html#a20b1cf1a59fbdf9efd04f672c910a03b", null ],
+    [ "set_config", "classDebugDraw2D.html#a09302b8d6e30a28404382e9035006411", null ],
+    [ "get_config", "classDebugDraw2D.html#ad3b2f82f9bfe52b76ded6f131e1c464a", null ],
+    [ "set_custom_canvas", "classDebugDraw2D.html#abd7501e1857ccd1befa7d04b31c4fce3", null ],
+    [ "get_render_stats", "classDebugDraw2D.html#a3e2e3565ce8b50a1270b7633960308b7", null ],
+    [ "clear_all", "classDebugDraw2D.html#a4de85272575854660d53958b6bdb5f50", null ],
+    [ "begin_text_group", "classDebugDraw2D.html#a319d32cd4dd80c1a178b12c8ea0cbaff", null ],
+    [ "end_text_group", "classDebugDraw2D.html#a87e7cc08380d92c2d19544a176d747b7", null ],
+    [ "set_text", "classDebugDraw2D.html#a760f15fd3c4534c911160e03275ed905", null ],
+    [ "clear_texts", "classDebugDraw2D.html#ab5998858cdbb54790c764e8034d0bcda", null ]
 ];
