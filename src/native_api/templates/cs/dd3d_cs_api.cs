@@ -109,8 +109,7 @@ internal static class InternalDD3DApiLoaderUtils_
 
                 // TODO: signature check?
 
-                var ptr = new IntPtr(func_dict["ptr"].AsInt64());
-                func = Marshal.GetDelegateForFunctionPointer<dlgt_T>(ptr);
+                func = Marshal.GetDelegateForFunctionPointer<dlgt_T>((nint)func_dict["ptr"].AsInt64());
                 return true;
             }
             else

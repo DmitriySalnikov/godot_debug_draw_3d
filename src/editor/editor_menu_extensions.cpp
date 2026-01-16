@@ -329,11 +329,10 @@ void DebugDrawMenuExtensionPlugin::_enter_tree() {
 	menu->add_item("Open the project page", MENU_OPEN_LIBRARY_SITE);
 	menu->add_item("Report an issue", MENU_OPEN_REPORT_ISSUE);
 	menu->add_item("Open the documentation", MENU_OPEN_DOCUMENTATION_SITE);
-	menu->add_item("Generate C# bindings", MENU_GENERATE_CSHARP_BINDING);
 
 	add_tool_submenu_item(menu_item_name, menu);
 
-	// HACK to change item icon
+	// HACK: to change item icon
 	PopupMenu *parent = cast_to<PopupMenu>(menu->get_parent());
 
 	Ref<Image> img;
@@ -368,11 +367,6 @@ void DebugDrawMenuExtensionPlugin::_on_id_pressed(int p_id) {
 		}
 		case MENU_OPEN_DOCUMENTATION_SITE: {
 			OS::get_singleton()->shell_open(url_docs_page);
-			break;
-		}
-		case MENU_GENERATE_CSHARP_BINDING: {
-			// TODO:
-			UtilityFunctions::print("DEPRECATED");
 			break;
 		}
 		default:

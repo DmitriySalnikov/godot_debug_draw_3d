@@ -106,7 +106,7 @@ struct _DD3D_Loader_ {
 		return dd3d_c;
 	}
 
-	static bool load_function(void *&val, const godot::String &sign2, const char *name) {
+	static bool load_function(int64_t &val, const godot::String &sign2, const char *name) {
 		ZoneScoped;
 		if (godot::Object *dd3d = get_dd3d(); dd3d) {
 			int64_t api_hash = dd3d->call(get_funcs_hash_name);
@@ -126,7 +126,7 @@ struct _DD3D_Loader_ {
 						return false;
 					}
 #endif
-					val = (void *)(int64_t)func_dict["ptr"];
+					val = (int64_t)func_dict["ptr"];
 					return true;
 				} else {
 					godot::UtilityFunctions::printerr(log_prefix, "!!! FUNCTION NOT FOUND !!! function name: ", name);
@@ -149,10 +149,10 @@ struct _DD3D_Loader_ {
 #define IS_LOADED_SUCCESSFULLY _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Success
 #define IS_FAILED_TO_LOAD _dd3d_loading_result == _DD3D_Loader_::LoadingResult::Failure
 #define LOAD_FUNC_AND_STORE_RESULT(_name)                                                                                                                                                   \
-	void *_dd3d_func_ptr = nullptr;                                                                                                                                                         \
+	int64_t _dd3d_func_ptr = 0;                                                                                                                                                             \
 	_dd3d_loading_result = _DD3D_Loader_::load_function(_dd3d_func_ptr, FUNC_GET_SIGNATURE(_name), #_name) ? _DD3D_Loader_::LoadingResult::Success : _DD3D_Loader_::LoadingResult::Failure; \
 	if (IS_LOADED_SUCCESSFULLY) {                                                                                                                                                           \
-		_name = static_cast<decltype(_name)>(_dd3d_func_ptr);                                                                                                                               \
+		_name = reinterpret_cast<decltype(_name)>(_dd3d_func_ptr);                                                                                                                          \
 	}
 
 #define LOAD_AND_CALL_FUNC_POINTER(_name, ...) \

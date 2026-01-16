@@ -151,6 +151,7 @@ jobs:
           arch: ${{matrix.arch}}
           artifact: libdd3d-${{matrix.platform}}.${{matrix.target}}.${{matrix.arch}}
           additional: lto=full ${{matrix.additional}}
+          build_cpp_tests: true
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 
@@ -252,7 +253,8 @@ jobs:
           arch: ${{matrix.arch}}
           artifact: libdd3d-${{matrix.platform}}.template_release.${{matrix.arch}}${{matrix.suffix}}
           additional: lto=full ${{matrix.additional}}
-          additional_enabled_dd3d: ${{!format('{0}', matrix.forced_dd3d) && 'true' || format('{0}', matrix.forced_dd3d)}} # Default true
+          build_forced_dd3d: ${{!format('{0}', matrix.forced_dd3d) && 'true' || format('{0}', matrix.forced_dd3d)}} # Default true
+          build_cpp_tests: true
           output_libs_path: ${{env.OUTPUT_LIBS_PATH}}
           use_cache: ${{env.USE_CACHE}}
 

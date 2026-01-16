@@ -4,6 +4,7 @@
       "name": "DefaultCPP",
       "includePath": [
         "${workspaceFolder}/src/**",
+        "${workspaceFolder}/addons/debug_draw_3d/native_api/cpp",
         "${workspaceFolder}/godot-cpp/gdextension/**",
         "${workspaceFolder}/godot-cpp/include",
         "${workspaceFolder}/godot-cpp/gen/include"

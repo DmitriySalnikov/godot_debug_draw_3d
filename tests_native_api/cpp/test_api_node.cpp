@@ -3,7 +3,7 @@
 #include "utils/macro_utils.h"
 #include "utils/profiler.h"
 
-#include "../../addons/debug_draw_3d/native_api/cpp/dd3d_cpp_api.hpp"
+#include "dd3d_cpp_api.hpp"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/engine.hpp>
@@ -149,9 +149,9 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 							// var size = Vector3(randf_range(0.1, 100), randf_range(0.1, 100), randf_range(0.1, 100))
 							DebugDraw3D::draw_box(Vector3(x * mul, (-4 - z) * mul, y * mul), Quaternion(), size, Color(0, 0, 0, 0), false, cubes_max_time);
 						} else {
-							float x_off = (rand() - (RAND_MAX * 0.5f)) / RAND_MAX * 0.5f;
-							float y_off = (rand() - (RAND_MAX * 0.5f)) / RAND_MAX * 0.5f;
-							float z_off = (rand() - (RAND_MAX * 0.5f)) / RAND_MAX * 0.5f;
+							float x_off = (rand() - (RAND_MAX >> 1)) / (float)RAND_MAX * 0.5f;
+							float y_off = (rand() - (RAND_MAX >> 1)) / (float)RAND_MAX * 0.5f;
+							float z_off = (rand() - (RAND_MAX >> 1)) / (float)RAND_MAX * 0.5f;
 							lines_buff.get()[z * x_size * y_size + y * y_size + x] = Vector3(x * mul + x_off, (-4 - z) * mul + y_off, y * mul + z_off);
 						}
 					}
@@ -185,6 +185,8 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 					DebugDraw3D::draw_arrow_path_c(lines_buff.get(), lines_buff_size, Color(0, 0, 0, 0), 0.25f, true, cubes_max_time);
 					break;
 				}
+				default:
+					break;
 			}
 		}
 

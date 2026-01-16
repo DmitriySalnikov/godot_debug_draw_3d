@@ -323,7 +323,7 @@ env.Command("gen_apis", [], gen_apis)
 ## CPP API TESTS
 if env["cpp_api_tests"]:
     tests_src_folder = os.path.join("tests_native_api", "cpp")
-    env.Append(CPPPATH=src_folder)
+    env.Append(CPPPATH=[src_folder, os.path.join(env["addon_output_dir"], "..", "native_api", "cpp")])
 
     additional_src = []
 
