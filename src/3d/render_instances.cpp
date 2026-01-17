@@ -69,6 +69,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 		ZoneValue(type);
 		GODOT_STOPWATCH_ADD(&time_spent_to_fill_buffers_of_instances);
 
+		AABBMinMax custom_aabb;
 		std::vector<DelayedRendererInstance *> visible_buffer;
 		visible_buffer.reserve(prev_buffer_visible_instance_count[type]);
 
@@ -87,6 +88,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 						auto &inst = inst_arr[i];
 						if (inst.update_visibility(culling_data)) {
 							visible_buffer.push_back(&inst);
+							custom_aabb.merge_with(inst.bounds);
 						}
 					}
 
@@ -102,6 +104,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 
 								if (inst.update_visibility(culling_data)) {
 									visible_buffer.push_back(&inst);
+									custom_aabb.merge_with(inst.bounds);
 								}
 							}
 						}
@@ -114,6 +117,7 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 
 								if (inst.update_visibility(culling_data)) {
 									visible_buffer.push_back(&inst);
+									custom_aabb.merge_with(inst.bounds);
 								}
 							}
 						}
@@ -159,6 +163,8 @@ void GeometryPool::fill_instance_data(const std::vector<Ref<MultiMesh> *> &p_mes
 
 		// resize if the buffer size has changed.
 		auto &mesh = *p_meshes[type];
+		mesh->set_custom_aabb(custom_aabb);
+
 		int32_t new_inst_count = (int)(buffer.size() / INSTANCE_DATA_FLOAT_COUNT);
 		if (new_inst_count != mesh->get_instance_count()) {
 			ZoneScopedN("Changing amount of instances");
