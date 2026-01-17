@@ -845,10 +845,15 @@ def generate_native_api(
         line(new_funcs, "};")
         line(new_funcs, "")
         line(new_funcs, f"static std::unordered_set<{cls}_NAPIWrapper*> {cls}_NAPIWrapper_storage;")
+        line(
+            new_funcs,
+            f'static ProfiledMutex(std::recursive_mutex, {cls}_NAPIWrapper_storage_datalock, "{cls}_NAPIWrapper_storage lock");',
+        )
         line(new_funcs, "")
         line(new_funcs, f"{extern_c_dbg}static void* {cls}_create() {{")
         line(new_funcs, "ZoneScoped;", 1)
         line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{Ref<{cls}>(memnew({cls}))}};", 1)
+        line(new_funcs, f"LOCK_GUARD({cls}_NAPIWrapper_storage_datalock);", 1)
         line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
         line(new_funcs, "return inst_ptr;", 1)
         line(new_funcs, "};")
@@ -856,6 +861,7 @@ def generate_native_api(
         line(new_funcs, f"{extern_c_dbg}static void* {cls}_create_nullptr() {{")
         line(new_funcs, "ZoneScoped;", 1)
         line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{}};", 1)
+        line(new_funcs, f"LOCK_GUARD({cls}_NAPIWrapper_storage_datalock);", 1)
         line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
         line(new_funcs, "return inst_ptr;", 1)
         line(new_funcs, "};")
@@ -863,19 +869,22 @@ def generate_native_api(
         line(new_funcs, f"static void* {cls}_create_from_ref(Ref<{cls}> ref) {{")
         line(new_funcs, "ZoneScoped;", 1)
         line(new_funcs, f"auto* inst_ptr = new {cls}_NAPIWrapper{{ref}};", 1)
+        line(new_funcs, f"LOCK_GUARD({cls}_NAPIWrapper_storage_datalock);", 1)
         line(new_funcs, f"{cls}_NAPIWrapper_storage.insert(inst_ptr);", 1)
         line(new_funcs, "return inst_ptr;", 1)
         line(new_funcs, "};")
         line(new_funcs, "")
         line(new_funcs, f"{extern_c_dbg}static void {cls}_destroy(void *inst_ptr) {{")
         line(new_funcs, "ZoneScoped;", 1)
+        line(new_funcs, f"auto obj = static_cast<{cls}_NAPIWrapper*>(inst_ptr);", 1)
+        line(new_funcs, f"LOCK_GUARD({cls}_NAPIWrapper_storage_datalock);", 1)
         line(
             new_funcs,
-            f"if (const auto it = {cls}_NAPIWrapper_storage.find(static_cast<{cls}_NAPIWrapper*>(inst_ptr)); it != {cls}_NAPIWrapper_storage.end()){{",
+            f"if (const auto it = {cls}_NAPIWrapper_storage.find(obj); it != {cls}_NAPIWrapper_storage.end()){{",
             1,
         )
         line(new_funcs, f"{cls}_NAPIWrapper_storage.erase(it);", 2)
-        line(new_funcs, f"delete *it;", 2)
+        line(new_funcs, f"delete obj;", 2)
         line(new_funcs, "};", 1)
         line(new_funcs, "};")
         line(new_funcs)
