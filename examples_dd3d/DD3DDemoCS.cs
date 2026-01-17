@@ -2,6 +2,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 [Tool]
 public partial class DD3DDemoCS : Node3D
@@ -32,6 +33,13 @@ public partial class DD3DDemoCS : Node3D
     [Export(PropertyHint.Range, "1, 100")] int text_groups_title_font_size = 20;
     [Export(PropertyHint.Range, "1, 100")] int text_groups_text_font_size = 17;
 
+    [ExportGroup("Tests", "tests")]
+    [Export]
+    bool tests_use_threads = false;
+    Thread[] test_thread = null;
+    bool test_thread_closing = false;
+
+
     Dictionary<Key, int> button_presses = new Dictionary<Key, int>() {
         { Key.Left, 0 },
         { Key.Up, 0 },
@@ -46,6 +54,16 @@ public partial class DD3DDemoCS : Node3D
     double timer_cubes = 0.0;
     double timer_3 = 0.0;
     double timer_text = 0.0;
+
+    public DD3DDemoCS()
+    {
+        // https://github.com/godotengine/godot/issues/78513
+        // register cleanup code to prevent unloading issues
+        System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(System.Reflection.Assembly.GetExecutingAssembly()).Unloading += alc =>
+        {
+            _thread_stop();
+        };
+    }
 
     public override async void _Ready()
     {
@@ -106,6 +124,8 @@ public partial class DD3DDemoCS : Node3D
             MainUpdate(delta);
             _update_timers(delta);
         }
+
+        _call_from_thread();
     }
 
     public override void _PhysicsProcess(double delta)
@@ -302,41 +322,9 @@ public partial class DD3DDemoCS : Node3D
         // Paths
         _draw_zone_title(pPathsBox, "Paths");
 
-        /// preparing data
-        List<Vector3> points = [];
-        List<Vector3> points_below = [];
-        List<Vector3> points_below2 = [];
-        List<Vector3> points_below3 = [];
-        List<Vector3> points_below4 = [];
-        List<Vector3> lines_above = [];
-
-        var down_vec = -GlobalTransform.Basis.Y;
-        foreach (var node in dLinePath.GetChildren())
-        {
-            if (node is Node3D c)
-            {
-                points.Add(c.GlobalPosition);
-                points_below.Add(c.GlobalPosition + down_vec);
-                points_below2.Add(c.GlobalPosition + down_vec * 2);
-                points_below3.Add(c.GlobalPosition + down_vec * 3);
-                points_below4.Add(c.GlobalPosition + down_vec * 4);
-            }
-        }
-
-        for (int x = 0; x < points.Count - 1; x++)
-        {
-            lines_above.Add(points[x] - down_vec);
-            lines_above.Add(points[x + 1] - down_vec);
-        }
-
-        /// drawing lines
-        DebugDraw3D.DrawLines(lines_above.ToArray());
-        DebugDraw3D.DrawLinePath(points.ToArray(), Colors.Beige);
-        DebugDraw3D.DrawPoints(points_below.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.DarkGreen);
-        DebugDraw3D.DrawPointPath(points_below2.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.25f, Colors.Blue, Colors.Tomato);
-        DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
-        using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
-            DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
+        _draw_paths(Vector3.Zero);
+        _draw_paths(new Vector3(-2, 0, -1), 0);
+        _draw_paths(new Vector3(2, 0, -1), 1);
 
         // Misc
         _draw_zone_title(pMiscBox, "Misc");
@@ -670,6 +658,46 @@ public partial class DD3DDemoCS : Node3D
         }
     }
 
+    void _draw_paths(Vector3 offset, int max_points = -1)
+    {
+        /// preparing data
+        List<Vector3> points = [];
+        List<Vector3> points_below = [];
+        List<Vector3> points_below2 = [];
+        List<Vector3> points_below3 = [];
+        List<Vector3> points_below4 = [];
+        List<Vector3> lines_above = [];
+
+        var down_vec = -GlobalTransform.Basis.Y;
+        for (int node_idx = 0; node_idx < (max_points < 0 ? dLinePath.GetChildCount() : Mathf.Min(dLinePath.GetChildCount(), max_points)); node_idx++)
+        {
+            var node = dLinePath.GetChild(node_idx);
+            if (node is Node3D c)
+            {
+                points.Add(c.GlobalPosition + offset);
+                points_below.Add(c.GlobalPosition + down_vec + offset);
+                points_below2.Add(c.GlobalPosition + down_vec * 2 + offset);
+                points_below3.Add(c.GlobalPosition + down_vec * 3 + offset);
+                points_below4.Add(c.GlobalPosition + down_vec * 4 + offset);
+            }
+        }
+
+        for (int x = 0; x < points.Count - 1; x++)
+        {
+            lines_above.Add(points[x] - down_vec);
+            lines_above.Add(points[x + 1] - down_vec);
+        }
+
+        /// drawing lines
+        DebugDraw3D.DrawLines(lines_above.ToArray());
+        DebugDraw3D.DrawLinePath(points.ToArray(), Colors.Beige);
+        DebugDraw3D.DrawPoints(points_below.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.2f, Colors.DarkGreen);
+        DebugDraw3D.DrawPointPath(points_below2.ToArray(), DebugDraw3D.PointType.TypeSquare, 0.25f, Colors.Blue, Colors.Tomato);
+        DebugDraw3D.DrawArrowPath(points_below3.ToArray(), Colors.Gold, 0.5f);
+        using (var _sl = DebugDraw3D.NewScopedConfig().SetThickness(0.05f))
+            DebugDraw3D.DrawPointPath(points_below4.ToArray(), DebugDraw3D.PointType.TypeSphere, 0.25f, Colors.MediumSeaGreen, Colors.MediumVioletRed);
+
+    }
     void _draw_array_of_boxes()
     {
         // Lots of boxes to check performance..
@@ -723,6 +751,73 @@ public partial class DD3DDemoCS : Node3D
             DebugDraw3D.ClearAll();
             timer_cubes = 0;
         }
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationEditorPreSave || what == NotificationExitTree)
+            _thread_stop();
+    }
+
+    void _call_from_thread()
+    {
+        if (tests_use_threads && (test_thread == null || !test_thread[0].IsAlive))
+        {
+            test_thread_closing = false;
+            test_thread = new Thread[4];
+            for (int i = 0; i < test_thread.Length; i++)
+            {
+                test_thread[i] = new Thread(_thread_body);
+                test_thread[i].Start();
+            }
+        }
+        else if (!tests_use_threads && (test_thread != null && test_thread[0].IsAlive))
+        {
+            _thread_stop();
+        }
+    }
+
+    void _thread_stop()
+    {
+        if (test_thread != null && test_thread[0].IsAlive)
+        {
+            tests_use_threads = false;
+            test_thread_closing = true;
+            for (int i = 0; i < test_thread.Length; i++)
+            {
+                test_thread[i].Join();
+            }
+            test_thread = null;
+        }
+    }
+
+    void _thread_body()
+    {
+        GD.Print("C# Thread started!");
+        while (!test_thread_closing)
+        {
+            DebugDraw3D.DrawBox(new Vector3(0, -1, 0), Quaternion.Identity, Vector3.One, Colors.Brown, true, 0.016f);
+
+            var boxes = 10;
+            for (int y = 0; y < boxes; y++)
+            {
+                var offset = (float)Mathf.Sin(Mathf.Tau / boxes * y + Mathf.Wrap(Time.GetTicksMsec() / 100.0, 0, Mathf.Tau));
+                var pos = new Vector3(offset, y, 0);
+                DebugDraw3D.DrawBox(pos, Quaternion.Identity, Vector3.One, Colors.GreenYellow, true, 0.016f);
+                DebugDraw3D.DrawText(pos, y.ToString(), 64, Colors.White, 0.016f);
+
+                if (y == 0)
+                {
+                    DebugDraw2D.SetText("thread. sin", offset.ToString());
+                }
+            }
+
+            {
+                var _mt_test_object_creation = new DebugDraw3DScopeConfig();
+            }
+            OS.DelayMsec(16);
+        }
+        GD.Print("C# Thread finished!");
     }
 
     Node3D dHitTest;

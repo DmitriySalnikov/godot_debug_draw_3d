@@ -1166,14 +1166,18 @@ void DebugDraw3D::draw_line_path(const PackedVector3Array &path, const Color &co
 	draw_line_path_c(path.ptr(), path.size(), color, duration);
 }
 
-NAPI void DebugDraw3D::draw_line_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &duration) {
+void DebugDraw3D::draw_line_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	if (!path_data || path_size == 0)
 		return;
 
-	ERR_FAIL_COND_MSG(path_size == 1, "Line path must contains at least 2 points.");
+	if (path_size == 1) {
+		auto scfg = scoped_config_for_current_thread();
+		draw_square(path_data[0], scfg->thickness > 0 ? scfg->thickness * 2 : 0.25f, color, duration);
+		return;
+	}
 
 	size_t lines_size = (path_size - 1) * 2;
 	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
@@ -1245,12 +1249,17 @@ void DebugDraw3D::draw_arrow_path(const PackedVector3Array &path, const Color &c
 	draw_arrow_path_c(path.ptr(), path.size(), color, arrow_size, is_absolute_size, duration);
 }
 
-NAPI void DebugDraw3D::draw_arrow_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
+void DebugDraw3D::draw_arrow_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const godot::Color &color, const real_t &arrow_size, const bool &is_absolute_size, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	if (!path_data || path_size == 0)
 		return;
+
+	if (path_size == 1) {
+		draw_square(path_data[0], arrow_size, color, duration);
+		return;
+	}
 
 	size_t lines_size = (path_size - 1) * 2;
 	ADD_THREAD_LOCAL_BUFFER(buffer, Vector3, lines_size, 10000);
@@ -1272,12 +1281,24 @@ void DebugDraw3D::draw_point_path(const PackedVector3Array &path, const PointTyp
 	draw_point_path_c(path.ptr(), path.size(), type, size, points_color, lines_color, duration);
 }
 
-NAPI void DebugDraw3D::draw_point_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &points_color, const godot::Color &lines_color, const real_t &duration) {
+void DebugDraw3D::draw_point_path_c(const godot::Vector3 *path_data, const uint64_t &path_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &points_color, const godot::Color &lines_color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
 	if (!path_data || path_size == 0)
 		return;
+
+	if (path_size == 1) {
+		switch (type) {
+			case PointType::POINT_TYPE_SQUARE:
+				draw_square(path_data[0], size, points_color, duration);
+				break;
+			case PointType::POINT_TYPE_SPHERE:
+				draw_sphere(path_data[0], size, points_color, duration);
+				break;
+		}
+		return;
+	}
 
 	LOCK_GUARD(datalock);
 	draw_points_c(path_data, path_size, type, size, IS_DEFAULT_COLOR(points_color) ? Colors::red : points_color, duration);
@@ -1338,7 +1359,7 @@ void DebugDraw3D::draw_points(const PackedVector3Array &points, const PointType 
 	draw_points_c(points.ptr(), points.size(), type, size, color, duration);
 }
 
-NAPI void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const uint64_t &points_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &color, const real_t &duration) {
+void DebugDraw3D::draw_points_c(const godot::Vector3 *points_data, const uint64_t &points_size, const DebugDraw3D::PointType type, const real_t &size, const godot::Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 

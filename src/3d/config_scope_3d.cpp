@@ -146,7 +146,7 @@ Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool _va
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NAPI NSELF_RETURN DebugDraw3DScopeConfig::set_text_fixed_size_selfreturn(bool _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_fixed_size_selfreturn(bool _value) const {
 	data->text_fixed_size = _value;
 }
 

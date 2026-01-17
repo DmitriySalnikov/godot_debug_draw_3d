@@ -358,7 +358,7 @@ void DebugDraw2D::begin_text_group(String group_title, int group_priority, Color
 	CALL_TO_2D(grouped_text, begin_text_group, group_title, group_priority, group_color, show_title, title_size, text_size);
 }
 
-NAPI void DebugDraw2D::begin_text_group_c(const char *group_title_string, int group_priority, godot::Color group_color, bool show_title, int title_size, int text_size) {
+void DebugDraw2D::begin_text_group_c(const char *group_title_string, int group_priority, godot::Color group_color, bool show_title, int title_size, int text_size) {
 	ZoneScoped;
 	begin_text_group(String::utf8(group_title_string), group_priority, group_color, show_title, title_size, text_size);
 }
@@ -373,7 +373,7 @@ void DebugDraw2D::set_text(String key, Variant value, int priority, Color color_
 	CALL_TO_2D(grouped_text, set_text, key, value, priority, color_of_value, duration);
 }
 
-NAPI void DebugDraw2D::set_text_c(const char *key_string, const char *value_string, int priority, godot::Color color_of_value, real_t duration) {
+void DebugDraw2D::set_text_c(const char *key_string, const char *value_string, int priority, godot::Color color_of_value, real_t duration) {
 	ZoneScoped;
 	set_text(String::utf8(key_string), String::utf8(value_string), priority, color_of_value,  duration);
 }

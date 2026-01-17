@@ -379,7 +379,7 @@ public:
 #pragma region Cylinders
 
 	/**
-	 * Draw a vertical cylinder with radius 0.5 and height 1.0
+	 * Draw a vertical cylinder with radius 1.0 (x, z) and height 1.0 (y)
 	 *
 	 * ![](docs/images/classes/DrawCylinder.webp)
 	 *
@@ -555,6 +555,9 @@ public:
 	 *
 	 * The array can be of any size.
 	 *
+	 * @note
+	 * If the path size is equal to 1, then DebugDraw3D.draw_square will be used instead of drawing a line.
+	 *
 	 * @param path Sequence of points
 	 * @param color Primary color
 	 * @param duration The duration of how long the object will be visible
@@ -609,6 +612,9 @@ public:
 	 *
 	 * ![](docs/images/classes/DrawArrowPath.webp)
 	 *
+	 * @note
+	 * If the path size is equal to 1, then DebugDraw3D.draw_square will be used instead of drawing a line.
+	 *
 	 * @param path Sequence of points
 	 * @param color Primary color
 	 * @param arrow_size Size of the arrow
@@ -629,6 +635,9 @@ public:
 	 * ![type = DebugDraw3D.POINT_TYPE_SQUARE](docs/images/classes/DrawPointsPath.webp)
 	 *
 	 * ![type = DebugDraw3D.POINT_TYPE_SPHERE](docs/images/classes/DrawPointsPathSpheres.webp)
+	 *
+	 * @note
+	 * If the path size is equal to 1, then DebugDraw3D.draw_square or DebugDraw3D.draw_sphere will be used instead of drawing a line.
 	 *
 	 * @param path Sequence of points
 	 * @param type Type of points

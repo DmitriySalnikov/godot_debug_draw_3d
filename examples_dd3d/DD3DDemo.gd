@@ -218,37 +218,9 @@ func main_update(delta: float) -> void:
 	# Paths
 	_draw_zone_title(%PathsBox, "Paths")
 	
-	## preparing data
-	var points: PackedVector3Array = []
-	var points_below: PackedVector3Array = []
-	var points_below2: PackedVector3Array = []
-	var points_below3: PackedVector3Array = []
-	var points_below4: PackedVector3Array = []
-	var lines_above: PackedVector3Array = []
-	
-	var down_vec = -global_transform.basis.y
-	for c in $LinePath.get_children():
-		if not c is Node3D:
-			break
-		points.append(c.global_position)
-		points_below.append(c.global_position + down_vec)
-		points_below2.append(c.global_position + down_vec * 2)
-		points_below3.append(c.global_position + down_vec * 3)
-		points_below4.append(c.global_position + down_vec * 4)
-	
-	for x in points.size()-1:
-		lines_above.append(points[x] - down_vec)
-		lines_above.append(points[x+1] - down_vec)
-	
-	## drawing lines
-	DebugDraw3D.draw_lines(lines_above)
-	DebugDraw3D.draw_line_path(points, Color.BEIGE)
-	DebugDraw3D.draw_points(points_below, DebugDraw3D.POINT_TYPE_SQUARE, 0.2, Color.DARK_GREEN)
-	DebugDraw3D.draw_point_path(points_below2, DebugDraw3D.POINT_TYPE_SQUARE, 0.25, Color.BLUE, Color.TOMATO)
-	DebugDraw3D.draw_arrow_path(points_below3, Color.GOLD, 0.5)
-	if true:
-		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
-		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
+	_draw_paths()
+	_draw_paths(Vector3(-2, 0, -1), 0) # there should be no crashes
+	_draw_paths(Vector3(2, 0, -1), 1) # one element should always be displayed, if possible
 	
 	# Misc
 	_draw_zone_title(%MiscBox, "Misc")
@@ -505,6 +477,42 @@ func _more_tests():
 				# Need to test different colors on both sides of the plane
 				var col = Color.FIREBRICK if plane.is_point_over(cam.global_position) else Color.AQUAMARINE
 				DebugDraw3D.draw_sphere(intersect, 0.3, col)
+
+
+func _draw_paths(offset: Vector3 = Vector3.ZERO, max_points: int = -1):
+	## preparing data
+	var points: PackedVector3Array = []
+	var points_below: PackedVector3Array = []
+	var points_below2: PackedVector3Array = []
+	var points_below3: PackedVector3Array = []
+	var points_below4: PackedVector3Array = []
+	var lines_above: PackedVector3Array = []
+	
+	var down_vec = -global_transform.basis.y
+	var c_count = $LinePath.get_child_count()
+	for c_idx in range(c_count if max_points < 0 else min(c_count, max_points)):
+		var c = $LinePath.get_child(c_idx)
+		if not c is Node3D:
+			break
+		points.append(c.global_position + offset)
+		points_below.append(c.global_position + down_vec + offset)
+		points_below2.append(c.global_position + down_vec * 2 + offset)
+		points_below3.append(c.global_position + down_vec * 3 + offset)
+		points_below4.append(c.global_position + down_vec * 4 + offset)
+	
+	for x in points.size()-1:
+		lines_above.append(points[x] - down_vec)
+		lines_above.append(points[x+1] - down_vec)
+	
+	## drawing lines
+	DebugDraw3D.draw_lines(lines_above)
+	DebugDraw3D.draw_line_path(points, Color.BEIGE)
+	DebugDraw3D.draw_points(points_below, DebugDraw3D.POINT_TYPE_SQUARE, 0.2, Color.DARK_GREEN)
+	DebugDraw3D.draw_point_path(points_below2, DebugDraw3D.POINT_TYPE_SQUARE, 0.25, Color.BLUE, Color.TOMATO)
+	DebugDraw3D.draw_arrow_path(points_below3, Color.GOLD, 0.5)
+	if true:
+		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
+		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
 
 
 func _draw_array_of_boxes():

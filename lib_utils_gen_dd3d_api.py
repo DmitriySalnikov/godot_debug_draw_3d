@@ -2069,7 +2069,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
                         docs = func["docs"]
                         if len(docs):
                             new_docs = convert_doxygen_tags_to_cs(docs, func)
-                            new_docs = ["/// " + line for line in new_docs]
+                            new_docs = ["/// " + line if len(line) else "///" for line in new_docs]
                             func_lines += new_docs
                             found = True
                             break
@@ -2192,7 +2192,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
             docs = func["docs"]
             if len(docs):
                 new_docs = convert_doxygen_tags_to_cs(docs, func)
-                new_docs = ["/// " + line for line in new_docs]
+                new_docs = ["/// " + line if len(line) else "///" for line in new_docs]
                 func_lines += new_docs
 
             # Function Declaration
@@ -2327,7 +2327,7 @@ def gen_cs_api(env: SConsEnvironment, api: dict, out_folder: str, additional_inc
         docs: list = classes[key]["docs"]
         if len(docs):
             new_docs = convert_doxygen_tags_to_cs(docs)
-            new_docs = ["/// " + line for line in new_docs]
+            new_docs = ["/// " + line if len(line) else "///" for line in new_docs]
             result_arr = result_arr + new_docs
 
         def get_indent(l: str):
