@@ -1,0 +1,2 @@
+scons target=editor optimize=speed precision=double
+godot.windows.editor.double.x86_64.exe --dump-extension-api

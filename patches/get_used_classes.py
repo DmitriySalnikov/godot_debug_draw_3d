@@ -9,19 +9,12 @@ from pathlib import Path
 # Use the argument `exclude_unused_classes=no` to generate all classes
 # Use the `folder_to_include_classes=path/` argument to scan classes in a specific directory
 is_need_to_exclude_classes = True
-sources_folder = ""
+source_folders = ""
 found_dependencies = set()
 temp_engine_class_names = set()
 
 
-def setup(_is_exclude: bool, _sources_folder: str):
-    global is_need_to_exclude_classes
-    global sources_folder
-    is_need_to_exclude_classes = _is_exclude
-    sources_folder = _sources_folder
-
-
-def extract_used_classes(folder_path: str):
+def _extract_used_classes(folder_path: str):
     folder_path = Path(folder_path).resolve().as_posix()
     godot_cpp_src = Path("src").resolve().as_posix()
     godot_cpp_include = Path("include").resolve().as_posix()
@@ -45,7 +38,7 @@ def extract_used_classes(folder_path: str):
                     continue
 
                 def read_data(opened_file):
-                    data = file.read()
+                    data = opened_file.read()
 
                     matches = find_class.finditer(data)
                     for matchNum, match in enumerate(matches, start=1):
@@ -78,39 +71,12 @@ def extract_used_classes(folder_path: str):
         print()
 
     # generate array of class names
-    return ["".join([w.title() for w in c.split("_")]) for c in found_classes]
-
-
-def scan_dependencies(api):
-    api = dict(api)
-    if not is_need_to_exclude_classes:
-        return
-
-    used_classes = extract_used_classes(sources_folder)
-
-    for class_api in api["classes"]:
-        # It will change the actual value inside the `api`!!!
-        #
-        # ClassDB Singleton is renamed in godot-cpp.
-        # This class cannot appear as an argument or return value, so no other renaming is required yet.
-        if class_api["name"] == "ClassDB":
-            class_api["name"] = "ClassDBSingleton"
-
-        temp_engine_class_names.add(class_api["name"])
-
-    for name in used_classes:
-        _get_dependencies(api, name)
-
-    print("Provided", len(used_classes), "explicit classes:", str(sorted(used_classes)))
-    print()
-    print("A total of", len(found_dependencies), "classes were found:", str(sorted(found_dependencies)))
-    print()
-
-    temp_engine_class_names.clear()
+    return sorted(["".join([w.title() for w in c.split("_")]) for c in found_classes])
 
 
 def _get_dependencies(api, name):
     def _add_dependency_engine_class(_class, _to_scan):
+        # TODO: `typeddictionary::` there are currently no entries.
         for start in ["enum::", "typedarray::", "bitfield::"]:
             if _class.startswith(start):
                 _class = _class[len(start) :].partition(".")[0]
@@ -145,14 +111,47 @@ def _get_dependencies(api, name):
 
 
 # from binding_generator.py
-def camel_to_snake(name):
+def _camel_to_snake(name):
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
     name = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name)
     return name.replace("2_D", "2D").replace("3_D", "3D").lower()
 
 
-def need_to_exclude(name):
-    return len(found_dependencies) > 0 and name not in found_dependencies
+def setup(_is_exclude: bool, _source_folders: str):
+    global is_need_to_exclude_classes
+    global source_folders
+    is_need_to_exclude_classes = _is_exclude
+    source_folders = _source_folders
+
+
+def scan_dependencies(api):
+    api = dict(api)
+    if not is_need_to_exclude_classes:
+        return
+
+    used_classes = _extract_used_classes(source_folders)
+
+    for class_api in api["classes"]:
+        # It will change the actual value inside the `api`!!!
+        #
+        # if class_api["name"] == "ClassDB":
+        #    class_api["name"] = "ClassDBSingleton"
+
+        temp_engine_class_names.add(class_api["name"])
+
+    # Required classes
+    found_dependencies.add("ClassDB")
+    found_dependencies.add("ClassDBSingleton")
+
+    for name in used_classes:
+        _get_dependencies(api, name)
+
+    print("Provided", len(used_classes), "explicit classes:", used_classes)
+    print()
+    print("A total of", len(found_dependencies), "classes were found:", sorted(found_dependencies))
+    print()
+
+    temp_engine_class_names.clear()
 
 
 def delete_useless(files):
@@ -160,7 +159,7 @@ def delete_useless(files):
         return files
 
     # convert found class names to file names
-    deps_file_names = [camel_to_snake(c) + ".cpp" for c in found_dependencies]
+    deps_file_names = sorted([_camel_to_snake(c) + ".cpp" for c in found_dependencies])
 
     src_path = "gen/src/classes/"
     print("These", len(deps_file_names), "files from the", src_path, "directory will be compiled:", deps_file_names)

@@ -15,6 +15,10 @@ inputs:
     description: Whether Godot and export templates support dotnet (true|false).
     default: "false"
     required: false
+  pre_release:
+    description: Try to download the pre-release.
+    default: "false"
+    required: false
 outputs:
   godot_folder:
     description: Path to the Godot folder
@@ -58,9 +62,9 @@ runs:
       uses: robinraju/release-downloader@v1.10
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       with:
-        repository: "godotengine/godot"
+        repository: ${{inputs.pre_release == 'true' && 'godotengine/godot-builds' || 'godotengine/godot'}}
         tag: "${{inputs.tag}}"
-        fileName: "*${{inputs.file_suffix}}"
+        fileName: "*${{inputs.tag}}_${{inputs.file_suffix}}"
         out-file-path: "temp_download"
         extract: true
 
@@ -68,7 +72,7 @@ runs:
       uses: robinraju/release-downloader@v1.10
       if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.download_export_templates == 'true'}}
       with:
-        repository: "godotengine/godot"
+        repository: ${{inputs.pre_release == 'true' && 'godotengine/godot-builds' || 'godotengine/godot'}}
         tag: "${{inputs.tag}}"
         fileName: "*${{inputs.tag}}${{inputs.is_mono == 'true' && '_mono' || ''}}_export_templates.tpz"
         out-file-path: "temp_download"

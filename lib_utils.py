@@ -47,9 +47,9 @@ def get_library_object(
     else:
         lib_filename = os.path.join(output_path, lib_filename)
 
-    env.Default(
-        env.SharedLibrary(target=env.File(lib_filename), source=get_sources(additional_src + src, src_folder, lib_name))
-    )
+    library = env.SharedLibrary(target=env.File(lib_filename), source=get_sources(additional_src + src, src_folder, lib_name))
+    env.NoCache(library)
+    env.Default(library)
 
     return lib_filename
 

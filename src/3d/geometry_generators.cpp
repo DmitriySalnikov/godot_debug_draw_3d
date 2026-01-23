@@ -799,10 +799,10 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 		lons = 4;
 
 	PackedVector3Array vertexes;
-	vertexes.resize((size_t)lats * (size_t)lons * 6);
+	vertexes.resize(4LL * lats * lons / subdivide);
 
 	PackedVector3Array normals;
-	normals.resize((size_t)lats * (size_t)lons * 6);
+	normals.resize(vertexes.size());
 
 	int total = 0;
 	for (int i = 1; i <= lats; i++) {

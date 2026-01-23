@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://bcgkce5esb8g7"]
+
+[sub_resource type="GDScript" id="GDScript_0kd13"]
+script/source = "@tool
+extends Node3D
+
+@export var use_real_time_values := false
+@export_range(0, 360, 0.000_000_5) var pitch := 0.0
+@export_range(0, 360, 0.000_000_5) var yaw := 0.0
+
+var rt_pitch := 0.0
+var rt_yaw := 0.0
+
+func _process(_delta: float) -> void:
+	var _s = DebugDraw3D.new_scoped_config().set_thickness(0.1)
+	if use_real_time_values:
+		for x in 5000:
+			var vec = Vector3(0, 0, -1.25)
+			vec = vec.rotated(Vector3.RIGHT, deg_to_rad(rt_pitch)).rotated(Vector3.UP, deg_to_rad(rt_yaw))
+			rt_pitch += 0.000_025
+			if rt_pitch > 360:
+				rt_pitch = 0
+				rt_yaw += 90
+			DebugDraw3D.draw_line_hit_offset(Vector3.ZERO, vec, true, 0.8, 0.15, Color.AQUA)
+	else:
+		var vec = Vector3(0, 0, -1.25)
+		vec = vec.rotated(Vector3.RIGHT, deg_to_rad(pitch)).rotated(Vector3.UP, deg_to_rad(yaw))
+		DebugDraw3D.draw_line_hit_offset(Vector3.ZERO, vec, true, 0.8, 0.15, Color.AQUA)
+"
+
+[node name="DD3D_GetUpVector_Test" type="Node3D"]
+script = SubResource("GDScript_0kd13")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.70710665, -0.3535534, 0.6123724, 0, 0.8660254, 0.49999997, -0.70710677, -0.35355338, 0.6123724, 1, 1, 1)

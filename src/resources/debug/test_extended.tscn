@@ -1,7 +1,44 @@
 [gd_scene load_steps=4 format=3 uid="uid://c6fkx0e7sri1d"]
 
-[ext_resource type="Script" path="res://resources/debug/test_extended.gd" id="1_qh7ib"]
-[ext_resource type="ArrayMesh" uid="uid://83qs2t5wxctw" path="res://debug_meshes/normal/10.mesh" id="2_3hlxm"]
+[ext_resource type="ArrayMesh" uid="uid://dorebm2fpacnw" path="res://debug_meshes/normal/10.mesh" id="2_3hlxm"]
+
+[sub_resource type="GDScript" id="GDScript_xceiy"]
+script/source = "@tool
+extends Node3D
+
+@export_range(0, 100) var instances = 1
+@export_range(0, 1) var thickness = 0.1
+@export_range(0, 1) var brightness = 0.8
+
+func _ready() -> void:
+	await get_tree().process_frame
+	
+	var f32_to_v3 = func (arr):
+		var v3: PackedVector3Array
+		for i in range(0, arr.size(), 3):
+			v3.push_back(Vector3(arr[i], arr[i+1], arr[i+2]))
+		return v3
+	
+	var m: ArrayMesh = $MMesh.multimesh.mesh
+	var arrs: Array = m.surface_get_arrays(0)
+	print(\"Vertexes %d\\nIndexes %d\\nCustom0 %d\\nVertexes %s\\nIndexes %s\\nCustom0 %s\" % [
+		arrs[ArrayMesh.ARRAY_VERTEX].size(),
+		arrs[ArrayMesh.ARRAY_INDEX].size(),
+		arrs[ArrayMesh.ARRAY_CUSTOM0].size(),
+		arrs[ArrayMesh.ARRAY_VERTEX],
+		arrs[ArrayMesh.ARRAY_INDEX],
+		f32_to_v3.call(arrs[ArrayMesh.ARRAY_CUSTOM0])
+	])
+
+func _process(delta: float) -> void:
+	var mm:MultiMesh = $MMesh.multimesh
+	mm.instance_count = instances
+	#  Color(p_cfg->thickness, p_cfg->center_brightness, 0, 0)
+	for i in mm.instance_count:
+		mm.set_instance_transform(i, Transform3D($MMesh.basis, Vector3(i * 2, 0, 0)))
+		mm.set_instance_color(i, Color.CORNFLOWER_BLUE)
+		mm.set_instance_custom_data(i, Color(thickness, brightness, 0, 0))
+"
 
 [sub_resource type="MultiMesh" id="MultiMesh_e532d"]
 transform_format = 1
@@ -9,11 +46,11 @@ use_colors = true
 use_custom_data = true
 instance_count = 1
 mesh = ExtResource("2_3hlxm")
-buffer = PackedFloat32Array(0.702432, 0, -0.136374, 0, 0, 0.923358, 0, 0, 0.248153, 0, 1.27818, 0, 0.392157, 0.584314, 0.929412, 1, 0.159, 0.245, 0, 0)
+buffer = PackedFloat32Array(0.702432, 0, -0.136374, 0, 0, 0.923358, 0, 0, 0.248153, 0, 1.27818, 0, 0.39215687, 0.58431375, 0.92941177, 1, 0.159, 0.245, 0, 0)
 
 [node name="Root" type="Node3D"]
 transform = Transform3D(0.802547, 0, -0.596589, 0, 1, 0, 0.596589, 0, 0.802547, 0, 0, 0)
-script = ExtResource("1_qh7ib")
+script = SubResource("GDScript_xceiy")
 thickness = 0.159
 brightness = 0.245
 

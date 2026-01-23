@@ -105,6 +105,8 @@ runs:
         scons $scons_params $telemetry_args
 
         if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.build_forced_dd3d}}" == "true" ]; then
+          echo "Sleeping for 7 seconds..."
+          sleep 7
           echo "============================================="
           echo "🧊 build_forced_dd3d"
           echo "============================================="
@@ -112,6 +114,8 @@ runs:
         fi
 
         if [ "${{inputs.build_cpp_tests}}" == "true" ]; then
+          echo "Sleeping for 7 seconds..."
+          sleep 7
           echo "============================================="
           echo "🧪 build_cpp_tests"
           echo "============================================="

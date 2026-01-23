@@ -1,8 +1,8 @@
 diff --git a/tools/godotcpp.py b/tools/godotcpp.py
-index cad14c8..c84aa21 100644
+index 8ca48b3..b55d7ed 100644
 --- a/tools/godotcpp.py
 +++ b/tools/godotcpp.py
-@@ -586,6 +586,12 @@ def _godot_cpp(env):
+@@ -553,6 +553,12 @@ def _godot_cpp(env):
              "binding_generator.py",
          ],
      )

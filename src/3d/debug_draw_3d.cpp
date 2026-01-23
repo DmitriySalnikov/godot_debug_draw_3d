@@ -878,14 +878,18 @@ void DebugDraw3D::_save_generated_meshes() {
 #endif
 
 Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
-	if (Math::is_equal_approx(p_dir.x, 0, (real_t)0.00001)) {
-		if (Math::is_equal_approx(p_dir.z, 0, (real_t)0.00001))
+	Vector3 n = p_dir.abs().normalized();
+	Vector3::Axis mi = n.max_axis_index();
+
+	if (n[mi] == 0)
+		return Vector3_UP;
+
+	switch (mi) {
+		case Vector3::Axis::AXIS_X:
+		case Vector3::Axis::AXIS_Z:
+			return Vector3_UP;
+		case Vector3::Axis::AXIS_Y:
 			return Vector3_FORWARD;
-		return Vector3_UP;
-	} else if (Math::is_equal_approx(p_dir.y, 0, (real_t)0.00001)) {
-		return p_dir.normalized().cross(Vector3_UP);
-	} else if (Math::is_equal_approx(p_dir.z, 0, (real_t)0.00001)) {
-		return Vector3_UP;
 	}
 
 	return Vector3_UP;
@@ -912,14 +916,13 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vec
 			Vector3 a = p_lines[i];
 			Vector3 diff = p_lines[i + 1] - a;
 			real_t len = diff.length();
-			Vector3 center = diff * .5f;
 			dgc->geometry_pool.add_or_update_instance(
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
 					p_exp_time,
-					Transform3D(Basis().looking_at(center, get_up_vector(center)).scaled(VEC3_ONE(len)), a), // slow
+					Transform3D(Basis().looking_at(diff, get_up_vector(diff)).scaled(VEC3_ONE(len)), a), // slow
 					p_col,
-					SphereBounds(a + center, len * .5f));
+					SphereBounds(a + diff * .5f, len * .5f));
 		}
 	}
 }
@@ -981,9 +984,7 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	// TODO: maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
-	Vector3 center = diff * .5f;
-	Vector3 up = get_up_vector(center);
-	Transform3D t = Transform3D(Basis().looking_at(center, up).scaled_local(Vector3(radius, radius, len)), a + center);
+	Transform3D t = Transform3D(Basis().looking_at(diff, get_up_vector(diff)).scaled_local(Vector3(radius, radius, len)), a + diff * .5f);
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
@@ -1095,10 +1096,15 @@ void DebugDraw3D::draw_line_hit(const Vector3 &start, const Vector3 &end, const 
 
 	LOCK_GUARD(datalock);
 	if (is_hit) {
-		Vector3 first[2] = { start, hit };
-		Vector3 second[2] = { hit, end };
-		add_or_update_line_with_thickness(duration, first, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
-		add_or_update_line_with_thickness(duration, second, 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
+		if (!start.is_equal_approx(hit)) {
+			Vector3 first[2] = { start, hit };
+			add_or_update_line_with_thickness(duration, first, 2, IS_DEFAULT_COLOR(hit_color) ? config->get_line_hit_color() : hit_color);
+		}
+
+		if (!hit.is_equal_approx(end)) {
+			Vector3 second[2] = { hit, end };
+			add_or_update_line_with_thickness(duration, second, 2, IS_DEFAULT_COLOR(after_hit_color) ? config->get_line_after_hit_color() : after_hit_color);
+		}
 
 		GET_SCOPED_CFG_AND_DGC();
 
@@ -1120,8 +1126,11 @@ void DebugDraw3D::draw_line_hit_offset(const Vector3 &start, const Vector3 &end,
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	if (is_hit && unit_offset_of_hit >= 0 && unit_offset_of_hit <= 1) {
-		draw_line_hit(start, end, ((end - start).normalized() * start.distance_to(end) * unit_offset_of_hit + start), is_hit, hit_size, hit_color, after_hit_color, duration);
+	real_t offset = Math::clamp(unit_offset_of_hit, (real_t)0, (real_t)1);
+
+	if (is_hit) {
+		auto diff = end - start;
+		draw_line_hit(start, end, (diff.normalized() * (diff.length() * offset) + start), is_hit, hit_size, hit_color, after_hit_color, duration);
 	} else {
 		draw_line_hit(start, end, {}, is_hit, hit_size, hit_color, after_hit_color, duration);
 	}
@@ -1196,8 +1205,7 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 	Vector3 dir = (p_b - p_a);
 	real_t size = (p_is_absolute_size ? p_arrow_size : dir.length() * p_arrow_size) * 2;
 
-	Vector3 up = get_up_vector(dir);
-	Transform3D t = Transform3D(Basis().looking_at(dir, up).scaled(VEC3_ONE(size)), p_b);
+	Transform3D t = Transform3D(Basis().looking_at(dir, get_up_vector(dir)).scaled(VEC3_ONE(size)), p_b);
 
 	GET_SCOPED_CFG_AND_DGC();
 

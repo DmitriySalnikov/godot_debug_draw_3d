@@ -12,8 +12,8 @@ import lib_utils, lib_utils_external, lib_utils_gen_dd3d_api
 if platform.system() == "Windows":
     os.system("chcp 65001")
 
-EnsureSConsVersion(4, 0) # type: ignore
-EnsurePythonVersion(3, 8) # type: ignore
+EnsureSConsVersion(4, 0)  # type: ignore
+EnsurePythonVersion(3, 8)  # type: ignore
 
 # Project config
 project_name = "Debug Draw 3D"
@@ -50,7 +50,11 @@ def setup_options(env: SConsEnvironment, arguments):
     )
 
     opts.Add(BoolVariable("native_api_enabled", "Enable the native API module", True))
-    opts.Add(BoolVariable("native_api_mismatch_check_enabled", "Enable signature mismatch checking for the native API module", False))
+    opts.Add(
+        BoolVariable(
+            "native_api_mismatch_check_enabled", "Enable signature mismatch checking for the native API module", False
+        )
+    )
     opts.Add(BoolVariable("cpp_api_tests", "Build only cpp api tests", False))
     opts.Add(BoolVariable("cpp_api_auto_gen", "Auto-generate native API files for a test project", True))
 
@@ -143,7 +147,9 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
 
     if env["native_api_enabled"]:
         env.Append(CPPDEFINES=["NATIVE_API_ENABLED"])
-        if (not COMMAND_LINE_TARGETS and not env["cpp_api_tests"]) or (env["cpp_api_tests"] and env["cpp_api_auto_gen"]):
+        if (not COMMAND_LINE_TARGETS and not env["cpp_api_tests"]) or (
+            env["cpp_api_tests"] and env["cpp_api_auto_gen"]
+        ):
             gen_apis(None, None, env, src_out)
 
         if env["native_api_mismatch_check_enabled"]:
@@ -270,7 +276,7 @@ def gen_apis(target, source, env: SConsEnvironment, src_out: list = []):
 
 def get_android_toolchain() -> str:
     sys.path.insert(0, "godot-cpp/tools")
-    import android # type: ignore
+    import android  # type: ignore
 
     sys.path.pop(0)
     return os.path.join(android.get_android_ndk_root(env), "build/cmake/android.toolchain.cmake")
@@ -331,5 +337,11 @@ if env["cpp_api_tests"]:
         additional_src.append("../../src/utils/TracyClientCustom.cpp")
 
     lib_utils.get_library_object(
-        env, "DD3D CPP Test", "dd3d_cpp_api", "", os.path.join(tests_src_folder, "addon_cpp_api_test", "libs"), tests_src_folder, additional_src
+        env,
+        "DD3D CPP Test",
+        "dd3d_cpp_api",
+        "",
+        os.path.join(tests_src_folder, "addon_cpp_api_test", "libs"),
+        tests_src_folder,
+        additional_src,
     )

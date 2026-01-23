@@ -121,6 +121,8 @@ void DD3DTestCppApiNode::_process(double p_delta) {
 	if (!cfg)
 		return;
 
+	DebugDraw2D::set_text("FPS", String::num_real(Engine::get_singleton()->get_frames_per_second()));
+
 	// 2060ms GD
 	// 430ms cpp
 	if (one_million_boxes) {
