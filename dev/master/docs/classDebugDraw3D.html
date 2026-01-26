@@ -616,7 +616,8 @@ Static Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Draw a cylinder between points A and B with a certain radius</p>
+<p>Draw a cylinder between points A and B with a certain radius.</p>
+<dl class="section note"><dt>Note</dt><dd>A cylinder will not be displayed if the distance between points a and b is approximately zero.</dd></dl>
 <div class="image">
 <img src="DrawCylinderAb.webp" alt=""/>
 </div>
@@ -741,7 +742,8 @@ is_ab_diagonal = true</div></div>
 <img src="DrawBoxAbEdge.webp" alt=""/>
 <div class="caption">
 is_ab_diagonal = false</div></div>
-    <dl class="params"><dt>Parameters</dt><dd>
+    <dl class="section note"><dt>Note</dt><dd>A box will not be displayed if its dimensions are close to zero or if the up vector is approximately zero.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">a</td><td>Start position </td></tr>
     <tr><td class="paramname">b</td><td>End position </td></tr>
@@ -1253,7 +1255,8 @@ is_ab_diagonal = false</div></div>
 <div class="image">
 <img src="Arrow.webp" alt=""/>
 </div>
-    <dl class="params"><dt>Parameters</dt><dd>
+    <dl class="section note"><dt>Note</dt><dd>An arrow will not be displayed if the distance between points a and b is approximately zero.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">a</td><td>Start point </td></tr>
     <tr><td class="paramname">b</td><td>End point </td></tr>
