@@ -592,8 +592,6 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p
 					}
 				case ConvertableInstanceType::CYLINDER:
 					return InstanceType::CYLINDER;
-				case ConvertableInstanceType::CYLINDER_AB:
-					return InstanceType::CYLINDER_AB;
 				default:
 					break;
 			}
@@ -618,8 +616,6 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p
 					return InstanceType::SPHERE_VOLUMETRIC;
 				case ConvertableInstanceType::CYLINDER:
 					return InstanceType::CYLINDER_VOLUMETRIC;
-				case ConvertableInstanceType::CYLINDER_AB:
-					return InstanceType::CYLINDER_AB_VOLUMETRIC;
 				default:
 					break;
 			}

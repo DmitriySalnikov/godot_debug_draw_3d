@@ -390,7 +390,10 @@ public:
 	NAPI void draw_cylinder(const godot::Transform3D &transform, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
 
 	/**
-	 * Draw a cylinder between points A and B with a certain radius
+	 * Draw a cylinder between points A and B with a certain radius.
+	 *
+	 * @note
+	 * A cylinder will not be displayed if the distance between points a and b is approximately zero.
 	 *
 	 * ![](docs/images/classes/DrawCylinderAb.webp)
 	 *
@@ -428,6 +431,9 @@ public:
 	 * ![is_ab_diagonal = true](docs/images/classes/DrawBoxAb.webp)
 	 *
 	 * ![is_ab_diagonal = false](docs/images/classes/DrawBoxAbEdge.webp)
+	 *
+	 * @note
+	 * A box will not be displayed if its dimensions are close to zero or if the up vector is approximately zero.
 	 *
 	 * @param a Start position
 	 * @param b End position
@@ -584,6 +590,9 @@ public:
 	 * Draw line with arrowhead
 	 *
 	 * ![](docs/images/classes/Arrow.webp)
+	 * 
+	 * @note
+	 * An arrow will not be displayed if the distance between points a and b is approximately zero.
 	 *
 	 * @param a Start point
 	 * @param b End point

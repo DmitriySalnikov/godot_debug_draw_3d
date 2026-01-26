@@ -389,8 +389,7 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			GEN_MESH(InstanceType::POSITION, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes));
 			GEN_MESH(InstanceType::SPHERE, p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2));
 			GEN_MESH(InstanceType::SPHERE_HD, p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2));
-			GEN_MESH(InstanceType::CYLINDER, GeometryGenerator::CreateCylinderLines(16, 1, 1, 2));
-			GEN_MESH(InstanceType::CYLINDER_AB, GeometryGenerator::RotatedMesh(GeometryGenerator::CreateCylinderLines(16, 1, 1, 2), Vector3_RIGHT, Math::deg_to_rad(90.f)));
+			GEN_MESH(InstanceType::CYLINDER, GeometryGenerator::CreateCylinderLines(32, 1, 1, 4));
 
 			// VOLUMETRIC
 
@@ -403,7 +402,6 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			GEN_MESH(InstanceType::SPHERE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE][i], false));
 			GEN_MESH(InstanceType::SPHERE_HD_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD][i], false));
 			GEN_MESH(InstanceType::CYLINDER_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER][i], false));
-			GEN_MESH(InstanceType::CYLINDER_AB_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER_AB][i], false));
 
 			// SOLID
 
@@ -916,6 +914,10 @@ void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vec
 			Vector3 a = p_lines[i];
 			Vector3 diff = p_lines[i + 1] - a;
 			real_t len = diff.length();
+
+			if (Math::is_zero_approx(len))
+				continue;
+
 			dgc->geometry_pool.add_or_update_instance(
 					scfg,
 					InstanceType::LINE_VOLUMETRIC,
@@ -984,14 +986,19 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	// TODO: maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
-	Transform3D t = Transform3D(Basis().looking_at(diff, get_up_vector(diff)).scaled_local(Vector3(radius, radius, len)), a + diff * .5f);
+	if (Math::is_zero_approx(len))
+		return;
+
+	Vector3 up = get_up_vector(diff);
+	// Rotate between a and b, then rotate the vertical cylinder 90 degs around the X axis.
+	Transform3D t = Transform3D(Basis().looking_at(diff, up).rotated(diff.cross(up).normalized(), Math::deg_to_rad(90.f)).scaled_local(Vector3(radius, len, radius)), a + diff * .5f);
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
 
 	dgc->geometry_pool.add_or_update_instance(
 			scfg,
-			ConvertableInstanceType::CYLINDER_AB,
+			ConvertableInstanceType::CYLINDER,
 			duration,
 			t,
 			IS_DEFAULT_COLOR(color) ? Colors::forest_green : color,
@@ -1012,6 +1019,9 @@ void DebugDraw3D::draw_box_ab(const Vector3 &a, const Vector3 &b, const Vector3 
 	CHECK_BEFORE_CALL();
 
 	Vector3 diff = b - a;
+
+	if (up.is_zero_approx())
+		return;
 
 	// TODO: maybe someone knows a better way to solve it?
 	if (is_ab_diagonal) {
@@ -1202,10 +1212,14 @@ void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Col
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	Vector3 dir = (p_b - p_a);
-	real_t size = (p_is_absolute_size ? p_arrow_size : dir.length() * p_arrow_size) * 2;
+	Vector3 diff = (p_b - p_a);
+	real_t len = diff.length();
 
-	Transform3D t = Transform3D(Basis().looking_at(dir, get_up_vector(dir)).scaled(VEC3_ONE(size)), p_b);
+	if (Math::is_zero_approx(len))
+		return;
+
+	real_t size = (p_is_absolute_size ? p_arrow_size : len * p_arrow_size) * 2;
+	Transform3D t = Transform3D(Basis().looking_at(diff, get_up_vector(diff)).scaled(VEC3_ONE(size)), p_b);
 
 	GET_SCOPED_CFG_AND_DGC();
 

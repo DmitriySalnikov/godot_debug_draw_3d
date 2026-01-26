@@ -857,40 +857,43 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 
 Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide) {
 	ZoneScoped;
-	float angle = 360.f / edges;
+	real_t angle = 360.f / edges;
 
 	PackedVector3Array vertexes;
 	PackedVector3Array normals;
 	// vertexes.reserve(4 * (size_t)edges + (((size_t)edges * (size_t)subdivide) * 2));
 
-	Vector3 helf_height = Vector3(0, height * 0.5f, 0);
+	Vector3 half_height = Vector3(0, height * 0.5f, 0);
 	for (int i = 0; i < edges; i++) {
-		float ra = Math::deg_to_rad(i * angle);
-		float rb = Math::deg_to_rad((i + 1) * angle);
-		Vector3 center_current = Vector3(sin(ra), 0, cos(ra)) * radius;
-		Vector3 center_next = Vector3(sin(rb), 0, cos(rb)) * radius;
+		real_t ra = Math::deg_to_rad(i * angle);
+		real_t rb = Math::deg_to_rad((i + 1) * angle);
+		Vector3 an = Vector3(Math::sin(ra), 0, Math::cos(ra));
+		Vector3 bn = Vector3(Math::sin(rb), 0, Math::cos(rb));
+		Vector3 a = an * radius;
+		Vector3 b = bn * radius;
 
 		// Top
-		vertexes.push_back(center_current + helf_height);
-		vertexes.push_back(center_next + helf_height);
+		vertexes.push_back(a + half_height);
+		vertexes.push_back(b + half_height);
 
 		// Bottom
-		vertexes.push_back(center_current - helf_height);
-		vertexes.push_back(center_next - helf_height);
+		vertexes.push_back(a - half_height);
+		vertexes.push_back(b - half_height);
 
-		// Repeat for Top and Bottom
-		for (int i = 0; i < 2; i++) {
-			normals.push_back(center_current.normalized());
-			normals.push_back(center_next.normalized());
-		}
+		// Repeat for Top and Bottom normals
+		normals.push_back(an);
+		normals.push_back(bn);
+
+		normals.push_back(an);
+		normals.push_back(bn);
 
 		// Edge
 		if (i % subdivide == 0) {
-			vertexes.push_back(center_current + helf_height);
-			vertexes.push_back(center_current - helf_height);
+			vertexes.push_back(a + half_height);
+			vertexes.push_back(a - half_height);
 
-			normals.push_back(center_current.normalized());
-			normals.push_back(center_current.normalized());
+			normals.push_back(an);
+			normals.push_back(an);
 		}
 	}
 
