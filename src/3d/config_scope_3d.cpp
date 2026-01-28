@@ -43,12 +43,12 @@ void DebugDraw3DScopeConfig::_bind_methods() {
 #undef REG_CLASS_NAME
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(real_t _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_thickness(const real_t &_value) const {
 	set_thickness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_thickness_selfreturn(real_t _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_thickness_selfreturn(const real_t &_value) const {
 	data->thickness = Math::clamp(_value, (real_t)0, (real_t)100);
 }
 
@@ -56,12 +56,12 @@ real_t DebugDraw3DScopeConfig::get_thickness() const {
 	return data->thickness;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(real_t _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_center_brightness(const real_t &_value) const {
 	set_center_brightness_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_center_brightness_selfreturn(real_t _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_center_brightness_selfreturn(const real_t &_value) const {
 	data->center_brightness = Math::clamp(_value, (real_t)0, (real_t)1);
 }
 
@@ -69,12 +69,12 @@ real_t DebugDraw3DScopeConfig::get_center_brightness() const {
 	return data->center_brightness;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(bool _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_hd_sphere(const bool &_value) const {
 	set_hd_sphere_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_hd_sphere_selfreturn(bool _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_hd_sphere_selfreturn(const bool &_value) const {
 	data->hd_sphere = _value;
 }
 
@@ -82,12 +82,12 @@ bool DebugDraw3DScopeConfig::is_hd_sphere() const {
 	return data->hd_sphere;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(real_t _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_plane_size(const real_t &_value) const {
 	set_plane_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_plane_size_selfreturn(real_t _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_plane_size_selfreturn(const real_t &_value) const {
 	data->plane_size = _value;
 }
 
@@ -95,12 +95,12 @@ real_t DebugDraw3DScopeConfig::get_plane_size() const {
 	return data->plane_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_transform(Transform3D _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_transform(const Transform3D &_value) const {
 	set_transform_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_transform_selfreturn(Transform3D _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_transform_selfreturn(const Transform3D &_value) const {
 	const static Transform3D identity = Transform3D();
 
 	data->transform = _value;
@@ -111,12 +111,12 @@ Transform3D DebugDraw3DScopeConfig::get_transform() const {
 	return data->transform;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_color(Color _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_color(const Color &_value) const {
 	set_text_outline_color_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_color_selfreturn(Color _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_color_selfreturn(const Color &_value) const {
 	data->text_outline_color = _value;
 	uint32_t hash = hash_murmur3_one_float(_value.r);
 	hash = hash_murmur3_one_float(_value.g, hash);
@@ -128,12 +128,12 @@ Color DebugDraw3DScopeConfig::get_text_outline_color() const {
 	return data->text_outline_color;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_size(int32_t _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_outline_size(const int32_t &_value) const {
 	set_text_outline_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_size_selfreturn(int32_t _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_outline_size_selfreturn(const int32_t &_value) const {
 	data->text_outline_size = _value;
 }
 
@@ -141,12 +141,12 @@ int32_t DebugDraw3DScopeConfig::get_text_outline_size() const {
 	return data->text_outline_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(bool _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_fixed_size(const bool &_value) const {
 	set_text_fixed_size_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_text_fixed_size_selfreturn(bool _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_fixed_size_selfreturn(const bool &_value) const {
 	data->text_fixed_size = _value;
 }
 
@@ -154,12 +154,12 @@ bool DebugDraw3DScopeConfig::get_text_fixed_size() const {
 	return data->text_fixed_size;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(Ref<Font> _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_text_font(const Ref<Font> &_value) const {
 	set_text_font_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_text_font_selfreturn(Ref<Font> _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_text_font_selfreturn(const Ref<Font> &_value) const {
 	data->text_font = _value;
 }
 
@@ -181,12 +181,12 @@ Viewport *DebugDraw3DScopeConfig::get_viewport() const {
 	return data->dcd.viewport;
 }
 
-Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(bool _value) const {
+Ref<DebugDraw3DScopeConfig> DebugDraw3DScopeConfig::set_no_depth_test(const bool &_value) const {
 	set_no_depth_test_selfreturn(_value);
 	return Ref<DebugDraw3DScopeConfig>(this);
 }
 
-NSELF_RETURN DebugDraw3DScopeConfig::set_no_depth_test_selfreturn(bool _value) const {
+NSELF_RETURN DebugDraw3DScopeConfig::set_no_depth_test_selfreturn(const bool &_value) const {
 	data->dcd.no_depth_test = _value;
 }
 
