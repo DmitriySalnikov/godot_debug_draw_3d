@@ -165,6 +165,8 @@ NAPI bool&#160;</td><td class="memItemRight" valign="bottom"><b>is_debug_enabled
 <tr class="memitem:a1a33fd6a7923ac061c7b115cb1a1f7e0" id="r_a1a33fd6a7923ac061c7b115cb1a1f7e0"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a33fd6a7923ac061c7b115cb1a1f7e0">clear_all</a> ()</td></tr>
 <tr class="memitem:af8fd7ef43bf28d06450d089955f3e7fa" id="r_af8fd7ef43bf28d06450d089955f3e7fa"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8fd7ef43bf28d06450d089955f3e7fa">draw_sphere</a> (const godot::Vector3 &amp;position, const real_t &amp;radius=0.5f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a6b57b7f408995e38bb348ef6c98fa460" id="r_a6b57b7f408995e38bb348ef6c98fa460"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b57b7f408995e38bb348ef6c98fa460">draw_sphere_xf</a> (const godot::Transform3D &amp;transform, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
+<tr class="memitem:abeb6bae94ab01c86207b1fb5c526ddfb" id="r_abeb6bae94ab01c86207b1fb5c526ddfb"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abeb6bae94ab01c86207b1fb5c526ddfb">draw_capsule</a> (const godot::Vector3 &amp;position, const godot::Quaternion &amp;rotation, const real_t &amp;radius, const real_t &amp;height, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
+<tr class="memitem:a3942d16940f60318e6703b835d06a6ea" id="r_a3942d16940f60318e6703b835d06a6ea"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3942d16940f60318e6703b835d06a6ea">draw_capsule_ab</a> (const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const real_t &amp;radius=0.5f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a5941d9807caca26e043df588e08fbc25" id="r_a5941d9807caca26e043df588e08fbc25"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5941d9807caca26e043df588e08fbc25">draw_cylinder</a> (const godot::Transform3D &amp;transform, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a9a5f3ba3235c5463751cf22d9094211f" id="r_a9a5f3ba3235c5463751cf22d9094211f"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9a5f3ba3235c5463751cf22d9094211f">draw_cylinder_ab</a> (const godot::Vector3 &amp;a, const godot::Vector3 &amp;b, const real_t &amp;radius=0.5f, const godot::Color &amp;color=Colors::empty_color, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
 <tr class="memitem:a7547793282ac71a0d4267b320db858ce" id="r_a7547793282ac71a0d4267b320db858ce"><td class="memItemLeft" align="right" valign="top">NAPI void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7547793282ac71a0d4267b320db858ce">draw_box</a> (const godot::Vector3 &amp;position, const godot::Quaternion &amp;rotation, const godot::Vector3 &amp;size, const godot::Color &amp;color=Colors::empty_color, const bool &amp;is_box_centered=false, const real_t &amp;duration=0) FAKE_FUNC_IMPL</td></tr>
@@ -545,6 +547,116 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="abeb6bae94ab01c86207b1fb5c526ddfb" name="abeb6bae94ab01c86207b1fb5c526ddfb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abeb6bae94ab01c86207b1fb5c526ddfb">&#9670;&#160;</a></span>draw_capsule()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NAPI void DebugDraw3D::draw_capsule </td>
+          <td>(</td>
+          <td class="paramtype">const godot::Vector3 &amp;</td>          <td class="paramname"><span class="paramname"><em>position</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const godot::Quaternion &amp;</td>          <td class="paramname"><span class="paramname"><em>rotation</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>radius</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>height</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const godot::Color &amp;</td>          <td class="paramname"><span class="paramname"><em>color</em></span><span class="paramdefsep"> = </span><span class="paramdefval">Colors::empty_color</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>duration</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Draw a vertical capsule</p>
+<div class="image">
+<img src="DrawCapsule.webp" alt=""/>
+</div>
+    <dl class="section note"><dt>Note</dt><dd>A capsule will not be displayed if the height or radius is approximately equal to or less than zero.</dd></dl>
+<hr  />
+ <dl class="section note"><dt>Note</dt><dd>If you need to apply additional transformations, you can use <a class="el" href="classDebugDraw3DScopeConfig.html#a12891176192f5c2cd9a63236ddd2c543">DebugDraw3DScopeConfig.set_transform</a>.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">position</td><td>Capsule position </td></tr>
+    <tr><td class="paramname">rotation</td><td>Capsule rotation </td></tr>
+    <tr><td class="paramname">radius</td><td>Capsule radius </td></tr>
+    <tr><td class="paramname">height</td><td>Capsule height including caps. Based on this value, the actual radius of the capsule will be calculated. </td></tr>
+    <tr><td class="paramname">color</td><td>Primary color </td></tr>
+    <tr><td class="paramname">duration</td><td>The duration of how long the object will be visible </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3942d16940f60318e6703b835d06a6ea" name="a3942d16940f60318e6703b835d06a6ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3942d16940f60318e6703b835d06a6ea">&#9670;&#160;</a></span>draw_capsule_ab()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NAPI void DebugDraw3D::draw_capsule_ab </td>
+          <td>(</td>
+          <td class="paramtype">const godot::Vector3 &amp;</td>          <td class="paramname"><span class="paramname"><em>a</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const godot::Vector3 &amp;</td>          <td class="paramname"><span class="paramname"><em>b</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>radius</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0.5f</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const godot::Color &amp;</td>          <td class="paramname"><span class="paramname"><em>color</em></span><span class="paramdefsep"> = </span><span class="paramdefval">Colors::empty_color</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const real_t &amp;</td>          <td class="paramname"><span class="paramname"><em>duration</em></span><span class="paramdefsep"> = </span><span class="paramdefval">0</span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Draw a capsule between points A and B with the desired radius.</p>
+<div class="image">
+<img src="DrawCapsuleAb.webp" alt=""/>
+</div>
+    <dl class="section note"><dt>Note</dt><dd>A capsule will not be displayed if the distance between points A and B or the radius is approximately equal to or less than zero.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>First pole of the capsule </td></tr>
+    <tr><td class="paramname">b</td><td>Second pole of the capsule </td></tr>
+    <tr><td class="paramname">radius</td><td>Capsule radius </td></tr>
+    <tr><td class="paramname">color</td><td>Primary color </td></tr>
+    <tr><td class="paramname">duration</td><td>The duration of how long the object will be visible </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a5941d9807caca26e043df588e08fbc25" name="a5941d9807caca26e043df588e08fbc25"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5941d9807caca26e043df588e08fbc25">&#9670;&#160;</a></span>draw_cylinder()</h2>
 
@@ -617,7 +729,7 @@ Static Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Draw a cylinder between points A and B with a certain radius.</p>
-<dl class="section note"><dt>Note</dt><dd>A cylinder will not be displayed if the distance between points a and b is approximately zero.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>A cylinder will not be displayed if the distance between points A and B is approximately zero.</dd></dl>
 <div class="image">
 <img src="DrawCylinderAb.webp" alt=""/>
 </div>
@@ -1562,7 +1674,7 @@ type = DebugDraw3D.POINT_TYPE_SPHERE</div></div>
       </table>
 </div><div class="memdoc">
 <p>Draws a plane of non-infinite size relative to the position of the current camera.</p>
-<p>The plane size is set based on the <span class="tt">Far</span> parameter of the current camera or with <a class="el" href="classDebugDraw3DScopeConfig.html#ae03d511f879b614bc59dc3201b634a08">DebugDraw3DScopeConfig.set_plane_size</a>.</p>
+<p>The plane size is set based on the <span class="tt">Far</span> parameter of the current camera or with <a class="el" href="classDebugDraw3DScopeConfig.html#ae0b3b6c812eab5709ceb655d8f78f283">DebugDraw3DScopeConfig.set_plane_size</a>.</p>
 <div class="image">
 <img src="DrawPlane.webp" alt=""/>
 </div>
@@ -1882,7 +1994,7 @@ is_centered = true</div></div>
       </table>
 </div><div class="memdoc">
 <p>Draw text using Label3D.</p>
-<dl class="section note"><dt>Note</dt><dd>Outline can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a36199787c7cef174e10ea961473ccd58">DebugDraw3DScopeConfig.set_text_outline_color</a> and <a class="el" href="classDebugDraw3DScopeConfig.html#a9086813888e909b3e9a4066a42fed68d">DebugDraw3DScopeConfig.set_text_outline_size</a>. The font can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#a75a03d60de7ec6c1b125f8ba7b5c5845">DebugDraw3DScopeConfig.set_text_font</a>. The text can be made to stay the same size regardless of distance using <a class="el" href="classDebugDraw3DScopeConfig.html#afbfed42d023de0a6f491353ee13991c9">DebugDraw3DScopeConfig.set_text_fixed_size</a>.</dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Outline can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#ae01b56116c0a3b7690afc056c580f7dd">DebugDraw3DScopeConfig.set_text_outline_color</a> and <a class="el" href="classDebugDraw3DScopeConfig.html#a3e1640f96e9f4761f8f46c8c5684cdd3">DebugDraw3DScopeConfig.set_text_outline_size</a>. The font can be changed using <a class="el" href="classDebugDraw3DScopeConfig.html#aa190db8c43a2612724b337cae4abdc8b">DebugDraw3DScopeConfig.set_text_font</a>. The text can be made to stay the same size regardless of distance using <a class="el" href="classDebugDraw3DScopeConfig.html#a678bc62d10322bfab0b0d068c633f890">DebugDraw3DScopeConfig.set_text_fixed_size</a>.</dd></dl>
 <div class="image">
 <img src="DrawText.webp" alt=""/>
 </div>

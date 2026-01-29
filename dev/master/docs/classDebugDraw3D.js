@@ -16,6 +16,8 @@ var classDebugDraw3D =
     [ "clear_all", "classDebugDraw3D.html#a1a33fd6a7923ac061c7b115cb1a1f7e0", null ],
     [ "draw_sphere", "classDebugDraw3D.html#af8fd7ef43bf28d06450d089955f3e7fa", null ],
     [ "draw_sphere_xf", "classDebugDraw3D.html#a6b57b7f408995e38bb348ef6c98fa460", null ],
+    [ "draw_capsule", "classDebugDraw3D.html#abeb6bae94ab01c86207b1fb5c526ddfb", null ],
+    [ "draw_capsule_ab", "classDebugDraw3D.html#a3942d16940f60318e6703b835d06a6ea", null ],
     [ "draw_cylinder", "classDebugDraw3D.html#a5941d9807caca26e043df588e08fbc25", null ],
     [ "draw_cylinder_ab", "classDebugDraw3D.html#a9a5f3ba3235c5463751cf22d9094211f", null ],
     [ "draw_box", "classDebugDraw3D.html#a7547793282ac71a0d4267b320db858ce", null ],
