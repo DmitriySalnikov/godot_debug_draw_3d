@@ -169,12 +169,22 @@ func main_update(delta: float) -> void:
 		DebugDraw3D.draw_sphere(s_xf.origin - s_xf.basis.z * 4.2, 2.0, Color.CORNFLOWER_BLUE, 2.0)
 		timer_1 = 2
 	
-	# Cylinders
-	_draw_zone_title(%CylindersBox, "Cylinders")
+	# Capsules
+	if true:
+		_draw_zone_title(%CapsulesBox, "Capsules")
+		
+		var capsule1_xf: Transform3D = $Capsules/Capsule1.global_transform
+		var capsule1_scale: = capsule1_xf.basis.get_scale()
+		DebugDraw3D.draw_capsule(capsule1_xf.origin, capsule1_xf.basis.get_rotation_quaternion(), capsule1_scale.x, capsule1_scale.y, Color.CRIMSON)
+		DebugDraw3D.draw_capsule_ab($"Capsules/Capsule2/1".global_position, $"Capsules/Capsule2/2".global_position, 0.6)
 	
-	DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
-	DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY.scaled(Vector3(1,2,1)), $Cylinders/Cylinder2.global_position), Color.RED)
-	DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.7)
+	# Cylinders
+	if true:
+		_draw_zone_title(%CylindersBox, "Cylinders")
+		
+		DebugDraw3D.draw_cylinder($Cylinders/Cylinder1.global_transform, Color.CRIMSON)
+		DebugDraw3D.draw_cylinder(Transform3D(Basis.IDENTITY.scaled(Vector3(1,2,1)), $Cylinders/Cylinder2.global_position), Color.RED)
+		DebugDraw3D.draw_cylinder_ab($"Cylinders/Cylinder3/1".global_position, $"Cylinders/Cylinder3/2".global_position, 0.7)
 	
 	# Boxes
 	_draw_zone_title(%BoxesBox, "Boxes")

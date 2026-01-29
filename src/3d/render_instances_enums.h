@@ -13,6 +13,8 @@ enum class ConvertableInstanceType : char {
 	POSITION,
 	SPHERE,
 	CYLINDER,
+	CAPSULE_CAP,
+	CAPSULE_EDGES,
 };
 
 enum class InstanceType : char {
@@ -24,6 +26,8 @@ enum class InstanceType : char {
 	SPHERE,
 	SPHERE_HD,
 	CYLINDER,
+	CAPSULE_CAP,
+	CAPSULE_EDGES,
 
 	// Volumetric from wireframes
 	LINE_VOLUMETRIC,
@@ -34,6 +38,8 @@ enum class InstanceType : char {
 	SPHERE_VOLUMETRIC,
 	SPHERE_HD_VOLUMETRIC,
 	CYLINDER_VOLUMETRIC,
+	CAPSULE_CAP_VOLUMETRIC,
+	CAPSULE_EDGES_VOLUMETRIC,
 
 	// Solid geometry
 	BILLBOARD_SQUARE,

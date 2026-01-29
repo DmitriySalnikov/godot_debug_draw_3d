@@ -592,6 +592,10 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p
 					}
 				case ConvertableInstanceType::CYLINDER:
 					return InstanceType::CYLINDER;
+				case ConvertableInstanceType::CAPSULE_CAP:
+					return InstanceType::CAPSULE_CAP;
+				case ConvertableInstanceType::CAPSULE_EDGES:
+					return InstanceType::CAPSULE_EDGES;
 				default:
 					break;
 			}
@@ -616,6 +620,10 @@ InstanceType GeometryPool::_scoped_config_type_convert(ConvertableInstanceType p
 					return InstanceType::SPHERE_VOLUMETRIC;
 				case ConvertableInstanceType::CYLINDER:
 					return InstanceType::CYLINDER_VOLUMETRIC;
+				case ConvertableInstanceType::CAPSULE_CAP:
+					return InstanceType::CAPSULE_CAP_VOLUMETRIC;
+				case ConvertableInstanceType::CAPSULE_EDGES:
+					return InstanceType::CAPSULE_EDGES_VOLUMETRIC;
 				default:
 					break;
 			}

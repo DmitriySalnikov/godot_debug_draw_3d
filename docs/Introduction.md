@@ -19,6 +19,7 @@ This is an add-on for debug drawing in 3D and for some 2D overlays, which is wri
 * Billboard opaque square
 * Box
 * Camera Frustum
+* Capsule
 * Cylinder
 * Gizmo
 * Grid

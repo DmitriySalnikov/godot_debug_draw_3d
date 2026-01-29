@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://7am1h57ldd6"
-path="res://.godot/imported/PixelatedElegance.ttf-aac00801d681e5d2b42b23257b2692a7.fontdata"
+uid="uid://cqbkyhs6g8trq"
+path="res://.godot/imported/Minecraft - by BennyFonts1002 - from fontstruct.ttf-d00da6aa22af37f0ca8eab1d542fffac.fontdata"
 
 [deps]
 
-source_file="res://examples_dd3d/PixelatedElegance.ttf"
-dest_files=["res://.godot/imported/PixelatedElegance.ttf-aac00801d681e5d2b42b23257b2692a7.fontdata"]
+source_file="res://examples_dd3d/Minecraft - by BennyFonts1002 - from fontstruct.ttf"
+dest_files=["res://.godot/imported/Minecraft - by BennyFonts1002 - from fontstruct.ttf-d00da6aa22af37f0ca8eab1d542fffac.fontdata"]
 
 [params]
 
@@ -23,7 +23,7 @@ allow_system_fallback=true
 force_autohinter=false
 modulate_color_glyphs=false
 hinting=1
-subpixel_positioning=1
+subpixel_positioning=4
 keep_rounding_remainders=true
 oversampling=0.0
 Fallbacks=null

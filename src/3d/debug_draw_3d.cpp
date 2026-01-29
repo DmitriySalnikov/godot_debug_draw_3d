@@ -114,6 +114,9 @@ void DebugDraw3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder), "transform", "color", "duration"), &DebugDraw3D::draw_cylinder, Colors::empty_color, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_cylinder_ab), "a", "b", "radius", "color", "duration"), &DebugDraw3D::draw_cylinder_ab, 0.5f, Colors::empty_color, 0);
 
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_capsule), "position", "rotation", "radius", "height", "color", "duration"), &DebugDraw3D::draw_capsule, Colors::empty_color, 0);
+	ClassDB::bind_method(D_METHOD(NAMEOF(draw_capsule_ab), "a", "b", "radius", "color", "duration"), &DebugDraw3D::draw_capsule_ab, Colors::empty_color, 0);
+
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box), "position", "rotation", "size", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box, Colors::empty_color, false, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_ab), "a", "b", "up", "color", "is_ab_diagonal", "duration"), &DebugDraw3D::draw_box_ab, Vector3(0, 1, 0), Colors::empty_color, true, 0);
 	ClassDB::bind_method(D_METHOD(NAMEOF(draw_box_xf), "transform", "color", "is_box_centered", "duration"), &DebugDraw3D::draw_box_xf, Colors::empty_color, true, 0);
@@ -390,6 +393,8 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			GEN_MESH(InstanceType::SPHERE, p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2));
 			GEN_MESH(InstanceType::SPHERE_HD, p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2));
 			GEN_MESH(InstanceType::CYLINDER, GeometryGenerator::CreateCylinderLines(32, 1, 1, 4));
+			GEN_MESH(InstanceType::CAPSULE_CAP, GeometryGenerator::CreateCapsuleCapLines(32, 1));
+			GEN_MESH(InstanceType::CAPSULE_EDGES, GeometryGenerator::CreateCapsuleEdgeLines(1, 1));
 
 			// VOLUMETRIC
 
@@ -402,6 +407,8 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			GEN_MESH(InstanceType::SPHERE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE][i], false));
 			GEN_MESH(InstanceType::SPHERE_HD_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD][i], false));
 			GEN_MESH(InstanceType::CYLINDER_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER][i], false));
+			GEN_MESH(InstanceType::CAPSULE_CAP_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_CAP][i], false));
+			GEN_MESH(InstanceType::CAPSULE_EDGES_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_EDGES][i], false));
 
 			// SOLID
 
@@ -877,20 +884,10 @@ void DebugDraw3D::_save_generated_meshes() {
 
 Vector3 DebugDraw3D::get_up_vector(const Vector3 &p_dir) {
 	Vector3 n = p_dir.abs().normalized();
-	Vector3::Axis mi = n.max_axis_index();
-
-	if (n[mi] == 0)
+	if (!Math::is_zero_approx(Vector2(n.x, n.z).length()))
 		return Vector3_UP;
 
-	switch (mi) {
-		case Vector3::Axis::AXIS_X:
-		case Vector3::Axis::AXIS_Z:
-			return Vector3_UP;
-		case Vector3::Axis::AXIS_Y:
-			return Vector3_FORWARD;
-	}
-
-	return Vector3_UP;
+	return Vector3_FORWARD;
 }
 
 void DebugDraw3D::add_or_update_line_with_thickness(real_t p_exp_time, const Vector3 *p_lines, const size_t p_line_count, const Color &p_col, const std::function<void(DelayedRendererLine *)> p_custom_upd) {
@@ -963,6 +960,89 @@ void DebugDraw3D::draw_sphere_xf(const Transform3D &transform, const Color &colo
 #pragma endregion // Spheres
 #pragma region Cylinders
 
+void DebugDraw3D::create_capsule(const Transform3D &p_xf, const Vector3 &p_center, const Vector3 &p_top_cap, const Vector3 &p_bottom_cap, const real_t &p_radius, const real_t &p_height, const Color &p_color, const real_t &p_duration) {
+	ZoneScoped;
+	LOCK_GUARD(datalock);
+	GET_SCOPED_CFG_AND_DGC();
+
+	if (p_height > 0 && !Math::is_zero_approx(p_height)) {
+		ZoneScopedN("Edges");
+		Transform3D t = p_xf;
+		t.basis.scale_local(Vector3(p_radius, p_height, p_radius));
+		t.origin = p_center;
+		dgc->geometry_pool.add_or_update_instance(
+				scfg,
+				ConvertableInstanceType::CAPSULE_EDGES,
+				p_duration,
+				t,
+				IS_DEFAULT_COLOR(p_color) ? Colors::dodger_blue : p_color,
+				SphereBounds(t.origin, MathUtils::get_max_basis_length(t.basis) * MathUtils::CylinderRadiusForSphere));
+	}
+
+	{
+		ZoneScopedN("Caps");
+		Transform3D xf_c = p_xf;
+		xf_c.basis.scale_local(VEC3_ONE(p_radius));
+		xf_c.origin = p_top_cap;
+		dgc->geometry_pool.add_or_update_instance(
+				scfg,
+				ConvertableInstanceType::CAPSULE_CAP,
+				p_duration,
+				xf_c,
+				IS_DEFAULT_COLOR(p_color) ? Colors::dodger_blue : p_color,
+				SphereBounds(xf_c.origin, p_radius));
+
+		xf_c.basis.set_column(1, -xf_c.basis.get_column(1));
+		xf_c.origin = p_bottom_cap;
+		dgc->geometry_pool.add_or_update_instance(
+				scfg,
+				ConvertableInstanceType::CAPSULE_CAP,
+				p_duration,
+				xf_c,
+				IS_DEFAULT_COLOR(p_color) ? Colors::dodger_blue : p_color,
+				SphereBounds(xf_c.origin, p_radius));
+	}
+}
+
+void DebugDraw3D::draw_capsule(const Vector3 &position, const Quaternion &rotation, const real_t &radius, const real_t &height, const Color &color, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	if (Math::is_zero_approx(radius) || Math::is_zero_approx(height) || Math::is_zero_approx(height * 0.5f) || radius < 0 || height < 0)
+		return;
+
+	real_t edges_height = height - radius * 2;
+	real_t actual_radius = edges_height > 0 ? (height - edges_height) * 0.5f : height * 0.5f;
+	real_t edges_half_height = edges_height > 0 ? edges_height * 0.5f : 0;
+
+	Transform3D xf = Transform3D(Basis(rotation), Vector3());
+	Vector3 cap_offset = xf.basis.get_column(1) * edges_half_height;
+
+	create_capsule(xf, position, position + cap_offset, position - cap_offset, actual_radius, edges_height, color, duration);
+}
+
+void DebugDraw3D::draw_capsule_ab(const Vector3 &a, const Vector3 &b, const real_t &radius, const Color &color, const real_t &duration) {
+	ZoneScoped;
+	CHECK_BEFORE_CALL();
+
+	Vector3 diff = b - a;
+	real_t len = diff.length();
+	if (Math::is_zero_approx(radius) || Math::is_zero_approx(len) || Math::is_zero_approx(len * 0.5f) || radius < 0 || len < 0)
+		return;
+
+	real_t height = len - radius * 2;
+	real_t actual_radius = height > 0 ? (len - height) * 0.5f : len * 0.5f;
+
+	Vector3 up = get_up_vector(diff);
+
+	// Rotate between a and b, then rotate the vertical cylinder 90 degs around the X axis.
+	Transform3D xf = Transform3D(Basis().looking_at(diff, up), Vector3());
+	xf.basis.rotate(diff.cross(up).normalized(), Math::deg_to_rad(90.f));
+	Vector3 cap_offset = diff * (actual_radius / len);
+
+	create_capsule(xf, a + diff * .5f, a + cap_offset, b - cap_offset, actual_radius, height, color, duration);
+}
+
 void DebugDraw3D::draw_cylinder(const Transform3D &transform, const Color &color, const real_t &duration) {
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
@@ -983,7 +1063,6 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 	ZoneScoped;
 	CHECK_BEFORE_CALL();
 
-	// TODO: maybe someone knows a better way to solve it?
 	Vector3 diff = b - a;
 	real_t len = diff.length();
 	if (Math::is_zero_approx(len))
@@ -991,7 +1070,9 @@ void DebugDraw3D::draw_cylinder_ab(const Vector3 &a, const Vector3 &b, const rea
 
 	Vector3 up = get_up_vector(diff);
 	// Rotate between a and b, then rotate the vertical cylinder 90 degs around the X axis.
-	Transform3D t = Transform3D(Basis().looking_at(diff, up).rotated(diff.cross(up).normalized(), Math::deg_to_rad(90.f)).scaled_local(Vector3(radius, len, radius)), a + diff * .5f);
+	Transform3D t = Transform3D(Basis().looking_at(diff, up), a + diff * .5f);
+	t.basis.rotate(diff.cross(up).normalized(), Math::deg_to_rad(90.f));
+	t.basis.scale_local(Vector3(radius, len, radius));
 
 	LOCK_GUARD(datalock);
 	GET_SCOPED_CFG_AND_DGC();
@@ -1210,7 +1291,6 @@ void DebugDraw3D::draw_line_path_c(const godot::Vector3 *path_data, const uint64
 
 void DebugDraw3D::create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration) {
 	ZoneScoped;
-	CHECK_BEFORE_CALL();
 
 	Vector3 diff = (p_b - p_a);
 	real_t len = diff.length();

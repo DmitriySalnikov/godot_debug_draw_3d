@@ -904,3 +904,82 @@ Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const fl
 			PackedColorArray(),
 			normals);
 }
+
+Ref<ArrayMesh> GeometryGenerator::CreateCapsuleCapLines(const int &edges, const float &radius) {
+	ZoneScoped;
+
+	PackedVector3Array vertexes;
+	PackedVector3Array normals;
+
+	real_t angle_step = 180.f / edges;
+	for (int i = 0; i < edges; i++) {
+		real_t a1 = Math::deg_to_rad((real_t)(i * angle_step));
+		real_t a2 = Math::deg_to_rad((real_t)((i + 1) * angle_step));
+
+		Vector2 p1 = Vector2(Math::cos(a1), Math::sin(a1));
+		Vector2 p2 = Vector2(Math::cos(a2), Math::sin(a2));
+		Vector2 pn1 = Vector2(p1.x, p1.y).normalized();
+		Vector2 pn2 = Vector2(p2.x, p2.y).normalized();
+
+		// Horizontal circle
+		vertexes.push_back(Vector3(p1.x, 0, p1.y));
+		vertexes.push_back(Vector3(p2.x, 0, p2.y));
+
+		vertexes.push_back(Vector3(-p1.x, 0, -p1.y));
+		vertexes.push_back(Vector3(-p2.x, 0, -p2.y));
+
+		normals.push_back(Vector3(pn1.x, 0, pn1.y));
+		normals.push_back(Vector3(pn2.x, 0, pn2.y));
+
+		normals.push_back(Vector3(-pn1.x, 0, -pn1.y));
+		normals.push_back(Vector3(-pn2.x, 0, -pn2.y));
+
+		// X
+		vertexes.push_back(Vector3(p1.x, p1.y, 0));
+		vertexes.push_back(Vector3(p2.x, p2.y, 0));
+
+		normals.push_back(Vector3(pn1.x, pn1.y, 0));
+		normals.push_back(Vector3(pn2.x, pn2.y, 0));
+
+		// Z
+		vertexes.push_back(Vector3(0, p1.y, p1.x));
+		vertexes.push_back(Vector3(0, p2.y, p2.x));
+
+		normals.push_back(Vector3(0, pn1.y, pn1.x));
+		normals.push_back(Vector3(0, pn2.y, pn2.x));
+	}
+
+	return CreateMesh(
+			Mesh::PRIMITIVE_LINES,
+			vertexes,
+			PackedInt32Array(),
+			PackedColorArray(),
+			normals);
+}
+
+Ref<ArrayMesh> GeometryGenerator::CreateCapsuleEdgeLines(const float &radius, const float &height) {
+	ZoneScoped;
+
+	PackedVector3Array vertexes;
+	PackedVector3Array normals;
+
+	real_t half_height = height * 0.5f;
+	for (int i = 0; i < 360; i += 90) {
+		real_t angle = Math::deg_to_rad((real_t)i);
+		Vector2 a = Vector2(Math::sin(angle), Math::cos(angle));
+		Vector3 an = Vector3(a.x, 0, a.y).normalized();
+
+		vertexes.push_back(Vector3(a.x, half_height, a.y));
+		vertexes.push_back(Vector3(a.x, -half_height, a.y));
+
+		normals.push_back(an);
+		normals.push_back(an);
+	}
+
+	return CreateMesh(
+			Mesh::PRIMITIVE_LINES,
+			vertexes,
+			PackedInt32Array(),
+			PackedColorArray(),
+			normals);
+}

@@ -1,7 +1,7 @@
-[gd_scene load_steps=41 format=3 uid="uid://davayb2hh6h3u"]
+[gd_scene load_steps=42 format=3 uid="uid://davayb2hh6h3u"]
 
 [ext_resource type="Script" uid="uid://sdthgu7x2whs" path="res://image_generator/preview_generator.gd" id="1_1iqys"]
-[ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="2_040oe"]
+[ext_resource type="FontFile" uid="uid://cqbkyhs6g8trq" path="res://examples_dd3d/Minecraft - by BennyFonts1002 - from fontstruct.ttf" id="2_p1upm"]
 
 [sub_resource type="Gradient" id="Gradient_pik8h"]
 offsets = PackedFloat32Array(0, 0.3, 0.7, 1)
@@ -2767,6 +2767,167 @@ tracks/18/keys = {
 "update": 0,
 "values": [Color(0, 0, 0, 1)]
 }
+tracks/19/type = "value"
+tracks/19/imported = false
+tracks/19/enabled = true
+tracks/19/path = NodePath("OriginPlane:scale")
+tracks/19/interp = 1
+tracks/19/loop_wrap = true
+tracks/19/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+tracks/20/type = "value"
+tracks/20/imported = false
+tracks/20/enabled = true
+tracks/20/path = NodePath("OriginCameraFrustum:scale")
+tracks/20/interp = 1
+tracks/20/loop_wrap = true
+tracks/20/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+tracks/21/type = "value"
+tracks/21/imported = false
+tracks/21/enabled = true
+tracks/21/path = NodePath("OriginLinesPath:scale")
+tracks/21/interp = 1
+tracks/21/loop_wrap = true
+tracks/21/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(1, 1, 1)]
+}
+tracks/22/type = "value"
+tracks/22/imported = false
+tracks/22/enabled = true
+tracks/22/path = NodePath("GridRender/CameraOrigin:position")
+tracks/22/interp = 1
+tracks/22/loop_wrap = true
+tracks/22/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/23/type = "value"
+tracks/23/imported = false
+tracks/23/enabled = true
+tracks/23/path = NodePath("CapsuleMan/Xf/y:position")
+tracks/23/interp = 1
+tracks/23/loop_wrap = true
+tracks/23/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_lc2sh"]
+resource_name = "SetTransform"
+length = 1.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:viewport_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [Vector2i(256, 192)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:single_image")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:lossless")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("GridRender/CameraOrigin/Camera3D:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.145, 1.721)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("GridRender/CameraOrigin/Camera3D:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.296706, 0, 0)]
+}
+tracks/5/type = "value"
+tracks/5/imported = false
+tracks/5/enabled = false
+tracks/5/path = NodePath("GridRender/CameraOrigin:rotation")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"times": PackedFloat32Array(0, 0.33333334, 0.93333334, 1.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(-0.4886922, 0, 0), Vector3(-0.4886922, 0.5235988, 0), Vector3(-0.4886922, -0.5235988, 0), Vector3(-0.4886922, 0, 0)]
+}
+tracks/6/type = "value"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("GridRender/CameraOrigin:position")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -0.07, 0)]
+}
+tracks/7/type = "value"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("CapsuleMan/Xf/y:position")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"times": PackedFloat32Array(0, 0.3334, 0.5334, 0.6, 0.9334, 1.1334, 1.2),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0.08006934, 0.602062, 0), Vector3(0.20567778, 1.0058975, 0), Vector3(0.08006934, 0.602062, 0), Vector3(-0.08, 0.602, 0), Vector3(-0.206, 1.006, 0), Vector3(-0.08, 0.602, 0), Vector3(0.08006934, 0.602062, 0)]
+}
 
 [sub_resource type="Animation" id="Animation_2pssc"]
 resource_name = "SphereDensity"
@@ -2940,6 +3101,7 @@ _data = {
 &"NoDepthTest": SubResource("Animation_hhbl7"),
 &"PlaneSize": SubResource("Animation_a5v07"),
 &"RESET": SubResource("Animation_hchms"),
+&"SetTransform": SubResource("Animation_lc2sh"),
 &"SphereDensity": SubResource("Animation_2pssc")
 }
 
@@ -2988,13 +3150,13 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_1iqys")
-preview_case = 33
+preview_case = 8
 lossless = true
 viewport_size = Vector2i(256, 128)
 anim_value_1 = 0.1
 text_colors = SubResource("Gradient_pik8h")
 text_outline_colors = SubResource("Gradient_2vnpq")
-text_font = ExtResource("2_040oe")
+text_font = ExtResource("2_p1upm")
 metadata/movie_file = "D:/My/Projects/GE/Addons/godot_debug_draw_3d/docs/images/classes/temp/_.png"
 
 [node name="FakeCamera" type="Camera3D" parent="."]
@@ -3013,10 +3175,10 @@ size = Vector2i(512, 256)
 render_target_update_mode = 4
 
 [node name="CameraOrigin" type="Node3D" parent="GridRender"]
-transform = Transform3D(1, 0, 0, 0, 0.8660249, 0.5, 0, -0.5, 0.8660249, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.9063076, 0.4226178, 0, -0.4226178, 0.9063076, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="GridRender/CameraOrigin"]
-transform = Transform3D(1, 0, 0, 0, 0.93667203, -0.3502068, 0, 0.3502068, 0.93667203, 0, -0.150017, 1.72116)
+transform = Transform3D(1, 0, 0, 0, 0.9271834, -0.37460592, 0, 0.37460592, 0.9271834, 0, 0, 1.25)
 keep_aspect = 0
 current = true
 fov = 66.6
@@ -3073,7 +3235,7 @@ mesh = SubResource("BoxMesh_bwerf")
 
 [node name="OriginLine" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0.5918323, 0.57968205, -0.5600922, -0.56817794, 0.7928856, 0.22024147, 0.5717591, 0.18788603, 0.7986178, 0, 0.46, 0)
+transform = Transform3D(0.8818045, 0.28651538, 0.3746062, -0.30901673, 0.9510566, 0, -0.35627168, -0.11575958, 0.92718405, 0, 0.46, 0)
 
 [node name="A" type="Node3D" parent="OriginLine"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0, 0)
@@ -3089,7 +3251,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="OriginInstances" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, -0.5, 0.44, 0)
+transform = Transform3D(0.75, 0, 0, 0, 0.75, 0, 0, 0, 0.75, 0, 0.48, 0)
 
 [node name="A" type="Node3D" parent="OriginInstances"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0)
@@ -3098,7 +3260,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.5, 0)
 
 [node name="OriginLinesPath" type="Node3D" parent="."]
-transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 [node name="1" type="Node3D" parent="OriginLinesPath"]
 transform = Transform3D(1, 3.12924e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-07, 2.98023e-08, 2.98023e-07, 1, -0.388976, -0.601312, 0.205627)
@@ -3110,7 +3271,6 @@ transform = Transform3D(1, 6.25849e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-0
 transform = Transform3D(1, 3.12924e-07, 1.19209e-07, 2.98023e-08, 1, -3.72529e-07, 2.98023e-08, 2.98023e-07, 1, 0.308753, 0.314478, -0.54646)
 
 [node name="OriginCameraFrustum" type="Node3D" parent="."]
-transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="OriginCameraFrustum"]
 transform = Transform3D(-6.72483e-08, 0, 1.53846, 0, 1.53846, 0, -1.53846, 0, -6.72483e-08, 1.71191, 0, 0)
@@ -3119,6 +3279,30 @@ near = 0.321
 far = 0.96
 
 [node name="OriginPlane" type="Node3D" parent="."]
-transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+[node name="CapsuleMan" type="Node3D" parent="."]
+
+[node name="Xf" type="Node" parent="CapsuleMan"]
+
+[node name="y" type="Node3D" parent="CapsuleMan/Xf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="1" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.105, 0, 0, 0, 0.495, 0, 0, 0, 0.035, 0, 0.60973185, 0)
+
+[node name="2" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.20506096, 0, 0.024748739, 0.20506097, -1.2676304e-08, -0.024748737, 1.507479e-08, 0.29, -3.4423187e-10, 0, 1.0208578, 0)
+
+[node name="3" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.028686536, 0.12811545, -0.023905441, -0.0076865335, 0.4781333, 0.0064054457, 0.029698478, -2.2128225e-08, 0.024748739, -0.10620433, 0.22632635, 0)
+
+[node name="4" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.028686536, -0.12811542, 0.02390544, 0.0076865344, 0.47813326, 0.006405444, -0.029698474, 0, 0.02474874, 0.10260886, 0.22632635, 0)
+
+[node name="5" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.018, 0.35001794, 0.014499994, -0.018000003, 0.35001776, -0.014500003, -0.02545584, 4.425645e-08, 0.020506097, -0.21689314, 0.6474983, 0)
+
+[node name="6" type="Node3D" parent="CapsuleMan"]
+transform = Transform3D(0.021000005, -0.3500178, 0.015, 0.021, 0.3500179, 0.014999995, -0.029698478, 0, 0.021213206, 0.217, 0.641, 0)
 
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_player_animation_finished"]

@@ -28,6 +28,7 @@ Your support adds motivation to develop my public projects.
 * Billboard opaque square
 * Box
 * Camera Frustum
+* Capsule
 * Cylinder
 * Gizmo
 * Grid

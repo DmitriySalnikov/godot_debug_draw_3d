@@ -21,11 +21,12 @@ public:
 	const static godot::Color debug_sphere_bounds;
 	const static godot::Color debug_box_bounds;
 	const static godot::Color debug_rough_box_bounds;
-	const static godot::Color dodgerblue;
+	const static godot::Color dodger_blue;
 	const static godot::Color forest_green;
 	const static godot::Color gray_bg;
 	const static godot::Color green;
 	const static godot::Color light_sky_blue;
+	const static godot::Color light_gray;
 	const static godot::Color light_green;
 	const static godot::Color orange_red;
 	const static godot::Color orange;

@@ -147,6 +147,8 @@ public:
 
 	/**
 	 * Set the base/local `transform` relative to which the shapes will be drawn.
+	 *
+	 * ![](docs/images/classes/SetTransform.webp)
 	 */
 	Ref<DebugDraw3DScopeConfig> set_transform(const godot::Transform3D &_value) const;
 	/// @private

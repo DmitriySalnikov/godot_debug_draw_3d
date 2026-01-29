@@ -223,6 +223,7 @@ private:
 	Node *get_root_node();
 
 	void create_arrow(const Vector3 &p_a, const Vector3 &p_b, const Color &p_color, const real_t &p_arrow_size, const bool &p_is_absolute_size, const real_t &p_duration = 0);
+	void create_capsule(const Transform3D &p_xf, const Vector3 &p_center, const Vector3 &p_top_cap, const Vector3 &p_bottom_cap, const real_t &p_radius, const real_t &p_height, const Color &p_color, const real_t &p_duration = 0);
 
 #ifdef DEV_ENABLED
 	void _save_generated_meshes();
@@ -379,6 +380,43 @@ public:
 #pragma region Cylinders
 
 	/**
+	 * Draw a vertical capsule
+	 *
+	 * ![](docs/images/classes/DrawCapsule.webp)
+	 *
+	 * @note
+	 * A capsule will not be displayed if the height or radius is approximately equal to or less than zero.
+	 *
+	 * ---
+	 * @note
+	 * If you need to apply additional transformations, you can use DebugDraw3DScopeConfig.set_transform.
+	 *
+	 * @param position Capsule position
+	 * @param rotation Capsule rotation
+	 * @param radius Capsule radius
+	 * @param height Capsule height including caps. Based on this value, the actual radius of the capsule will be calculated.
+	 * @param color Primary color
+	 * @param duration The duration of how long the object will be visible
+	 */
+	NAPI void draw_capsule(const godot::Vector3 &position, const godot::Quaternion &rotation, const real_t &radius, const real_t &height, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+	/**
+	 * Draw a capsule between points A and B with the desired radius.
+	 *
+	 * ![](docs/images/classes/DrawCapsuleAb.webp)
+	 * 
+	 * @note
+	 * A capsule will not be displayed if the distance between points A and B or the radius is approximately equal to or less than zero.
+	 *
+	 * @param a First pole of the capsule
+	 * @param b Second pole of the capsule
+	 * @param radius Capsule radius
+	 * @param color Primary color
+	 * @param duration The duration of how long the object will be visible
+	 */
+	NAPI void draw_capsule_ab(const godot::Vector3 &a, const godot::Vector3 &b, const real_t &radius = 0.5f, const godot::Color &color = Colors::empty_color, const real_t &duration = 0) FAKE_FUNC_IMPL;
+
+	/**
 	 * Draw a vertical cylinder with radius 1.0 (x, z) and height 1.0 (y)
 	 *
 	 * ![](docs/images/classes/DrawCylinder.webp)
@@ -393,7 +431,7 @@ public:
 	 * Draw a cylinder between points A and B with a certain radius.
 	 *
 	 * @note
-	 * A cylinder will not be displayed if the distance between points a and b is approximately zero.
+	 * A cylinder will not be displayed if the distance between points A and B is approximately zero.
 	 *
 	 * ![](docs/images/classes/DrawCylinderAb.webp)
 	 *
@@ -590,7 +628,7 @@ public:
 	 * Draw line with arrowhead
 	 *
 	 * ![](docs/images/classes/Arrow.webp)
-	 * 
+	 *
 	 * @note
 	 * An arrow will not be displayed if the distance between points a and b is approximately zero.
 	 *

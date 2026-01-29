@@ -81,4 +81,7 @@ public:
 	static Ref<ArrayMesh> CreateIcosphereLines(const float &radius, const int &depth);
 	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide = 1);
 	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide = 1);
+
+	static Ref<ArrayMesh> CreateCapsuleCapLines(const int &edges, const float &radius);
+	static Ref<ArrayMesh> CreateCapsuleEdgeLines(const float &radius, const float &height);
 };

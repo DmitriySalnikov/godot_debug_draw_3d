@@ -57,6 +57,8 @@ DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_d
 		CreateMMI(InstanceType::SPHERE, meshes[(int)InstanceType::SPHERE][mat_variant]);
 		CreateMMI(InstanceType::SPHERE_HD, meshes[(int)InstanceType::SPHERE_HD][mat_variant]);
 		CreateMMI(InstanceType::CYLINDER, meshes[(int)InstanceType::CYLINDER][mat_variant]);
+		CreateMMI(InstanceType::CAPSULE_CAP, meshes[(int)InstanceType::CAPSULE_CAP][mat_variant]);
+		CreateMMI(InstanceType::CAPSULE_EDGES, meshes[(int)InstanceType::CAPSULE_EDGES][mat_variant]);
 
 		// VOLUMETRIC
 
@@ -68,6 +70,8 @@ DebugGeometryContainer::DebugGeometryContainer(DebugDraw3D *p_owner, bool p_no_d
 		CreateMMI(InstanceType::SPHERE_VOLUMETRIC, meshes[(int)InstanceType::SPHERE_VOLUMETRIC][mat_variant]);
 		CreateMMI(InstanceType::SPHERE_HD_VOLUMETRIC, meshes[(int)InstanceType::SPHERE_HD_VOLUMETRIC][mat_variant]);
 		CreateMMI(InstanceType::CYLINDER_VOLUMETRIC, meshes[(int)InstanceType::CYLINDER_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CAPSULE_CAP_VOLUMETRIC, meshes[(int)InstanceType::CAPSULE_CAP_VOLUMETRIC][mat_variant]);
+		CreateMMI(InstanceType::CAPSULE_EDGES_VOLUMETRIC, meshes[(int)InstanceType::CAPSULE_EDGES_VOLUMETRIC][mat_variant]);
 
 		// SOLID
 

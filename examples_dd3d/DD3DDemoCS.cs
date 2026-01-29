@@ -269,13 +269,24 @@ public partial class DD3DDemoCS : Node3D
             timer_1 = 2;
         }
 
+        // Capsules
+        {
+            _draw_zone_title(pCapsulesBox, "Capsules");
+
+            var capsule1_xf = dCapsule1.GlobalTransform;
+            var capsule1_scale = capsule1_xf.Basis.Scale;
+            DebugDraw3D.DrawCapsule(capsule1_xf.Origin, capsule1_xf.Basis.GetRotationQuaternion(), capsule1_scale.X, capsule1_scale.Y, Colors.Crimson);
+            DebugDraw3D.DrawCapsuleAb(dCapsule2a.GlobalPosition, dCapsule2b.GlobalPosition, 0.6f);
+        }
 
         // Cylinders
-        _draw_zone_title(pCylindersBox, "Cylinders");
+        {
+            _draw_zone_title(pCylindersBox, "Cylinders");
 
-        DebugDraw3D.DrawCylinder(dCylinder1.GlobalTransform, Colors.Crimson);
-        DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalPosition), Colors.Red);
-        DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalPosition, dCylinder3b.GlobalPosition, 0.7f);
+            DebugDraw3D.DrawCylinder(dCylinder1.GlobalTransform, Colors.Crimson);
+            DebugDraw3D.DrawCylinder(new Transform3D(Basis.Identity.Scaled(new Vector3(1, 2, 1)), dCylinder2.GlobalPosition), Colors.Red);
+            DebugDraw3D.DrawCylinderAb(dCylinder3a.GlobalPosition, dCylinder3b.GlobalPosition, 0.7f);
+        }
 
         // Boxes
         _draw_zone_title(pBoxesBox, "Boxes");
@@ -854,9 +865,13 @@ public partial class DD3DDemoCS : Node3D
     Node3D dCylinder2;
     Node3D dCylinder3a;
     Node3D dCylinder3b;
+    Node3D dCapsule1;
+    Node3D dCapsule2a;
+    Node3D dCapsule2b;
 
     Node3D pSpheresBox;
     Node3D pCylindersBox;
+    Node3D pCapsulesBox;
     Node3D pBoxesBox;
     Node3D pLinesBox;
     Node3D pPathsBox;
@@ -926,9 +941,13 @@ public partial class DD3DDemoCS : Node3D
         dCylinder2 = GetNode<Node3D>("Cylinders/Cylinder2");
         dCylinder3a = GetNode<Node3D>("Cylinders/Cylinder3/1");
         dCylinder3b = GetNode<Node3D>("Cylinders/Cylinder3/2");
+        dCapsule1 = GetNode<Node3D>("Capsules/Capsule1");
+        dCapsule2a = GetNode<Node3D>("Capsules/Capsule2/1");
+        dCapsule2b = GetNode<Node3D>("Capsules/Capsule2/2");
 
         pSpheresBox = GetNode<Node3D>("%SpheresBox");
         pCylindersBox = GetNode<Node3D>("%CylindersBox");
+        pCapsulesBox = GetNode<Node3D>("%CapsulesBox");
         pBoxesBox = GetNode<Node3D>("%BoxesBox");
         pLinesBox = GetNode<Node3D>("%LinesBox");
         pPathsBox = GetNode<Node3D>("%PathsBox");

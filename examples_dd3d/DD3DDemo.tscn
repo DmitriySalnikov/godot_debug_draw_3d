@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ba2ie81p2x3x7" path="res://examples_dd3d/DD3DDemo.gd" id="1"]
 [ext_resource type="FontFile" uid="uid://erdgllynwqkw" path="res://examples_dd3d/Roboto-Bold.ttf" id="2_aedbq"]
 [ext_resource type="Script" uid="uid://b5mdrjubj0lg5" path="res://examples_dd3d/demo_camera_movement.gd" id="3_3m1mp"]
-[ext_resource type="FontFile" uid="uid://7am1h57ldd6" path="res://examples_dd3d/PixelatedElegance.ttf" id="3_tkhi8"]
+[ext_resource type="FontFile" uid="uid://cqbkyhs6g8trq" path="res://examples_dd3d/Minecraft - by BennyFonts1002 - from fontstruct.ttf" id="3_rgja2"]
 [ext_resource type="Script" uid="uid://bebbekatkxaoe" path="res://examples_dd3d/demo_music_visualizer.gd" id="4_eq2lt"]
 [ext_resource type="Script" uid="uid://83dhsep7l725" path="res://examples_dd3d/demo_settings_panel.gd" id="5_31v5h"]
 [ext_resource type="Script" uid="uid://hvx3t70syvkm" path="res://examples_dd3d/demo_web_docs_version_select.gd" id="6_07f7q"]
@@ -383,7 +383,7 @@ corner_radius_bottom_left = 4
 process_priority = 1
 script = ExtResource("1")
 custom_font = ExtResource("2_aedbq")
-custom_3d_font = ExtResource("3_tkhi8")
+custom_3d_font = ExtResource("3_rgja2")
 text_groups_position = 2
 
 [node name="RESET" type="AnimationPlayer" parent="."]
@@ -444,6 +444,10 @@ transform = Transform3D(8.3761, 0, 0, 0, 4.89771, 0, 0, 0, 9.36556, -11.1864, 0.
 [node name="CylindersBox" type="Node3D" parent="Zones"]
 unique_name_in_owner = true
 transform = Transform3D(9.78549, 0, 0, 0, 4.20302, 0, 0, 0, 5.62455, -23.6827, -0.015712, -6.19233)
+
+[node name="CapsulesBox" type="Node3D" parent="Zones"]
+unique_name_in_owner = true
+transform = Transform3D(4.8696866, 0, 0, 0, 4.20302, 0, 0, 0, 4.7276874, -25.916273, -0.30829632, 2.7791631)
 
 [node name="BoxesBox" type="Node3D" parent="Zones"]
 unique_name_in_owner = true
@@ -508,6 +512,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.419773, -2.38419e-07, -1.4
 
 [node name="2" type="Node3D" parent="Cylinders/Cylinder3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.01018, 0.486778, 1.32635)
+
+[node name="Capsules" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.47091, 4.76837e-07, 3.1799905)
+
+[node name="Capsule1" type="Node3D" parent="Capsules"]
+transform = Transform3D(0.75, 0, 0, 0, 3, 0, 0, 0, 1, 0.35848427, -0.4237, -1.2820461)
+
+[node name="Capsule2" type="Node3D" parent="Capsules"]
+transform = Transform3D(0.8457092, 0, -0.533644, 0, 1, 0, 0.533644, 0, 0.8457092, 2.1917667, -0.655492, -0.33672953)
+
+[node name="1" type="Node3D" parent="Capsules/Capsule2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.90534526, -2)
+
+[node name="2" type="Node3D" parent="Capsules/Capsule2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.83874416, 2)
 
 [node name="Spheres" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.1201, 0.166728, -7.893)

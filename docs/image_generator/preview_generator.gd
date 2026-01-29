@@ -16,6 +16,7 @@ enum PreviewCase {
 	SphereDensity,
 	IcoSphere,
 	PlaneSize,
+	SetTransform,
 	NoDepthTest,
 	
 	Line,
@@ -23,6 +24,8 @@ enum PreviewCase {
 	
 	DrawSphere,
 	DrawSphereXf,
+	DrawCapsule,
+	DrawCapsuleAb,
 	DrawCylinder,
 	DrawCylinderAb,
 	DrawBoxXf,
@@ -63,6 +66,7 @@ var case_maps = {
 	PreviewCase.SphereDensity : CaseData.new(),
 	PreviewCase.IcoSphere : CaseData.new(),
 	PreviewCase.PlaneSize : CaseData.new(),
+	PreviewCase.SetTransform : CaseData.new(),
 	PreviewCase.NoDepthTest : CaseData.new("NoDepthTest"),
 	
 	PreviewCase.Line : CaseData.new(),
@@ -70,6 +74,8 @@ var case_maps = {
 	
 	PreviewCase.DrawSphere : CaseData.new("DrawMethods"),
 	PreviewCase.DrawSphereXf : CaseData.new("DrawMethods"),
+	PreviewCase.DrawCapsule : CaseData.new("DrawMethods"),
+	PreviewCase.DrawCapsuleAb : CaseData.new("DrawMethods360Wide"),
 	PreviewCase.DrawCylinder : CaseData.new("DrawMethods"),
 	PreviewCase.DrawCylinderAb : CaseData.new("DrawMethods360Wide"),
 	PreviewCase.DrawBoxXf : CaseData.new("DrawMethods"),
@@ -352,6 +358,14 @@ func _process(delta):
 		PreviewCase.PlaneSize:
 			var _s = DebugDraw3D.new_scoped_config().set_plane_size(anim_value_1)
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
+		PreviewCase.SetTransform:
+			var _s = DebugDraw3D.new_scoped_config().set_plane_size(anim_value_1).set_transform(Transform3D(Basis(Vector3.RIGHT, $CapsuleMan/Xf/y.position, Vector3.FORWARD), Vector3()))
+			for c in $CapsuleMan.get_children():
+				if c is Node3D:
+					var capsule1_xf: Transform3D = c.global_transform
+					var capsule1_scale: = capsule1_xf.basis.get_scale()
+					var _s2 = DebugDraw3D.new_scoped_config().set_thickness(capsule1_scale.z)
+					DebugDraw3D.draw_capsule(capsule1_xf.origin, capsule1_xf.basis.get_rotation_quaternion(), capsule1_scale.x, capsule1_scale.y, Color.CRIMSON)
 		PreviewCase.NoDepthTest:
 			var _s = DebugDraw3D.new_scoped_config().set_no_depth_test(anim_value_1 > 0.5)
 			DebugDraw3D.draw_box(%OriginInstances.global_position, %OriginInstances.quaternion, Vector3.ONE * Vector3(0.6, 0.3, 0.3), Color.DEEP_PINK, true)
@@ -369,12 +383,19 @@ func _process(delta):
 		PreviewCase.DrawSphereXf:
 			var _s = DebugDraw3D.new_scoped_config().set_thickness(0.03)
 			DebugDraw3D.draw_sphere_xf(%OriginInstances.global_transform.scaled_local(Vector3(0.8, 1.1, 0.8)))
+		PreviewCase.DrawCapsule:
+			var xf: Transform3D = %OriginInstances.global_transform
+			DebugDraw3D.draw_capsule(xf.origin, xf.basis.get_rotation_quaternion(), 0.25, 1, Color.DODGER_BLUE)
+		PreviewCase.DrawCapsuleAb:
+			DebugDraw3D.draw_square(%OriginInstances/A.global_position, 0.1, Color.RED)
+			DebugDraw3D.draw_square(%OriginInstances/B.global_position, 0.1, Color.GREEN)
+			DebugDraw3D.draw_capsule_ab(%OriginInstances/A.global_position, %OriginInstances/B.global_position, 0.25, Color.GOLD)
 		PreviewCase.DrawCylinder:
 			DebugDraw3D.draw_cylinder(%OriginInstances.global_transform.scaled_local(Vector3(0.5, 1, 0.5)), Color.LIGHT_SALMON)
 		PreviewCase.DrawCylinderAb:
 			DebugDraw3D.draw_square(%OriginInstances/A.global_position, 0.1, Color.RED)
 			DebugDraw3D.draw_square(%OriginInstances/B.global_position, 0.1, Color.GREEN)
-			DebugDraw3D.draw_cylinder_ab(%OriginInstances/A.global_position, %OriginInstances/B.global_position, 0.3)
+			DebugDraw3D.draw_cylinder_ab(%OriginInstances/A.global_position, %OriginInstances/B.global_position, 0.3, Color.LIME_GREEN)
 		PreviewCase.DrawBoxXf:
 			DebugDraw3D.draw_box_xf(%OriginInstances.global_transform, Color.GREEN)
 		PreviewCase.DrawBoxXfCorner:
