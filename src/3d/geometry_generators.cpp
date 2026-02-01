@@ -16,7 +16,7 @@ const std::array<Vector3, 8> GeometryGenerator::CenteredCubeVertexes{
 	Vector3(-0.5f, 0.5f, -0.5f),
 	Vector3(0.5f, 0.5f, -0.5f),
 	Vector3(0.5f, 0.5f, 0.5f),
-	Vector3(-0.5f, 0.5f, 0.5f)
+	Vector3(-0.5f, 0.5f, 0.5f),
 };
 
 const std::array<Vector3, 8> GeometryGenerator::CubeVertexes{
@@ -27,7 +27,7 @@ const std::array<Vector3, 8> GeometryGenerator::CubeVertexes{
 	Vector3(0, 1, 0), // 4
 	Vector3(1, 1, 0), // 5
 	Vector3(1, 1, 1), // 6
-	Vector3(0, 1, 1) //  7
+	Vector3(0, 1, 1), //  7
 };
 
 const std::array<int, 24> GeometryGenerator::CubeIndexes{
@@ -48,57 +48,39 @@ const std::array<int, 24> GeometryGenerator::CubeIndexes{
 };
 
 const std::array<int, 36> GeometryGenerator::CubeWithDiagonalsIndexes{
-	0,
-	1,
-	1,
-	2,
-	2,
-	3,
-	3,
-	0,
+	0, 1,
+	1, 2,
+	2, 3,
+	3, 0,
 
-	4,
-	5,
-	5,
-	6,
-	6,
-	7,
-	7,
-	4,
+	4, 5,
+	5, 6,
+	6, 7,
+	7, 4,
 
-	0,
-	4,
-	1,
-	5,
-	2,
-	6,
-	3,
-	7,
+	0, 4,
+	1, 5,
+	2, 6,
+	3, 7,
 
 	// Diagonals
 
 	// Top Bottom
-	1,
-	3,
+	1, 3,
 	// 0, 2,
-	4,
-	6,
+	4, 6,
 	// 5, 7,
 
 	// Front Back
-	1,
-	4,
+	1, 4,
 	// 0, 5,
-	3,
-	6,
+	3, 6,
 	// 2, 7,
 
 	// Left Right
-	3,
-	4,
+	3, 4,
 	// 0, 7,
-	1,
-	6,
+	1, 6
 	// 2, 5,
 };
 
@@ -177,7 +159,7 @@ const std::array<int, 6> GeometryGenerator::PositionIndexes{
 
 #pragma endregion
 
-Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes, const PackedColorArray &colors, const PackedVector3Array &normals, const PackedVector2Array &uv, const PackedFloat32Array &custom0, BitField<Mesh::ArrayFormat> flags) {
+Ref<ArrayMesh> GeometryGenerator::CreateArrayMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes, const PackedColorArray &colors, const PackedVector3Array &normals, const PackedVector2Array &uv, const PackedFloat32Array &custom0, BitField<Mesh::ArrayFormat> flags) {
 	ZoneScoped;
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
@@ -201,7 +183,8 @@ Ref<ArrayMesh> GeometryGenerator::CreateMesh(Mesh::PrimitiveType type, const Pac
 	return mesh;
 }
 
-Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle) {
+Ref<ArrayMesh> GeometryGenerator::RotatedArrayMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle) {
+	// TODO: rotate GeometryGenerator::GeneratedMeshData if it is ever needed.
 	Array arrs = mesh->surface_get_arrays(0);
 	Mesh::PrimitiveType ptype = mesh->surface_get_primitive_type(0);
 	ERR_FAIL_COND_V(arrs.size() == 0, mesh);
@@ -218,10 +201,11 @@ Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const V
 
 	auto rotate_f32 = [&axis, &angle](PackedFloat32Array &arr) {
 		for (int64_t i = 0; i < arr.size(); i += 3) {
-			Vector3 v = Vector3(arr[i + 0], arr[i + 1], arr[i + 2]).rotated(axis, angle);
-			arr[i + 0] = (float)v.x;
-			arr[i + 1] = (float)v.y;
-			arr[i + 2] = (float)v.z;
+			reinterpret_cast<Vector3 *>(arr.ptrw() + i)->rotate(axis, angle);
+			//Vector3 v = Vector3(arr[i + 0], arr[i + 1], arr[i + 2]).rotated(axis, angle);
+			//arr[i + 0] = (float)v.x;
+			//arr[i + 1] = (float)v.y;
+			//arr[i + 2] = (float)v.z;
 		}
 	};
 
@@ -229,7 +213,7 @@ Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const V
 	rotate_vec3(normals);
 	rotate_f32(custom0);
 
-	return CreateMesh(
+	return CreateArrayMesh(
 			ptype,
 			vertexes,
 			arrs[ArrayMesh::ArrayType::ARRAY_INDEX],
@@ -240,10 +224,14 @@ Ref<ArrayMesh> GeometryGenerator::RotatedMesh(const Ref<ArrayMesh> mesh, const V
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
 }
 
-Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::GeneratedMeshData mesh_data, const bool &add_bevel, const bool &add_caps, const bool &smoothed_segments) {
 	ZoneScoped;
+	Ref<ArrayMesh> mesh = mesh_data.mesh;
+	std::vector<Plane> lines_planes = mesh_data.lines_planes;
+	std::vector<bool> lines_bevels = mesh_data.lines_bevels;
+
 	Array arrs = mesh->surface_get_arrays(0);
-	ERR_FAIL_COND_V(arrs.size() == 0, mesh);
+	ERR_FAIL_COND_V(arrs.size() == 0, mesh_data);
 
 	PackedVector3Array vertexes = arrs[ArrayMesh::ArrayType::ARRAY_VERTEX];
 	PackedVector3Array normals = arrs[ArrayMesh::ArrayType::ARRAY_NORMAL];
@@ -251,10 +239,12 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 
 	bool has_indexes = indexes.size();
 	bool has_normals = normals.size();
+	bool has_bevels = lines_bevels.size();
+	bool has_planes = lines_planes.size();
 
-	ERR_FAIL_COND_V(!has_indexes && vertexes.size() % 2 != 0, Ref<ArrayMesh>());
-	ERR_FAIL_COND_V(has_indexes && indexes.size() % 2 != 0, Ref<ArrayMesh>());
-	ERR_FAIL_COND_V(normals.size() && vertexes.size() != normals.size(), Ref<ArrayMesh>());
+	ERR_FAIL_COND_V(!has_indexes && vertexes.size() % 2 != 0, GeneratedMeshData());
+	ERR_FAIL_COND_V(has_indexes && indexes.size() % 2 != 0, GeneratedMeshData());
+	ERR_FAIL_COND_V(normals.size() && vertexes.size() != normals.size(), GeneratedMeshData());
 
 	PackedVector3Array res_vertexes;
 	PackedVector3Array res_custom0;
@@ -264,24 +254,35 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 	if (has_indexes) {
 		for (int64_t i = 0; i < indexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[indexes[i]] : Vector3(0, 1, 0.0001f);
+			Vector3 normal_b = has_normals ? normals[indexes[i + 1]] : Vector3(0, 1, 0.0001f);
 
-			if (add_bevel)
-				GenerateVolumetricSegmentBevel(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			int64_t line_index = i / 2;
+			Plane line_plane = has_planes ? lines_planes[line_index] : Plane();
+			bool actual_add_bevel = has_bevels ? lines_bevels[line_index] : add_bevel;
+
+			if (actual_add_bevel)
+				GenerateVolumetricSegmentBevel(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, line_plane, add_caps, smoothed_segments, res_vertexes, res_custom0, res_indexes, res_uv);
 			else
-				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegment(vertexes[indexes[i]], vertexes[indexes[i + 1]], normal_a, normal_b, line_plane, add_caps, smoothed_segments, res_vertexes, res_custom0, res_indexes, res_uv);
 		}
 	} else {
 		for (int64_t i = 0; i < vertexes.size(); i += 2) {
 			Vector3 normal_a = has_normals ? normals[i] : Vector3(0, 1, 0.0001f);
+			Vector3 normal_b = has_normals ? normals[i + 1] : Vector3(0, 1, 0.0001f);
 
-			if (add_bevel)
-				GenerateVolumetricSegmentBevel(vertexes[i], vertexes[i + 1], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+			int64_t line_index = i / 2;
+			Plane line_plane = has_planes ? lines_planes[line_index] : Plane();
+			bool actual_add_bevel = has_bevels ? lines_bevels[line_index] : add_bevel;
+
+			if (actual_add_bevel)
+				GenerateVolumetricSegmentBevel(vertexes[i], vertexes[i + 1], normal_a, normal_b, line_plane, add_caps, smoothed_segments, res_vertexes, res_custom0, res_indexes, res_uv);
 			else
-				GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], normal_a, res_vertexes, res_custom0, res_indexes, res_uv, add_caps);
+				GenerateVolumetricSegment(vertexes[i], vertexes[i + 1], normal_a, normal_b, line_plane, add_caps, smoothed_segments, res_vertexes, res_custom0, res_indexes, res_uv);
 		}
 	}
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_TRIANGLES,
 			res_vertexes,
 			res_indexes,
@@ -290,23 +291,49 @@ Ref<ArrayMesh> GeometryGenerator::ConvertWireframeToVolumetric(Ref<ArrayMesh> me
 			res_uv,
 			Utils::convert_packed_vector3_to_packed_float(res_custom0),
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
+
+	return data;
 }
 
-void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
+void GeometryGenerator::GetExtendedVertexes(Vector3 &right_a, Vector3 &left_a, Vector3 &right_b, Vector3 &left_b, const real_t &angle, const Vector3 &dir, const Vector3 &normal_a, const Vector3 &normal_b, const bool &has_plane, const Plane &line_plane, const bool &smoothed_segments) {
+	if (smoothed_segments) {
+		Vector3 rotation_axis_a, rotation_axis_b;
+
+		if (has_plane) {
+			rotation_axis_a = line_plane.normal.cross(normal_a).normalized();
+			rotation_axis_b = line_plane.normal.cross(normal_b).normalized();
+		} else {
+			rotation_axis_a = normal_a.cross(normal_a.cross(dir)).normalized();
+			rotation_axis_b = normal_b.cross(normal_b.cross(dir)).normalized();
+		}
+
+		right_a = normal_a.rotated(rotation_axis_a, Math::deg_to_rad(angle));
+		left_a = right_a * -1;
+
+		right_b = normal_b.rotated(rotation_axis_b, Math::deg_to_rad(angle));
+		left_b = right_b * -1;
+	} else {
+		right_a = dir.cross(normal_a.rotated(dir, Math::deg_to_rad(angle))).normalized();
+		left_a = right_a * -1;
+
+		right_b = dir.cross(normal_b.rotated(dir, Math::deg_to_rad(angle))).normalized();
+		left_b = right_b * -1;
+	}
+}
+
+void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, const Plane &line_plane, const bool &add_caps, const bool &smoothed_segments, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv) {
 	ZoneScoped;
-	bool debug_size = false;
+	const bool debug_size = false;
 	Vector3 debug_mult = debug_size ? Vector3_ONE * 0.5 : Vector3();
 	Vector3 dir = (b - a).normalized();
 	int64_t base_idx = vertexes.size();
+	const bool has_plane = line_plane != Plane();
 
-	auto add_side = [&dir, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal, bool is_rotated) {
+	auto add_side = [&](Vector3 pos_a, Vector3 pos_b, bool is_rotated) {
 		int64_t start_idx = vertexes.size();
 
-		Vector3 right_a = dir.cross(normal.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
-		Vector3 left_a = right_a * -1;
-
-		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(is_rotated ? -45.f : 45.f))).normalized();
-		Vector3 left_b = right_b * -1;
+		Vector3 right_a, left_a, right_b, left_b;
+		GetExtendedVertexes(right_a, left_a, right_b, left_b, is_rotated ? -45.f : 45.f, dir, normal_a, normal_b, has_plane, line_plane, smoothed_segments);
 
 		right_a /= MathUtils::Sqrt2;
 		left_a /= MathUtils::Sqrt2;
@@ -344,8 +371,8 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 		custom0.push_back(left_b);
 	};
 
-	add_side(a, b, normal, false);
-	add_side(a, b, normal, true);
+	add_side(a, b, false);
+	add_side(a, b, true);
 
 	if (add_caps) {
 		// Start cap
@@ -366,7 +393,7 @@ void GeometryGenerator::GenerateVolumetricSegment(const Vector3 &a, const Vector
 	}
 }
 
-void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps) {
+void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, const Plane &line_plane, const bool &add_caps, const bool &smoothed_segments, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv) {
 	ZoneScoped;
 	bool debug_size = false;
 	Vector3 debug_mult = debug_size ? Vector3_ONE * 0.5f : Vector3();
@@ -374,6 +401,7 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	// real_t half_len = Math::clamp(len * .5f, .0f, 0.5f);
 	Vector3 dir = (b - a).normalized();
 	int64_t base_idx = vertexes.size();
+	const bool has_plane = line_plane != Plane();
 
 	vertexes.push_back(a); // 0
 	vertexes.push_back(b); // 1
@@ -384,14 +412,11 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	custom0.push_back(Vector3_ZERO);
 	custom0.push_back(Vector3_ZERO);
 
-	auto add_side = [&half_len, &dir, &base_idx, &vertexes, &indexes, &custom0, &uv, &debug_mult](Vector3 pos_a, Vector3 pos_b, Vector3 normal, real_t angle) {
+	auto add_side = [&](Vector3 pos_a, Vector3 pos_b, real_t angle) {
 		int64_t start_idx = vertexes.size();
 
-		Vector3 right_a = dir.cross(normal.rotated(dir, Math::deg_to_rad(angle))).normalized();
-		Vector3 left_a = right_a * -1;
-
-		Vector3 right_b = dir.cross(normal.rotated(dir, Math::deg_to_rad(angle))).normalized();
-		Vector3 left_b = right_b * -1;
+		Vector3 right_a, left_a, right_b, left_b;
+		GetExtendedVertexes(right_a, left_a, right_b, left_b, angle, dir, normal_a, normal_b, has_plane, line_plane, smoothed_segments);
 
 		right_a /= MathUtils::Sqrt2;
 		left_a /= MathUtils::Sqrt2;
@@ -435,8 +460,8 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 		custom0.push_back(left_b);
 	};
 
-	add_side(a, b, normal, 45.f);
-	add_side(a, b, normal, -45.f);
+	add_side(a, b, 45.f);
+	add_side(a, b, -45.f);
 
 	if (add_caps) {
 		// Start cap
@@ -469,7 +494,7 @@ void GeometryGenerator::GenerateVolumetricSegmentBevel(const Vector3 &a, const V
 	}
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel) {
 	PackedVector3Array vertexes;
 	PackedVector2Array uv;
 	PackedVector3Array custom0;
@@ -554,7 +579,8 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const float &radius,
 	indexes.push_back(6);
 	indexes.push_back(2);
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_TRIANGLES,
 			vertexes,
 			indexes,
@@ -563,9 +589,10 @@ Ref<ArrayMesh> GeometryGenerator::CreateVolumetricArrowHead(const float &radius,
 			uv,
 			Utils::convert_packed_vector3_to_packed_float(custom0),
 			ArrayMesh::ARRAY_CUSTOM_RGB_FLOAT << Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT);
+	return data;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateCameraFrustumLines(const std::array<Plane, 6> &frustum) {
 	ZoneScoped;
 	std::vector<Vector3> vertexes;
 	vertexes.resize(CubeIndexes.size());
@@ -771,7 +798,7 @@ GeometryGenerator::IcosphereTriMesh GeometryGenerator::MakeIcosphereTriMesh(cons
 	return sphere;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const float &radius, const int &depth) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateIcosphereLines(const float &radius, const int &depth) {
 	auto res = MakeIcosphereTriMesh(radius, depth);
 
 	// PRINT("{0} vertexes, {1} indexes", res.vertexes.size(), res.indexes.size());
@@ -780,15 +807,17 @@ Ref<ArrayMesh> GeometryGenerator::CreateIcosphereLines(const float &radius, cons
 	indexes_lines.resize(res.indexes.size() * 2);
 	ConvertTriIndexesToWireframe(res.indexes, indexes_lines.ptrw());
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_LINES,
 			res.vertexes,
 			indexes_lines,
 			PackedColorArray(),
 			res.normals);
+	return data;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide) {
 	ZoneScoped;
 	int lats = _lats * subdivide;
 	int lons = _lons * subdivide;
@@ -799,68 +828,80 @@ Ref<ArrayMesh> GeometryGenerator::CreateSphereLines(const int &_lats, const int 
 		lons = 4;
 
 	PackedVector3Array vertexes;
-	vertexes.resize(4LL * lats * lons / subdivide);
-
 	PackedVector3Array normals;
-	normals.resize(vertexes.size());
+	std::vector<Plane> lines_planes;
 
 	int total = 0;
-	for (int i = 1; i <= lats; i++) {
-		float lat0 = (float)Math_PI * (-0.5f + (float)(i - 1) / lats);
-		float z0 = sin(lat0);
-		float zr0 = cos(lat0);
+	real_t lats_step = Math_TAU / lats;
+	real_t lons_step = Math_PI / lons;
+	for (int j = 0; j < lons; j++) {
+		real_t lon1_a = Math_PI / 2 - j * lons_step;
+		real_t lon2_a = Math_PI / 2 - (j + 1) * lons_step;
 
-		float lat1 = (float)Math_PI * (-0.5f + (float)i / lats);
-		float z1 = sin(lat1);
-		float zr1 = cos(lat1);
+		for (int i = 0; i < lats; i++) {
+			real_t lat1_a = i * lats_step;
+			real_t lat2_a = (i + 1) * lats_step;
 
-		for (int j = lons; j >= 1; j--) {
-			float lng0 = (float)Math_TAU * (j - 1) / lons;
-			float x0 = cos(lng0);
-			float y0 = sin(lng0);
-
-			float lng1 = (float)Math_TAU * j / lons;
-			float x1 = cos(lng1);
-			float y1 = sin(lng1);
-
-			Vector3 v[3]{
-				Vector3(x1 * zr0, z0, y1 * zr0) * radius,
-				Vector3(x1 * zr1, z1, y1 * zr1) * radius,
-				Vector3(x0 * zr0, z0, y0 * zr0) * radius
+			Vector3 pc = {
+				radius * Math::cos(lon1_a) * Math::cos(lat1_a),
+				radius * Math::sin(lon1_a),
+				radius * Math::cos(lon1_a) * Math::sin(lat1_a),
 			};
 
-			if (j % subdivide == 0) {
-				normals[total] = v[0].normalized();
-				vertexes[total++] = v[0];
+			Vector3 pv = {
+				radius * Math::cos(lon2_a) * Math::cos(lat1_a),
+				radius * Math::sin(lon2_a),
+				radius * Math::cos(lon2_a) * Math::sin(lat1_a),
+			};
 
-				normals[total] = v[1].normalized();
-				vertexes[total++] = v[1];
+			Vector3 ph = {
+				radius * Math::cos(lon1_a) * Math::cos(lat2_a),
+				radius * Math::sin(lon1_a),
+				radius * Math::cos(lon1_a) * Math::sin(lat2_a),
+			};
+
+			// Vertical lines
+			if (i % subdivide == 0 && true) {
+				lines_planes.push_back(Plane(Vector3(0, 0, 0), pc, pv));
+
+				vertexes.push_back(pc);
+				vertexes.push_back(pv);
+
+				normals.push_back(pc.normalized());
+				normals.push_back(pv.normalized());
 			}
 
-			if (i % subdivide == 0) {
-				normals[total] = v[2].normalized();
-				vertexes[total++] = v[2];
+			// Horizontal lines
+			if ((j + subdivide / 2) % subdivide == 0 && true) {
+				lines_planes.push_back(Plane(Vector3(0, pc.y, 0), pc, ph));
 
-				normals[total] = v[0].normalized();
-				vertexes[total++] = v[0];
+				vertexes.push_back(pc);
+				vertexes.push_back(ph);
+
+				normals.push_back(pc.normalized());
+				normals.push_back(ph.normalized());
 			}
 		}
 	}
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.lines_planes = lines_planes;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_LINES,
 			vertexes,
 			PackedInt32Array(),
 			PackedColorArray(),
 			normals);
+	return data;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide) {
 	ZoneScoped;
 	real_t angle = 360.f / edges;
 
 	PackedVector3Array vertexes;
 	PackedVector3Array normals;
+	std::vector<bool> bevels;
 	// vertexes.reserve(4 * (size_t)edges + (((size_t)edges * (size_t)subdivide) * 2));
 
 	Vector3 half_height = Vector3(0, height * 0.5f, 0);
@@ -875,10 +916,12 @@ Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const fl
 		// Top
 		vertexes.push_back(a + half_height);
 		vertexes.push_back(b + half_height);
+		bevels.push_back(false);
 
 		// Bottom
 		vertexes.push_back(a - half_height);
 		vertexes.push_back(b - half_height);
+		bevels.push_back(false);
 
 		// Repeat for Top and Bottom normals
 		normals.push_back(an);
@@ -891,21 +934,25 @@ Ref<ArrayMesh> GeometryGenerator::CreateCylinderLines(const int &edges, const fl
 		if (i % subdivide == 0) {
 			vertexes.push_back(a + half_height);
 			vertexes.push_back(a - half_height);
+			bevels.push_back(true);
 
 			normals.push_back(an);
 			normals.push_back(an);
 		}
 	}
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.lines_bevels = bevels;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_LINES,
 			vertexes,
 			PackedInt32Array(),
 			PackedColorArray(),
 			normals);
+	return data;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCapsuleCapLines(const int &edges, const float &radius) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateCapsuleCapLines(const int &edges, const float &radius) {
 	ZoneScoped;
 
 	PackedVector3Array vertexes;
@@ -949,15 +996,17 @@ Ref<ArrayMesh> GeometryGenerator::CreateCapsuleCapLines(const int &edges, const 
 		normals.push_back(Vector3(0, pn2.y, pn2.x));
 	}
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_LINES,
 			vertexes,
 			PackedInt32Array(),
 			PackedColorArray(),
 			normals);
+	return data;
 }
 
-Ref<ArrayMesh> GeometryGenerator::CreateCapsuleEdgeLines(const float &radius, const float &height) {
+GeometryGenerator::GeneratedMeshData GeometryGenerator::CreateCapsuleEdgeLines(const float &radius, const float &height) {
 	ZoneScoped;
 
 	PackedVector3Array vertexes;
@@ -976,10 +1025,12 @@ Ref<ArrayMesh> GeometryGenerator::CreateCapsuleEdgeLines(const float &radius, co
 		normals.push_back(an);
 	}
 
-	return CreateMesh(
+	GeneratedMeshData data;
+	data.mesh = CreateArrayMesh(
 			Mesh::PRIMITIVE_LINES,
 			vertexes,
 			PackedInt32Array(),
 			PackedColorArray(),
 			normals);
+	return data;
 }

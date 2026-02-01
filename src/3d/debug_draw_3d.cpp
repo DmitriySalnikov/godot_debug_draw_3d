@@ -4,7 +4,6 @@
 #include "debug_draw_manager.h"
 #include "debug_geometry_container.h"
 #include "gen/shared_resources.gen.h"
-#include "geometry_generators.h"
 #include "nodes_container.h"
 #include "stats_3d.h"
 #include "utils/utils.h"
@@ -185,7 +184,7 @@ void DebugDraw3D::init(DebugDrawManager *p_root) {
 	DEFINE_SETTING_AND_GET_HINT(real_t def_frustum_scale, root_settings_section + s_default_frustum_scale, 0.5f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
 
 	DEFINE_SETTING_AND_GET_HINT(real_t def_thickness, root_settings_section + s_default_thickness, 0.05f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,100,0.0001,or_greater");
-	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.8f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
+	DEFINE_SETTING_AND_GET_HINT(real_t def_brightness, root_settings_section + s_default_center_brightness, 0.75f, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,1,0.0001");
 	DEFINE_SETTING_AND_GET(real_t def_hd_sphere, root_settings_section + s_default_hd_spheres, false, Variant::BOOL);
 	DEFINE_SETTING_AND_GET_HINT(real_t def_plane_size, root_settings_section + s_default_plane_size, 0, Variant::FLOAT, PROPERTY_HINT_RANGE, "0,10000,0.001,or_greater");
 
@@ -368,7 +367,7 @@ Node *DebugDraw3D::get_root_node() {
 	return root_node;
 }
 
-std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
+std::array<GeometryGenerator::GeneratedMeshData, 2> *DebugDraw3D::get_shared_meshes() {
 	LOCK_GUARD(datalock);
 	if (!shared_generated_meshes.size()) {
 		bool p_add_bevel = PS()->get_setting(root_settings_section + s_add_bevel_to_volumetric);
@@ -381,7 +380,7 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 
 #define GEN_MESH(_type, _gen)                      \
 	shared_generated_meshes[(int)_type][i] = _gen; \
-	shared_generated_meshes[(int)_type][i]->surface_set_material(0, get_material_variant(mat_type, (MeshMaterialVariant)i));
+	shared_generated_meshes[(int)_type][i].mesh->surface_set_material(0, get_material_variant(mat_type, (MeshMaterialVariant)i));
 
 			// WIREFRAME
 
@@ -390,7 +389,7 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			GEN_MESH(InstanceType::CUBE_CENTERED, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::CenteredCubeVertexes, GeometryGenerator::CubeIndexes));
 			GEN_MESH(InstanceType::ARROWHEAD, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::ArrowheadVertexes, GeometryGenerator::ArrowheadIndexes));
 			GEN_MESH(InstanceType::POSITION, GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::PositionVertexes, GeometryGenerator::PositionIndexes));
-			GEN_MESH(InstanceType::SPHERE, p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 2));
+			GEN_MESH(InstanceType::SPHERE, p_use_icosphere ? GeometryGenerator::CreateIcosphereLines(0.5f, 1) : GeometryGenerator::CreateSphereLines(8, 8, 0.5f, 4));
 			GEN_MESH(InstanceType::SPHERE_HD, p_use_icosphere_hd ? GeometryGenerator::CreateIcosphereLines(0.5f, 2) : GeometryGenerator::CreateSphereLines(16, 16, 0.5f, 2));
 			GEN_MESH(InstanceType::CYLINDER, GeometryGenerator::CreateCylinderLines(32, 1, 1, 4));
 			GEN_MESH(InstanceType::CAPSULE_CAP, GeometryGenerator::CreateCapsuleCapLines(32, 1));
@@ -399,16 +398,16 @@ std::array<Ref<ArrayMesh>, 2> *DebugDraw3D::get_shared_meshes() {
 			// VOLUMETRIC
 
 			mat_type = MeshMaterialType::Extendable;
-			GEN_MESH(InstanceType::LINE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel));
-			GEN_MESH(InstanceType::CUBE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE][i], p_add_bevel));
-			GEN_MESH(InstanceType::CUBE_CENTERED_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE_CENTERED][i], p_add_bevel));
+			GEN_MESH(InstanceType::LINE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(GeometryGenerator::CreateMeshNative(Mesh::PrimitiveType::PRIMITIVE_LINES, GeometryGenerator::LineVertexes), p_add_bevel, false, false));
+			GEN_MESH(InstanceType::CUBE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE][i], p_add_bevel, false, false));
+			GEN_MESH(InstanceType::CUBE_CENTERED_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CUBE_CENTERED][i], p_add_bevel, false, false));
 			GEN_MESH(InstanceType::ARROWHEAD_VOLUMETRIC, GeometryGenerator::CreateVolumetricArrowHead(.25f, 1.f, 1.f, p_add_bevel));
-			GEN_MESH(InstanceType::POSITION_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::POSITION][i], p_add_bevel));
-			GEN_MESH(InstanceType::SPHERE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE][i], false));
-			GEN_MESH(InstanceType::SPHERE_HD_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD][i], false));
-			GEN_MESH(InstanceType::CYLINDER_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER][i], false));
-			GEN_MESH(InstanceType::CAPSULE_CAP_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_CAP][i], false));
-			GEN_MESH(InstanceType::CAPSULE_EDGES_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_EDGES][i], false));
+			GEN_MESH(InstanceType::POSITION_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::POSITION][i], p_add_bevel, false, false));
+			GEN_MESH(InstanceType::SPHERE_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE][i], false, false, true));
+			GEN_MESH(InstanceType::SPHERE_HD_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::SPHERE_HD][i], false, false, true));
+			GEN_MESH(InstanceType::CYLINDER_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CYLINDER][i], false, false, true));
+			GEN_MESH(InstanceType::CAPSULE_CAP_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_CAP][i], false, false, true));
+			GEN_MESH(InstanceType::CAPSULE_EDGES_VOLUMETRIC, GeometryGenerator::ConvertWireframeToVolumetric(shared_generated_meshes[(int)InstanceType::CAPSULE_EDGES][i], false, false, true));
 
 			// SOLID
 
@@ -873,7 +872,7 @@ void DebugDraw3D::_save_generated_meshes() {
 
 	for (int i = 0; i < 2; i++) {
 		for (int type = 0; type < (int)InstanceType::MAX; type++) {
-			Ref<ArrayMesh> mesh = shared_generated_meshes[type][i];
+			Ref<ArrayMesh> mesh = shared_generated_meshes[type][i].mesh;
 			String dir_path = FMT_STR("res://debug_meshes/{0}", i == 0 ? "normal" : "no_depth");
 			DirAccess::make_dir_recursive_absolute(dir_path);
 			ResourceSaver::get_singleton()->save(mesh, FMT_STR("{0}/{1}.mesh", dir_path, type), ResourceSaver::SaverFlags::FLAG_BUNDLE_RESOURCES | ResourceSaver::SaverFlags::FLAG_REPLACE_SUBRESOURCE_PATHS);

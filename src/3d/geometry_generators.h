@@ -18,11 +18,18 @@ private:
 		PackedVector3Array normals;
 	};
 
-	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
-	static void GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv, const bool &add_caps = true);
+	static void GetExtendedVertexes(Vector3 &right_a, Vector3 &left_a, Vector3 &right_b, Vector3 &left_b, const real_t &angle, const Vector3 &dir, const Vector3 &normal_a, const Vector3 &normal_b, const bool &has_plane, const Plane &line_plane, const bool &smoothed_segments);
+	static void GenerateVolumetricSegment(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, const Plane &line_plane, const bool &add_caps, const bool &smoothed_segments, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv);
+	static void GenerateVolumetricSegmentBevel(const Vector3 &a, const Vector3 &b, const Vector3 &normal_a, const Vector3 &normal_b, const Plane &line_plane, const bool &add_caps, const bool &smoothed_segments, PackedVector3Array &vertexes, PackedVector3Array &custom0, PackedInt32Array &indexes, PackedVector2Array &uv);
 	static IcosphereTriMesh MakeIcosphereTriMesh(const float &radius, const int &resolution);
 
 public:
+	struct GeneratedMeshData {
+		Ref<ArrayMesh> mesh;
+		std::vector<Plane> lines_planes;
+		std::vector<bool> lines_bevels;
+	};
+
 #pragma region Predefined Geometry Parts
 
 	const static std::array<Vector3, 2> LineVertexes;
@@ -46,8 +53,9 @@ public:
 #pragma endregion
 
 	template <class TVertexes, class TIndexes = std::array<int, 0>, class TColors = std::array<Color, 0>, class TNormal = std::array<Vector3, 0>, class TUV = std::array<Vector2, 0>, class TCustom0 = std::array<Vector3, 0>>
-	static Ref<ArrayMesh> CreateMeshNative(Mesh::PrimitiveType type, const TVertexes &vertexes, const TIndexes &indexes = {}, const TColors &colors = {}, const TNormal &normals = {}, const TUV &uv = {}, const TCustom0 &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0) {
-		return CreateMesh(type,
+	static GeneratedMeshData CreateMeshNative(Mesh::PrimitiveType type, const TVertexes &vertexes, const TIndexes &indexes = {}, const TColors &colors = {}, const TNormal &normals = {}, const TUV &uv = {}, const TCustom0 &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0) {
+		GeneratedMeshData data;
+		data.mesh = CreateArrayMesh(type,
 				Utils::convert_to_packed_array<PackedVector3Array>(vertexes),
 				Utils::convert_to_packed_array<PackedInt32Array>(indexes),
 				Utils::convert_to_packed_array<PackedColorArray>(colors),
@@ -55,15 +63,16 @@ public:
 				Utils::convert_to_packed_array<PackedVector2Array>(uv),
 				Utils::convert_to_packed_array_diffrent_types<PackedFloat32Array>(custom0),
 				flags);
+		return data;
 	}
 
-	static Ref<ArrayMesh> CreateMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
-	static Ref<ArrayMesh> RotatedMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle);
+	static Ref<ArrayMesh> CreateArrayMesh(Mesh::PrimitiveType type, const PackedVector3Array &vertexes, const PackedInt32Array &indexes = {}, const PackedColorArray &colors = {}, const PackedVector3Array &normals = {}, const PackedVector2Array &uv = {}, const PackedFloat32Array &custom0 = {}, BitField<Mesh::ArrayFormat> flags = 0);
+	static Ref<ArrayMesh> RotatedArrayMesh(const Ref<ArrayMesh> mesh, const Vector3 &axis, const float &angle);
 
-	static Ref<ArrayMesh> ConvertWireframeToVolumetric(Ref<ArrayMesh> mesh, const bool &add_bevel, const bool &add_caps = false);
-	static Ref<ArrayMesh> CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel);
+	static GeneratedMeshData ConvertWireframeToVolumetric(GeneratedMeshData mesh_data, const bool &add_bevel, const bool &add_caps, const bool &smoothed_segments);
+	static GeneratedMeshData CreateVolumetricArrowHead(const float &radius, const float &length, const float &offset_mult, const bool &add_bevel);
 
-	static Ref<ArrayMesh> CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
+	static GeneratedMeshData CreateCameraFrustumLines(const std::array<Plane, 6> &frustum);
 
 	/// vertexes.size() == CubeIndexes.size()
 	static void CreateCameraFrustumLinesWireframe(const std::array<Plane, 6> &frustum, Vector3 *vertexes);
@@ -78,10 +87,10 @@ public:
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, std::vector<int> &indexes);
 	static void ConvertTriIndexesToWireframe(const PackedInt32Array &tri_indexes, int *indexes);
 
-	static Ref<ArrayMesh> CreateIcosphereLines(const float &radius, const int &depth);
-	static Ref<ArrayMesh> CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide = 1);
-	static Ref<ArrayMesh> CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide = 1);
+	static GeneratedMeshData CreateIcosphereLines(const float &radius, const int &depth);
+	static GeneratedMeshData CreateSphereLines(const int &_lats, const int &_lons, const float &radius, const int &subdivide = 1);
+	static GeneratedMeshData CreateCylinderLines(const int &edges, const float &radius, const float &height, const int &subdivide = 1);
 
-	static Ref<ArrayMesh> CreateCapsuleCapLines(const int &edges, const float &radius);
-	static Ref<ArrayMesh> CreateCapsuleEdgeLines(const float &radius, const float &height);
+	static GeneratedMeshData CreateCapsuleCapLines(const int &edges, const float &radius);
+	static GeneratedMeshData CreateCapsuleEdgeLines(const float &radius, const float &height);
 };

@@ -4,7 +4,6 @@
 #include "config_3d.h"
 #include "config_scope_3d.h"
 #include "debug_draw_3d.h"
-#include "geometry_generators.h"
 #include "stats_3d.h"
 
 #include <array>
@@ -94,7 +93,7 @@ bool DebugGeometryContainer::is_no_depth_test() const {
 	return no_depth_test;
 }
 
-void DebugGeometryContainer::CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mesh) {
+void DebugGeometryContainer::CreateMMI(InstanceType p_type, const GeometryGenerator::GeneratedMeshData &p_mesh_data) {
 	ZoneScoped;
 	RenderingServer *rs = RenderingServer::get_singleton();
 
@@ -107,7 +106,7 @@ void DebugGeometryContainer::CreateMMI(InstanceType p_type, Ref<ArrayMesh> p_mes
 	new_mm->set_use_colors(true);
 	new_mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	new_mm->set_use_custom_data(true);
-	new_mm->set_mesh(p_mesh);
+	new_mm->set_mesh(p_mesh_data.mesh);
 
 	rs->instance_set_base(mmi, new_mm->get_rid());
 

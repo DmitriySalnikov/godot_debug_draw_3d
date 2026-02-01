@@ -3,6 +3,7 @@
 #include "common/colors.h"
 #include "common/i_scope_storage.h"
 #include "config_scope_3d.h"
+#include "geometry_generators.h"
 #include "render_instances_enums.h"
 #include "utils/compiler.h"
 #include "utils/native_api_hooks.h"
@@ -184,7 +185,7 @@ private:
 
 	// Meshes
 	/// Store meshes shared between many debug containers
-	std::vector<std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX>> shared_generated_meshes;
+	std::vector<std::array<GeometryGenerator::GeneratedMeshData, (int)MeshMaterialVariant::MAX>> shared_generated_meshes;
 
 	/// Store World3D id and debug container
 	struct ViewportToDebugContainerItem {
@@ -211,7 +212,7 @@ private:
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
 
-	std::array<Ref<ArrayMesh>, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
+	std::array<GeometryGenerator::GeneratedMeshData, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugDraw3D::ViewportToDebugContainerItem *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);
 	void _deferred_find_world_in_viewport(uint64_t p_viewport_id);
 	void _register_viewport_world_deferred(uint64_t /*Viewport * */ p_viewport_id, const uint64_t p_world_id, _DD3D_WorldWatcher *watcher);
@@ -404,7 +405,7 @@ public:
 	 * Draw a capsule between points A and B with the desired radius.
 	 *
 	 * ![](docs/images/classes/DrawCapsuleAb.webp)
-	 * 
+	 *
 	 * @note
 	 * A capsule will not be displayed if the distance between points A and B or the radius is approximately equal to or less than zero.
 	 *

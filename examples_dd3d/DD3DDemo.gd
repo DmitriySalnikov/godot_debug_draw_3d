@@ -12,7 +12,7 @@ extends Node3D
 @export var draw_text_with_boxes := false
 @export var draw_1m_boxes := false
 @export_range(0, 5, 0.001) var debug_thickness := 0.1
-@export_range(0, 1, 0.001) var debug_center_brightness := 0.8
+@export_range(0, 1, 0.001) var debug_center_brightness := 0.75
 @export_range(0, 1) var camera_frustum_scale := 0.9
 
 @export_group("Text groups", "text_groups")
