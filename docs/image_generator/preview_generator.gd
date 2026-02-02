@@ -440,7 +440,7 @@ func _process(delta):
 			DebugDraw3D.draw_plane(plane, Color.SEA_GREEN * Color(1,1,1,0.6), pxf.origin)
 		
 		PreviewCase.DrawText:
-			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, int(sin(anim_pos * PI) * 0.25), 0), "Anim pos: %.2f%%" % anim_pos, int(sin(anim_pos * PI) * 20 + 20), text_colors.sample(anim_pos))
+			DebugDraw3D.draw_text(%OriginInstances.global_position - Vector3(0,0.125,0) + Vector3(0, sin(anim_pos * PI) * 0.25, 0), "Anim pos: %.2f%%" % anim_pos, int(sin(anim_pos * PI) * 20 + 20), text_colors.sample(anim_pos))
 		PreviewCase.DrawTextOutlineColor:
 			var _s = DebugDraw3D.new_scoped_config().set_text_outline_color(text_outline_colors.sample(anim_pos)).set_text_outline_size(24)
 			DebugDraw3D.draw_text(%OriginInstances.global_position, "Anim pos: %.2f%%" % anim_pos, 40)
