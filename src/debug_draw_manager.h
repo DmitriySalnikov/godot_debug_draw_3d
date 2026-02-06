@@ -109,7 +109,7 @@ public:
 	// Test with default arguments
 	NAPI bool api_test4_c(godot::Object *arg1 = nullptr, bool arg2 = true, int arg3 = 1, DebugDrawManager::DevTestEnum arg4 = DebugDrawManager::DevTestEnum::SECOND_VALUE, float arg5 = 0.5f, const char *arg6_string = "test_str") { return {}; }
 	NAPI DebugDrawManager::DevTestEnum api_test7(godot::Color arg1 = godot::Color(1, 0, 1, 1), godot::Vector2 arg2 = godot::Vector2(1, 0), godot::Vector3 arg3 = godot::Vector3(1, 1, 1)) { return {}; }
-	NAPI godot::Quaternion api_test8(real_t angle_deg) { return Quaternion(Vector3_RIGHT, Math::deg_to_rad(45.f)); }
+	NAPI godot::Quaternion api_test8(real_t angle_deg) { return Quaternion(Vector3_RIGHT, Math::deg_to_rad(angle_deg)); }
 #endif
 
 public:
@@ -149,6 +149,15 @@ public:
 	 * Whether debug 2D and 3D graphics are disabled
 	 */
 	NAPI bool is_debug_enabled() const;
+
+	/**
+	 * Returns a dictionary with the keys "major", "minor" and "patch"
+	 */
+	godot::Dictionary get_addon_version() const;
+	/**
+	 * Returns a string with the version in the "major.minor.patch" format
+	 */
+	godot::String get_addon_version_str() const;
 #pragma endregion // Exposed Methods
 
 	/// @private

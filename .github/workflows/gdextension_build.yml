@@ -355,7 +355,8 @@ jobs:
     name: 📦 Collect GDExtension binaries
     runs-on: ubuntu-24.04
     outputs:
-      artifact_name: ${{steps.output_info.outputs.artifact_name}}
+      libs_artifact: ${{steps.output_info.outputs.libs_artifact}}
+      napi_artifact: ${{steps.output_info.outputs.napi_artifact}}
 
     steps:
       - name: Checkout
@@ -388,12 +389,13 @@ jobs:
           cd extracted_files
           echo "Total size: $(du -ch -b | grep total | cut -f1 | awk '{printf "%.2f", $1/1048576}') MB, Total number of files: $(find . -type f | wc -l)" >> $GITHUB_STEP_SUMMARY
 
-          echo "artifact_name=${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}-${{steps.get_version.outputs.version}}" >> $GITHUB_OUTPUT
+          echo "libs_artifact=${{env.PRODUCTION_BUILD == 'true' && '.gdextension_libs_production' || '.gdextension_libs'}}-${{steps.get_version.outputs.version}}" >> $GITHUB_OUTPUT
+          echo "napi_artifact=.gdextension_native_api-${{steps.get_version.outputs.version}}" >> $GITHUB_OUTPUT
 
       - name: Upload GDExtension
         uses: actions/upload-artifact@v4
         with:
-          name: ${{steps.output_info.outputs.artifact_name}}
+          name: ${{steps.output_info.outputs.libs_artifact}}
           retention-days: 7
           include-hidden-files: true
           path: extracted_files/*
@@ -419,7 +421,7 @@ jobs:
           - runner-os: macos-latest
             file_suffix: "macos.universal.zip"
           - runner-os: windows-latest
-            file_suffix: "win64.exe.zip"
+            file_suffix: "win64.zip" # non-mono version: win64.exe.zip
 
     env:
       ADDON_DIR: debug_draw_3d
@@ -439,7 +441,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: addons/${{env.ADDON_DIR}}/libs
-          name: ${{needs.collect-gdextension.outputs.artifact_name}}
+          name: ${{needs.collect-gdextension.outputs.libs_artifact}}
+
+      - name: Download Native Bindings
+        uses: actions/download-artifact@v4
+        with:
+          path: addons/${{env.ADDON_DIR}}/native_api
+          name: ${{needs.collect-gdextension.outputs.napi_artifact}}
 
       - name: Prepare Test Project
         shell: bash
@@ -455,7 +463,7 @@ jobs:
           tag: 4.4.1-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
-          is_mono: false
+          is_mono: true
 
       - name: Setup Godot 4.5
         uses: ./.github/actions/setup_godot
@@ -464,17 +472,17 @@ jobs:
           tag: 4.5-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
-          is_mono: false
+          is_mono: true
 
       - name: Setup Godot 4.6
         uses: ./.github/actions/setup_godot
         id: setup_godot_4_6
         with:
-          tag: 4.6-rc2
+          tag: 4.6-stable
           file_suffix: ${{matrix.file_suffix}}
           download_export_templates: false
-          is_mono: false
-          pre_release: true
+          is_mono: true
+          pre_release: false
 
       - name: macOS dependencies
         shell: bash
@@ -504,6 +512,11 @@ jobs:
               echo "🛒 Project preparation"
               echo "============================================="
               timeout 2m $godot_exe -v -e --headless --path ${{env.PROJECT_PATH}} --quit || true
+
+              echo "============================================="
+              echo "🏗️ Build solutions"
+              echo "============================================="
+              timeout 2m $godot_exe -v -e --headless --path ${{env.PROJECT_PATH}} --build-solutions --quit || true
 
               echo "============================================="
               echo "✅ --check-only test without MainLoop"

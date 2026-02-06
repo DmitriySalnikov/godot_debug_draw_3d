@@ -67,6 +67,9 @@ public partial class DD3DDemoCS : Node3D
 
     public override async void _Ready()
     {
+        var ddm = Engine.GetSingleton("DebugDrawManager");
+        GD.Print("DebugDraw3D version: ", ddm.Call("get_addon_version_str"), " ", ddm.Call("get_addon_version"));
+
         _get_nodes();
         _update_keys_just_press();
 

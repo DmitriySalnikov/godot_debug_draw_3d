@@ -363,6 +363,19 @@ void DebugDraw3D::_clear_scoped_configs() {
 		PRINT_ERROR("{0} scoped configs weren't freed. Do not save scoped configurations anywhere other than function bodies.", orphans);
 }
 
+void DebugDraw3D::_clear_all_remove_watcher_as_child(uint64_t world_watcher_id) {
+	Node* watcher = cast_to<Node>(ObjectDB::get_instance(world_watcher_id));
+	if (!watcher){
+		return;
+	}
+
+	if (Node *parent = watcher->get_parent(); parent) {
+		// should be auto freed on exit_tree notif
+		// must be deferred to avoid `debug_containers` invalidation
+		parent->remove_child(watcher);
+	}
+}
+
 Node *DebugDraw3D::get_root_node() {
 	return root_node;
 }
@@ -825,11 +838,7 @@ void DebugDraw3D::clear_all() {
 			// must be freed in anyway
 			p.second.world_watcher->queue_free();
 
-			if (Node *parent = p.second.world_watcher->get_parent(); parent) {
-				// should be auto freed on exit_tree notif
-				// must be deferred to avoid `debug_containers` invalidation
-				parent->call_deferred(NAMEOF(remove_child), p.second.world_watcher);
-			}
+			callable_mp(this, &DebugDraw3D::_clear_all_remove_watcher_as_child).call_deferred(p.second.world_watcher->get_instance_id());
 		}
 	}
 

@@ -5,6 +5,7 @@
 #include "3d/debug_draw_3d.h"
 #include "native_api/c_api.h"
 #include "utils/utils.h"
+#include "version.h"
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
@@ -42,6 +43,8 @@ void DebugDrawManager::_bind_methods() {
 #endif
 
 	ClassDB::bind_method(D_METHOD(NAMEOF(clear_all)), &DebugDrawManager::clear_all);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_addon_version)), &DebugDrawManager::get_addon_version);
+	ClassDB::bind_method(D_METHOD(NAMEOF(get_addon_version_str)), &DebugDrawManager::get_addon_version_str);
 
 	REG_PROP_BOOL(debug_enabled);
 
@@ -145,6 +148,14 @@ void DebugDrawManager::set_debug_enabled(bool value) {
 
 bool DebugDrawManager::is_debug_enabled() const {
 	return debug_enabled;
+}
+
+godot::Dictionary DebugDrawManager::get_addon_version() const {
+	return Utils::make_dict("major", DD3D_MAJOR, "minor", DD3D_MINOR, "patch", DD3D_PATCH);
+}
+
+godot::String DebugDrawManager::get_addon_version_str() const {
+	return DD3D_VERSION_STR;
 }
 
 String DebugDrawManager::_define_and_update_addon_root_folder() {

@@ -211,6 +211,7 @@ private:
 	void _register_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id, DebugDraw3DScopeConfig *p_cfg) override;
 	void _unregister_scoped_config(uint64_t p_thread_id, uint64_t p_guard_id) override;
 	void _clear_scoped_configs() override;
+	void _clear_all_remove_watcher_as_child(uint64_t world_watcher_id);
 
 	std::array<GeometryGenerator::GeneratedMeshData, (int)MeshMaterialVariant::MAX> *get_shared_meshes();
 	DebugDraw3D::ViewportToDebugContainerItem *get_debug_container(const DebugDraw3DScopeConfig::DebugContainerDependent &p_dgcd, const bool p_generate_new_container);

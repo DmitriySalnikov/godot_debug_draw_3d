@@ -143,23 +143,56 @@
             }
         },
         {
-            // It doesn't seem to work, but it can serve as an example of a build startup command.
+            // For Linux, `call` should most likely be replaced by `source'.
             "type": "cppbuild",
             "label": "template_debug_web",
-            "command": "cmd",
+            "command": "call",
             "args": [
-                "/c",
-                "emsdk_env.bat",
+                "emsdk_env",
                 "&&",
                 "scons",
                 "platform=web",
                 "target=template_debug",
                 "debug_symbols=yes",
-                "dev_build=yes",
+                //"dev_build=yes",
                 "threads=no",
                 //"lto=full",
                 //"tracy_enabled=yes",
                 "force_enabled_dd3d=yes",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "test_cpp_api_web",
+            "command": "call",
+            "args": [
+                "emsdk_env",
+                "&&",
+                "scons",
+                "cpp_api_tests=yes",
+                "custom_godotcpp_suffix=.test_napi",
+                "folder_to_include_classes=../tests_native_api/cpp",
+                //"native_api_mismatch_check_enabled=yes",
+                //
+                "platform=web",
+                "target=template_debug",
+                "debug_symbols=yes",
+                //"dev_build=yes",
+                "threads=no",
+                //"lto=full",
+                //"tracy_enabled=yes",
+                "force_enabled_dd3d=yes",
+                //"cpp_api_auto_gen=no",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

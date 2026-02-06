@@ -566,6 +566,8 @@ func _draw_array_of_boxes():
 
 
 func _ready() -> void:
+	print("DebugDraw3D version: ", DebugDrawManager.get_addon_version_str(), " ", DebugDrawManager.get_addon_version())
+	
 	_update_keys_just_press()
 	
 	await get_tree().process_frame

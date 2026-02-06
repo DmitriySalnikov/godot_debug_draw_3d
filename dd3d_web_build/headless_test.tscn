@@ -1,14 +1,18 @@
-[gd_scene load_steps=3 format=3 uid="uid://cnv87ogp7t43e"]
+[gd_scene format=3 uid="uid://cnv87ogp7t43e"]
 
 [sub_resource type="GDScript" id="GDScript_wbn2v"]
 script/source = "extends Node3D
 
+var drawing_time := 3.0
+var timer := 0.0
+var is_ready := false
+var is_scenes_added := false
 
 func _ready():
 	if FileAccess.file_exists(\"SUCCESS\"):
 		DirAccess.remove_absolute(\"SUCCESS\")
 	
-	print(\"DD3D Version: \", ProjectSettings.get_setting(\"debug_draw_3d/settings/updates/addon_version\"))
+	print(\"DD3D Version: \", DebugDrawManager.get_addon_version_str(), \" \", DebugDrawManager.get_addon_version())
 	print(\"Engine Version: \", Engine.get_version_info())
 	print(\"Distribution: \", OS.get_distribution_name())
 	print(\"OS Name: \", OS.get_name())
@@ -20,12 +24,53 @@ func _ready():
 	var res = await $Runner.call(&\"start\") if $Runner.has_method(&\"start\") else false
 	print(\"Headless runner returns: \", res)
 	
-	if res:
-		var f = FileAccess.open(\"SUCCESS\", FileAccess.WRITE)
-		f.store_8(1)
+	if not res:
+		print(\"Failed!\\n\")
+		get_tree().quit(0)
 	
-	print()
-	get_tree().quit(0 if res == true else 1)
+	print(\"Now we wait %f seconds with two demo scenes with GDScript and C#\" % drawing_time)
+	is_ready = true
+	
+	var scene1: PackedScene = load(\"res://examples_dd3d/DD3DDemo.tscn\")
+	var scene2: PackedScene = load(\"res://examples_dd3d/DD3DDemoCS.tscn\")
+	
+	if scene1 == null or scene2 == null:
+		print(\"Failed to load demo scenes!\\n\")
+		get_tree().quit(0)
+	
+	var node1: Node3D = scene1.instantiate()
+	var node2: Node3D = scene2.instantiate()
+	
+	print(\"Checking access to script variables\")
+	print(node1.custom_font)
+	print(node2.custom_font)
+	
+	if node1 == null or node2 == null or node1.get_script() == null or node2.get_script() == null:
+		print(\"Failed to instantiate demo scenes!\\n\")
+		get_tree().quit(0)
+	
+	add_child(node1)
+	add_child(node2)
+	
+	is_scenes_added = true
+
+
+func _process(delta: float) -> void:
+	if not is_ready:
+		return
+	
+	timer += delta
+	if timer < drawing_time:
+		return
+	else:
+		if not is_scenes_added:
+			print(\"Failed to load demo scenes with scripts!\\n\")
+			get_tree().quit(1)
+	
+	var f = FileAccess.open(\"SUCCESS\", FileAccess.WRITE)
+	f.store_8(1)
+	
+	get_tree().quit(1)
 "
 
 [sub_resource type="GDScript" id="GDScript_7yy7l"]
@@ -67,15 +112,15 @@ func start() -> bool:
 	return true
 "
 
-[node name="HeadlessTest" type="Node3D"]
+[node name="HeadlessTest" type="Node3D" unique_id=261867080]
 script = SubResource("GDScript_wbn2v")
 
-[node name="Runner" type="Node3D" parent="."]
+[node name="Runner" type="Node3D" parent="." unique_id=273190468]
 script = SubResource("GDScript_7yy7l")
 
-[node name="Node3D" type="Node3D" parent="."]
+[node name="Node3D" type="Node3D" parent="." unique_id=365707488]
 transform = Transform3D(0.866025, -0.12941, 0.482963, -3.8567e-09, 0.965926, 0.258819, -0.5, -0.224144, 0.836516, 0, 0, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Node3D"]
+[node name="Camera3D" type="Camera3D" parent="Node3D" unique_id=650439721]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1.5)
 current = true

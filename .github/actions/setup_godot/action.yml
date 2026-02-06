@@ -42,13 +42,14 @@ runs:
           echo "Fixed path: $tmp_path_unix"
         fi
 
-        echo "path=$tmp_path/godot_installation_${{inputs.tag}}" >> $GITHUB_OUTPUT
-        echo "path_unix=$tmp_path_unix/godot_installation_${{inputs.tag}}" >> $GITHUB_OUTPUT
+        installation_dir=godot_installation_${{inputs.is_mono == 'true' && 'mono_' || ''}}${{inputs.tag}}
+        echo "path=$tmp_path/$installation_dir" >> $GITHUB_OUTPUT
+        echo "path_unix=$tmp_path_unix/$installation_dir" >> $GITHUB_OUTPUT
 
         if [[ "${{inputs.file_suffix}}" == *"macos"* ]]; then
-          echo "exe=$tmp_path_unix/godot_installation_${{inputs.tag}}/Godot.app/Contents/MacOS/Godot" >> $GITHUB_OUTPUT
+          echo "exe=$tmp_path_unix/$installation_dir/Godot.app/Contents/MacOS/Godot" >> $GITHUB_OUTPUT
         else
-          echo "exe=$tmp_path_unix/godot_installation_${{inputs.tag}}/godot" >> $GITHUB_OUTPUT
+          echo "exe=$tmp_path_unix/$installation_dir/godot" >> $GITHUB_OUTPUT
         fi
 
     - name: Restore cache directory
@@ -56,7 +57,7 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ${{steps.store_folder.outputs.path}}
-        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.is_mono == 'true' && '-mono' || ''}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
 
     - name: Download Godot Engine
       uses: robinraju/release-downloader@v1.10
@@ -64,7 +65,7 @@ runs:
       with:
         repository: ${{inputs.pre_release == 'true' && 'godotengine/godot-builds' || 'godotengine/godot'}}
         tag: "${{inputs.tag}}"
-        fileName: "*${{inputs.tag}}_${{inputs.file_suffix}}"
+        fileName: "*${{inputs.tag}}_${{inputs.is_mono == 'true' && 'mono_' || ''}}${{inputs.file_suffix}}"
         out-file-path: "temp_download"
         extract: true
 
@@ -81,11 +82,22 @@ runs:
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       shell: bash
       run: |
-        # TODO: test mono
         if [ "${{inputs.is_mono}}" == "true" ]; then
           echo "Move the Mono files to the root of the temporary folder"
-          mv -f Godot*/* temp_download/ || true
-          mv -f godot*/* temp_download/ || true
+          first_folder="$(find temp_download/ -mindepth 1 -maxdepth 1 -type d -name "Godot_*" | head -1)"
+          if [ ! "$first_folder" ]; then
+            echo "The root folder of the mono build was not found."
+            exit 1
+          fi
+          echo "Found mono build folder: $first_folder"
+
+          if [[ "$first_folder" != *"Godot_mono.app" ]]; then
+            mv -f "$first_folder/GodotSharp" temp_download
+            mv -f "$first_folder"/* temp_download
+            rm -rf "$first_folder"
+          else
+            mv -f "$first_folder" temp_download/Godot.app
+          fi
         fi
 
         echo "Unzip templates"
@@ -137,4 +149,4 @@ runs:
       uses: actions/cache/save@v4
       with:
         path: ${{steps.store_folder.outputs.path}}
-        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
+        key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.is_mono == 'true' && '-mono' || ''}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
