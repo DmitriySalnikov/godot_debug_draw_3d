@@ -150,13 +150,13 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
 
     if env["native_api_enabled"]:
         env.Append(CPPDEFINES=["NATIVE_API_ENABLED"])
+        if env["native_api_mismatch_check_enabled"]:
+            env.Append(CPPDEFINES=["DD3D_ENABLE_MISMATCH_CHECKS"])
+
         if (not COMMAND_LINE_TARGETS and not env["cpp_api_tests"]) or (
             env["cpp_api_tests"] and env["cpp_api_auto_gen"]
         ):
             gen_apis(None, None, env, src_out)
-
-        if env["native_api_mismatch_check_enabled"]:
-            env.Append(CPPDEFINES=["DD3D_ENABLE_MISMATCH_CHECKS"])
 
     print()
 

@@ -45,9 +45,11 @@ def dev_print(line: str):
     if False:
         print(line)
 
+
 def trace_print(line: str):
     if False:
         print(line)
+
 
 default_colors_map = {
     "Colors::empty_color": "godot::Color(0, 0, 0, 0)",
@@ -95,6 +97,11 @@ basic_godot_types = [
     "godot::Dictionary",
     "godot::Array",
 ]
+
+basic_to_trivial_types = {
+    "godot::Quaternion": "DD3DShared::CQuaternion",
+    "godot::Projection": "DD3DShared::CProjection",
+}
 
 disallowed_godot_types = [
     "godot::Variant",
@@ -232,6 +239,37 @@ def insert_lines_at_mark(lines: list, mark: str, insert_lines: list):
 
 def split_text_into_lines(text) -> list:
     return text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+
+
+def is_need_trivial_c_conversion(t: str):
+    prefix = ""
+    type = t
+    if type.startswith("const"):
+        prefix = "const "
+        type = type.removeprefix("const ").strip()
+
+    if type in basic_to_trivial_types:
+        return (True, basic_to_trivial_types[type], prefix)
+    return (False, t, "")
+
+
+def get_trivial_c_type(t: str) -> str:
+    (res, type, prefix) = is_need_trivial_c_conversion(t)
+    return prefix + type
+
+
+def get_cpp_types_static_asserts() -> list:
+    asserts = []
+    for t in basic_godot_types:
+        if t not in disallowed_godot_types:
+            (res, type, prefix) = is_need_trivial_c_conversion(t)
+            if res:
+                asserts.append(f"// Original type - {t}")
+
+            asserts.append(f"static_assert(std::is_standard_layout_v<{prefix + type}>);")
+            asserts.append(f"static_assert(std::is_trivially_copyable_v<{prefix + type}>);")
+            asserts.append("")
+    return asserts
 
 
 ####################################
@@ -833,7 +871,7 @@ def generate_native_api(
     new_func_regs = []
     new_ref_clears = []
 
-    extern_c_dbg = 'extern "C"'
+    extern_c_dbg = 'extern "C" '
     extern_c_dbg = ""
 
     for cls in classes:
@@ -922,7 +960,7 @@ def generate_native_api(
         for func in functions:
 
             def process_ret_type(ret: dict):
-                type = ret["c_type"]
+                type = get_trivial_c_type(ret["c_type"])
                 if "enum_type" in ret:
                     e = ret["enum_type"]
                     return f"{e['type']} /*{e['class']}::{e['name']}*/"
@@ -939,7 +977,7 @@ def generate_native_api(
                 return line
 
             def process_arg_decl(arg: dict):
-                type = arg["c_type"]
+                type = get_trivial_c_type(arg["c_type"])
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"void *{name}"
@@ -1069,7 +1107,7 @@ def generate_native_api(
         "// GENERATOR_DD3D_GODOT_API_INCLUDES",
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
-    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS", new_funcs)
+    insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_FUNCTIONS", get_cpp_types_static_asserts() + new_funcs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REGISTRATIONS", new_class_regs + new_func_regs)
     insert_lines_at_mark(c_api_lines, "// GENERATOR_DD3D_REFS_CLEAR", new_ref_clears)
     c_api_file_name, c_api_file_ext = os.path.splitext(os.path.basename(c_api_template))
@@ -1254,7 +1292,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                     e = ret["enum_type"]
                     return f"{e['type']} /*{e['class']}::{e['name']}*/"
 
-                return r_type
+                return get_trivial_c_type(r_type)
 
             def get_ret_required_cast_type(ret: dict):
                 if "enum_type" in ret:
@@ -1286,7 +1324,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
                 return res
 
             def process_arg_funcptr_decl(arg: dict):
-                type = arg["c_type"]
+                type = get_trivial_c_type(arg["c_type"])
                 name = arg["name"]
                 if is_ref_in_api(type):
                     return f"void * /*{name}*/"
@@ -1524,7 +1562,7 @@ def gen_cpp_api(env: SConsEnvironment, api: dict, out_folder: str, additional_in
         [f"#include <godot_cpp/classes/{i}.hpp>" for i in additional_include_classes],
     )
     insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FORWARD_DECLARATIONS", fwd_decls)
-    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", result_arr)
+    insert_lines_at_mark(lines, "// GENERATOR_DD3D_API_FUNCTIONS", get_cpp_types_static_asserts() + result_arr)
     return lib_utils.write_all_text(os.path.join(out_folder, "dd3d_cpp_api.hpp"), "\n".join(lines))
 
 

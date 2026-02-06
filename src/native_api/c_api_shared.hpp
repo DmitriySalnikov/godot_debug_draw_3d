@@ -10,12 +10,15 @@ __pragma(warning(default : 4244 26451 26495));
 
 // GENERATOR_DD3D_API_SHARED_EMBED_START
 
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
 #include <sstream>
 #include <string>
 #include <typeinfo>
+#endif
 
 namespace DD3DShared {
 
+#ifdef DD3D_ENABLE_MISMATCH_CHECKS
 template <typename T>
 struct FunctionSignature;
 
@@ -43,4 +46,36 @@ private:
 		return oss.str();
 	}
 };
+#endif
+
+struct CQuaternion {
+	real_t x = 0.0;
+	real_t y = 0.0;
+	real_t z = 0.0;
+	real_t w = 1.0;
+
+	_FORCE_INLINE_ operator godot::Quaternion() const {
+		return godot::Quaternion(x, y, z, w);
+	}
+
+	CQuaternion(const godot::Quaternion &q) :
+			x(q.x), y(q.y), z(q.z), w(q.w) {
+	}
+};
+
+struct CProjection {
+	godot::Vector4 columns[4];
+
+	_FORCE_INLINE_ operator godot::Projection() const {
+		return godot::Projection(columns[0], columns[1], columns[2], columns[3]);
+	}
+
+	CProjection(const godot::Projection &p) {
+		columns[0] = p[0];
+		columns[1] = p[1];
+		columns[2] = p[2];
+		columns[3] = p[3];
+	}
+};
+
 } // namespace DD3DShared

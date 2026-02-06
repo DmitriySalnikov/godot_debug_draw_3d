@@ -37,10 +37,8 @@ __pragma(warning(default : 4244 26451 26495));
 #define ZoneScoped
 #endif
 
-#ifdef DD3D_ENABLE_MISMATCH_CHECKS
 #include "c_api_shared.hpp" // GENERATOR_DD3D_API_REMOVE_LINE
 // GENERATOR_DD3D_API_SHARED_EMBED
-#endif
 
 struct _DD3D_Loader_ {
 	static constexpr const char *log_prefix = "[DD3D C++] ";

@@ -88,6 +88,8 @@ void DD3DTestCppApiNode::_ready() {
 	DEV_ASSERT(DebugDrawManager::DevTestEnum::SECOND_VALUE == 10);
 
 	//DebugDrawManager::api_test6(nullptr, Variant(), false, 1, DebugDrawManager::SECOND_VALUE, 0.5f, "test", "test2", "test3");
+	Quaternion quat = DebugDrawManager::api_test8(45);
+	DEV_ASSERT(Math::is_equal_approx((float)quat.x, 0.382683456f));
 #endif
 }
 

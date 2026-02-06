@@ -14,6 +14,8 @@ GODOT_WARNING_DISABLE()
 // GENERATOR_DD3D_GODOT_API_INCLUDES
 GODOT_WARNING_RESTORE()
 
+#include <type_traits>
+
 using namespace godot;
 
 namespace NATIVE_API {
