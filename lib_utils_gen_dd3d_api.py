@@ -45,6 +45,9 @@ def dev_print(line: str):
     if False:
         print(line)
 
+def trace_print(line: str):
+    if False:
+        print(line)
 
 default_colors_map = {
     "Colors::empty_color": "godot::Color(0, 0, 0, 0)",
@@ -144,7 +147,7 @@ class DefineContext:
             d for d in env["CPPDEFINES"] if (re.search(r"\w+", d)[0] == d if type(d) is not tuple else False)
         ]
         self.active_defines = set(self.default_defines)
-        dev_print(f"Global defines: {self.default_defines}")
+        trace_print(f"Global defines: {self.default_defines}")
 
     def reset(self):
         self.active_defines = set(self.default_defines)
@@ -156,7 +159,7 @@ class DefineContext:
             def_line = line[len("#define ") :]
             split = def_line.split(" ")
             if def_line == re.search(r"\w+", split[0])[0]:
-                dev_print(f"\tFound define: {def_line}")
+                trace_print(f"\tFound define: {def_line}")
                 self.active_defines.add(def_line)
             return False
 
@@ -170,18 +173,18 @@ class DefineContext:
             is_defined = define_name in self.active_defines
             self.if_blocks.append(not is_defined if is_inverted else is_defined)
             if self.if_blocks[-1]:
-                dev_print(
+                trace_print(
                     f"\tFound {if_name} with '{define_name}', which is {'active' if is_defined else 'inactive'}: next lines will be parsed."
                 )
             else:
-                dev_print(
+                trace_print(
                     f"\tFound {if_name} with '{define_name}', which is {'active' if is_defined else 'inactive'}: next lines will be ignored."
                 )
             return False
 
         if stripped_line.startswith("#if "):
             self.if_blocks.append("ignored")
-            dev_print("\tFound #if. Ignoring...")
+            trace_print("\tFound #if. Ignoring...")
             return False
 
         if stripped_line.startswith("#else"):
@@ -189,17 +192,17 @@ class DefineContext:
                 return False
 
             self.if_blocks[-1] = not self.if_blocks[-1]
-            dev_print(
+            trace_print(
                 f"\tFound #else: inverting the last if block: {'next lines will be parsed.' if self.if_blocks[-1] else 'next lines will be ignored.'}"
             )
             return False
 
         if stripped_line.startswith("#endif"):
             self.if_blocks.pop()
-            dev_print(f"\tFound #endif: removing the last if block.")
+            trace_print(f"\tFound #endif: removing the last if block.")
             if len(self.if_blocks):
                 if self.if_blocks[-1] != "ignored":
-                    dev_print(
+                    trace_print(
                         "\t\tNext lines will be parsed." if self.if_blocks[-1] else "\t\tNext lines will be ignored."
                     )
             return False
@@ -245,7 +248,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
     def_ctx: DefineContext = DefineContext(env)
 
     for header in headers:
-        print(f"  Parsing {header} ...")
+        print(f"Parsing {header} ...")
         lines = split_text_into_lines(lib_utils.read_all_text(header, True))
         lines = [line.strip() for line in lines]
         def_ctx.reset()
@@ -259,7 +262,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
 
         for idx, line in enumerate(lines):
             if not def_ctx.parse_line(line):
-                dev_print(f"\t\tSkipping: {idx + 1}: {line}")
+                trace_print(f"\t\tSkipping: {idx + 1}: {line}")
                 continue
 
             def get_doc_lines(start_idx: int):
@@ -336,9 +339,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 classes[current_class] = {"enums": enums, "functions": functions, "type": class_type, "docs": docs}
 
                 if is_singleton:
-                    print(f"Found Singleton {current_class}")
+                    print(f"  Found Singleton {current_class}")
                 elif is_refcounted:
-                    print(f"Found RefCounted {current_class}")
+                    print(f"  Found RefCounted {current_class}")
                 continue
 
             """
@@ -357,7 +360,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 if e_type not in allowed_enum_types:
                     raise Exception(f'Enum must be one of these types: {allowed_enum_types}, but "{e_type}" was found.')
 
-                print(f"\tFound Enum {name} of type {e_type}")
+                dev_print(f"\tFound Enum {name} of type {e_type}")
                 enum_lines = [line[line.rfind("{") + 1 :]]
                 eidx = idx + 1
                 while True:
@@ -379,7 +382,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 enum_lines = "".join(enum_lines)
                 # split by comma and remove empty
                 enum_lines = [l.strip() for l in enum_lines.split(",") if len(l.strip())]
-                print("\t\tEnum lines:", enum_lines)
+                dev_print("\t\tEnum lines: " + str(enum_lines))
 
                 values = {}
                 last_val = -1
@@ -457,7 +460,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 func_name_match = re.search(r"\b(\w+)\s*\(", line)
                 func_name = func_name_match.group(1).strip()
                 ret_type = line[: line.index(func_name)].replace("NAPI ", "").strip()
-                print(f"\tFound method {func_name}")
+                dev_print(f"\tFound method {func_name}")
 
                 is_self_return = False
                 if is_refcounted:
@@ -493,7 +496,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                     ret_dict["object_class"] = (
                         ret_type.replace("const ", "").replace("class ", "").replace("*", "").strip()
                     )
-                    print("\t\tFound Godot's Object* type in return:", ret_type)
+                    dev_print("\t\tFound Godot's Object* type in return: " + str(ret_type))
 
                 # get all args even in one-line functions
                 cbrace_end = line.rfind("{")
@@ -583,7 +586,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         new_arg["type"] = tmp_type
                         new_arg["c_type"] = "const uint64_t"
                         new_arg["ref_class"] = ref_type_match.group(1).strip()
-                        print("\t\tFound Godot's Ref type:", tmp_type)
+                        dev_print("\t\tFound Godot's Ref type: " + tmp_type)
                     elif (
                         new_arg["name"] != "inst_ptr"
                         and tmp_type != "void *"
@@ -596,7 +599,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         new_arg["object_class"] = (
                             tmp_type.replace("const ", "").replace("class ", "").replace("*", "").strip()
                         )
-                        print("\t\tFound Godot's Object* type:", tmp_type)
+                        dev_print("\t\tFound Godot's Object* type: " + tmp_type)
 
                     args_dict.append(new_arg)
 
@@ -672,7 +675,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                                         arr_dict["not_godot_array_type"] = not_godot_array_type
 
                                     found_arrays.append(arr_dict)
-                                    print(
+                                    dev_print(
                                         "\t\tArguments suitable for the PackedArray wrapper have been found: "
                                         + f'{idx} - {a1["name"]} and {idx + 1} - {a2["name"]}'
                                     )
@@ -693,7 +696,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                             }
                             found_arrays.append(arr_dict)
 
-                            print(
+                            dev_print(
                                 f'\t\tArguments suitable for the String wrapper have been found: {idx} - {a1["name"]}'
                             )
 
@@ -705,9 +708,9 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                 # Name of the generated C API function
 
                 functions.append(fun_dict)
-                print(f"\t  Parsing of method {func_name} completed")
+                dev_print(f"\t  Parsing of method {func_name} completed")
 
-    ##№
+    ###
     print("Mark all Enum's in args and return types...")
 
     """
@@ -793,7 +796,7 @@ def get_api_functions(env: SConsEnvironment, headers: list) -> dict:
                         elif prop_name2.startswith("is_"):
                             prop_name2 = prop_name2.removeprefix("is_")
                         if prop_name == prop_name2:
-                            print(f'\tFound Property in "{cls_name}" named "{prop_name}"')
+                            dev_print(f'\tFound Property in "{cls_name}" named "{prop_name}"')
                             properties.append(
                                 {
                                     "name": prop_name,

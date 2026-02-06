@@ -56,35 +56,6 @@
             }
         },
         {
-            // It doesn't seem to work, but it can serve as an example of a build startup command.
-            "type": "cppbuild",
-            "label": "template_debug_web",
-            "command": "cmd",
-            "args": [
-                "/c",
-                "emsdk_env.bat",
-                "&&",
-                "scons",
-                "platform=web",
-                "target=template_debug",
-                "debug_symbols=yes",
-                "dev_build=yes",
-                //"lto=full",
-                //"tracy_enabled=yes",
-                "force_enabled_dd3d=yes",
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$msCompile"
-            ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
             "type": "cppbuild",
             "label": "editor_build_linux",
             "command": "scons",
@@ -159,6 +130,36 @@
                 //"tracy_enabled=yes",
                 "use_hot_reload=yes",
                 //"cpp_api_auto_gen=no",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            // It doesn't seem to work, but it can serve as an example of a build startup command.
+            "type": "cppbuild",
+            "label": "template_debug_web",
+            "command": "cmd",
+            "args": [
+                "/c",
+                "emsdk_env.bat",
+                "&&",
+                "scons",
+                "platform=web",
+                "target=template_debug",
+                "debug_symbols=yes",
+                "dev_build=yes",
+                "threads=no",
+                //"lto=full",
+                //"tracy_enabled=yes",
+                "force_enabled_dd3d=yes",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

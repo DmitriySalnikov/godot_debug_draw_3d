@@ -113,6 +113,9 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
         else:
             env.AppendUnique(CCFLAGS=["-flto"])
             env.AppendUnique(LINKFLAGS=["-flto"])
+    else:
+        if env.get("is_msvc", False):
+            env.AppendUnique(LINKFLAGS=["/incremental:no"])
 
     if env["tracy_enabled"]:
         env.Append(CPPDEFINES=["TRACY_ENABLE", "TRACY_ON_DEMAND", "TRACY_DELAYED_INIT", "TRACY_MANUAL_LIFETIME"])
