@@ -147,8 +147,9 @@ public partial class DD3DDemoCS : Node3D
         if (!zylann_example)
         {
             // DD3D GDExtension not loaded
-            if (DebugDraw3D.ScopedConfig() == null)
-                return;
+            using (var _sc = DebugDraw3D.GetConfig())
+                if (_sc == null)
+                    return;
 
             DebugDraw3D.DrawLine(dLines_8.GlobalPosition, dLines_Target.GlobalPosition, Colors.Yellow);
             if (more_test_cases)
@@ -171,10 +172,11 @@ public partial class DD3DDemoCS : Node3D
     void MainUpdate(double delta)
     {
         // DD3D GDExtension not loaded
-        if (DebugDraw3D.ScopedConfig() == null)
-            return;
+        using (var _sc = DebugDraw3D.GetConfig())
+            if (_sc == null)
+                return;
 
-        DebugDraw3D.ScopedConfig().SetThickness(debug_thickness).SetCenterBrightness(debug_center_brightness);
+        DebugDraw3D.ScopedConfig().SetThickness(debug_thickness).SetCenterBrightness(debug_center_brightness).Dispose();
 
         _update_keys_just_press();
 

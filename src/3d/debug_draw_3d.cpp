@@ -316,11 +316,10 @@ void DebugDraw3D::_register_scoped_config(uint64_t p_thread_id, uint64_t p_guard
 	ZoneScoped;
 	LOCK_GUARD(datalock);
 
-	uint64_t thread = OS::get_singleton()->get_thread_caller_id();
 	scoped_configs[p_thread_id].push_back(ScopedPairIdConfig(p_guard_id, p_cfg));
 
 	// Update cached value
-	cached_scoped_configs[thread] = p_cfg->data;
+	cached_scoped_configs[p_thread_id] = p_cfg->data;
 }
 
 void DebugDraw3D::_unregister_scoped_config(uint64_t thread_id, uint64_t guard_id) {
