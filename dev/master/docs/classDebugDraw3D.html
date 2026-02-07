@@ -314,7 +314,9 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Returns the default scope settings that will be applied at the start of each new frame.</p>
-<p>Default values can be overridden in the project settings <span class="tt">debug_draw_3d/settings/3d/volumetric_defaults</span>. </p>
+<p>Default values can be overridden in the project settings <span class="tt">debug_draw_3d/settings/3d/volumetric_defaults</span>.</p>
+<dl class="section note"><dt>Note</dt><dd>When used in a managed language, this is not mandatory, but it is recommended to finish the <span class="tt"><a class="el" href="#ab24e67a580b97fdd07338431b205aa84">scoped_config()</a></span> configuration with a dispose. This will reduce the number of objects awaiting removal by the garbage collector. <div class="fragment"><div class="line">DebugDraw3D.ScopedConfig().SetThickness(debug_thickness).Dispose();</div>
+</div><!-- fragment --> </dd></dl>
 
 </div>
 </div>
