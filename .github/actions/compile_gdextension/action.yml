@@ -105,8 +105,6 @@ runs:
         scons $scons_params $telemetry_args
 
         if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.build_forced_dd3d}}" == "true" ]; then
-          echo "Sleeping for 7 seconds..."
-          sleep 7
           echo "============================================="
           echo "🧊 build_forced_dd3d"
           echo "============================================="
@@ -114,11 +112,13 @@ runs:
         fi
 
         if [ "${{inputs.build_cpp_tests}}" == "true" ]; then
-          echo "Sleeping for 7 seconds..."
-          sleep 7
           echo "============================================="
           echo "🧪 build_cpp_tests"
           echo "============================================="
+
+          # Cleaning the generated folder to avoid cache issues.
+          rm -rf godot-cpp/gen/
+
           scons $scons_params cpp_api_tests=yes custom_godotcpp_suffix=.test_napi folder_to_include_classes=../tests_native_api/cpp cpp_api_auto_gen=no
         fi
 
