@@ -24,7 +24,7 @@ runs:
 
     - name: Restore NDK Cache
       id: ndk-cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{steps.get_android_home.outputs.ndk_path}}
         key: ndk-cache-${{inputs.ndk_version}}
@@ -36,7 +36,7 @@ runs:
 
     - name: Save NDK Cache
       if: steps.ndk-cache.outputs.cache-hit != 'true'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ${{steps.get_android_home.outputs.ndk_path}}
         key: ndk-cache-${{inputs.ndk_version}}

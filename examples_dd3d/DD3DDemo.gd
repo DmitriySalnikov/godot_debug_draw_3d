@@ -557,7 +557,7 @@ func _draw_array_of_boxes():
 					
 					if show_text and z == 0:
 						DebugDraw3D.draw_text(pos + half_size, str(pos), 32, DebugDraw3D.empty_color, cubes_show_time)
-		print("Draw Cubes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
+		print("Draw Boxes GDScript: %.3fms" % ((Time.get_ticks_usec() - _start_time) / 1000.0))
 		timer_cubes = cubes_show_time
 	
 	if timer_cubes > cubes_show_time:

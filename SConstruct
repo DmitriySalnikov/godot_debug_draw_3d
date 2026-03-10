@@ -101,9 +101,18 @@ def setup_defines_and_flags(env: SConsEnvironment, src_out: list):
             )
             src_out.append(tele_src)
             print("Compiling with telemetry support!")
+            print()
         else:
             print("No telemetry source file found.")
             env.Exit(1)
+
+    if env["platform"] == "windows":
+        if env.get("use_mingw", False):
+            print(f'Compiling with MinGW{" + LLVM" if env.get("use_llvm", False) else ""}.')
+            print()
+        else:
+            print("Compiling with MSVC")
+            print()
 
     if env["lto"] != "none":
         if env.get("is_msvc", False):

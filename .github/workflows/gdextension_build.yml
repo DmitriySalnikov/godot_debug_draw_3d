@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -76,7 +76,7 @@ jobs:
         run: scons gen_apis addon_output_dir=${{env.OUTPUT_LIBS_PATH}}/libs
 
       - name: Upload Standard API
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: .gdextension_native_api-${{steps.get_version.outputs.version}}
           retention-days: 7
@@ -89,7 +89,7 @@ jobs:
         run: scons gen_apis precision=double addon_output_dir=${{env.OUTPUT_LIBS_PATH}}/libs
 
       - name: Upload Double API
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: .gdextension_native_api_double-${{steps.get_version.outputs.version}}
           retention-days: 7
@@ -112,34 +112,59 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner-os:
-          [ubuntu-22.04, ubuntu-22.04-arm, windows-latest, macos-latest]
-        target: [editor, template_release]
         include:
           # Linux
-          - runner-os: ubuntu-22.04
-            platform_name: 🐧 Linux
+          - platform_name: 🐧 Linux
+            runner-os: ubuntu-22.04
             platform: linux
             arch: x86_64
-          - runner-os: ubuntu-22.04-arm
-            platform_name: 🐧 Linux
+            target: editor
+          - platform_name: 🐧 Linux
+            runner-os: ubuntu-22.04
+            platform: linux
+            arch: x86_64
+            target: template_release
+
+          - platform_name: 🐧 Linux
+            runner-os: ubuntu-22.04-arm
             platform: linux
             arch: arm64
+            target: editor
+          - platform_name: 🐧 Linux
+            runner-os: ubuntu-22.04-arm
+            platform: linux
+            arch: arm64
+            target: template_release
+      
           # Windows
-          - runner-os: windows-latest
-            platform_name: 🏁 Windows
+          - platform_name: 🏁 Windows
+            runner-os: ubuntu-22.04
             platform: windows
             arch: x86_64
+            target: editor
+          - platform_name: 🏁 Windows
+            runner-os: ubuntu-22.04
+            platform: windows
+            arch: x86_64
+            target: template_release
+
           # macOS
-          - runner-os: macos-latest
-            platform_name: 🍏 MacOS
+          - platform_name: 🍏 MacOS
+            runner-os: macos-latest
             platform: macos
             arch: universal
             additional: macos_deployment_target=10.14
+            target: editor
+          - platform_name: 🍏 MacOS
+            runner-os: macos-latest
+            platform: macos
+            arch: universal
+            additional: macos_deployment_target=10.14
+            target: template_release
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -211,7 +236,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -273,25 +298,23 @@ jobs:
       fail-fast: false
       matrix:
         # sync with other jobs
-        runner-os:
-          [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
-          - runner-os: ubuntu-22.04
-            platform: linux
+          - platform: linux
+            runner-os: ubuntu-22.04
             arch: x86_64
-          - runner-os: ubuntu-22.04-arm
-            platform: linux
+          - platform: linux
+            runner-os: ubuntu-22.04-arm
             arch: arm64
-          - runner-os: macos-latest
-            platform: macos
-            arch: universal
-          - runner-os: windows-latest
-            platform: windows
+          - platform: windows
+            runner-os: ubuntu-22.04
             arch: "x86_64"
+          - platform: macos
+            runner-os: macos-latest
+            arch: universal
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -329,14 +352,14 @@ jobs:
           # but the code is most likely compatible with python 3.6
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             .
             patches
 
       - name: Setup python ${{matrix.PYTHON_VER}}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{matrix.PYTHON_VER}}
 
@@ -360,14 +383,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Get library version
         id: get_version
         uses: ./.github/actions/get_lib_version
 
       - name: Download Binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: libdd3d-*
           path: extracted_files
@@ -393,7 +416,7 @@ jobs:
           echo "napi_artifact=.gdextension_native_api-${{steps.get_version.outputs.version}}" >> $GITHUB_OUTPUT
 
       - name: Upload GDExtension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{steps.output_info.outputs.libs_artifact}}
           retention-days: 7
@@ -415,9 +438,9 @@ jobs:
           [ubuntu-22.04, ubuntu-22.04-arm, macos-latest, windows-latest]
         include:
           - runner-os: ubuntu-22.04
-            file_suffix: "linux.x86_64.zip"
+            file_suffix: "linux_x86_64.zip"
           - runner-os: ubuntu-22.04-arm
-            file_suffix: "linux.arm64.zip"
+            file_suffix: "linux_arm64.zip"
           - runner-os: macos-latest
             file_suffix: "macos.universal.zip"
           - runner-os: windows-latest
@@ -430,7 +453,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Delete old libs folder
         shell: bash
@@ -438,13 +461,13 @@ jobs:
           rm -rf addons/${{env.ADDON_DIR}}/libs
 
       - name: Download Binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: addons/${{env.ADDON_DIR}}/libs
           name: ${{needs.collect-gdextension.outputs.libs_artifact}}
 
       - name: Download Native Bindings
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: addons/${{env.ADDON_DIR}}/native_api
           name: ${{needs.collect-gdextension.outputs.napi_artifact}}

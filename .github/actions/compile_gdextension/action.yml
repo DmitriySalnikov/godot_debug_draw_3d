@@ -45,7 +45,7 @@ runs:
         echo "sha=$(git rev-parse @:./godot-cpp)" >> $GITHUB_OUTPUT
 
     - name: Checkout telemetry repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       id: checkout_tele_repo
       if: ${{env.PRODUCTION_BUILD == 'true' && contains(fromJSON('["template_debug", "editor"]'), inputs.target) && contains(fromJSON('["linux", "macos", "windows"]'), inputs.platform)}}
       continue-on-error: true
@@ -57,7 +57,7 @@ runs:
     - name: Restore .scons_cache directory
       if: inputs.use_cache != 'false'
       id: restore_scons_cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{env.SCONS_CACHE}}
         key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
@@ -66,7 +66,7 @@ runs:
           ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}
 
     - name: Set up Python 3.x
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.x"
         architecture: ${{ fromJSON('["x64", "arm64"]')[runner.arch == 'arm64'] }}
@@ -81,6 +81,11 @@ runs:
         python --version
         scons --version
 
+    - name: Setup MinGW
+      if: inputs.platform == 'windows'
+      id: setup_mingw
+      uses: ./.github/actions/setup_mingw
+
     - name: Linux dependencies
       shell: bash
       if: (runner.os == 'Linux') && (inputs.platform == 'linux')
@@ -93,33 +98,51 @@ runs:
     - name: Compilation
       shell: bash
       run: |
+        run_scons() {
+          echo "============================================="
+          echo "Running scons with arguments:"
+          echo "$@"
+          echo "======================"
+          echo ""
+
+          scons "$@"
+        }
+
         echo "::group::🛠️ GDExtesion Compilation 🛠️"
-        scons apply_patches
+        run_scons apply_patches
+
+        scons_mingw_args=""
+        if [ "${{inputs.platform}}" == "windows" ];then
+          scons_mingw_args='use_mingw=yes use_llvm=yes mingw_prefix="${{steps.setup_mingw.outputs.mingw_folder}}"'
+        fi
 
         telemetry_args=""
         if [[ "${{env.PRODUCTION_BUILD}}" == "true" && " editor " == *" ${{inputs.target}} "* && " linux macos windows " == *" ${{inputs.platform}} "* && "${{steps.checkout_tele_repo.conclusion}}" == "success" ]]; then
           telemetry_args="telemetry_enabled=yes"
         fi
-        scons_params="platform=${{inputs.platform}} arch=${{inputs.arch}} optimize=speed target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}}"
+        scons_params="platform=${{inputs.platform}} arch=${{inputs.arch}} optimize=speed target=${{inputs.target}} addon_output_dir=${{inputs.output_libs_path}} ${{inputs.additional}} $scons_mingw_args"
 
-        scons $scons_params $telemetry_args
+        run_scons $scons_params $telemetry_args
 
         if [ "${{inputs.target}}" == "template_release" ] && [ "${{inputs.build_forced_dd3d}}" == "true" ]; then
           echo "============================================="
           echo "🧊 build_forced_dd3d"
-          echo "============================================="
-          scons $scons_params force_enabled_dd3d=yes
+          echo "======================"
+          echo ""
+
+          run_scons $scons_params force_enabled_dd3d=yes
         fi
 
         if [ "${{inputs.build_cpp_tests}}" == "true" ]; then
           echo "============================================="
           echo "🧪 build_cpp_tests"
-          echo "============================================="
+          echo "======================"
+          echo ""
 
           # Cleaning the generated folder to avoid cache issues.
           rm -rf godot-cpp/gen/
 
-          scons $scons_params cpp_api_tests=yes custom_godotcpp_suffix=.test_napi folder_to_include_classes=../tests_native_api/cpp cpp_api_auto_gen=no
+          run_scons $scons_params cpp_api_tests=yes custom_godotcpp_suffix=.test_napi folder_to_include_classes=../tests_native_api/cpp cpp_api_auto_gen=no
         fi
 
         echo "::endgroup::"
@@ -136,7 +159,8 @@ runs:
               strip -u "$file"
           done <<< "$found_files"
         else
-          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep "ELF" | cut -d: -f1)
+          exe_format=$([ "${{inputs.platform}}" = "windows" ] && echo "PE32+" || echo "ELF")
+          found_files=$(find -L ${{inputs.output_libs_path}} -type f -exec file {} + | grep "$exe_format" | cut -d: -f1)
           echo "Found files: $found_files"
           strip $found_files
         fi
@@ -148,7 +172,7 @@ runs:
         Remove-Item ${{inputs.output_libs_path}}/* -Recurse -Include *.exp,*.lib,*.pdb -Force
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{inputs.artifact}}
         retention-days: 7
@@ -156,7 +180,7 @@ runs:
 
     - name: Save .scons_cache directory
       if: inputs.use_cache != 'false'
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ${{env.SCONS_CACHE}}
         key: ${{github.job}}-${{inputs.artifact}}-${{steps.get_godot_cpp_sha.outputs.sha}}-${{github.ref}}-${{github.sha}}
