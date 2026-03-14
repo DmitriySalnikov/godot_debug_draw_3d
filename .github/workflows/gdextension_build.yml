@@ -425,6 +425,37 @@ jobs:
 
   # ============================================
 
+  vt_scan:
+    name: "🦠 VirusTotal Scan"
+    runs-on: ubuntu-latest
+    needs: collect-gdextension
+
+    steps:
+      - name: Download Libs
+        uses: dawidd6/action-download-artifact@v12
+        with:
+          workflow: gdextension_build.yml
+          run_id: ${{github.run_id}}
+          name: ${{needs.collect-gdextension.outputs.libs_artifact}}
+          name_is_regexp: false
+          skip_unpack: true
+
+      - name: VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v5
+        id: vt_scan
+        with:
+          vt_api_key: ${{secrets.VT_API_KEY}}
+          request_rate: 4
+          files: |
+            ${{needs.collect-gdextension.outputs.libs_artifact}}*
+
+      - name: Info
+        run: |
+          echo "VirusTotal links:" >> $GITHUB_STEP_SUMMARY
+          echo "${{steps.vt_scan.outputs.analysis}}" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
+
   test_api_integration:
     name: "🧪 Testing API: ${{matrix.runner-os}}, Godot-${{matrix.file_suffix}}"
     runs-on: ${{matrix.runner-os}}
