@@ -80,7 +80,7 @@ jobs:
           echo "\`$sha\` will be used as a restore point." >> $GITHUB_STEP_SUMMARY
 
       - name: Checkout Action
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           sparse-checkout: .github/actions/get_lib_version/action.yml
@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/get_lib_version
 
       - name: Checkout version.h
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: current
           sparse-checkout: |
@@ -114,7 +114,7 @@ jobs:
           echo "Deploy version: \`$deploy_version\`" >> $GITHUB_STEP_SUMMARY
 
       - name: Checkout CNAME
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         continue-on-error: true
         id: checkout_cname
         with:
@@ -166,7 +166,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
@@ -201,12 +201,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: recursive
 
       - name: Restore doxygen directory
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: restore_doxygen
         with:
           path: obj/doxygen-${{env.DOXYGEN_VERSION}}
@@ -223,7 +223,7 @@ jobs:
 
       - name: Save doxygen directory
         if: ${{!steps.restore_doxygen.outputs.cache-hit}}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: obj/doxygen-${{env.DOXYGEN_VERSION}}
           key: doxygen-${{env.DOXYGEN_VERSION}}
@@ -275,7 +275,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Godot
         uses: ./.github/actions/setup_godot
@@ -292,7 +292,7 @@ jobs:
           rm -rf addons/debug_draw_3d/libs
 
       - name: Download Binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: addons/debug_draw_3d/libs
           pattern: "*.demo_build"
@@ -376,7 +376,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{env.PAGES_BRANCH}}
           # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT
@@ -640,13 +640,12 @@ jobs:
 
     steps:
       - name: Remove `github-pages` if the action was restarted
-        uses: geekyeggo/delete-artifact@v4
+        uses: geekyeggo/delete-artifact@v6
         with:
-          token: ${{secrets.GITHUB_TOKEN}}
           name: github-pages
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{env.PAGES_BRANCH}}
       - name: Upload artifact
@@ -673,7 +672,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{env.PAGES_BRANCH}}
           # MUST BE A SUFFICIENT VALUE TO BE ABLE TO RESET TO THE INITIAL COMMIT

@@ -4,6 +4,7 @@
 #include "utils/native_api_hooks.h"
 
 GODOT_WARNING_DISABLE()
+#include <godot_cpp/classes/ref.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 GODOT_WARNING_RESTORE()
 using namespace godot;

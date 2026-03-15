@@ -5,6 +5,8 @@
             "label": "editor_build",
             "command": "scons",
             "args": [
+                //"use_mingw=yes",
+                //"use_llvm=yes",
                 "target=editor",
                 "debug_symbols=yes",
                 "optimize=speed",

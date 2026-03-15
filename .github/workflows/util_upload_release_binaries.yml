@@ -16,7 +16,7 @@ jobs:
       version: ${{steps.get_version.outputs.version}}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           sparse-checkout: .github/actions/get_lib_version/action.yml
@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           path: ${{env.ADDON_ROOT_FOLDER_NAME}} # godot asset library by default skips root folder
@@ -80,7 +80,7 @@ jobs:
           echo "zipname=$zipname" >> $GITHUB_OUTPUT
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{steps.zip.outputs.zipname}}
           retention-days: 7
@@ -95,7 +95,7 @@ jobs:
 
     steps:
       - name: Download Binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
 

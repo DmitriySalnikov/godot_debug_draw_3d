@@ -54,13 +54,13 @@ runs:
 
     - name: Restore cache directory
       id: restore_scons_cache
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{steps.store_folder.outputs.path}}
         key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.is_mono == 'true' && '-mono' || ''}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation
 
     - name: Download Godot Engine
-      uses: robinraju/release-downloader@v1.10
+      uses: robinraju/release-downloader@v1
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
       with:
         repository: ${{inputs.pre_release == 'true' && 'godotengine/godot-builds' || 'godotengine/godot'}}
@@ -70,7 +70,7 @@ runs:
         extract: true
 
     - name: Download templates
-      uses: robinraju/release-downloader@v1.10
+      uses: robinraju/release-downloader@v1
       if: ${{!steps.restore_scons_cache.outputs.cache-hit && inputs.download_export_templates == 'true'}}
       with:
         repository: ${{inputs.pre_release == 'true' && 'godotengine/godot-builds' || 'godotengine/godot'}}
@@ -146,7 +146,7 @@ runs:
 
     - name: Save cache directory
       if: ${{!steps.restore_scons_cache.outputs.cache-hit}}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ${{steps.store_folder.outputs.path}}
         key: godot-${{inputs.tag}}-${{inputs.file_suffix}}${{inputs.is_mono == 'true' && '-mono' || ''}}${{inputs.download_export_templates == 'true' && '-with_exports' || ''}}-installation

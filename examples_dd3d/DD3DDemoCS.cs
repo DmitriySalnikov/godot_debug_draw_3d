@@ -758,7 +758,7 @@ public partial class DD3DDemoCS : Node3D
                     }
                 }
             }
-            GD.Print($"Draw Cubes C#: {((Time.GetTicksUsec() - start_time) / 1000.0):F3}ms");
+            GD.Print($"Draw Boxes C#: {((Time.GetTicksUsec() - start_time) / 1000.0):F3}ms");
             timer_cubes = cubes_max_time;
         }
 

@@ -1,0 +1,76 @@
+name: Download LLVM MinGW
+description: Download the precompiled LLVM MinGW from mstorsjo/llvm-mingw for Linux
+inputs:
+  tag:
+    description: Release tag in the repository (20260224, 20251216)
+    default: "20260224"
+    required: false
+outputs:
+  mingw_folder:
+    description: Path to the LLVM MinGW
+    value: ${{steps.store_folder.outputs.path}}
+runs:
+  using: composite
+  steps:
+    - name: Store MinGW folder
+      id: store_folder
+      env:
+        temp: ${{runner.temp}}
+      shell: bash
+      run: |
+        echo "path=${{env.temp}}/llvm_mingw" >> $GITHUB_OUTPUT
+
+    - name: Restore cache directory
+      id: restore_mingw_cache
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{steps.store_folder.outputs.path}}
+        key: llvm_mingw-${{inputs.tag}}-installation
+
+    - name: Download LLVM MinGW
+      uses: robinraju/release-downloader@v1
+      if: ${{!steps.restore_mingw_cache.outputs.cache-hit}}
+      with:
+        repository: 'mstorsjo/llvm-mingw'
+        tag: "${{inputs.tag}}"
+        fileName: "llvm-mingw-${{inputs.tag}}-msvcrt-ubuntu-*"
+        out-file-path: "temp_download_mingw"
+
+    - name: Finish preparation
+      if: ${{!steps.restore_mingw_cache.outputs.cache-hit}}
+      shell: bash
+      run: |
+        tar -xf temp_download_mingw/llvm-mingw-${{inputs.tag}}-msvcrt-ubuntu-* -C temp_download_mingw
+
+        echo "Move the mingw files to the root of the temporary folder"
+        first_folder="$(find temp_download_mingw/ -mindepth 1 -maxdepth 1 -type d -name "llvm-mingw-${{inputs.tag}}-msvcrt-ubuntu-*" | head -1)"
+        if [ ! "$first_folder" ]; then
+          echo "The root folder of the mingw build was not found."
+          exit 1
+        fi
+        echo "Found mingw folder: $first_folder"
+
+        mv -f "$first_folder"/* temp_download_mingw
+        rm -rf "$first_folder"
+
+        echo "Remove archive"
+        rm -rf temp_download_mingw/*.tar.xz
+
+        echo "Remove unused architectures"
+        rm -rf temp_download_mingw/armv7-w64-mingw32
+        rm -rf temp_download_mingw/i686-w64-mingw32
+        rm -rf temp_download_mingw/aarch64-w64-mingw32
+        rm -rf temp_download_mingw/arm64ec-w64-mingw32
+
+        echo "Move files to the installation folder"
+        mv -f temp_download_mingw/ ${{steps.store_folder.outputs.path}}/
+
+        echo "Final folder structure:"
+        find ${{steps.store_folder.outputs.path}} -mindepth 1 -maxdepth 1
+
+    - name: Save cache directory
+      if: ${{!steps.restore_mingw_cache.outputs.cache-hit}}
+      uses: actions/cache/save@v5
+      with:
+        path: ${{steps.store_folder.outputs.path}}
+        key: llvm_mingw-${{inputs.tag}}-installation
