@@ -1,0 +1,34 @@
+name: 🦠 VirusTotal Release Scan
+on:
+  release:
+    types: [published]
+
+env:
+  ASSET_NAME: "debug-draw-3d_"
+
+jobs:
+  virustotal:
+    runs-on: ubuntu-latest
+    permissions:
+      # required to write GitHub Release body
+      contents: write
+    steps:
+      - name: Download the release archive
+        env:
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          # gh api repos/godotengine/godot/releases/tags/4.6-stable -q '.assets[] | select(.name | contains("v4.6-stable_mono_linux_arm64.zip")) | .browser_download_url'
+
+          gh_res=$(gh api repos/${{github.repository}}/releases/${{github.event.release.id}} -q '.assets[] | select(.name | contains("${{env.ASSET_NAME}}")) | .browser_download_url')
+          echo $gh_res
+          wget $gh_res
+
+      - name: VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v5
+        with:
+          vt_api_key: ${{secrets.VT_API_KEY}}
+          update_release_body: true
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          request_rate: 4
+          files: |
+            ${{env.ASSET_NAME}}*
