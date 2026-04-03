@@ -297,8 +297,10 @@ void DebugDrawManager::_integrate_into_engine() {
 		if (Engine::get_singleton()->has_singleton("DisplayServer")) {
 			Object *display_server = Engine::get_singleton()->get_singleton("DisplayServer");
 			if (display_server) {
-				bool is_enabled = display_server->call("window_can_draw", 0);
-				set_debug_enabled(is_enabled);
+				bool is_enabled = ((String)display_server->call("get_name")) != "headless";
+				// disable only if headless
+				if (!is_enabled)
+					set_debug_enabled(false);
 			}
 		} else {
 			set_debug_enabled(false);
