@@ -9,6 +9,7 @@
 
 GODOT_WARNING_DISABLE()
 #include <godot_cpp/classes/control.hpp>
+#include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/dir_access.hpp>
 #include <godot_cpp/classes/file_access.hpp>
 GODOT_WARNING_RESTORE()
@@ -352,23 +353,25 @@ void DebugDrawManager::_integrate_into_engine() {
 	if (IS_EDITOR_HINT()) {
 		Node *res = Utils::find_node_by_class(SCENE_ROOT(), "Node3DEditorViewportContainer");
 
-		Node *n = res->get_child(0)->get_child(0);
+		SubViewport *sv = EditorInterface::get_singleton()->get_editor_viewport_3d(0);
+		Node *n = sv->get_parent();
 		n->set_meta("UseParentSize", true);
+
 		debug_draw_2d_singleton->default_control_id = n->get_instance_id();
 
-		// actual tree for godot 4.0 beta 14
-		//
-		//	0. VSplitContainer
-		//		0. Node3DEditorViewportContainer >>> res
-		//			0. Node3DEditorViewport
-		//				0. SubViewportContainer >>> res->get_child(0)->get_child(0)
-		//					0. SubViewport
-		//						0. Camera3D
-		//				1. ...
-		//			1. Node3DEditorViewport
-		//				0. SubViewportContainer
-		//					0. SubViewport
-		//  ......
+		// actual tree for godot 4.7.stable
+		// 
+		// ┖╴VSplitContainer
+		// 	┠╴Node3DEditorViewportContainer <<< res
+		// 	┃  ┖╴SplitContainer
+		// 	┃     ┠╴SplitContainer
+		// 	┃     ┃  ┠╴Node3DEditorViewport
+		// 	┃     ┃  ┃  ┠╴SubViewportContainer
+		// 	┃     ┃  ┃  ┃  ┖╴SubViewport
+		// 	┃     ┃  ┃  ┃     ┠╴Camera3D
+		// 	┃     ┃  ┠╴Node3DEditorViewport
+		// 	┃     ┃  ┃  ┠╴SubViewportContainer
+		// 	┃     ┃  ┃  ┃  ┖╴SubViewport
 
 		std::vector<SubViewport *> editor_viewports;
 		TypedArray<Node> viewports_root = res->get_children();
