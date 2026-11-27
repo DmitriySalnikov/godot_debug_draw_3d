@@ -299,6 +299,7 @@ func main_update(delta: float) -> void:
 			ray.set_physics_process_internal(false)
 	
 	_draw_other_world()
+	_draw_transparency_showcase()
 	
 	if draw_array_of_boxes:
 		_draw_array_of_boxes()
@@ -523,6 +524,43 @@ func _draw_paths(offset: Vector3 = Vector3.ZERO, max_points: int = -1):
 	if true:
 		var _sl = DebugDraw3D.new_scoped_config().set_thickness(0.05)
 		DebugDraw3D.draw_point_path(points_below4, DebugDraw3D.POINT_TYPE_SPHERE, 0.25, Color.MEDIUM_SEA_GREEN, Color.MEDIUM_VIOLET_RED)
+
+
+func _draw_transparency_showcase() -> void:
+	var origin: Vector3 = Vector3(-40.0, 2.0, -2.0)
+	_draw_zone_title_pos(origin + Vector3(0.0, 3.2, 0.0), "Transparency", 96, 36)
+	DebugDraw3D.draw_box_xf(Transform3D(Basis().scaled(Vector3(9.0, 5.0, 4.0)), origin), Color.BLACK)
+
+	var alphas: Array[float] = [1.0, 0.6, 0.3, 0.1]
+	for i in alphas.size():
+		var a: float = alphas[i]
+		var x: float = origin.x - 3.0 + float(i) * 2.0
+		# Thin line (thickness = 0)
+		var _thin = DebugDraw3D.new_scoped_config().set_thickness(0.0)
+		DebugDraw3D.draw_line(
+			Vector3(x - 0.6, origin.y + 1.8, origin.z),
+			Vector3(x + 0.6, origin.y + 1.8, origin.z),
+			Color(1.0, 0.2, 0.2, a)
+		)
+		# Volumetric line (thickness = 0.05)
+		var _thick = DebugDraw3D.new_scoped_config().set_thickness(0.05)
+		DebugDraw3D.draw_line(
+			Vector3(x - 0.6, origin.y + 1.1, origin.z),
+			Vector3(x + 0.6, origin.y + 1.1, origin.z),
+			Color(0.2, 0.85, 1.0, a)
+		)
+		# Sphere & Box
+		DebugDraw3D.draw_sphere(Vector3(x, origin.y + 0.2, origin.z), 0.45, Color(0.2, 1.0, 0.3, a))
+		DebugDraw3D.draw_box(Vector3(x - 0.375, origin.y - 1.275, origin.z - 0.375), Quaternion.IDENTITY, Vector3.ONE * 0.75, Color(1.0, 0.8, 0.1, a))
+
+	# Overlapping pair for sorting check
+	var _overlap_thick = DebugDraw3D.new_scoped_config().set_thickness(0.06)
+	DebugDraw3D.draw_line(
+		Vector3(origin.x - 2.5, origin.y - 1.8, origin.z + 0.2),
+		Vector3(origin.x + 2.5, origin.y - 1.8, origin.z - 0.2),
+		Color(1.0, 0.2, 0.8, 0.4)
+	)
+	DebugDraw3D.draw_sphere(Vector3(origin.x, origin.y - 1.8, origin.z), 0.5, Color(0.2, 0.5, 1.0, 0.4))
 
 
 func _draw_array_of_boxes():
