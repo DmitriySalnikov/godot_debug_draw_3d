@@ -1,5 +1,5 @@
 //#define NO_DEPTH
-//#define FORCED_TRANSPARENT
+//#define FORCED_OPAQUE
 
 shader_type spatial;
 render_mode cull_disabled, shadows_disabled, unshaded
@@ -22,7 +22,7 @@ void fragment() {
 		ALBEDO = toLinearFast(ALBEDO);
 	NORMAL = ALBEDO;
 
-	#if defined(FORCED_TRANSPARENT)
-	ALPHA = ALPHA;
+	#if !defined(FORCED_OPAQUE)
+	ALPHA = COLOR.a;
 	#endif
 }
